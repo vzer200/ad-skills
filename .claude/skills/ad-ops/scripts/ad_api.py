@@ -43,7 +43,9 @@ class ADClient:
         self.timeout = timeout
 
         # 创建 SSL 上下文，忽略证书错误
-        self.ssl_context = ssl.create_default_context()
+        # 直接用 SSLContext 而非 create_default_context()，避免 Windows
+        # 枚举证书存储时卡死（AD 设备使用自签证书，不需要验证）
+        self.ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         self.ssl_context.check_hostname = False
         self.ssl_context.verify_mode = ssl.CERT_NONE
 

@@ -46,8 +46,8 @@ class TestCollector(unittest.TestCase):
 
     def test_resume_with_existing_db(self):
         """Data survives reconnect via IF NOT EXISTS."""
-        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
-            db_path = f.name
+        fd, db_path = tempfile.mkstemp(suffix=".db")
+        os.close(fd)  # Close file handle so SQLite gets exclusive access
         try:
             # First connection: create table, insert a row
             c1 = VSCollector("https://10.0.0.1", "testpass", db_path=db_path)
@@ -70,7 +70,10 @@ class TestCollector(unittest.TestCase):
             self.assertEqual(rows[0], (1000, "vs1", "connection", 5.0))
             c2.close_db()
         finally:
-            os.unlink(db_path)
+            try:
+                os.unlink(db_path)
+            except PermissionError:
+                pass
 
     def test_insert_sample(self):
         """A single sample row is stored correctly."""
@@ -298,6 +301,41 @@ class TestCollector(unittest.TestCase):
                 actual_pid = int(f.read().strip())
             self.assertEqual(actual_pid, os.getpid())
             collector.close_db()
+
+    def test_parse_vs_stat_nested_dict(self):
+        """API response with nested dict values (real AD format) is parsed correctly."""
+        mock_response = {
+            "items": [
+                {
+                    "name": "vs_web",
+                    "connection": {"model": "INSTANT", "value": 100, "unit": "COUNT"},
+                    "connection_rate": {"model": "INSTANT", "value": 5.0, "unit": "REQUEST-PER-SECOND"},
+                },
+            ]
+        }
+
+        collector = VSCollector("https://10.0.0.1", "testpass", db_path=":memory:")
+        collector.open_db()
+        try:
+            rows = collector.parse_vs_stat(mock_response)
+            self.assertEqual(len(rows), 2)
+
+            row_tuples = {(r[1], r[2], r[3]) for r in rows}
+            self.assertIn(("vs_web", "connection", 100.0), row_tuples)
+            self.assertIn(("vs_web", "connection_rate", 5.0), row_tuples)
+        finally:
+            collector.close_db()
+
+    def test_check_process_alive_dead_pid(self):
+        """A definitely-dead PID should return False cross-platform."""
+        from collector import _check_process_alive
+        self.assertFalse(_check_process_alive(999999999))
+
+    def test_default_db_derived_from_host(self):
+        """When --db is not specified, the default DB path is derived from host."""
+        collector = VSCollector("https://192.168.8.31", "testpass")
+        self.assertIn("192.168.8.31", collector.db_path)
+        self.assertTrue(collector.db_path.endswith(".db"))
 
     @patch("collector.ADClient.get_vs_stat")
     def test_stalled_recovery_resets_counter(self, mock_get_vs_stat):

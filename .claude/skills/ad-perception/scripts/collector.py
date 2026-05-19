@@ -29,15 +29,27 @@ from db_schema import VS_SAMPLES_DDL, COLUMNS
 
 
 def _check_process_alive(pid):
-    """Check if a process with the given PID is alive (Windows)."""
-    import ctypes
+    """Check if a process with the given PID is alive (cross-platform).
 
-    kernel32 = ctypes.windll.kernel32
-    handle = kernel32.OpenProcess(0x0400, False, pid)
-    if not handle:
+    On Windows, os.kill(pid, 0) may incorrectly trigger CTRL_C_EVENT
+    (Windows maps signal 0 to CTRL_C), so we use OpenProcess directly.
+    On POSIX, os.kill(pid, 0) is the standard null-signal check.
+    """
+    if sys.platform == 'win32':
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        SYNCHRONIZE = 0x00100000
+        handle = kernel32.OpenProcess(SYNCHRONIZE, False, pid)
+        if handle:
+            kernel32.CloseHandle(handle)
+            return True
         return False
-    kernel32.CloseHandle(handle)
-    return True
+    else:
+        try:
+            os.kill(pid, 0)
+            return True
+        except OSError:
+            return False
 
 
 def _create_pid_file(pid_path):
@@ -71,7 +83,7 @@ class VSCollector:
         host: str,
         password: str,
         username: str = "admin",
-        db_path: str = "vs_samples.db",
+        db_path: str = "",
         interval: int = 60,
     ):
         self.host = host
@@ -82,6 +94,12 @@ class VSCollector:
         self.consecutive_failures = 0
         self.conn = None
         self.running = False
+
+        # Derive default DB name from host if not explicitly provided
+        if not db_path:
+            import re
+            safe_host = re.sub(r'[^a-zA-Z0-9._-]', '_', host)
+            db_path = f"vs_samples_{safe_host}.db"
 
         # Resolve DB path (keep :memory: unchanged for testing)
         if db_path != ":memory:" and not db_path.startswith(":memory:"):
@@ -115,6 +133,9 @@ class VSCollector:
     def parse_vs_stat(self, data):
         """Parse VS stat API response into list of (ts, vs_name, metric, value) tuples.
 
+        Handles both raw numeric values and nested dicts like
+        ``{"model": "INSTANT", "value": 100, ...}``.
+
         Args:
             data: dict returned by ADClient.get_vs_stat().
 
@@ -133,6 +154,8 @@ class VSCollector:
                     continue
                 if isinstance(value, (int, float)):
                     rows.append((ts, vs_name, key, float(value)))
+                elif isinstance(value, dict) and "value" in value:
+                    rows.append((ts, vs_name, key, float(value["value"])))
         return rows
 
     def run_once(self):
@@ -231,8 +254,8 @@ def parse_args(argv=None):
     )
     parser.add_argument(
         "--db",
-        default="vs_samples.db",
-        help="SQLite database path (default: ./vs_samples.db)",
+        default="",
+        help="SQLite database path (default: ./vs_samples_<host>.db)",
     )
     parser.add_argument(
         "--interval",
@@ -253,6 +276,12 @@ def main():
         print("错误: 未指定密码，请使用 --password 或设置环境变量 AD_PASS", file=sys.stderr)
         sys.exit(1)
 
+    # Derive default DB path from host if not explicitly provided
+    if not args.db:
+        import re
+        safe_host = re.sub(r'[^a-zA-Z0-9._-]', '_', args.host)
+        args.db = f"vs_samples_{safe_host}.db"
+
     collector = VSCollector(
         host=args.host,
         password=password,
@@ -265,7 +294,8 @@ def main():
 
     # Signal handlers for graceful shutdown
     signal.signal(signal.SIGINT, collector.handle_signal)
-    signal.signal(signal.SIGBREAK, collector.handle_signal)
+    if hasattr(signal, 'SIGBREAK'):
+        signal.signal(signal.SIGBREAK, collector.handle_signal)
 
     # Initialize: PID file, DB table, data cleanup
     collector.start(pid_path)
