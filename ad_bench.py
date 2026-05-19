@@ -138,9 +138,9 @@ if __name__ == "__main__":
 
     vip = sys.argv[1]
     vport = int(sys.argv[2]) if len(sys.argv) > 2 else 80
-    concurrency = int(sys.argv[3]) if len(sys.argv) > 3 else 20
-    total = int(sys.argv[4]) if len(sys.argv) > 4 else None  # None=无限循环
-    backend_port = 8080
+    backend_port = int(sys.argv[3]) if len(sys.argv) > 3 else 80
+    concurrency = int(sys.argv[4]) if len(sys.argv) > 4 else 20
+    total = int(sys.argv[5]) if len(sys.argv) > 5 else None  # None=无限循环
 
     # 启动后端
     server = start_server(backend_port)
