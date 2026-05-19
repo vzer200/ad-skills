@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".claude", "skills", "ad-ops", "scripts"))
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts")))
 
 from overview import (
     build_overview,

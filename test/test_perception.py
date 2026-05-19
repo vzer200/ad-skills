@@ -1,6 +1,7 @@
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".claude", "skills", "ad-perception", "scripts"))
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts")))
 
 import unittest
 from unittest.mock import patch, MagicMock, call

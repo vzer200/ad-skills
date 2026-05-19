@@ -16,6 +16,7 @@ sys.path.insert(
         "scripts",
     ),
 )
+sys.path.append(os.path.realpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts")))
 
 import io
 import signal
