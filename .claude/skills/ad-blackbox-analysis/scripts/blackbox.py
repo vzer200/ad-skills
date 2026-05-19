@@ -27,76 +27,21 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 
 
-class ADClient:
-    """AD 设备 API 客户端"""
-    
-    def __init__(self, host: str, username: str, password: str, timeout: int = 30):
-        self.host = host.rstrip("/")
-        self.username = username
-        self.password = password
-        self.timeout = timeout
-        
-        # 创建 SSL 上下文（忽略证书验证）
-        self.ssl_context = ssl.create_default_context()
-        self.ssl_context.check_hostname = False
-        self.ssl_context.verify_mode = ssl.CERT_NONE
-        
-        # Basic Auth
-        auth_str = f"{username}:{password}"
-        self.auth_header = f"Basic {base64.b64encode(auth_str.encode()).decode()}"
-    
-    def _request(self, method: str, endpoint: str, data: Optional[Dict] = None) -> Dict:
-        """发送 HTTP 请求"""
-        url = f"{self.host}/api/ad/v3{endpoint}"
-        headers = {
-            "Authorization": self.auth_header,
-            "Content-Type": "application/json"
-        }
-        
-        req_data = None
-        if data:
-            req_data = json.dumps(data).encode("utf-8")
-        
-        request = urllib.request.Request(url, data=req_data, headers=headers, method=method)
-        
-        try:
-            response = urllib.request.urlopen(request, timeout=self.timeout, context=self.ssl_context)
-            body = response.read().decode("utf-8")
-            return json.loads(body) if body else {}
-        except urllib.error.HTTPError as e:
-            error_body = e.read().decode("utf-8")
-            raise Exception(f"HTTP {e.code}: {error_body}")
-    
-    def export_blackbox_log(self, from_date: str, to_date: str, password: str) -> Dict:
-        """导出黑盒日志"""
-        data = {
-            "from": from_date,
-            "to": to_date,
-            "password": password
-        }
-        return self._request("POST", "/log/blackbox-log/export", data)
-    
-    def get_task_status(self) -> Dict:
-        """查询异步任务状态"""
-        url = f"{self.host}/api/lb/current-version/last-event"
-        headers = {"Authorization": self.auth_header}
-        request = urllib.request.Request(url, headers=headers)
-        
-        response = urllib.request.urlopen(request, timeout=self.timeout, context=self.ssl_context)
-        body = response.read().decode("utf-8")
-        return json.loads(body) if body else {}
-    
-    def download_file(self, file_token: str, output_path: str) -> str:
-        """下载文件"""
-        url = f"{self.host}/cgi/file-resource?d={file_token}"
-        headers = {"Authorization": self.auth_header}
-        request = urllib.request.Request(url, headers=headers)
-        
-        response = urllib.request.urlopen(request, timeout=300, context=self.ssl_context)
-        with open(output_path, "wb") as f:
-            f.write(response.read())
-        
-        return output_path
+# ── 共享 ADClient 导入 ──────────────────────────────────────────────
+_scripts_dir = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "scripts"
+)
+_scripts_dir = os.path.realpath(_scripts_dir)
+if not os.path.isdir(_scripts_dir):
+    print("错误: 无法定位共享 scripts 目录", file=sys.stderr)
+    sys.exit(9)
+sys.path.append(_scripts_dir)
+try:
+    from ad_api import ADClient, ADError, ADAuthError, ADAPIError, ADConnectionError
+except ImportError as e:
+    print(f"错误: 无法导入 ad_api: {e}", file=sys.stderr)
+    sys.exit(9)
+
 
 
 class BlackboxAnalyzer:
@@ -279,63 +224,81 @@ def main():
     parser.add_argument("--to-date", help="结束日期 (YYYY-MM-DD)")
     parser.add_argument("--archive-password", default="root1234+", help="黑盒文件解压密码")
     parser.add_argument("--output", default="/tmp/blackbox_analysis", help="输出目录")
-    
+
     args = parser.parse_args()
-    
-    # 创建客户端
-    client = ADClient(args.host, args.user, args.password)
-    
-    # 如果指定了日期范围，则导出黑盒日志
-    if args.from_date and args.to_date:
-        print(f"导出黑盒日志: {args.from_date} ~ {args.to_date}")
-        result = client.export_blackbox_log(args.from_date, args.to_date, args.archive_password)
-        event_id = result.get("event_id")
-        print(f"任务ID: {event_id}")
-        
-        # 等待任务完成
-        print("等待任务完成...")
-        for i in range(60):
-            tasks = client.get_task_status()
-            for task in tasks.get("items", []):
-                if task.get("event_id") == event_id:
-                    state = task.get("state")
-                    print(f"[{i+1}] 状态: {state}")
-                    if state == "SUCCESS":
-                        file_token = task.get("data", {}).get("file_token")
-                        print(f"文件Token: {file_token}")
-                        
-                        # 下载文件
-                        archive_path = os.path.join(args.output, "blackbox.tar.gz")
-                        os.makedirs(args.output, exist_ok=True)
-                        client.download_file(file_token, archive_path)
-                        print(f"文件下载完成: {archive_path}")
-                        
-                        # 解压并分析
-                        analyzer = BlackboxAnalyzer(args.output)
-                        analyzer.extract(archive_path, args.archive_password)
-                        
-                        # 分析审计日志
-                        audit_results = analyzer.analyze_audit_logs()
-                        
-                        # 生成报告
-                        report = analyzer.generate_report(audit_results)
-                        report_path = os.path.join(args.output, "report.md")
-                        with open(report_path, "w", encoding="utf-8") as f:
-                            f.write(report)
-                        print(f"报告已生成: {report_path}")
-                        
-                        return
-                    elif state == "FAILED":
-                        print("任务失败")
-                        return
-            
-            time.sleep(5)
-    else:
-        # 分析已有的黑盒文件
-        analyzer = BlackboxAnalyzer(args.output)
-        audit_results = analyzer.analyze_audit_logs()
-        report = analyzer.generate_report(audit_results)
-        print(report)
+
+    try:
+        # 创建客户端 (使用共享 ADClient)
+        client = ADClient(args.host, args.user, args.password)
+
+        # 如果指定了日期范围，则导出黑盒日志
+        if args.from_date and args.to_date:
+            print(f"导出黑盒日志: {args.from_date} ~ {args.to_date}")
+            result = client.export_blackbox_log(args.from_date, args.to_date, args.archive_password)
+            event_id = result.get("event_id")
+            print(f"任务ID: {event_id}")
+
+            # 等待任务完成
+            print("等待任务完成...")
+            for i in range(60):
+                tasks = client.get_last_event()
+                for task in tasks.get("items", []):
+                    if task.get("event_id") == event_id:
+                        state = task.get("state")
+                        print(f"[{i+1}] 状态: {state}")
+                        if state == "SUCCESS":
+                            file_token = task.get("data", {}).get("file_token")
+                            print(f"文件Token: {file_token}")
+
+                            # 下载文件
+                            archive_path = os.path.join(args.output, "blackbox.tar.gz")
+                            os.makedirs(args.output, exist_ok=True)
+                            data = client._raw_request(f"/cgi/file-resource?d={file_token}")
+                            with open(archive_path, "wb") as f:
+                                f.write(data)
+                            print(f"文件下载完成: {archive_path}")
+
+                            # 解压并分析
+                            analyzer = BlackboxAnalyzer(args.output)
+                            analyzer.extract(archive_path, args.archive_password)
+
+                            # 分析审计日志
+                            audit_results = analyzer.analyze_audit_logs()
+
+                            # 生成报告
+                            report = analyzer.generate_report(audit_results)
+                            report_path = os.path.join(args.output, "report.md")
+                            with open(report_path, "w", encoding="utf-8") as f:
+                                f.write(report)
+                            print(f"报告已生成: {report_path}")
+
+                            sys.exit(0)
+                        elif state == "FAILED":
+                            print("任务失败", file=sys.stderr)
+                            sys.exit(1)
+
+                time.sleep(5)
+
+            # 轮询超时
+            print("错误: 轮询超时，任务未完成", file=sys.stderr)
+            sys.exit(5)
+        else:
+            # 分析已有的黑盒文件
+            analyzer = BlackboxAnalyzer(args.output)
+            audit_results = analyzer.analyze_audit_logs()
+            report = analyzer.generate_report(audit_results)
+            print(report)
+            sys.exit(0)
+
+    except ADAuthError as e:
+        print(f"认证失败: {e}", file=sys.stderr)
+        sys.exit(2)
+    except (ADConnectionError, ADAPIError) as e:
+        print(f"通信错误: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"错误: {e}", file=sys.stderr)
+        sys.exit(5)
 
 
 if __name__ == "__main__":
