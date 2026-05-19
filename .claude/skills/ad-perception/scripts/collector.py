@@ -84,7 +84,7 @@ class VSCollector:
         password: str,
         username: str = "admin",
         db_path: str = "",
-        interval: int = 60,
+        interval: int = 30,
     ):
         self.host = host
         self.password = password
@@ -260,8 +260,8 @@ def parse_args(argv=None):
     parser.add_argument(
         "--interval",
         type=int,
-        default=60,
-        help="Sampling interval in seconds (default: 60)",
+        default=30,
+        help="Sampling interval in seconds (default: 30)",
     )
     return parser.parse_args(argv)
 
