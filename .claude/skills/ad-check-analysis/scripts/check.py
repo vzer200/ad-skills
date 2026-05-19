@@ -11,149 +11,27 @@ import os
 import ssl
 import sys
 import time
+
+# --- 共享 ad_api 导入 ---
+_scripts_dir = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "scripts"
+)
+_scripts_dir = os.path.realpath(_scripts_dir)
+if not os.path.isdir(_scripts_dir):
+    print("错误: 无法定位共享 scripts 目录", file=sys.stderr)
+    sys.exit(9)
+sys.path.append(_scripts_dir)
+try:
+    from ad_api import ADClient, ADError, ADAuthError, ADAPIError, ADConnectionError
+except ImportError as e:
+    print(f"错误: 无法导入 ad_api: {e}", file=sys.stderr)
+    sys.exit(9)
+
 import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
 from typing import Any, Dict, Optional
-
-
-# ---------------------------------------------------------------------------
-# AD API 客户端
-# ---------------------------------------------------------------------------
-
-class ADClient:
-    """深信服 AD 设备 API 客户端（零外部依赖）"""
-
-    def __init__(
-        self,
-        host: str,
-        username: str = "admin",
-        password: str = "",
-        timeout: int = 30,
-    ):
-        self.host = host.rstrip("/")
-        self.username = username
-        self.password = password
-        self.timeout = timeout
-        self.ssl_context = ssl.create_default_context()
-        self.ssl_context.check_hostname = False
-        self.ssl_context.verify_mode = ssl.CERT_NONE
-
-    # ---- 底层 HTTP --------------------------------------------------------
-
-    def _auth_header(self) -> str:
-        auth = base64.b64encode(
-            f"{self.username}:{self.password}".encode()
-        ).decode()
-        return f"Basic {auth}"
-
-    def _build_url(self, path: str, params: Optional[Dict] = None) -> str:
-        url = f"{self.host}{path}"
-        if params:
-            qs = urllib.parse.urlencode(params)
-            url = f"{url}?{qs}"
-        return url
-
-    def _json_request(
-        self, method: str, path: str,
-        data: Optional[Dict] = None,
-        params: Optional[Dict] = None,
-    ) -> Dict[str, Any]:
-        """JSON API 请求"""
-        url = self._build_url(path, params)
-        body = json.dumps(data).encode() if data else None
-        req = urllib.request.Request(url, data=body, method=method)
-        req.add_header("Authorization", self._auth_header())
-        req.add_header("Content-Type", "application/json")
-        try:
-            with urllib.request.urlopen(
-                req, context=self.ssl_context, timeout=self.timeout
-            ) as resp:
-                return json.loads(resp.read().decode())
-        except urllib.error.HTTPError as e:
-            raw = e.read().decode()
-            try:
-                return json.loads(raw)
-            except json.JSONDecodeError:
-                return {"error": raw, "http_status": e.code}
-
-    def _raw_request(self, url_path: str) -> bytes:
-        """二进制下载"""
-        url = f"{self.host}{url_path}"
-        req = urllib.request.Request(url, method="GET")
-        req.add_header("Authorization", self._auth_header())
-        with urllib.request.urlopen(
-            req, context=self.ssl_context, timeout=self.timeout
-        ) as resp:
-            return resp.read()
-
-    # ---- 巡检 API（按 SKILL.md 定义）------------------------------------
-
-    def get_check_scenes(self) -> Dict[str, Any]:
-        """获取巡检场景列表 (无 debug)"""
-        return self._json_request("GET", "/api/lb/current-version/sys/offline-check/")
-
-    def get_check_history(self) -> Dict[str, Any]:
-        """查询历史巡检记录 (有 debug)"""
-        return self._json_request(
-            "GET", "/api/lb/current-version/debug/sys/offline-check",
-            params={"type": "history"},
-        )
-
-    def get_check_progress(self) -> Dict[str, Any]:
-        """查询巡检进度 (有 debug)
-        
-        返回:
-          - state: FINISHED / RUNNING / WAITING / NO_RUNNING
-          - finished / total: 进度
-          当 state=NO_RUNNING 时，额外返回 history_latest 字段辅助判断
-        """
-        result = self._json_request(
-            "GET", "/api/lb/current-version/debug/sys/offline-check",
-            params={"type": "progress"},
-        )
-        # NO_RUNNING 时辅助查 history 判断巡检是否已完成
-        if result.get("state") == "NO_RUNNING":
-            history = self.get_check_history()
-            items = history.get("items", [])
-            if items:
-                latest = items[0]
-                result["history_latest"] = {
-                    "name": latest.get("name", ""),
-                    "scene": latest.get("scene", ""),
-                    "start_time": latest.get("start_time", ""),
-                    "end_time": latest.get("end_time", ""),
-                    "finished": latest.get("end_time") != "",
-                }
-        return result
-
-    def run_check(self, scene: str, force: bool = False) -> Dict[str, Any]:
-        """启动巡检 (有 debug)"""
-        params = {"force": "true"} if force else None
-        return self._json_request(
-            "POST", "/api/lb/current-version/debug/sys/offline-check",
-            data={"scene": scene}, params=params,
-        )
-
-    def download_check_report(self, report_name: str) -> Dict[str, Any]:
-        """获取报告下载 token (有 debug)"""
-        return self._json_request(
-            "GET", "/api/lb/current-version/debug/sys/offline-check",
-            params={
-                "type": "download",
-                "key": report_name,
-                "encrypt": "false",
-            },
-        )
-
-    def download_file(self, file_token: str, save_path: str) -> str:
-        """下载文件到本地"""
-        data = self._raw_request(f"/cgi/file-resource?d={file_token}")
-        os.makedirs(os.path.dirname(save_path) or ".", exist_ok=True)
-        with open(save_path, "wb") as f:
-            f.write(data)
-        return save_path
 
 
 # ---------------------------------------------------------------------------
@@ -173,7 +51,10 @@ def start_check(
     os.makedirs(work_dir, exist_ok=True)
 
     # 步骤 1: 确认巡检场景
-    scenes = client.get_check_scenes()
+    try:
+        scenes = client._request("GET", "/sys/offline-check/")
+    except (ADConnectionError, ADAuthError, ADAPIError) as e:
+        raise RuntimeError(f"API 调用失败: {e}")
     scene_names = [s["name"] for s in scenes.get("items", [])]
     if not scene_names:
         raise RuntimeError("无法获取巡检场景列表")
@@ -181,7 +62,10 @@ def start_check(
         raise RuntimeError(f"场景 '{scene}' 不存在，可用: {scene_names}")
 
     # 步骤 2: 检查巡检记录上限
-    history = client.get_check_history()
+    try:
+        history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
+    except (ADConnectionError, ADAuthError, ADAPIError) as e:
+        raise RuntimeError(f"API 调用失败: {e}")
     pre_run_items = history.get("items", [])
     count = len(pre_run_items)
     pre_run_latest_name = pre_run_items[0].get("name", "") if pre_run_items else ""
@@ -194,7 +78,14 @@ def start_check(
 
     # 步骤 3: 后台启动巡检（立即返回）
     print(f"[步骤 3] 启动巡检: scene='{scene}' force={force}")
-    result = client.run_check(scene, force=force and need_force)
+    try:
+        result = client._request(
+            "POST", "/debug/sys/offline-check",
+            data={"scene": scene},
+            params={"force": "true"} if (force and need_force) else None,
+        )
+    except (ADConnectionError, ADAuthError, ADAPIError) as e:
+        raise RuntimeError(f"API 调用失败: {e}")
     event_id = result.get("event_id")
     if not event_id:
         raise RuntimeError(f"巡检启动失败: {result}")
@@ -255,7 +146,10 @@ def wait_and_download(
     attempt = 0
     while time.time() < deadline:
         attempt += 1
-        history = client.get_check_history()
+        try:
+            history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
+        except (ADConnectionError, ADAuthError, ADAPIError) as e:
+            raise RuntimeError(f"API 调用失败: {e}")
         items = history.get("items", [])
         if items:
             top = items[0]
@@ -290,13 +184,25 @@ def wait_and_download(
     start_time = latest.get("start_time", target_start_time)
     print(f"         报告: {report_name}")
 
-    token_resp = client.download_check_report(report_name)
+    try:
+        token_resp = client._request(
+            "GET", "/debug/sys/offline-check",
+            params={"type": "download", "key": report_name, "encrypt": "false"},
+        )
+    except (ADConnectionError, ADAuthError, ADAPIError) as e:
+        raise RuntimeError(f"API 调用失败: {e}")
     file_token = token_resp.get("file_token")
     if not file_token:
         raise RuntimeError(f"获取 file_token 失败: {token_resp}")
 
     zip_path = os.path.join(work_dir, "report.zip")
-    client.download_file(file_token, zip_path)
+    try:
+        data = client._raw_request(f"/cgi/file-resource?d={file_token}")
+    except (ADConnectionError, ADAuthError, ADAPIError) as e:
+        raise RuntimeError(f"文件下载失败: {e}")
+    os.makedirs(os.path.dirname(zip_path) or ".", exist_ok=True)
+    with open(zip_path, "wb") as f:
+        f.write(data)
     print(f"         下载: {zip_path} ({os.path.getsize(zip_path)} bytes)")
 
     # ── 步骤 6: 解压并更新元数据 ────────────────────────────────────
@@ -1060,7 +966,11 @@ def main():
 
     if args.command == "scenes":
         client = ADClient(args.host, args.username, args.password)
-        result = client.get_check_scenes()
+        try:
+            result = client._request("GET", "/sys/offline-check/")
+        except (ADConnectionError, ADAuthError, ADAPIError) as e:
+            print(f"❌ API 调用失败: {e}", file=sys.stderr)
+            sys.exit(1)
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     elif args.command == "run":
@@ -1070,8 +980,23 @@ def main():
             meta = start_check(client, args.scene, force=args.force, work_dir=work_dir)
             print(f"         工作目录: {work_dir}")
             print(f"         后续请用 wait 命令轮询进度，或用 progress 命令单独查询")
-        except Exception as e:
-            print(f"❌ {e}", file=sys.stderr)
+        except RuntimeError as e:
+            msg = str(e)
+            print(f"❌ {msg}", file=sys.stderr)
+            if "场景" in msg and "不存在" in msg:
+                sys.exit(4)
+            elif "上限" in msg or "记录" in msg:
+                sys.exit(4)
+            else:
+                sys.exit(4)
+        except ADConnectionError as e:
+            print(f"❌ 连接失败: {e}", file=sys.stderr)
+            sys.exit(1)
+        except ADAuthError as e:
+            print(f"❌ 认证失败: {e}", file=sys.stderr)
+            sys.exit(2)
+        except ADAPIError as e:
+            print(f"❌ API 错误: {e}", file=sys.stderr)
             sys.exit(1)
 
     elif args.command == "wait":
@@ -1089,18 +1014,59 @@ def main():
             analysis = analyze(data)
             report = render_markdown(analysis, meta)
             print("\n" + report)
-        except Exception as e:
-            print(f"❌ {e}", file=sys.stderr)
+        except RuntimeError as e:
+            msg = str(e)
+            print(f"❌ {msg}", file=sys.stderr)
+            if "超时" in msg:
+                sys.exit(5)
+            elif "file_token" in msg or "文件下载" in msg:
+                sys.exit(4)
+            elif "找不到" in msg:
+                sys.exit(4)
+            else:
+                sys.exit(4)
+        except ADConnectionError as e:
+            print(f"❌ 连接失败: {e}", file=sys.stderr)
+            sys.exit(1)
+        except ADAuthError as e:
+            print(f"❌ 认证失败: {e}", file=sys.stderr)
+            sys.exit(2)
+        except ADAPIError as e:
+            print(f"❌ API 错误: {e}", file=sys.stderr)
             sys.exit(1)
 
     elif args.command == "history":
         client = ADClient(args.host, args.username, args.password)
-        result = client.get_check_history()
+        try:
+            result = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
+        except (ADConnectionError, ADAuthError, ADAPIError) as e:
+            print(f"❌ API 调用失败: {e}", file=sys.stderr)
+            sys.exit(1)
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     elif args.command == "progress":
         client = ADClient(args.host, args.username, args.password)
-        result = client.get_check_progress()
+        try:
+            result = client._request("GET", "/debug/sys/offline-check", params={"type": "progress"})
+        except (ADConnectionError, ADAuthError, ADAPIError) as e:
+            print(f"❌ API 调用失败: {e}", file=sys.stderr)
+            sys.exit(1)
+        # NO_RUNNING 时辅助查 history 判断巡检是否已完成
+        if result.get("state") == "NO_RUNNING":
+            try:
+                history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
+                items = history.get("items", [])
+                if items:
+                    latest = items[0]
+                    result["history_latest"] = {
+                        "name": latest.get("name", ""),
+                        "scene": latest.get("scene", ""),
+                        "start_time": latest.get("start_time", ""),
+                        "end_time": latest.get("end_time", ""),
+                        "finished": latest.get("end_time") != "",
+                    }
+            except (ADConnectionError, ADAuthError, ADAPIError):
+                pass  # NO_RUNNING 时的辅助查询失败不报错，仅作为信息提示
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     elif args.command == "analyze":
@@ -1131,7 +1097,7 @@ def main():
 
         if not os.path.exists(ad_path):
             print(f"❌ 找不到 ad.json 在 {args.path}")
-            sys.exit(1)
+            sys.exit(4)
 
         with open(ad_path, encoding="utf-8") as f:
             data = json.load(f)
