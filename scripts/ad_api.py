@@ -18,6 +18,30 @@ import urllib.parse
 from typing import Any, Dict, Optional
 
 
+class ADError(Exception):
+    """AD API error base class."""
+    def __init__(self, message, original=None):
+        super().__init__(message)
+        self.original = original
+
+class ADConnectionError(ADError):
+    """Connection failure (URLError, timeout)."""
+    pass
+
+class ADAuthError(ADError):
+    """Authentication failure (HTTP 401/403)."""
+    def __init__(self, message, http_code, original=None):
+        super().__init__(message, original)
+        self.http_code = http_code
+
+class ADAPIError(ADError):
+    """API error (HTTP 4xx/5xx non-auth)."""
+    def __init__(self, message, http_code, response_body=None, original=None):
+        super().__init__(message, original)
+        self.http_code = http_code
+        self.response_body = response_body
+
+
 class ADClient:
     """Sangfor AD API 客户端"""
 
@@ -54,6 +78,7 @@ class ADClient:
         method: str,
         endpoint: str,
         data: Optional[Dict] = None,
+        params: Optional[Dict] = None,
     ) -> Dict[str, Any]:
         """
         发送 API 请求
@@ -70,6 +95,10 @@ class ADClient:
             urllib.error.URLError: 请求失败时抛出
         """
         url = f"{self.host}/api/lb/current-version{endpoint}"
+        if params:
+            import urllib.parse
+            qs = urllib.parse.urlencode(params)
+            url = f"{url}?{qs}" if '?' not in url else f"{url}&{qs}"
 
         # 编码认证信息
         auth_str = f"{self.username}:{self.password}"
@@ -104,9 +133,30 @@ class ADClient:
                 return json.loads(response.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
             error_body = e.read().decode("utf-8") if e.fp else ""
-            raise Exception(f"HTTP {e.code}: {error_body}")
+            if e.code in (401, 403):
+                raise ADAuthError(f"HTTP {e.code}: {error_body}", http_code=e.code, original=e)
+            raise ADAPIError(f"HTTP {e.code}: {error_body}", http_code=e.code, response_body=error_body, original=e)
         except urllib.error.URLError as e:
-            raise Exception(f"连接失败: {e.reason}")
+            raise ADConnectionError(f"连接失败: {e.reason}", original=e)
+
+    def _raw_request(self, url_path):
+        """Binary download. url_path must start with /cgi/ and not contain .."""
+        if not url_path.startswith("/cgi/") or ".." in url_path:
+            raise ValueError(f"Invalid url_path: {url_path}")
+        url = f"{self.host}{url_path}"
+        req = urllib.request.Request(url, method="GET")
+        auth = base64.b64encode(f"{self.username}:{self.password}".encode()).decode()
+        req.add_header("Authorization", f"Basic {auth}")
+        try:
+            with urllib.request.urlopen(req, context=self.ssl_context, timeout=self.timeout) as resp:
+                return resp.read()
+        except urllib.error.HTTPError as e:
+            body = e.read().decode("utf-8", errors="replace") if e.fp else ""
+            if e.code in (401, 403):
+                raise ADAuthError(f"HTTP {e.code}: {body}", http_code=e.code, original=e)
+            raise ADAPIError(f"HTTP {e.code}: {body}", http_code=e.code, response_body=body, original=e)
+        except urllib.error.URLError as e:
+            raise ADConnectionError(f"连接失败: {e.reason}", original=e)
 
     # -------------------------------------------------------------------------
     # 用户管理
@@ -355,6 +405,10 @@ class ADClient:
     # -------------------------------------------------------------------------
     # 黑盒日志
     # -------------------------------------------------------------------------
+    def get_last_event(self):
+        """Get last async task event (used by blackbox for task polling)."""
+        return self._request("GET", "/last-event")
+
     def export_blackbox_log(
         self,
         from_date: str,
@@ -380,34 +434,12 @@ class ADClient:
             data["password"] = password
         return self._request("POST", "/log/blackbox-log/export", data)
 
-    def download_blackbox_log(self, token: str, output_path: str) -> bool:
-        """
-        下载黑盒日志文件
-
-        Args:
-            token: 导出API返回的文件token
-            output_path: 保存路径
-
-        Returns:
-            是否成功
-        """
-        import urllib.request
-
-        url = f"{self.host}/cgi/file-resource?d={token}"
-        auth_str = f"{self.username}:{self.password}"
-        auth_bytes = base64.b64encode(auth_str.encode()).decode()
-
-        req = urllib.request.Request(url)
-        req.add_header("Authorization", f"Basic {auth_bytes}")
-
-        try:
-            with urllib.request.urlopen(req, context=self.ssl_context, timeout=300) as response:
-                with open(output_path, "wb") as f:
-                    f.write(response.read())
-                return True
-        except Exception as e:
-            print(f"下载失败: {e}")
-            return False
+    def download_blackbox_log(self, file_token, save_path):
+        data = self._raw_request(f"/cgi/file-resource?d={file_token}")
+        os.makedirs(os.path.dirname(save_path) or ".", exist_ok=True)
+        with open(save_path, "wb") as f:
+            f.write(data)
+        return save_path
 
 
 def main():
@@ -517,12 +549,12 @@ def main():
     if not args.host:
         print("错误: 未指定 AD 设备地址", file=sys.stderr)
         print("使用 --host 或设置环境变量 AD_HOST", file=sys.stderr)
-        sys.exit(1)
+        sys.exit(4)
 
     if not args.password:
         print("错误: 未指定密码", file=sys.stderr)
         print("使用 --password 或设置环境变量 AD_PASS", file=sys.stderr)
-        sys.exit(1)
+        sys.exit(4)
 
     # 创建客户端
     client = ADClient(
