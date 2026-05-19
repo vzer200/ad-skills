@@ -9,14 +9,23 @@ address conflicts (IP:Port overlaps), and correlates logs.
 import sys
 import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "ad-ops", "scripts"))
+_scripts_dir = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "scripts"
+)
+_scripts_dir = os.path.realpath(_scripts_dir)
+if not os.path.isdir(_scripts_dir):
+    print("错误: 无法定位共享 scripts 目录", file=sys.stderr)
+    sys.exit(9)
+sys.path.append(_scripts_dir)
 try:
     from ad_api import ADClient
-except ImportError:
-    print("错误: 无法导入 ad_api.py，请确认文件路径未变更", file=sys.stderr)
+except ImportError as e:
+    print(f"错误: 无法导入 ad_api: {e}", file=sys.stderr)
     sys.exit(9)
-
-from db_schema import VS_SAMPLES_DDL, COLUMNS
+try:
+    from db_schema import VS_SAMPLES_DDL, COLUMNS
+except ImportError:
+    pass
 
 import argparse
 import json
