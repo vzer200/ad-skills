@@ -2,11 +2,12 @@
 """AD 单臂打流脚本 —— Windows 既当客户端又当服务端
 
 用法:
-    python ad_bench.py <VIP> [端口] [并发数] [总请求数]
-    python ad_bench.py 192.168.1.200
-    python ad_bench.py 192.168.1.200 80 20 5000
+    python ad_bench.py <VIP> [VIP端口] [后端端口] [并发数] [总请求数]
+    python ad_bench.py 172.16.1.166               # 持续打流，Ctrl+C 停止
+    python ad_bench.py 172.16.1.166 80 8080 20    # 指定后端端口8080，20并发
 """
 
+import signal
 import sys
 import time
 import socket
@@ -16,19 +17,16 @@ import http.server
 # ========== 后端服务 ==========
 
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
-    """返回固定内容，不打印访问日志"""
     def log_message(self, format, *args):
-        pass  # 安静模式
+        pass
 
     def do_GET(self):
         self.send_response(200)
         self.send_header("Content-Type", "text/plain")
         self.end_headers()
         self.wfile.write(b"OK")
-        self.wfile.write(bytes(self.client_address[0], "utf-8"))
 
 def start_server(port):
-    """在后台线程启动后端 HTTP 服务"""
     server = http.server.ThreadingHTTPServer(("0.0.0.0", port), QuietHandler)
     t = threading.Thread(target=server.serve_forever, daemon=True)
     t.start()
@@ -39,7 +37,6 @@ def start_server(port):
 # ========== 打流客户端 ==========
 
 def send_one(vip, vport, timeout=5):
-    """发一次请求，返回 (序号, 状态码, 延迟ms, 后端IP)"""
     start = time.perf_counter()
     try:
         sock = socket.create_connection((vip, vport), timeout=timeout)
@@ -55,52 +52,54 @@ def send_one(vip, vport, timeout=5):
         sock.close()
         elapsed = (time.perf_counter() - start) * 1000
         body = data.split(b"\r\n\r\n", 1)[-1].decode(errors="ignore").strip()
-        return (elapsed, body)
+        return (True, elapsed, body)
     except Exception as e:
         elapsed = (time.perf_counter() - start) * 1000
-        return (elapsed, str(e))
+        return (False, elapsed, str(e))
 
 
-def bench(vip, vport, concurrency, total):
-    """多线程打流"""
+def bench(vip, vport, concurrency, total=None):
+    """
+    total=None → 无限循环，Ctrl+C 停止
+    total=N   → 打满 N 次停止
+    """
     import queue
 
-    print(f"\n[客户端] 目标 → {vip}:{vport}")
-    print(f"[客户端] 并发={concurrency}  总请求={total}")
-    print(f"[客户端] 开始打流...\n")
-
-    q = queue.Queue()
-    for i in range(total):
-        q.put(i)
-
-    results = []
-    lock = threading.Lock()
-    success = 0
-    fail = 0
+    running = [True]
+    count = [0]
+    success = [0]
+    fail = [0]
     latencies = []
+    lock = threading.Lock()
+
+    if total:
+        print(f"\n[客户端] 目标 → {vip}:{vport}  并发={concurrency}  总请求={total}")
+    else:
+        print(f"\n[客户端] 目标 → {vip}:{vport}  并发={concurrency}  持续打流 (Ctrl+C 停止)")
+    print()
+
+    start_time = time.perf_counter()
 
     def worker():
-        nonlocal success, fail
-        while True:
-            try:
-                idx = q.get_nowait()
-            except queue.Empty:
-                return
-            lat, resp = send_one(vip, vport)
+        while running[0]:
+            lat, ok, resp = send_one(vip, vport)
             with lock:
-                results.append((idx, lat, resp))
-                if isinstance(resp, str) and resp.startswith("["):
-                    fail += 1
-                else:
-                    success += 1
+                count[0] += 1
+                if ok:
+                    success[0] += 1
                     latencies.append(lat)
-                done = success + fail
-                if done % 50 == 0 or done == total:
-                    print(f"  进度 {done}/{total}  成功={success}  失败={fail}", end="")
-                    if latencies:
-                        avg = sum(latencies[-50:]) / len(latencies[-50:])
-                        print(f"  近50次平均延迟={avg:.1f}ms", end="")
-                    print()
+                else:
+                    fail[0] += 1
+
+                n = count[0]
+                if n % 100 == 0:
+                    elapsed = time.perf_counter() - start_time
+                    rps = n / elapsed
+                    avg = sum(latencies[-100:]) / min(len(latencies), 100)
+                    print(f"  [{n}] 成功={success[0]} 失败={fail[0]}  RPS={rps:.0f}  近100次平均延迟={avg:.1f}ms")
+
+                if total and n >= total:
+                    running[0] = False
 
     threads = []
     for _ in range(concurrency):
@@ -108,13 +107,20 @@ def bench(vip, vport, concurrency, total):
         t.start()
         threads.append(t)
 
-    for t in threads:
-        t.join()
+    # 等所有线程结束 / Ctrl+C
+    try:
+        for t in threads:
+            t.join()
+    except KeyboardInterrupt:
+        pass
 
+    running[0] = False
+
+    elapsed = time.perf_counter() - start_time
+    n = count[0]
     print(f"\n========== 结果 ==========")
-    print(f"总请求: {total}")
-    print(f"成功:   {success}")
-    print(f"失败:   {fail}")
+    print(f"总请求: {n}  成功: {success[0]}  失败: {fail[0]}")
+    print(f"耗时: {elapsed:.1f}s  平均 RPS: {n / elapsed if elapsed > 0 else 0:.0f}")
     if latencies:
         latencies.sort()
         print(f"延迟(ms): 最小={latencies[0]:.1f}  平均={sum(latencies)/len(latencies):.1f}  最大={latencies[-1]:.1f}")
@@ -133,7 +139,7 @@ if __name__ == "__main__":
     vip = sys.argv[1]
     vport = int(sys.argv[2]) if len(sys.argv) > 2 else 80
     concurrency = int(sys.argv[3]) if len(sys.argv) > 3 else 20
-    total = int(sys.argv[4]) if len(sys.argv) > 4 else 1000
+    total = int(sys.argv[4]) if len(sys.argv) > 4 else None  # None=无限循环
     backend_port = 8080
 
     # 启动后端
@@ -144,15 +150,15 @@ if __name__ == "__main__":
 
     # 先验证链路
     print(f"[验证] 直连后端 http://127.0.0.1:{backend_port} ... ", end="")
-    lat, resp = send_one("127.0.0.1", backend_port)
-    print(f"{resp} ({lat:.1f}ms)")
+    ok, lat, resp = send_one("127.0.0.1", backend_port)
+    print(f"OK ({lat:.1f}ms)")
 
     print(f"[验证] 通过 VIP 访问 http://{vip}:{vport} ... ", end="")
-    lat, resp = send_one(vip, vport)
-    print(f"{resp} ({lat:.1f}ms)")
-    if resp.startswith("["):
+    ok, lat, resp = send_one(vip, vport)
+    if not ok:
+        print(f"FAIL ({lat:.1f}ms) — {resp}")
         print(f"\n[告警] VIP 访问失败，检查 AD#2 虚拟服务+SNAT 配置后再试")
         sys.exit(1)
+    print(f"OK ({lat:.1f}ms)")
 
-    # 正式打流
     bench(vip, vport, concurrency, total)

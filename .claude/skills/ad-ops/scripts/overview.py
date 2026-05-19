@@ -178,8 +178,8 @@ def build_overview(client: ADClient, subcommand: str = "all") -> Dict[str, Any]:
     if sys_data:
         overview["device"]["version"] = sys_data.get("version", "")
         overview["device"]["uptime"] = sys_data.get("uptime", "")
-        overview["device"]["cpu"] = sys_data.get("cpu_usage")
-        overview["device"]["memory"] = sys_data.get("mem_usage")
+        overview["device"]["cpu"] = _extract_value(sys_data.get("cpu_usage"))
+        overview["device"]["memory"] = _extract_value(sys_data.get("memory_usage"))
 
     # ---------- Virtual Services ---------------------------------------------
     vs_data = raw.get("vs")
@@ -255,8 +255,8 @@ def _process_vs(vs: Dict[str, Any],
         "pool": pool_name,
         "status": vs.get("state", ""),
         "nodes": pool_info,
-        "connections": stat.get("connection"),
-        "connection_rate": stat.get("connection_rate"),
+        "connections": _extract_value(stat.get("connection")),
+        "connection_rate": _extract_value(stat.get("connection_rate")),
     }
 
 
@@ -272,45 +272,72 @@ def _process_cert(cert: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _extract_value(field):
+    """Extract numeric value from API field which may be a dict like
+    {"model": "INSTANT", "value": 7, ...} or a raw number."""
+    if isinstance(field, dict):
+        return field.get("value", 0)
+    if isinstance(field, list):
+        return field[0] if field else None
+    return field if field is not None else 0
+
+
 def _process_hardware(sys_data: Dict[str, Any]) -> Dict[str, Any]:
     """Transform system data into the hardware detail section."""
-    cpu_val = sys_data.get("cpu_usage", 0) or 0
-    mem_val = sys_data.get("mem_usage", 0) or 0
+    cpu_val = _extract_value(sys_data.get("cpu_usage"))
+    mem_val = _extract_value(sys_data.get("memory_usage"))
 
     def _level_numeric(v, warn=80, crit=90):
         return hardware_component_level(float(v), warn, crit)
 
+    # fan: list of dicts or empty list
+    fan_list = sys_data.get("fan") or []
     fans = [
         {
             "name": f.get("name", ""),
             "status": f.get("status", "unknown"),
             "level": fan_level(f.get("status", "unknown")),
         }
-        for f in (sys_data.get("fans") or [])
+        for f in fan_list
     ]
 
-    power = [
-        {
-            "name": p.get("name", ""),
-            "status": p.get("status", "unknown"),
-            "level": power_level(p.get("status", "unknown")),
-        }
-        for p in (sys_data.get("power") or [])
-    ]
+    # power_supply: string like "UNSUPPORTED" or list of dicts
+    ps_raw = sys_data.get("power_supply", "")
+    if isinstance(ps_raw, str):
+        power = [{"name": "psu", "status": ps_raw, "level": power_level(ps_raw)}]
+    elif isinstance(ps_raw, list):
+        power = [
+            {
+                "name": p.get("name", ""),
+                "status": p.get("status", "unknown"),
+                "level": power_level(p.get("status", "unknown")),
+            }
+            for p in ps_raw
+        ]
+    else:
+        power = []
 
-    interfaces = [
-        {
-            "name": i.get("name", ""),
-            "status": i.get("status", "unknown"),
-            "level": interface_level(i.get("status", "unknown")),
-        }
-        for i in (sys_data.get("interfaces") or [])
-    ]
+    # interface: dict like {"total": 5, "plug": {"in": ["eth1"], "out": ["eth2",...]}}
+    iface_raw = sys_data.get("interface", {})
+    interfaces = []
+    if isinstance(iface_raw, dict):
+        plug = iface_raw.get("plug", {})
+        for name in plug.get("in", []):
+            interfaces.append({"name": name, "status": "up", "level": interface_level("up")})
+        for name in plug.get("out", []):
+            interfaces.append({"name": name, "status": "out", "level": interface_level("out")})
+    elif isinstance(iface_raw, list):
+        for i in iface_raw:
+            interfaces.append({
+                "name": i.get("name", ""),
+                "status": i.get("status", "unknown"),
+                "level": interface_level(i.get("status", "unknown")),
+            })
 
     return {
         "cpu": {"value": cpu_val, "level": _level_numeric(cpu_val)},
         "memory": {"value": mem_val, "level": _level_numeric(mem_val)},
-        "temperature": {"value": sys_data.get("temperature"), "level": "ok"},
+        "temperature": {"value": _extract_value(sys_data.get("temperature")), "level": "ok"},
         "fans": fans,
         "power": power,
         "interfaces": interfaces,
@@ -359,10 +386,12 @@ def render_markdown(overview: Dict[str, Any]) -> str:
         if ha_status:
             role_line += f" ({ha_status})"
         a(role_line)
-    if dev.get("cpu") is not None:
-        a(f"- **CPU**: {dev['cpu']}%")
-    if dev.get("memory") is not None:
-        a(f"- **Memory**: {dev['memory']}%")
+    cpu_display = _extract_value(dev.get("cpu"))
+    mem_display = _extract_value(dev.get("memory"))
+    if cpu_display is not None:
+        a(f"- **CPU**: {cpu_display}%")
+    if mem_display is not None:
+        a(f"- **Memory**: {mem_display}%")
     a("")
 
     # -- Virtual Services -----------------------------------------------------
@@ -384,9 +413,9 @@ def render_markdown(overview: Dict[str, Any]) -> str:
                 status = vs.get("status", "")
                 nodes = vs.get("nodes", {})
                 node_str = f"{nodes.get('up', 0)}/{nodes.get('total', 0)}"
-                conn = vs.get("connections")
+                conn = _extract_value(vs.get("connections"))
                 conn_str = str(conn) if conn is not None else "-"
-                rate = vs.get("connection_rate")
+                rate = _extract_value(vs.get("connection_rate"))
                 rate_str = f"{rate}/s" if rate is not None else "-"
                 a(f"| {name} | {vip_ports} | {pool} | {status} | {node_str} | {conn_str} | {rate_str} |")
     a("")
@@ -431,9 +460,9 @@ def render_markdown(overview: Dict[str, Any]) -> str:
             if "memory" in hw:
                 mem = hw["memory"]
                 hw_row("Memory", f"{mem.get('value', '')}%", mem.get("level", "ok"))
-            if hw.get("temperature", {}).get("value") is not None:
-                temp = hw["temperature"]
-                hw_row("Temperature", f"{temp.get('value', '')}C", temp.get("level", "ok"))
+            temp_val = hw.get("temperature", {}).get("value")
+            if temp_val is not None:
+                hw_row("Temperature", f"{temp_val}C", hw["temperature"].get("level", "ok"))
 
             for f in hw.get("fans", []):
                 hw_row(f"Fan: {f.get('name', '')}", f.get("status", ""), f.get("level", "ok"))
@@ -491,6 +520,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     """CLI entry point."""
+    sys.stdout.reconfigure(encoding='utf-8')
     parser = build_parser()
     args = parser.parse_args()
 

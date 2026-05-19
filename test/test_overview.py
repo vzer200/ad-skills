@@ -93,11 +93,11 @@ class TestOverviewAPI(unittest.TestCase):
         # -- System / Hardware ------------------------------------------------
         self.client.get_sys_system.return_value = {
             "cpu_usage": 7.0,
-            "mem_usage": 37.0,
+            "memory_usage": 37.0,
             "temperature": 45,
-            "fans": [{"name": "fan1", "status": "normal"}],
-            "power": [{"name": "psu1", "status": "normal"}],
-            "interfaces": [{"name": "eth0", "status": "up"}],
+            "fan": [{"name": "fan1", "status": "normal"}],
+            "power_supply": [{"name": "psu1", "status": "normal"}],
+            "interface": {"plug": {"in": ["eth0"], "out": []}},
         }
 
         # -- VS Traffic Stats -------------------------------------------------

@@ -281,8 +281,14 @@ def state_analysis(client, disk_source=None):
             'disk': disk_info,
         }
 
+    # Helper to extract value from API dict {"value": N, ...} or raw number
+    def _val(field, default=0):
+        if isinstance(field, dict):
+            return field.get('value', default)
+        return field if field is not None else default
+
     # CPU check
-    cpu = sys_data.get('cpu_usage', 0)
+    cpu = _val(sys_data.get('cpu_usage'))
     if cpu >= 90:
         level = 'critical'
         has_critical = True
@@ -295,7 +301,7 @@ def state_analysis(client, disk_source=None):
                   'message': f'CPU 使用率: {cpu}%'})
 
     # Memory check
-    mem = sys_data.get('memory_usage', 0)
+    mem = _val(sys_data.get('memory_usage'))
     if mem >= 90:
         level = 'critical'
         has_critical = True
@@ -307,46 +313,55 @@ def state_analysis(client, disk_source=None):
     items.append({'metric': 'memory', 'value': mem, 'level': level,
                   'message': f'内存使用率: {mem}%'})
 
-    # Fan check
-    fan_status = sys_data.get('fan_status', '').lower()
-    if fan_status == 'fail':
-        level = 'critical'
-        has_critical = True
-        items.append({'metric': 'fan', 'value': fan_status, 'level': 'critical',
-                      'message': f'风扇状态: {fan_status}'})
-    elif fan_status and fan_status != 'normal':
-        level = 'warn'
-        has_warn = True
-        items.append({'metric': 'fan', 'value': fan_status, 'level': 'warn',
-                      'message': f'风扇状态: {fan_status}'})
-
-    # Power check
-    power_status = sys_data.get('power_status', '').lower()
-    if power_status == 'fail':
-        level = 'critical'
-        has_critical = True
-        items.append({'metric': 'power', 'value': power_status, 'level': 'critical',
-                      'message': f'电源状态: {power_status}'})
-    elif power_status in ('', 'unsupported'):
-        pass  # Skip
-    elif power_status != 'normal':
-        level = 'warn'
-        has_warn = True
-        items.append({'metric': 'power', 'value': power_status, 'level': 'warn',
-                      'message': f'电源状态: {power_status}'})
-
-    # Interface check
-    interfaces = sys_data.get('interfaces', [])
-    if isinstance(interfaces, list):
-        for iface in interfaces:
-            if isinstance(iface, dict) and iface.get('status', '').lower() == 'out':
+    # Fan check — API returns "fan": [] (list of dicts) or empty list
+    fan_list = sys_data.get('fan') or []
+    if isinstance(fan_list, list):
+        for f in fan_list:
+            fs = f.get('status', '') if isinstance(f, dict) else str(f)
+            if fs == 'fail':
+                has_critical = True
+                items.append({'metric': 'fan', 'value': fs, 'level': 'critical',
+                              'message': f'风扇 {f.get("name", "")} 状态: {fs}'})
+            elif fs and fs != 'normal':
                 has_warn = True
-                items.append({
-                    'metric': 'interface',
-                    'value': iface.get('name', 'unknown'),
-                    'level': 'warn',
-                    'message': f'接口 {iface.get("name", "unknown")} 状态: out (未连接)'
-                })
+                items.append({'metric': 'fan', 'value': fs, 'level': 'warn',
+                              'message': f'风扇 {f.get("name", "")} 状态: {fs}'})
+
+    # Power check — API returns "power_supply": "UNSUPPORTED" (string) or list
+    ps_raw = sys_data.get('power_supply', '')
+    if isinstance(ps_raw, str):
+        if ps_raw.lower() == 'fail':
+            has_critical = True
+            items.append({'metric': 'power', 'value': ps_raw, 'level': 'critical',
+                          'message': f'电源状态: {ps_raw}'})
+        elif ps_raw.lower() not in ('', 'normal', 'unsupported'):
+            has_warn = True
+            items.append({'metric': 'power', 'value': ps_raw, 'level': 'warn',
+                          'message': f'电源状态: {ps_raw}'})
+    elif isinstance(ps_raw, list):
+        for p in ps_raw:
+            ps = p.get('status', '') if isinstance(p, dict) else str(p)
+            if ps == 'fail':
+                has_critical = True
+                items.append({'metric': 'power', 'value': ps, 'level': 'critical',
+                              'message': f'电源 {p.get("name", "")} 状态: {ps}'})
+            elif ps and ps != 'normal':
+                has_warn = True
+                items.append({'metric': 'power', 'value': ps, 'level': 'warn',
+                              'message': f'电源 {p.get("name", "")} 状态: {ps}'})
+
+    # Interface check — API returns "interface": {"plug": {"in": [...], "out": [...]}}
+    iface_raw = sys_data.get('interface', {})
+    if isinstance(iface_raw, dict):
+        plug = iface_raw.get('plug', {})
+        for name in plug.get('out', []):
+            has_warn = True
+            items.append({
+                'metric': 'interface',
+                'value': name,
+                'level': 'warn',
+                'message': f'接口 {name} 状态: out (未连接)'
+            })
 
     # Disk handling
     if disk_source:
@@ -580,6 +595,14 @@ def render_markdown(results):
     else:
         items = state.get('items', [])
         # Check if all ok
+        # Show OK summary line first
+        cpu_item = next((i for i in items if i['metric'] == 'cpu'), None)
+        mem_item = next((i for i in items if i['metric'] == 'memory'), None)
+        cpu_val = cpu_item['value'] if cpu_item else '?'
+        mem_val = mem_item['value'] if mem_item else '?'
+        lines.append(f'CPU: {cpu_val}%, 内存: {mem_val}%')
+        lines.append('')
+
         non_ok = [i for i in items if i.get('level') not in ('ok', None)]
         if non_ok:
             lines.append('| 指标 | 当前值 | 级别 | 描述 |')
@@ -587,19 +610,22 @@ def render_markdown(results):
             for i in non_ok:
                 level_icon = {'warn': '⚠️', 'critical': '🔴'}.get(i['level'], '')
                 lines.append(f"| {i['metric']} | {i['value']} | {level_icon} {i['level']} | {i['message']} |")
-        else:
-            cpu_val = next((i['value'] for i in items if i['metric'] == 'cpu'), '?')
-            mem_val = next((i['value'] for i in items if i['metric'] == 'mem'), '?')
-            lines.append(f'✅ CPU: {cpu_val}%, 内存: {mem_val}%, 状态正常。')
 
         disk = state.get('disk', {})
-        if not disk.get('available', True):
-            lines.append(f'*{disk.get("value", "磁盘: 未提供巡检数据")}*')
+        disk_source = disk.get('source', 'none')
+        if disk_source == 'none':
+            lines.append('磁盘: 未提供巡检数据')
+        elif disk_source == 'error':
+            lines.append('磁盘: 巡检报告损坏')
+        elif disk_source == 'ad.json' and not disk.get('available'):
+            lines.append('磁盘: 巡检报告不可用')
+        elif disk.get('available'):
+            lines.append(f"磁盘: {disk.get('value', 'N/A')}")
     lines.append('')
 
-    # Logs section
+    # Logs section — only show if there are anomalies to correlate
     logs = results.get('logs', {})
-    if logs:
+    if logs and logs.get('status') not in ('no_anomaly', None):
         lines.append('## 日志关联')
         if logs.get('status') == 'ok':
             entries = logs.get('entries', [])
@@ -610,8 +636,6 @@ def render_markdown(results):
                     lines.append(f"| {e.get('time', '')} | {e.get('user', '')} | {e.get('action', '')} | {e.get('status', '')} |")
             else:
                 lines.append('未在异常时间点附近找到关联日志条目。')
-        elif logs.get('status') == 'no_anomaly':
-            pass  # Skip if no anomalies to correlate
         elif logs.get('status') == 'no_match':
             lines.append('未在异常时间点附近找到关联日志条目。')
         elif logs.get('status') == 'error':
@@ -728,6 +752,7 @@ def _compute_exit_code(results):
 
 def main():
     """CLI entry point."""
+    sys.stdout.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description="AD Device Perception Analysis")
     parser.add_argument("--host", required=True, help="AD device URL (e.g. https://x.x.x.x)")
     parser.add_argument("--user", default="admin", help="Username (default: admin)")
