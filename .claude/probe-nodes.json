@@ -1,0 +1,10 @@
+﻿uv.exe : 错误: HTTP 409: {
+At line:1 char:1089
++ ... be-ha.json; & $a run --python 3.14 python "D:\workSpace\.claude\skill ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (错误: HTTP 409: {:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  "err_code": "ERR_CLUSTER_MODE",
+  "msg": "双机/集群-当前[主备模式]不支持请求[高可用集群模式]相关API"
+}

@@ -1,0 +1,9 @@
+﻿=== update-hosts started ===
+[17:14:39] Backup hosts -> C:\Windows\System32\drivers\etc\hosts.bak.20260519-171439
+[17:14:39] Read current hosts content
+[17:14:39] Write merged hosts (with retry, FileShare.ReadWrite)
+[17:14:39] Write OK on attempt 1
+[17:14:39] Flush DNS cache
+[17:14:39] Verify github.com resolution
+[17:14:39]   github.com -> 20.205.243.166
+[17:14:39] SUCCESS

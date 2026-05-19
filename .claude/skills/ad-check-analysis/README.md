@@ -1,0 +1,114 @@
+# AD 巡检分析
+
+深信服 AD 设备系统巡检技能。
+
+## 功能
+
+- 巡检场景查询
+- 执行巡检任务
+- 查询巡检进度
+- 下载巡检报告
+- 分析巡检结果
+
+## 快速开始
+
+### 查看巡检场景
+
+```bash
+cd ~/manager-workspace/workspace/skills/ad-check-analysis
+
+python scripts/check.py scenes \
+  --host https://10.74.27.42 \
+  --user admin \
+  --password root1234+
+```
+
+### 执行标准巡检
+
+```bash
+python scripts/check.py run \
+  --host https://10.74.27.42 \
+  --user admin \
+  --password root1234+ \
+  --scene "标准巡检"
+```
+
+### 执行全量巡检
+
+```bash
+python scripts/check.py run \
+  --host https://10.74.27.42 \
+  --user admin \
+  --password root1234+ \
+  --scene "全量巡检"
+```
+
+### 查询巡检进度
+
+```bash
+python scripts/check.py progress \
+  --host https://10.74.27.42 \
+  --user admin \
+  --password root1234+
+```
+
+### 查看历史巡检记录
+
+```bash
+python scripts/check.py history \
+  --host https://10.74.27.42 \
+  --user admin \
+  --password root1234+
+```
+
+## 已知设备
+
+| 设备名 | IP 地址 | 用户名 | 密码 |
+|--------|---------|--------|------|
+| AD1 | 192.168.8.30 | admin | root1234+ |
+| AD2 | 192.168.8.31 | admin | root1234++ |
+
+## 巡检场景
+
+| 场景 | 功能检查 | 健康检查 | 安全检查 | 总计 |
+|------|----------|----------|----------|------|
+| 标准巡检 | 4 项 | 21 项 | 7 项 | 32 项 |
+| 全量巡检 | 34 项 | 23 项 | 7 项 | 64 项 |
+
+## 输出示例
+
+```markdown
+# AD 巡检分析报告
+
+## 📊 设备基本信息
+
+| 项目 | 值 |
+|------|-----|
+| AD 版本 | SANGFOR-MSDN-AD-7.0.28 |
+| 网关 ID | 8F4CDD45 |
+| 运行时间 | 218天23小时33分钟 |
+
+## 🔍 巡检结果详情
+
+### ✅ 正常项
+
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+| cpu_check | ✅ 正常 | 17% |
+| memory_check | ✅ 正常 | 42% |
+
+### ⚠️ 异常项
+
+| 检查项 | 状态 | 详情 |
+|--------|------|------|
+| ssh_check | ⚠️ 异常 | SSH 已禁用 |
+
+## ✅ 健康评估
+
+| 项目 | 状态 |
+|------|------|
+| 总检查项 | 32 项 |
+| 通过项 | 30 项 |
+| 异常项 | 2 项 |
+| 通过率 | 93.8% |
+```

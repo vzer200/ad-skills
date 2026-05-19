@@ -1,0 +1,59 @@
+﻿{
+  "temperature": [],
+  "interface": {
+    "total": 5,
+    "plug": {
+      "in": [
+        "eth1"
+      ],
+      "out": [
+        "eth2",
+        "eth3",
+        "eth4",
+        "eth5"
+      ]
+    }
+  },
+  "hardware": [
+    "SSL-ACCELERATOR-CARD-NONE"
+  ],
+  "cpu_usage": {
+    "model": "INSTANT",
+    "value": 7,
+    "timestamp": 1779184181,
+    "unit": "PERCENT"
+  },
+  "memory_usage": {
+    "model": "INSTANT",
+    "value": 37,
+    "timestamp": 1779184181,
+    "unit": "PERCENT"
+  },
+  "connection_rate": {
+    "model": "INSTANT",
+    "value": 0,
+    "timestamp": 1779184181,
+    "unit": "REQUEST-PER-SECOND"
+  },
+  "connection": {
+    "model": "INSTANT",
+    "value": 0,
+    "timestamp": 1779184181,
+    "unit": "COUNT"
+  },
+  "downstream_throughput": {
+    "model": "INSTANT",
+    "value": 0,
+    "timestamp": 1779184181,
+    "unit": "BIT-PER-SECOND"
+  },
+  "upstream_throughput": {
+    "model": "INSTANT",
+    "value": 0,
+    "timestamp": 1779184181,
+    "unit": "BIT-PER-SECOND"
+  },
+  "fan": [],
+  "power_supply": "UNSUPPORTED",
+  "boot_time": 97554
+}

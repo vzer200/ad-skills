@@ -1,0 +1,204 @@
+﻿{
+  "total_items": 5,
+  "items_length": 5,
+  "maximum_items": 512,
+  "items": [
+    {
+      "name": "IGTBNET-LCA-2-IPV4-20260317-VS-443-SSL",
+      "icon": "DEFAULT",
+      "up_throughput_limit": 0,
+      "down_throughput_limit": 0,
+      "state": "ENABLE",
+      "service": "TCP-FORWARD",
+      "pool": "IGTBNET-LCA-2-IPV4-20260317-VS-443-SSL-POOL",
+      "pre_rules": [],
+      "snat": "DISABLE",
+      "dnat": "ENABLE",
+      "dport_trans": "ENABLE",
+      "dnat_translated_port": 0,
+      "tcp_profile": "TCP-profile-l4-600s",
+      "dns_profile": "NONE",
+      "qos_profile": "NONE",
+      "ipros": [],
+      "inbound_links": [
+        "ALL"
+      ],
+      "source_port": "CHANGE",
+      "session_sync": "GLOBAL",
+      "autolasthop": "GLOBAL",
+      "notify_status_to_vip": "ENABLE",
+      "service_chain": "NONE",
+      "connection_limits_type": "SINGLE-SOURCE-IP",
+      "pre_rule_pool": [],
+      "source_address_match_limit": {
+        "type": "ALL"
+      },
+      "vips": [
+        "66.179.23.25"
+      ],
+      "vports": [
+        "443"
+      ],
+      "connection_limits": [],
+      "location_rewrite": "DISABLE"
+    },
+    {
+      "name": "IGTBNET-LCA-2-IPV4-20260317-VS-80-SERVER",
+      "icon": "DEFAULT",
+      "up_throughput_limit": 0,
+      "down_throughput_limit": 0,
+      "state": "ENABLE",
+      "service": "TCP-FORWARD",
+      "pool": "IGTBNET-LCA-2-IPV4-20260317-VS-80-SERVER-POOL",
+      "pre_rules": [],
+      "snat": "SNAT-POOL",
+      "snat_pool": "IGTBNET-LCA-2-IPV4-20260317-VS-80-SERVER-SNAT",
+      "dnat": "ENABLE",
+      "dport_trans": "ENABLE",
+      "dnat_translated_port": 0,
+      "tcp_profile": "TCP-profile-l4-600s",
+      "dns_profile": "NONE",
+      "qos_profile": "NONE",
+      "ipros": [],
+      "inbound_links": [
+        "ALL"
+      ],
+      "source_port": "CHANGE",
+      "session_sync": "GLOBAL",
+      "autolasthop": "GLOBAL",
+      "notify_status_to_vip": "ENABLE",
+      "service_chain": "NONE",
+      "connection_limits_type": "SINGLE-SOURCE-IP",
+      "pre_rule_pool": [],
+      "source_address_match_limit": {
+        "type": "ALL"
+      },
+      "vips": [
+        "66.179.23.25"
+      ],
+      "vports": [
+        "80"
+      ],
+      "connection_limits": [],
+      "location_rewrite": "DISABLE"
+    },
+    {
+      "name": "IGTBNET-LCA-3-IPV4-20260317-VS-443-SSL",
+      "icon": "DEFAULT",
+      "up_throughput_limit": 0,
+      "down_throughput_limit": 0,
+      "state": "ENABLE",
+      "service": "TCP-FORWARD",
+      "pool": "IGTBNET-LCA-3-IPV4-20260317-VS-443-SSL-POOL",
+      "pre_rules": [],
+      "snat": "DISABLE",
+      "dnat": "ENABLE",
+      "dport_trans": "ENABLE",
+      "dnat_translated_port": 0,
+      "tcp_profile": "TCP-profile-l4-600s",
+      "dns_profile": "NONE",
+      "qos_profile": "NONE",
+      "ipros": [],
+      "inbound_links": [
+        "ALL"
+      ],
+      "source_port": "CHANGE",
+      "session_sync": "GLOBAL",
+      "autolasthop": "GLOBAL",
+      "notify_status_to_vip": "ENABLE",
+      "service_chain": "NONE",
+      "connection_limits_type": "SINGLE-SOURCE-IP",
+      "pre_rule_pool": [],
+      "source_address_match_limit": {
+        "type": "ALL"
+      },
+      "vips": [
+        "66.179.23.28"
+      ],
+      "vports": [
+        "443"
+      ],
+      "connection_limits": [],
+      "location_rewrite": "DISABLE"
+    },
+    {
+      "name": "IGTBNET-LCA-3-IPV4-20260317-VS-80-SERVER",
+      "icon": "DEFAULT",
+      "up_throughput_limit": 0,
+      "down_throughput_limit": 0,
+      "state": "ENABLE",
+      "service": "TCP-FORWARD",
+      "pool": "IGTBNET-LCA-3-IPV4-20260317-VS-80-SERVER-POOL",
+      "pre_rules": [],
+      "snat": "SNAT-POOL",
+      "snat_pool": "IGTBNET-LCA-3-IPV4-20260317-VS-80-SERVER-SNAT",
+      "dnat": "ENABLE",
+      "dport_trans": "ENABLE",
+      "dnat_translated_port": 0,
+      "tcp_profile": "TCP-profile-l4-600s",
+      "dns_profile": "NONE",
+      "qos_profile": "NONE",
+      "ipros": [],
+      "inbound_links": [
+        "ALL"
+      ],
+      "source_port": "CHANGE",
+      "session_sync": "GLOBAL",
+      "autolasthop": "GLOBAL",
+      "notify_status_to_vip": "ENABLE",
+      "service_chain": "NONE",
+      "connection_limits_type": "SINGLE-SOURCE-IP",
+      "pre_rule_pool": [],
+      "source_address_match_limit": {
+        "type": "ALL"
+      },
+      "vips": [
+        "66.179.23.28"
+      ],
+      "vports": [
+        "80"
+      ],
+      "connection_limits": [],
+      "location_rewrite": "DISABLE"
+    },
+    {
+      "name": "IGTBNET-LCA-4-IPV4-20260317-VS-443-SSL",
+      "icon": "DEFAULT",
+      "up_throughput_limit": 0,
+      "down_throughput_limit": 0,
+      "state": "ENABLE",
+      "service": "TCP-FORWARD",
+      "pool": "IGTBNET-LCA-4-IPV4-20260317-VS-443-SSL-POOL",
+      "pre_rules": [],
+      "snat": "DISABLE",
+      "dnat": "ENABLE",
+      "dport_trans": "ENABLE",
+      "dnat_translated_port": 0,
+      "tcp_profile": "TCP-profile-l4-600s",
+      "dns_profile": "NONE",
+      "qos_profile": "NONE",
+      "ipros": [],
+      "inbound_links": [
+        "ALL"
+      ],
+      "source_port": "CHANGE",
+      "session_sync": "GLOBAL",
+      "autolasthop": "GLOBAL",
+      "notify_status_to_vip": "ENABLE",
+      "service_chain": "NONE",
+      "connection_limits_type": "SINGLE-SOURCE-IP",
+      "pre_rule_pool": [],
+      "source_address_match_limit": {
+        "type": "ALL"
+      },
+      "vips": [
+        "66.179.23.31"
+      ],
+      "vports": [
+        "443"
+      ],
+      "connection_limits": [],
+      "location_rewrite": "DISABLE"
+    }
+  ]
+}
