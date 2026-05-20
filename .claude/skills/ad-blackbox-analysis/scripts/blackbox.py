@@ -222,6 +222,79 @@ class BlackboxAnalyzer:
         return "\n".join(report)
 
 
+def _blackbox_start(client, from_date="", to_date="", archive_password="root1234+", output_dir=""):
+    """Start blackbox export only — returns immediately with event_id and output_dir."""
+    slug = host_slug(client.host)
+    if not output_dir:
+        output_dir = os.path.join(tempfile.gettempdir(), f"blackbox_{slug}")
+    else:
+        output_dir = os.path.join(output_dir, slug)
+    os.makedirs(output_dir, exist_ok=True)
+
+    if not from_date or not to_date:
+        return {"error": "必须指定 --from-date 和 --to-date"}
+
+    result = client.export_blackbox_log(from_date, to_date, archive_password)
+    event_id = result.get("event_id")
+    if not event_id:
+        return {"error": f"导出启动失败: {result}"}
+
+    # Save event_id for later polling
+    meta_path = os.path.join(output_dir, "_export_meta.json")
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump({"host": client.host, "event_id": event_id,
+                    "from_date": from_date, "to_date": to_date,
+                    "archive_password": archive_password, "output_dir": output_dir}, f,
+                  ensure_ascii=False, indent=2)
+
+    return {"host": client.host, "event_id": event_id, "output_dir": output_dir}
+
+
+def _blackbox_download(client, output_dir, archive_password="root1234+"):
+    """Complete an async export: check event, download, extract, analyze. No sys.exit."""
+    meta_path = os.path.join(output_dir, "_export_meta.json")
+    if not os.path.exists(meta_path):
+        return {"error": f"找不到 {meta_path}，请先用 --hosts 启动导出"}
+
+    with open(meta_path, encoding="utf-8") as f:
+        meta = json.load(f)
+
+    event_id = meta.get("event_id", "")
+    # Check event status
+    tasks = client.get_last_event()
+    for task in tasks.get("items", []):
+        if task.get("event_id") == event_id:
+            state = task.get("state")
+            if state == "SUCCESS":
+                file_token = task.get("data", {}).get("file_token")
+                if not file_token:
+                    return {"error": "任务成功但缺少 file_token"}
+                archive_path = os.path.join(output_dir, "blackbox.tar.gz")
+                data = client._raw_request(f"/cgi/file-resource?d={file_token}")
+                with open(archive_path, "wb") as f:
+                    f.write(data)
+
+                analyzer = BlackboxAnalyzer(output_dir)
+                analyzer.extract(archive_path, meta.get("archive_password", archive_password))
+                audit_results = analyzer.analyze_audit_logs()
+                report = analyzer.generate_report(audit_results)
+                report_path = os.path.join(output_dir, "report.md")
+                with open(report_path, "w", encoding="utf-8") as f:
+                    f.write(report)
+
+                return {
+                    "event_id": event_id, "output_dir": output_dir,
+                    "report_path": report_path, "report": report,
+                    "audit_dates": list(audit_results.keys()),
+                }
+            elif state == "FAILED":
+                return {"error": f"导出任务失败: event_id={event_id}"}
+            else:
+                return {"status": state, "event_id": event_id,
+                        "message": f"导出进行中 (state={state})，稍后重试"}
+    return {"error": f"未找到事件 event_id={event_id}"}
+
+
 def _blackbox_one(client, from_date="", to_date="", archive_password="root1234+", output_dir=""):
     """Single-device blackbox export+analyze for ThreadPoolExecutor. No sys.exit."""
     slug = host_slug(client.host)
@@ -285,6 +358,9 @@ def main():
     parser.add_argument("--host", default="", help="AD 设备地址")
     parser.add_argument("--hosts", default="", help="多设备地址，逗号分隔 (如 https://IP1,https://IP2)")
     parser.add_argument("--devices", default="", help="设备清单 JSON 文件路径 (密码不同时使用)")
+    parser.add_argument("--wait", action="store_true", help="多设备模式：等待导出完成并输出报告")
+    parser.add_argument("--no-wait", action="store_true", help="多设备模式：仅启动导出，不等待完成（默认）")
+    parser.add_argument("--complete", default="", help="完成异步导出：检查事件状态，下载并分析 (需指定 --host)")
     parser.add_argument("--user", default="admin", help="用户名")
     parser.add_argument("--password", help="密码")
     parser.add_argument("--from-date", help="开始日期 (YYYY-MM-DD)")
@@ -295,6 +371,25 @@ def main():
     args = parser.parse_args()
 
     try:
+        # --complete: finish an async export (check event + download + analyze)
+        if args.complete:
+            if not args.host:
+                print("错误: --complete 需要指定 --host", file=sys.stderr)
+                sys.exit(4)
+            client = ADClient(args.host, args.user, args.password)
+            result = _blackbox_download(client, args.complete, args.archive_password)
+            if "error" in result:
+                print(f"错误: {result['error']}", file=sys.stderr)
+                sys.exit(5)
+            elif "status" in result:
+                print(json.dumps(result, ensure_ascii=False))
+                sys.exit(0)
+            else:
+                print(f"输出目录: {result.get('output_dir', '')}")
+                print(f"报告路径: {result.get('report_path', '')}")
+                print(result.get("report", ""))
+                sys.exit(0)
+
         # Multi-device mode
         if args.hosts or args.devices:
             if args.host:
@@ -308,86 +403,55 @@ def main():
                 print("错误: 设备列表为空", file=sys.stderr)
                 sys.exit(4)
 
-            results = run_multi(devices, _blackbox_one,
-                              from_date=args.from_date or "",
-                              to_date=args.to_date or "",
-                              archive_password=args.archive_password,
-                              output_dir=args.output)
-
-            # Output per device
-            for host, result in results.items():
-                if "error" in result:
-                    print(f"\n## {host}\n> 错误: {result['error']}")
-                else:
-                    print(f"\n## {host}")
-                    print(f"输出目录: {result.get('output_dir', '')}")
-                    print(f"报告路径: {result.get('report_path', '')}")
-                    print(result.get("report", ""))
-
-            print(f"\n---\n{render_multi_summary(results, 'AD 黑盒日志分析 — 多设备')}")
-            sys.exit(compute_multi_exit_code(results))
+            if args.wait:
+                # 同步模式：等待所有设备完成（需平台超时充足）
+                results = run_multi(devices, _blackbox_one,
+                                  from_date=args.from_date or "",
+                                  to_date=args.to_date or "",
+                                  archive_password=args.archive_password,
+                                  output_dir=args.output)
+                for host, result in results.items():
+                    if "error" in result:
+                        print(f"\n## {host}\n> 错误: {result['error']}")
+                    else:
+                        print(f"\n## {host}")
+                        print(f"输出目录: {result.get('output_dir', '')}")
+                        print(f"报告路径: {result.get('report_path', '')}")
+                        print(result.get("report", ""))
+                print(f"\n---\n{render_multi_summary(results, 'AD 黑盒日志分析 — 多设备')}")
+                sys.exit(compute_multi_exit_code(results))
+            else:
+                # 异步模式（默认）：启动导出后立即退出
+                results = run_multi(devices, _blackbox_start,
+                                  from_date=args.from_date or "",
+                                  to_date=args.to_date or "",
+                                  archive_password=args.archive_password,
+                                  output_dir=args.output)
+                for host, r in results.items():
+                    if "error" in r:
+                        print(f"[{host}] 错误: {r['error']}", file=sys.stderr)
+                    else:
+                        print(f"[{host}] event_id={r['event_id']} output_dir={r['output_dir']}")
+                sys.exit(compute_multi_exit_code(results))
 
         # Single-device validation
         if not args.host:
             print("错误: 必须指定 --host 或 --hosts", file=sys.stderr)
             sys.exit(4)
 
-        # 创建客户端 (使用共享 ADClient)
         client = ADClient(args.host, args.user, args.password)
 
-        # 如果指定了日期范围，则导出黑盒日志
         if args.from_date and args.to_date:
-            print(f"导出黑盒日志: {args.from_date} ~ {args.to_date}")
-            result = client.export_blackbox_log(args.from_date, args.to_date, args.archive_password)
-            event_id = result.get("event_id")
-            print(f"任务ID: {event_id}")
-
-            # 等待任务完成
-            print("等待任务完成...")
-            for i in range(60):
-                tasks = client.get_last_event()
-                for task in tasks.get("items", []):
-                    if task.get("event_id") == event_id:
-                        state = task.get("state")
-                        print(f"[{i+1}] 状态: {state}")
-                        if state == "SUCCESS":
-                            file_token = task.get("data", {}).get("file_token")
-                            print(f"文件Token: {file_token}")
-
-                            # 下载文件
-                            archive_path = os.path.join(args.output, "blackbox.tar.gz")
-                            os.makedirs(args.output, exist_ok=True)
-                            data = client._raw_request(f"/cgi/file-resource?d={file_token}")
-                            with open(archive_path, "wb") as f:
-                                f.write(data)
-                            print(f"文件下载完成: {archive_path}")
-
-                            # 解压并分析
-                            analyzer = BlackboxAnalyzer(args.output)
-                            analyzer.extract(archive_path, args.archive_password)
-
-                            # 分析审计日志
-                            audit_results = analyzer.analyze_audit_logs()
-
-                            # 生成报告
-                            report = analyzer.generate_report(audit_results)
-                            report_path = os.path.join(args.output, "report.md")
-                            with open(report_path, "w", encoding="utf-8") as f:
-                                f.write(report)
-                            print(f"报告已生成: {report_path}")
-
-                            sys.exit(0)
-                        elif state == "FAILED":
-                            print("任务失败", file=sys.stderr)
-                            sys.exit(1)
-
-                time.sleep(5)
-
-            # 轮询超时
-            print("错误: 轮询超时，任务未完成", file=sys.stderr)
-            sys.exit(5)
+            result = _blackbox_one(client, from_date=args.from_date, to_date=args.to_date,
+                                   archive_password=args.archive_password, output_dir=args.output)
+            if "error" in result:
+                print(f"错误: {result['error']}", file=sys.stderr)
+                sys.exit(5)
+            print(f"输出目录: {result.get('output_dir', '')}")
+            print(f"报告路径: {result.get('report_path', '')}")
+            print(result.get("report", ""))
+            sys.exit(0)
         else:
-            # 分析已有的黑盒文件
             analyzer = BlackboxAnalyzer(args.output)
             audit_results = analyzer.analyze_audit_logs()
             report = analyzer.generate_report(audit_results)

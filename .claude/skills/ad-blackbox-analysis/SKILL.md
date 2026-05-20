@@ -20,13 +20,21 @@ description: 深信服 AD 设备黑盒日志分析技能，支持导出黑盒日
 ## CLI 命令参考
 
 ```bash
-# 单设备
+# 单设备（阻塞等待完成）
 python scripts/blackbox.py --host https://10.146.10.254 --user admin --password admin \
   --from-date 2026-05-03 --to-date 2026-05-09 --archive-password admin
 
-# 多设备（同密码）
+# 多设备（异步启动，推荐）
 python scripts/blackbox.py --hosts "https://192.168.8.30,https://192.168.8.31" \
-  --password xxx --from-date 2026-05-03 --to-date 2026-05-09
+  --password xxx --from-date 2026-05-14 --to-date 2026-05-20
+# 返回 event_id + output_dir，LLM 等待 60-90s 后调用 --complete
+
+# 完成异步导出（下载+分析）
+python scripts/blackbox.py --host https://192.168.8.30 --password xxx \
+  --complete /tmp/blackbox_analysis/https___192.168.8.30
+
+# 多设备同步等待（需平台超时充足）
+python scripts/blackbox.py --hosts "..." --password xxx --from-date ... --to-date ... --wait
 
 # 多设备（异密码）
 python scripts/blackbox.py --devices devices.json \
