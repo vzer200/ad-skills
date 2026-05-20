@@ -237,6 +237,30 @@ def wait_and_download(
 # 巡检结果分析（67 项全覆盖）
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# 优化建议映射表
+# ---------------------------------------------------------------------------
+
+_SUGGESTION_MAP = {
+    "CPU_CHECK": "CPU 使用率偏高，建议检查是否存在异常进程或考虑扩容",
+    "MEMORY_CHECK": "内存使用率偏高，建议检查是否存在内存泄漏或考虑扩容",
+    "DISK_CHECK": "磁盘使用率偏高，建议清理日志或扩容磁盘",
+    "FAN_STATE_CHECK": "风扇状态异常，建议检查硬件并及时更换故障风扇",
+    "POWER_STATE_CHECK": "电源状态异常，建议检查电源模块并安排维护",
+    "NIC_STATE_CHECK": "网口状态异常，建议检查物理链路和网卡状态",
+    "CORE_PROCESS_CHECK": "核心进程缺失，建议检查服务状态并重启相关服务",
+    "KERNEL_LOG_CHECK": "内核日志存在异常，建议排查内核错误日志",
+    "WEAK_PASSWORD_CHECK": "存在弱密码账户，建议修改为强密码",
+    "SSH_API_CHECK": "SSH 权限未正确配置，建议检查并加固 SSH 访问控制",
+    "SSL_POLICY_CHECK": "SSL 策略存在不安全算法或协议，建议禁用旧版本",
+    "OPEN_PORT_CHECK": "存在风险端口开放，建议关闭不必要的端口",
+    "DEVICE_CONNECTION_CHECK": "设备网口连接异常，建议检查物理链路",
+    "CONFIG_ID_CONFLICT_CHECK": "配置 ID 存在冲突，建议排查并修正配置",
+    "CRASH_LOG_CHECK": "存在崩溃日志，建议排查系统稳定性问题",
+    "MEMORY_LEAK_CHECK": "共享内存/信号量异常，可能存在内存泄漏",
+}
+
+
 def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     """
     根据 ad.json 内容进行结构化分析。
@@ -752,6 +776,29 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     if uncategorized:
         feature_keys.extend(uncategorized)
 
+    # ── 计算各维度健康评分 ─────────────────────────────────────────────
+    def _dimension_scores(keys):
+        p = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "pass")
+        t = len(keys)
+        s = round(p / max(t, 1) * 100)
+        return {"pass": p, "total": t, "score": s}
+
+    f_score = _dimension_scores(feature_keys)
+    h_score = _dimension_scores(health_keys)
+    s_score = _dimension_scores(secure_keys)
+    overall = round((f_score["score"] + h_score["score"] + s_score["score"]) / 3)
+
+    # ── 生成优化建议 ───────────────────────────────────────────────────
+    suggestions = []
+    for key, result in check_results.items():
+        if result["status"] in ("fail", "warn"):
+            entry = {
+                "check": key,
+                "priority": "高" if result["status"] == "fail" else "中",
+                "suggestion": _SUGGESTION_MAP.get(key, f"检查项 {key} 状态为 {result['status']}，建议进一步排查"),
+            }
+            suggestions.append(entry)
+
     return {
         "device_info": {
             "version": data.get("version", ""),
@@ -773,6 +820,13 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
             "warn": warn_count,
             "score": score,
         },
+        "health_scores": {
+            "feature": f_score,
+            "health": h_score,
+            "secure": s_score,
+            "overall": overall,
+        },
+        "suggestions": suggestions,
     }
 
 
@@ -818,7 +872,23 @@ def render_markdown(
     h = cat_summary(health_keys)
     s = cat_summary(secure_keys)
 
-    score_icon = "🟢" if summary["score"] >= 90 else ("🟡" if summary["score"] >= 70 else "🔴")
+    # ── 健康评分（优先使用 analyze 返回的 health_scores） ─────────────
+    health_scores = analysis.get("health_scores", {})
+    if health_scores:
+        overall = health_scores.get("overall", summary["score"])
+        score_icon = "🟢" if overall >= 90 else ("🟡" if overall >= 70 else "🔴")
+    else:
+        overall = summary["score"]
+        score_icon = "🟢" if overall >= 90 else ("🟡" if overall >= 70 else "🔴")
+
+    # ── 优化建议 ───────────────────────────────────────────────────────
+    suggestions = analysis.get("suggestions", [])
+    suggestion_rows = []
+    for sug in suggestions:
+        suggestion_rows.append(
+            f"| {sug.get('priority', '')} | {sug.get('check', '')} | {sug.get('suggestion', '')} |"
+        )
+    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无优化建议 |"
 
     # 设备中文名（从已知设备表匹配）
     known_devices = {
@@ -892,11 +962,19 @@ def render_markdown(
 
 ---
 
+### 💡 优化建议
+
+| 优先级 | 检查项 | 建议 |
+|--------|--------|------|
+{suggestions_table}
+
+---
+
 ### ✅ 健康评分
 
 | 项目 | 评分 |
 |------|------|
-| **综合评分** | {score_icon} **{summary["score"]}/100** |
+| **综合评分** | {score_icon} **{overall}/100** |
 
 ---
 
