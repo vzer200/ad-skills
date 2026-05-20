@@ -18,7 +18,9 @@ from ad_api import (
 
 class _FakeResponse:
     """Simulates urllib response for testing."""
-    def __init__(self, body, status=200):
+    def __init__(self, body=None, status=200):
+        if body is None:
+            body = {"status": "ok"}
         self._bytes = json.dumps(body).encode("utf-8") if not isinstance(body, bytes) else body
         self.status = status
 

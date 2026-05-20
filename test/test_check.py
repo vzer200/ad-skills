@@ -134,7 +134,7 @@ class TestRenderMarkdown(unittest.TestCase):
         analysis = {
             "summary": {"total": 0, "pass": 0, "fail": 0, "warn": 0, "score": 100},
             "check_results": {},
-            "device_info": {"version": "v1"},
+            "device_info": {"version": "v1", "app_version": "", "gateway_id": "", "runtime": "", "ip": ""},
             "feature_scene": {"rule": []},
             "health_scene": {"rule": []},
             "secure_scene": {"rule": []},
@@ -149,7 +149,7 @@ class TestRenderMarkdown(unittest.TestCase):
                 {"priority": "高", "suggestion": "Test suggestion", "check": "CPU_CHECK"}
             ],
         }
-        meta = {"device_info": {"app_version": "v1", "gateway_id": "", "run_time": ""}, "check_time": "2026-01-01 00:00:00"}
+        meta = {"host": "https://10.0.0.1", "scene": "标准巡检", "start_time": "2026-01-01 00:00:00"}
         output = render_markdown(analysis, meta)
         self.assertIn("优化建议", output)
         self.assertIn("健康评分", output)
