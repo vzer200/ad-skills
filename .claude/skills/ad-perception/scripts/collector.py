@@ -11,24 +11,21 @@ import sqlite3
 import sys
 import time
 
-# Cross-skill import path: locate shared scripts/
+# Cross-skill import: ad-ops provides ADClient
 _scripts_dir = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "scripts"
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "ad-ops", "scripts"
 )
 _scripts_dir = os.path.realpath(_scripts_dir)
 if not os.path.isdir(_scripts_dir):
-    print("错误: 无法定位共享 scripts 目录", file=sys.stderr)
+    print("错误: 无法定位 ad-ops/scripts 目录", file=sys.stderr)
     sys.exit(9)
-sys.path.append(_scripts_dir)
+sys.path.insert(0, _scripts_dir)
 try:
     from ad_api import ADClient
 except ImportError as e:
     print(f"错误: 无法导入 ad_api: {e}", file=sys.stderr)
     sys.exit(9)
-try:
-    from db_schema import VS_SAMPLES_DDL, COLUMNS
-except ImportError:
-    pass
+from db_schema import VS_SAMPLES_DDL, COLUMNS
 
 
 def _check_process_alive(pid):

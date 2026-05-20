@@ -2,7 +2,7 @@
 """Unit tests for ad_api.py — shared ADClient."""
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "scripts"))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".claude", "skills", "ad-ops", "scripts"))
 
 import unittest
 import json

@@ -27,15 +27,15 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 
 
-# ── 共享 ADClient 导入 ──────────────────────────────────────────────
+# Cross-skill import: ad-ops provides ADClient
 _scripts_dir = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "scripts"
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "ad-ops", "scripts"
 )
 _scripts_dir = os.path.realpath(_scripts_dir)
 if not os.path.isdir(_scripts_dir):
-    print("错误: 无法定位共享 scripts 目录", file=sys.stderr)
+    print("错误: 无法定位 ad-ops/scripts 目录", file=sys.stderr)
     sys.exit(9)
-sys.path.append(_scripts_dir)
+sys.path.insert(0, _scripts_dir)
 try:
     from ad_api import ADClient, ADError, ADAuthError, ADAPIError, ADConnectionError
 except ImportError as e:

@@ -21,20 +21,7 @@ import sys
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-import sys, os
-_scripts_dir = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "scripts"
-)
-_scripts_dir = os.path.realpath(_scripts_dir)
-if not os.path.isdir(_scripts_dir):
-    print("错误: 无法定位共享 scripts 目录", file=sys.stderr)
-    sys.exit(9)
-sys.path.append(_scripts_dir)
-try:
-    from ad_api import ADClient
-except ImportError as e:
-    print(f"错误: 无法导入 ad_api: {e}", file=sys.stderr)
-    sys.exit(9)
+from ad_api import ADClient
 
 
 # =============================================================================

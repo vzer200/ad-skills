@@ -7,8 +7,6 @@ import warnings
 
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    # Add shared scripts directory
-    sys.path.insert(0, os.path.join(os.path.realpath(os.path.dirname(__file__)), "..", "scripts"))
     # Add all skill directories so tests can import their modules
     for skill in ("ad-ops", "ad-perception", "ad-check-analysis", "ad-blackbox-analysis"):
         _p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".claude", "skills", skill, "scripts")
