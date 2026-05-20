@@ -3,28 +3,31 @@ name: ad-ops
 description: Use when managing Sangfor AD devices - users, virtual services, pools, SSL certs, HA status, SSH config, or system stats
 ---
 
-# AD Ops
+# AD 智能运维
 
-Sangfor AD (应用交付) 设备 REST API 集成。零依赖，使用 Python 内置库。
+深信服 AD (应用交付) 设备 REST API 集成管理。
 
-## Quick Start
+## 功能概述
 
-```python
-from .claude.skills.ad_ops.scripts.ad_api import ADClient
+| 功能 | 说明 |
+|------|------|
+| 用户管理 | 用户的增删改查 |
+| 虚拟服务 | 虚拟服务的增删改查 |
+| 池管理 | 池的增删改查 |
+| SSL 证书 | 证书列表及有效期查询 |
+| HA 状态 | 高可用状态和集群信息查询 |
+| SSH 配置 | SSH 启用/禁用/状态查询 |
+| 系统统计 | VS 指标、吞吐趋势、节点状态 |
 
-client = ADClient(host="https://10.146.10.254", username="admin", password="admin")
-users = client.get_users()
-```
-
-## CLI
+## CLI 命令参考
 
 ```bash
-python .claude/skills/ad-ops/scripts/ad_api.py --host https://10.146.10.254 --password admin users list
-python .claude/skills/ad-ops/scripts/ad_api.py --host https://10.146.10.254 --password admin slb list
-python .claude/skills/ad-ops/scripts/ad_api.py --host https://10.146.10.254 --password admin pool list
-python .claude/skills/ad-ops/scripts/ad_api.py --host https://10.146.10.254 --password admin stat sys
-python .claude/skills/ad-ops/scripts/ad_api.py --host https://10.146.10.254 --password admin ha status
-python .claude/skills/ad-ops/scripts/ad_api.py --host https://10.146.10.254 --password admin cert list
+python scripts/ad_api.py --host https://10.146.10.254 --password admin users list
+python scripts/ad_api.py --host https://10.146.10.254 --password admin slb list
+python scripts/ad_api.py --host https://10.146.10.254 --password admin pool list
+python scripts/ad_api.py --host https://10.146.10.254 --password admin stat sys
+python scripts/ad_api.py --host https://10.146.10.254 --password admin ha status
+python scripts/ad_api.py --host https://10.146.10.254 --password admin cert list
 ```
 
 ## API Reference
@@ -49,14 +52,57 @@ python .claude/skills/ad-ops/scripts/ad_api.py --host https://10.146.10.254 --pa
 | `downstream-throughput` | 下行吞吐 |
 | `general-throughput` | 总吞吐 |
 
-## Known Devices
+## 脚本强制规则
 
-| Name | IP | User | Password |
-|------|-----|------|----------|
+| 操作 | 必须使用 | 禁止使用 |
+|------|----------|----------|
+| 所有操作 | `python scripts/ad_api.py` | ❌ 直接调 API |
+
+## 已知设备
+
+| 设备 | IP | 用户名 | 密码 |
+|------|-----|------|------|
 | AD1 | 10.146.10.254 | admin | admin |
 
-## Notes
+## 行为准则
 
-- HTTPS only, self-signed certs ignored by default
-- Default timeout: 30s
-- Base path: `/api/lb/current-version/`
+### 必须行为
+- ✅ 所有操作通过 `scripts/ad_api.py` 脚本
+- ✅ 输出由脚本直接产出
+
+### 禁止行为
+- ❌ LLM 直调 AD API
+- ❌ LLM 分析、推断、判断结果
+- ❌ LLM 修改脚本输出内容
+
+## 报告展示规则
+
+**必须将脚本 stdout 内容直接展示在对话消息正文中**，不要放在 shell 执行结果的折叠区域中。
+
+## 外部依赖
+
+| 依赖 | 说明 |
+|------|------|
+| Python 标准库 | `http.client`, `json`, `ssl`, `sys` |
+| 网络 | HTTPS only, self-signed certs ignored by default, timeout 30s |
+| API Base Path | `/api/lb/current-version/` |
+
+## 错误码
+
+| 场景 | exit code |
+|------|----------|
+| 完全成功 | 0 |
+| 连接失败 | 1 |
+| 全部 API 失败 | 1 |
+| 认证失败 | 2 |
+| SQLite 写入失败 | 3 |
+| 参数错误 | 4 |
+| 部分失败 | 5 |
+| 采集器重复启动 | 6 |
+| ADClient import 失败 | 9 |
+
+## 相关技能
+
+- **ad-perception**: AD 感知分析（流量异常/状态告警/地址冲突/日志线索）
+- **ad-check-analysis**: AD 系统巡检
+- **ad-blackbox-analysis**: AD 黑盒日志分析

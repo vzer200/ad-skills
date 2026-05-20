@@ -3,21 +3,31 @@ name: ad-blackbox-analysis
 description: Use when exporting or analyzing AD blackbox logs for troubleshooting, security audit, or performance analysis
 ---
 
-# AD Blackbox Analysis
+# AD 黑盒日志分析
 
 深信服 AD 设备黑盒日志导出与分析。
+
+## 功能概述
+
+| 功能 | 说明 |
+|------|------|
+| 导出黑盒 | 按时间范围导出黑盒日志（最大 7 天） |
+| 任务状态查询 | 查询异步导出任务进度 |
+| 下载解压 | 下载 tar.gz 并解压 |
+| 审计日志分析 | 解析 audit.csv，分析操作记录 |
+| 系统日志分析 | 解析系统日志 CSV，排查异常 |
+
+## CLI 命令参考
+
+```bash
+python scripts/blackbox.py --host https://10.146.10.254 --user admin --password admin \
+  --from-date 2026-05-03 --to-date 2026-05-09 --archive-password admin
+```
 
 ## Workflow
 
 ```
 导出黑盒 → 查询任务状态 → 下载文件 → 解压分析
-```
-
-## CLI
-
-```bash
-python .claude/skills/ad-blackbox-analysis/scripts/blackbox.py --host https://10.146.10.254 --user admin --password admin \
-  --from-date 2026-05-03 --to-date 2026-05-09 --archive-password admin
 ```
 
 ## Key Rules
@@ -54,12 +64,59 @@ blackbox.tar.gz (ZIP加密)
 | 9 | 错误码 |
 | 10 | 描述 |
 
-## Analysis Principle
+## 脚本强制规则
 
-**结果必须严格从黑盒日志文件中获取**，不得掺杂其他 API 调用或推断内容。
+| 操作 | 必须使用 | 禁止使用 |
+|------|----------|----------|
+| 导出黑盒 | `python scripts/blackbox.py` | ❌ 直接调 API |
+| 查询进度 | `python scripts/blackbox.py` | ❌ 直接调 API |
+| 分析日志 | 脚本输出 | ❌ LLM 直读 CSV |
 
-## Known Devices
+## 已知设备
 
-| Name | IP | User | Password |
-|------|-----|------|----------|
+| 设备 | IP | 用户名 | 密码 |
+|------|-----|------|------|
 | AD1 | 10.146.10.254 | admin | admin |
+
+## 行为准则
+
+### 必须行为
+- ✅ 所有操作通过 `scripts/blackbox.py` 脚本
+- ✅ 报告由脚本直接产出
+- ✅ 分析结果严格从黑盒日志文件获取
+
+### 禁止行为
+- ❌ LLM 直调 AD API
+- ❌ LLM 分析、推断、判断结果
+- ❌ LLM 修改脚本输出内容
+- ❌ 混合其他 API 调用结果
+
+## 报告展示规则
+
+**必须将脚本 stdout 内容直接展示在对话消息正文中**，不要放在 shell 执行结果的折叠区域中。
+
+## 外部依赖
+
+| 依赖 | 说明 |
+|------|------|
+| `scripts/ad_api.py` | 提供 `ADClient`，API Base Path: `/api/lb/current-version/` |
+
+## 错误码
+
+| 场景 | exit code |
+|------|----------|
+| 完全成功 | 0 |
+| 连接失败 | 1 |
+| 全部 API 失败 | 1 |
+| 认证失败 | 2 |
+| SQLite 写入失败 | 3 |
+| 参数错误 | 4 |
+| 部分失败 | 5 |
+| 采集器重复启动 | 6 |
+| ADClient import 失败 | 9 |
+
+## 相关技能
+
+- **ad-ops**: AD 智能运维
+- **ad-check-analysis**: AD 系统巡检
+- **ad-perception**: AD 感知分析（流量异常/状态告警/地址冲突/日志线索）

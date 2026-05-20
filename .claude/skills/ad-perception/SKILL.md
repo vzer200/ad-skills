@@ -3,14 +3,14 @@ name: ad-perception
 description: AD 设备感知分析 — 流量异常 / 状态告警 / 地址冲突 / 日志线索
 ---
 
-# AD Perception
+# AD 感知分析
 
 AD 设备感知分析技能，提供 VS 流量趋势异常检测、设备状态阈值判定、地址冲突检测和日志线索关联。
 
 ## 功能概述
 
 | 功能 | 说明 |
-|---|---|
+|------|------|
 | 采集器守护进程 | 60s 采样 VS 指标落 SQLite |
 | 流量趋势分析 | 3σ 异常检测（需采集器累积数据） |
 | 设备状态分析 | CPU/内存/风扇/电源/接口阈值判定 |
@@ -21,29 +21,29 @@ AD 设备感知分析技能，提供 VS 流量趋势异常检测、设备状态�
 
 ```bash
 # 采集器（常驻后台）
-python collector.py --host https://x.x.x.x --user admin --password xxx [--db vs_samples.db] [--interval 60]
+python scripts/collector.py --host https://x.x.x.x --user admin --password xxx [--db vs_samples.db] [--interval 60]
 
 # 全维度感知分析
-python perception.py analyze --host https://x.x.x.x [--db vs_samples.db] [--format json]
+python scripts/perception.py analyze --host https://x.x.x.x [--db vs_samples.db] [--format json]
 
 # 单维度
-python perception.py traffic --host ... --vs <name> [--db ...] [--format json]
-python perception.py state --host ... [--disk-source check_report_dir] [--format json]
-python perception.py conflict --host ... [--format json]
+python scripts/perception.py traffic --host ... --vs <name> [--db ...] [--format json]
+python scripts/perception.py state --host ... [--disk-source check_report_dir] [--format json]
+python scripts/perception.py conflict --host ... [--format json]
 ```
 
 ## 执行工作流
 
 ```
 ┌─ 采集器 ─────────────────────────────────────────┐
-│ python collector.py --host ...                    │
+│ python scripts/collector.py --host ...             │
 │  → 首次启动: 建表                                 │
 │  → 每 60s: get_vs_stat → INSERT                  │
 │  → 保持运行（建议 Windows 任务计划 / systemd）     │
 └──────────────────────────────────────────────────┘
 
 ┌─ 感知分析 ───────────────────────────────────────┐
-│ python perception.py analyze --host ...           │
+│ python scripts/perception.py analyze --host ...    │
 │  1. 流量: SQLite → 3σ 或 API 兜底                 │
 │  2. 状态: get_sys_system + --disk-source          │
 │  3. 日志: get_service_log (如有异常)               │
@@ -55,16 +55,16 @@ python perception.py conflict --host ... [--format json]
 ## 脚本强制规则
 
 | 操作 | 必须使用 | 禁止使用 |
-|---|---|---|
-| 总览快照 | `python overview.py` | ❌ ad-ops 直调 API |
-| 启动采集器 | `python collector.py` | ❌ 手动 HTTP 请求 |
-| 感知分析 | `python perception.py analyze/traffic/state/conflict` | ❌ LLM 直调 API |
+|------|----------|----------|
+| 总览快照 | `python scripts/overview.py` | ❌ ad-ops 直调 API |
+| 启动采集器 | `python scripts/collector.py` | ❌ 手动 HTTP 请求 |
+| 感知分析 | `python scripts/perception.py analyze/traffic/state/conflict` | ❌ LLM 直调 API |
 | 展示报告 | 脚本 stdout 原样贴入对话 | ❌ LLM 修改/总结/补全 |
 
 ## 已知设备
 
 | 设备 | IP | 用户 |
-|---|---|---|
+|------|-----|------|
 | AD1 (21039) | 14.18.243.211:21039 | admin |
 | AD2 (21044) | 14.18.243.211:21044 | admin |
 | AD1 (旧) | 10.146.10.254 | admin |
@@ -73,12 +73,12 @@ python perception.py conflict --host ... [--format json]
 
 ## 行为准则
 
-**必须行为**：
-- ✅ 所有分析通过 `perception.py` / `collector.py` 脚本
+### 必须行为
+- ✅ 所有分析通过 `scripts/perception.py` / `scripts/collector.py` 脚本
 - ✅ 报告内容由脚本 `render_markdown()` 直接产出，LLM 原样展示
 - ✅ 采集器未启动或数据不足 → 脚本在输出中明确告知，LLM 转述
 
-**禁止行为**：
+### 禁止行为
 - ❌ LLM 直调 AD API
 - ❌ LLM 分析、推断、判断异常
 - ❌ LLM 修改脚本输出内容
@@ -90,27 +90,24 @@ python perception.py conflict --host ... [--format json]
 
 **必须将脚本 stdout 内容直接展示在对话消息正文中**，不要放在 shell 执行结果的折叠区域中。
 
-- ✅ 正确：执行脚本获取结果后，将 Markdown/JSON 内容写在对话消息中直接展示
-- ❌ 错误：把报告内容留在 shell 执行结果中，仅在对话中写"分析完成"
-
 ## 外部依赖
 
 | 依赖 | 说明 |
-|---|---|
-| `ad-ops/scripts/ad_api.py` | 提供 `ADClient`（API 调用），import 失败 exit 9 |
+|------|------|
+| `scripts/ad_api.py` | 提供 `ADClient`（API 调用），import 失败 exit 9 |
 | `ad-check-analysis` 巡检报告 | `perception.py state --disk-source` 需要 ad.json 中的 `disk_check`。**未提供时脚本标注缺失，不阻止其余分析** |
-| SSL 证书 | `ADClient` 禁用 TLS 验证（`CERT_NONE`），仅适用于内网自签名环境。对外暴露时凭据可被 MITM 窃取 |
+| SSL 证书 | `ADClient` 禁用 TLS 验证（`CERT_NONE`），仅适用于内网自签名环境 |
 | 采集器累积时间 | 首次启动后需累积 ≥ 100 个采样点（约 2h）才能跑 3σ |
 
 ## 错误码
 
 | 场景 | exit code |
-|---|---|
+|------|----------|
 | 完全成功 | 0 |
 | 连接失败 | 1 |
 | 全部 API 失败 | 1 |
 | 认证失败 | 2 |
-| SQLite 写入失败 (collector) | 3 |
+| SQLite 写入失败 | 3 |
 | 参数错误 | 4 |
 | 部分失败（其余正常） | 5 |
 | 采集器重复启动 | 6 |
