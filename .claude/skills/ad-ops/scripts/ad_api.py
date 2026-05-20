@@ -98,6 +98,9 @@ class ADClient:
         if params:
             qs = urllib.parse.urlencode(params)
             url = f"{url}?{qs}" if '?' not in url else f"{url}&{qs}"
+        # 所有请求强制带 all_properties=true（已含则跳过）
+        if 'all_properties' not in url:
+            url = f"{url}&all_properties=true" if '?' in url else f"{url}?all_properties=true"
 
         # 编码认证信息
         auth_str = f"{self.username}:{self.password}"
@@ -329,7 +332,7 @@ class ADClient:
         Args:
             limit: 返回条数，默认10条（获取最新的）
         """
-        result = self._request("GET", "/log/service-log?all_properties=true")
+        result = self._request("GET", "/log/service-log")
         items = result.get("items", [])
         # 按时间倒序，取最新 limit 条
         items.sort(key=lambda x: f"{x.get('date', '')} {x.get('time', '')}", reverse=True)
@@ -350,7 +353,7 @@ class ADClient:
             - issuer: 颁发者
             - subject: 使用者
         """
-        return self._request("GET", "/rc/ssl-certificate/all?all_properties=true")
+        return self._request("GET", "/rc/ssl-certificate/all")
 
     # -------------------------------------------------------------------------
     # 高可用性
