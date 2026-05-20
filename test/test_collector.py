@@ -26,7 +26,10 @@ import time
 import unittest
 from unittest.mock import MagicMock, patch
 
-from collector import VSCollector
+from collector import (
+    VSCollector, _inject_trend_into_db, collect_once, collect_and_analyze,
+    _derive_db_path,
+)
 from db_schema import VS_SAMPLES_DDL, COLUMNS
 
 
@@ -369,6 +372,229 @@ class TestCollector(unittest.TestCase):
             self.assertIn("RECOVERED", stderr_buf2.getvalue())
         finally:
             collector.close_db()
+
+
+class TestInjectTrendIntoDB(unittest.TestCase):
+    """Tests for _inject_trend_into_db — trend API data → SQLite."""
+
+    def setUp(self):
+        fd, self.db_path = tempfile.mkstemp(suffix='.db')
+        os.close(fd)
+
+    def tearDown(self):
+        try:
+            os.unlink(self.db_path)
+        except PermissionError:
+            pass
+
+    def test_inject_creates_table_and_inserts_rows(self):
+        """Valid trend data should create table and insert rows."""
+        trend_data = {
+            'items': [
+                {'name': 'connection_rate', 'values': [1340, 1327, 1379], 'unit': 'REQUEST-PER-SECOND'},
+                {'name': 'connection', 'values': [13425, 13306, 13200], 'unit': 'COUNT'},
+            ]
+        }
+        count = _inject_trend_into_db(self.db_path, 'vs_test', trend_data)
+        self.assertEqual(count, 6)
+
+        conn = sqlite3.connect(self.db_path)
+        rows = conn.execute("SELECT COUNT(*) FROM vs_samples").fetchone()[0]
+        self.assertEqual(rows, 6)
+        conn.close()
+
+    def test_inject_synthesizes_timestamps(self):
+        """Timestamps should be in the past (within last hour) and monotonically increasing."""
+        trend_data = {
+            'items': [
+                {'name': 'connection_rate', 'values': [100.0, 200.0, 300.0]},
+            ]
+        }
+        _inject_trend_into_db(self.db_path, 'vs_test', trend_data)
+
+        conn = sqlite3.connect(self.db_path)
+        rows = conn.execute("SELECT ts FROM vs_samples ORDER BY ts").fetchall()
+        conn.close()
+
+        now = int(time.time())
+        for (ts,) in rows:
+            self.assertGreater(ts, now - 3600)
+            self.assertLess(ts, now + 10)
+
+        # Timestamps should be strictly increasing
+        for i in range(len(rows) - 1):
+            self.assertLess(rows[i][0], rows[i + 1][0])
+
+    def test_inject_empty_data(self):
+        """Empty items list should return 0."""
+        count = _inject_trend_into_db(self.db_path, 'vs_test', {'items': []})
+        self.assertEqual(count, 0)
+
+    def test_inject_none_data(self):
+        """None trend_data should return 0."""
+        count = _inject_trend_into_db(self.db_path, 'vs_test', None)
+        self.assertEqual(count, 0)
+
+    def test_inject_skips_non_numeric_values(self):
+        """Non-numeric values in the values array should be skipped."""
+        trend_data = {
+            'items': [
+                {'name': 'metric1', 'values': [100, None, 200, 'bad', 300]},
+            ]
+        }
+        count = _inject_trend_into_db(self.db_path, 'vs_test', trend_data)
+        self.assertEqual(count, 3)  # only 100, 200, 300
+
+    def test_inject_skips_empty_metric_name(self):
+        """Items with empty name should be skipped."""
+        trend_data = {
+            'items': [
+                {'name': '', 'values': [1, 2, 3]},
+                {'name': 'valid', 'values': [4, 5]},
+            ]
+        }
+        count = _inject_trend_into_db(self.db_path, 'vs_test', trend_data)
+        self.assertEqual(count, 2)
+
+    def test_inject_idempotent(self):
+        """Second injection with same data should overwrite, not duplicate."""
+        trend_data = {
+            'items': [
+                {'name': 'connection_rate', 'values': [100.0, 200.0]},
+            ]
+        }
+        _inject_trend_into_db(self.db_path, 'vs_test', trend_data)
+        _inject_trend_into_db(self.db_path, 'vs_test', trend_data)
+
+        conn = sqlite3.connect(self.db_path)
+        count = conn.execute("SELECT COUNT(*) FROM vs_samples").fetchone()[0]
+        conn.close()
+        self.assertEqual(count, 2)  # not 4
+
+
+class TestCollectOnce(unittest.TestCase):
+    """Tests for collect_once — fetch VS names + trend data + inject."""
+
+    def setUp(self):
+        fd, self.db_path = tempfile.mkstemp(suffix='.db')
+        os.close(fd)
+        self.client = MagicMock()
+
+    def tearDown(self):
+        try:
+            os.unlink(self.db_path)
+        except PermissionError:
+            pass
+
+    def test_collect_once_fetches_and_injects(self):
+        """Should fetch VS names, get trend for each, inject into DB."""
+        self.client.get_virtual_services.return_value = {
+            'items': [{'name': 'vs_a'}, {'name': 'vs_b'}]
+        }
+        self.client.get_vs_trend_by_name.return_value = {
+            'items': [
+                {'name': 'connection_rate', 'values': [100.0, 200.0]},
+                {'name': 'connection', 'values': [1000.0, 2000.0]},
+            ]
+        }
+
+        count = collect_once(self.client, self.db_path)
+        self.assertEqual(count, 8)  # 2 VS × 2 metrics × 2 values
+
+        conn = sqlite3.connect(self.db_path)
+        rows = conn.execute("SELECT DISTINCT vs_name FROM vs_samples").fetchall()
+        vs_names = {r[0] for r in rows}
+        self.assertEqual(vs_names, {'vs_a', 'vs_b'})
+        conn.close()
+
+    def test_collect_once_no_vs(self):
+        """Empty VS list should return 0."""
+        self.client.get_virtual_services.return_value = {'items': []}
+        count = collect_once(self.client, self.db_path)
+        self.assertEqual(count, 0)
+
+    def test_collect_once_api_error_graceful(self):
+        """API error in get_virtual_services should return 0."""
+        self.client.get_virtual_services.side_effect = Exception("API error")
+        count = collect_once(self.client, self.db_path)
+        self.assertEqual(count, 0)
+
+    def test_collect_once_trend_error_per_vs(self):
+        """Trend API error for one VS should not block others."""
+        self.client.get_virtual_services.return_value = {
+            'items': [{'name': 'vs_a'}, {'name': 'vs_b'}]
+        }
+        call_count = [0]
+
+        def mock_trend(vn, trend='last-hour'):
+            call_count[0] += 1
+            if vn == 'vs_a':
+                raise Exception("API error")
+            return {
+                'items': [{'name': 'm1', 'values': [1.0, 2.0]}]
+            }
+
+        self.client.get_vs_trend_by_name.side_effect = mock_trend
+        count = collect_once(self.client, self.db_path)
+        self.assertEqual(count, 2)  # only vs_b succeeded
+
+
+class TestCollectAndAnalyze(unittest.TestCase):
+    """Tests for collect_and_analyze — full collect+analyze pipeline."""
+
+    def setUp(self):
+        fd, self.db_path = tempfile.mkstemp(suffix='.db')
+        os.close(fd)
+        self.client = MagicMock()
+        self.client.host = 'https://10.0.0.1'
+
+    def tearDown(self):
+        try:
+            os.unlink(self.db_path)
+        except PermissionError:
+            pass
+
+    def test_collect_and_analyze_returns_report(self):
+        """Should return a result dict with status, anomalies, report."""
+        self.client.get_virtual_services.return_value = {
+            'items': [{'name': 'vs_a'}]
+        }
+        # Generate 60+ points so 3σ has enough data (> min_window=30)
+        self.client.get_vs_trend_by_name.return_value = {
+            'items': [
+                {'name': 'connection_rate', 'values': [100.0 + (i % 10) * 2.0 for i in range(60)]},
+                {'name': 'connection', 'values': [5000.0 + (i % 5) * 10.0 for i in range(60)]},
+            ]
+        }
+
+        result = collect_and_analyze(self.client, self.db_path)
+        self.assertEqual(result['status'], 'ok')
+        self.assertEqual(result['device'], 'https://10.0.0.1')
+        self.assertGreater(result['rows_injected'], 0)
+        self.assertIn('report', result)
+        self.assertIsInstance(result['anomalies'], list)
+
+    def test_collect_and_analyze_no_data(self):
+        """When no VS exist, should return ok status with note (not an error)."""
+        self.client.get_virtual_services.return_value = {'items': []}
+        result = collect_and_analyze(self.client, self.db_path)
+        self.assertEqual(result['status'], 'ok')
+        self.assertEqual(result['rows_injected'], 0)
+        self.assertIn('note', result)
+
+
+class TestDeriveDBPath(unittest.TestCase):
+    """Tests for _derive_db_path helper."""
+
+    def test_derives_from_url(self):
+        path = _derive_db_path("https://192.168.8.31")
+        self.assertIn("192.168.8.31", path)
+        self.assertTrue(path.endswith(".db"))
+
+    def test_special_chars_replaced(self):
+        path = _derive_db_path("https://10.0.0.1:8443/")
+        self.assertNotIn(":", path.split("vs_samples_")[1])
+        self.assertNotIn("/", path)
 
 
 if __name__ == "__main__":

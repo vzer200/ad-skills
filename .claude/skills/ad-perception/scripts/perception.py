@@ -213,6 +213,14 @@ def traffic_analysis(client, db_path=None, vs_name=None):
     """
     result = {'status': 'ok', 'anomalies': [], 'error': None, 'source': 'sqlite'}
 
+    # Auto-derive DB path from client host if not explicitly provided
+    if not db_path and client is not None and hasattr(client, 'host'):
+        host = client.host
+        if isinstance(host, str):
+            import re
+            safe = re.sub(r'[^a-zA-Z0-9._-]', '_', host)
+            db_path = f"vs_samples_{safe}.db"
+
     # Try SQLite
     rows = None
     if db_path and os.path.isfile(db_path):
@@ -232,6 +240,28 @@ def traffic_analysis(client, db_path=None, vs_name=None):
         result['anomalies'] = anomalies
         result['source'] = 'sqlite'
     else:
+        # Injection branch: try to seed SQLite with trend API last-hour data
+        if client is not None and db_path:
+            try:
+                from collector import collect_once
+            except ImportError:
+                pass
+            else:
+                injected = collect_once(client, db_path)
+                if injected > 0:
+                    rows = query_traffic_db(db_path, vs_name)
+                    if rows is not None and len(rows) >= 100:
+                        groups = {}
+                        for row in rows:
+                            key = (row['vs_name'], row['metric'])
+                            if key not in groups:
+                                groups[key] = []
+                            groups[key].append(row)
+                        anomalies = _run_3sigma_on_vs_group(groups)
+                        result['anomalies'] = anomalies
+                        result['source'] = 'sqlite_injected'
+                        return result
+
         # API fallback - insufficient data
         result['status'] = 'insufficient_data'
         result['source'] = 'api_fallback'

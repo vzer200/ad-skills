@@ -227,6 +227,67 @@ class TestDBFallback(unittest.TestCase):
             if os.path.isfile(db_path):
                 os.unlink(db_path)
 
+    def test_injection_branch_seeds_db_and_reruns_3sigma(self):
+        """When DB has < 100 points, injection branch seeds trend data then re-runs 3σ."""
+        db_path = self._create_db_file(10)  # way below threshold
+        try:
+            # Patch collect_once to actually inject enough data into the DB
+            from collector import _inject_trend_into_db
+
+            def _fake_collect_once(client_arg, db_path_arg):
+                trend_data = {
+                    'items': [
+                        {'name': 'connection_rate', 'values': [float(100 + i % 10) for i in range(60)]},
+                        {'name': 'connection', 'values': [float(5000 + i % 5) for i in range(60)]},
+                    ]
+                }
+                return _inject_trend_into_db(db_path_arg, 'vs_test', trend_data)
+
+            with patch('collector.collect_once', _fake_collect_once):
+                result = traffic_analysis(self.client, db_path=db_path)
+
+            self.assertEqual(result['status'], 'ok')
+            self.assertEqual(result['source'], 'sqlite_injected')
+            self.assertIn('anomalies', result)
+        finally:
+            if os.path.isfile(db_path):
+                os.unlink(db_path)
+
+    def test_injection_branch_no_data_still_falls_back(self):
+        """When injection fails (collect_once returns 0), should fall back to API."""
+        db_path = self._create_db_file(10)
+        try:
+            with patch('collector.collect_once', return_value=0):
+                result = traffic_analysis(self.client, db_path=db_path)
+
+            self.assertEqual(result['status'], 'insufficient_data')
+            self.assertEqual(result['source'], 'api_fallback')
+        finally:
+            if os.path.isfile(db_path):
+                os.unlink(db_path)
+
+    def test_injection_adds_some_but_still_insufficient(self):
+        """When injection adds rows but total still < 100, should fall back to API."""
+        db_path = self._create_db_file(10)
+        try:
+            # Inject only 5 more rows (15 total, still < 100)
+            from collector import _inject_trend_into_db
+
+            def _fake_collect_once(client_arg, db_path_arg):
+                trend_data = {
+                    'items': [{'name': 'connection_rate', 'values': [float(i) for i in range(5)]}]
+                }
+                return _inject_trend_into_db(db_path_arg, 'vs_test', trend_data)
+
+            with patch('collector.collect_once', _fake_collect_once):
+                result = traffic_analysis(self.client, db_path=db_path)
+
+            self.assertEqual(result['status'], 'insufficient_data')
+            self.assertEqual(result['source'], 'api_fallback')
+        finally:
+            if os.path.isfile(db_path):
+                os.unlink(db_path)
+
 
 class TestStateAnalysis(unittest.TestCase):
     """Tests for device state anomaly detection."""

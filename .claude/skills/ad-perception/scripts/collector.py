@@ -29,6 +29,144 @@ except ImportError as e:
 from db_schema import VS_SAMPLES_DDL, COLUMNS
 
 
+def _inject_trend_into_db(db_path, vs_name, trend_data):
+    """Inject trend API ``last-hour`` data into SQLite with synthesized timestamps.
+
+    Trend API returns flat arrays (~60 values per metric) without timestamps.
+    Synthesized as ``ts = now - (n - i) * 60`` where i=0 is oldest, i=n-1 is newest.
+    Uses ``INSERT OR REPLACE`` for idempotent writes against the UNIQUE(ts, vs_name, metric)
+    constraint.
+
+    Args:
+        db_path: path to SQLite database file.
+        vs_name: virtual service name.
+        trend_data: dict returned by ``ADClient.get_vs_trend_by_name(name, trend='last-hour')``.
+
+    Returns:
+        Number of rows written (int).
+    """
+    items = trend_data.get('items', []) if isinstance(trend_data, dict) else []
+    if not items:
+        return 0
+
+    conn = sqlite3.connect(db_path)
+    conn.executescript(VS_SAMPLES_DDL)
+
+    now = int(time.time())
+    total = 0
+
+    for item in items:
+        metric_name = item.get('name', '')
+        values = item.get('values', [])
+        if not metric_name or not isinstance(values, list):
+            continue
+
+        n = len(values)
+        for i, v in enumerate(values):
+            if not isinstance(v, (int, float)):
+                continue
+            ts = now - (n - i) * 60
+            conn.execute(
+                "INSERT OR REPLACE INTO vs_samples (ts, vs_name, metric, value) VALUES (?, ?, ?, ?)",
+                (ts, vs_name, metric_name, float(v)),
+            )
+            total += 1
+
+    conn.commit()
+    conn.close()
+    return total
+
+
+def collect_once(client, db_path):
+    """Run one collection cycle: fetch VS names, get trend data, inject into SQLite.
+
+    Args:
+        client: ``ADClient`` instance.
+        db_path: path to SQLite database file.
+
+    Returns:
+        Total number of rows written (int). Returns 0 if no VS or all API calls fail.
+    """
+    try:
+        data = client.get_virtual_services()
+        vs_names = [item.get('name', '') for item in data.get('items', []) if item.get('name')]
+    except Exception:
+        return 0
+
+    if not vs_names:
+        return 0
+
+    total = 0
+    for vn in vs_names:
+        try:
+            trend_data = client.get_vs_trend_by_name(vn, trend='last-hour')
+        except Exception:
+            continue
+        if trend_data:
+            total += _inject_trend_into_db(db_path, vn, trend_data)
+
+    return total
+
+
+def collect_and_analyze(client, db_path):
+    """Collect trend data via ``collect_once``, then run 3σ anomaly detection.
+
+    Args:
+        client: ``ADClient`` instance.
+        db_path: path to SQLite database file.
+
+    Returns:
+        dict with keys: status, anomalies, report, device, rows_injected.
+    """
+    rows = collect_once(client, db_path)
+
+    # Late import to avoid circular dependency at module level
+    from perception import query_traffic_db, _run_3sigma_on_vs_group, render_markdown
+
+    db_rows = query_traffic_db(db_path)
+    if not db_rows:
+        # No data after collection — device may have no VS (legitimate)
+        report = render_markdown({
+            'device': client.host,
+            'traffic': {'status': 'ok', 'anomalies': [], 'error': None},
+            'state': {'status': 'ok', 'items': [], 'disk': {'available': False, 'value': None, 'source': 'none'}},
+            'logs': {'status': 'no_anomaly', 'entries': []},
+            'conflicts': {'status': 'ok', 'vs_overlaps': [], 'pool_overlaps': []},
+        })
+        return {
+            'status': 'ok',
+            'anomalies': [],
+            'report': report,
+            'device': client.host,
+            'rows_injected': 0,
+            'note': '设备无虚拟服务或采集无数据',
+        }
+
+    groups = {}
+    for row in db_rows:
+        key = (row['vs_name'], row['metric'])
+        if key not in groups:
+            groups[key] = []
+        groups[key].append(row)
+
+    anomalies = _run_3sigma_on_vs_group(groups)
+    report = render_markdown({
+        'device': client.host,
+        'traffic': {'status': 'ok', 'anomalies': anomalies, 'error': None},
+        'state': {'status': 'ok', 'items': [], 'disk': {'available': False, 'value': None, 'source': 'none'}},
+        'logs': {'status': 'no_anomaly', 'entries': []},
+        'conflicts': {'status': 'ok', 'vs_overlaps': [], 'pool_overlaps': []},
+    })
+
+    return {
+        'status': 'ok',
+        'anomalies': anomalies,
+        'report': report,
+        'device': client.host,
+        'rows_injected': rows,
+    }
+
+
 def _check_process_alive(pid):
     """Check if a process with the given PID is alive (cross-platform).
 
@@ -241,42 +379,46 @@ class VSCollector:
         sys.exit(0)
 
 
+def _add_common_args(p):
+    """Add common CLI arguments shared by all subcommands."""
+    p.add_argument("--host", default="", help="AD device address (e.g. https://10.74.27.42)")
+    p.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
+    p.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
+    p.add_argument("--user", default="admin", help="AD username (default: admin)")
+    p.add_argument("--password", default="", help="AD password (env AD_PASS overrides if --password not given)")
+    p.add_argument("--db", default="", help="SQLite database path (default: ./vs_samples_<host>.db)")
+
+
+def _derive_db_path(host):
+    """Derive default DB path from host URL."""
+    import re
+    safe = re.sub(r'[^a-zA-Z0-9._-]', '_', host)
+    return f"vs_samples_{safe}.db"
+
+
 def parse_args(argv=None):
-    """Parse CLI arguments."""
+    """Parse CLI arguments with subcommand routing."""
     parser = argparse.ArgumentParser(
-        description="VS traffic collection daemon — polls AD VS stats into SQLite.",
+        description="AD VS traffic collection tool — one-shot collect or long-running daemon.",
     )
-    parser.add_argument(
-        "--host",
-        default="",
-        help="AD device address (e.g. https://10.74.27.42)",
+    subparsers = parser.add_subparsers(dest="command", help="Subcommand")
+
+    # collect subcommand (one-shot)
+    collect_p = subparsers.add_parser(
+        "collect", help="One-shot: fetch trend API last-hour data, inject into SQLite, run 3σ analysis"
     )
-    parser.add_argument(
-        "--hosts",
-        default="",
-        help="多设备地址，逗号分隔 (多线程采集)",
+    _add_common_args(collect_p)
+
+    # daemon subcommand (deprecated, preserved for backward compatibility)
+    daemon_p = subparsers.add_parser(
+        "daemon", help="DEPRECATED: long-running collection daemon"
     )
-    parser.add_argument(
-        "--user",
-        default="admin",
-        help="AD username (default: admin)",
-    )
-    parser.add_argument(
-        "--password",
-        default="",
-        help="AD password (env AD_PASS overrides if --password not given)",
-    )
-    parser.add_argument(
-        "--db",
-        default="",
-        help="SQLite database path (default: ./vs_samples_<host>.db)",
-    )
-    parser.add_argument(
-        "--interval",
-        type=int,
-        default=30,
+    _add_common_args(daemon_p)
+    daemon_p.add_argument(
+        "--interval", type=int, default=30,
         help="Sampling interval in seconds (default: 30)",
     )
+
     return parser.parse_args(argv)
 
 
@@ -345,17 +487,18 @@ def run_collector_multi(devices, db_paths, interval=30):
             pass
 
 
-def main():
-    """CLI entry point for the VS collector daemon."""
-    args = parse_args()
+def _collect_and_analyze_one(client, db_path):
+    """Single-device collect+analyze for ThreadPoolExecutor (run_multi compatible)."""
+    if not db_path:
+        db_path = _derive_db_path(client.host)
+    return collect_and_analyze(client, db_path)
 
-    # Resolve password: --password > AD_PASS env var
+
+def _run_daemon(args):
+    """Run the legacy daemon mode (single or multi device)."""
     password = args.password or os.environ.get("AD_PASS", "")
-    if not password and not (hasattr(args, 'hosts') and args.hosts):
-        print("错误: 未指定密码，请使用 --password 或设置环境变量 AD_PASS", file=sys.stderr)
-        sys.exit(1)
 
-    # Multi-device mode
+    # Multi-device daemon mode
     if hasattr(args, 'hosts') and args.hosts:
         devices = []
         for host in args.hosts.split(","):
@@ -363,68 +506,129 @@ def main():
             if host:
                 devices.append({"host": host, "user": args.user, "password": password})
 
-        # Derive DB paths per device
         db_paths = {}
         for d in devices:
-            import re
-            safe = re.sub(r'[^a-zA-Z0-9._-]', '_', d["host"])
-            db_paths[d["host"]] = f"vs_samples_{safe}.db"
+            db_paths[d["host"]] = _derive_db_path(d["host"])
 
         run_collector_multi(devices, db_paths, interval=args.interval)
         sys.exit(0)
 
-    # Derive default DB path from host if not explicitly provided
+    # Single-device daemon mode
+    if not args.host:
+        print("错误: 未指定设备地址，请使用 --host 指定 AD 设备 URL", file=sys.stderr)
+        sys.exit(4)
+    if not password:
+        print("错误: 未指定密码，请使用 --password 或设置环境变量 AD_PASS", file=sys.stderr)
+        sys.exit(1)
+
     if not args.db:
-        import re
-        safe_host = re.sub(r'[^a-zA-Z0-9._-]', '_', args.host)
-        args.db = f"vs_samples_{safe_host}.db"
+        args.db = _derive_db_path(args.host)
 
     collector = VSCollector(
-        host=args.host,
-        password=password,
-        username=args.user,
-        db_path=args.db,
-        interval=args.interval,
+        host=args.host, password=password, username=args.user,
+        db_path=args.db, interval=args.interval,
     )
 
     pid_path = collector.db_path + ".pid"
-
-    # Signal handlers for graceful shutdown
     signal.signal(signal.SIGINT, collector.handle_signal)
     if hasattr(signal, 'SIGBREAK'):
         signal.signal(signal.SIGBREAK, collector.handle_signal)
 
-    # Initialize: PID file, DB table, data cleanup
     collector.start(pid_path)
 
-    # Hourly cleanup tracker
     last_cleanup_ts = int(time.time())
-
-    # Main sampling loop
     try:
         while True:
             rows = collector.run_once()
-
             if rows is not None:
                 vs_set = {r[1] for r in rows}
-                ts_display = time.strftime(
-                    "%Y-%m-%d %H:%M:%S", time.localtime(time.time())
-                )
-                print(
-                    f"[{ts_display}] 采样 {len(vs_set)} 个 VS，{len(rows)} 条记录"
-                )
-
-            # Hourly data cleanup
+                ts_display = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
+                print(f"[{ts_display}] 采样 {len(vs_set)} 个 VS，{len(rows)} 条记录")
             now = int(time.time())
             if now - last_cleanup_ts >= 3600:
                 collector.cleanup_old_data()
                 last_cleanup_ts = now
-
             time.sleep(collector.interval)
     except SystemExit:
         raise
     except KeyboardInterrupt:
         collector.handle_signal(signal.SIGINT, None)
+
+
+def _run_collect(args):
+    """Run one-shot collect+analyze (single or multi device)."""
+    from multi_device import run_multi, parse_hosts_arg, load_devices_json, compute_multi_exit_code
+
+    password = args.password or os.environ.get("AD_PASS", "")
+
+    # Multi-device collect mode
+    if args.hosts or args.devices:
+        if args.host:
+            print("警告: --hosts/--devices 和 --host 同时指定，--host 将被忽略", file=sys.stderr)
+        if args.hosts:
+            devices = parse_hosts_arg(args.hosts, args.user, args.password)
+        else:
+            devices = load_devices_json(args.devices)
+
+        if not devices:
+            print("错误: 设备列表为空", file=sys.stderr)
+            sys.exit(4)
+
+        results = run_multi(devices, _collect_and_analyze_one, db_path=args.db or "")
+        for host, result in results.items():
+            if "error" in result:
+                print(f"\n## {host}\n> 错误: {result['error']}")
+            else:
+                print(f"\n## {host}")
+                print(f"注入行数: {result.get('rows_injected', 0)}")
+                print(f"异常数: {len(result.get('anomalies', []))}")
+                if result.get('report'):
+                    print(result['report'])
+        sys.exit(compute_multi_exit_code(results))
+
+    # Single-device collect mode
+    if not args.host:
+        print("错误: 未指定设备地址，请使用 --host 指定 AD 设备 URL", file=sys.stderr)
+        sys.exit(4)
+    if not password:
+        print("错误: 未指定密码，请使用 --password 或设置环境变量 AD_PASS", file=sys.stderr)
+        sys.exit(4)
+
+    db_path = args.db or _derive_db_path(args.host)
+
+    try:
+        client = ADClient(args.host, args.user, password)
+    except Exception as e:
+        print(f"错误: 无法连接设备: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        result = collect_and_analyze(client, db_path)
+    except Exception as e:
+        print(f"错误: 采集分析失败: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    if result.get('status') == 'error':
+        print(f"错误: {result.get('error', '未知错误')}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"注入行数: {result.get('rows_injected', 0)}")
+    print(f"异常数: {len(result.get('anomalies', []))}")
+    if result.get('report'):
+        print(result['report'])
+    sys.exit(0)
+
+
+def main():
+    """CLI entry point — routes to collect (one-shot) or daemon (deprecated)."""
+    sys.stdout.reconfigure(encoding='utf-8')
+    args = parse_args()
+
+    if args.command == "daemon":
+        _run_daemon(args)
+    else:
+        # Default: collect mode
+        _run_collect(args)
 
 
 if __name__ == "__main__":
