@@ -175,40 +175,31 @@ def _build_metric_tables_from_trend(trends_by_vs):
                 continue
             items = data.get('items', []) if isinstance(data, dict) else []
             for item in items:
-                # Extract metric values from trend data
-                for key in ('connection-rate', 'connection', 'general-throughput',
-                            'upstream-throughput', 'downstream-throughput',
-                            'http-request-rate', 'client-connection', 'server-connection',
-                            'ssl-connection-rate', 'ssl-connection'):
-                    vals = _extract_metric_values(item, key)
-                    if vals:
-                        mean_val = statistics.mean(vals) if vals else 0
-                        max_val = max(vals) if vals else 0
-                        if max_val >= 2 or mean_val >= 2:
-                            result.append({
-                                'vs': vs_name,
-                                'metric': key,
-                                'trend': trend_period,
-                                'mean': mean_val,
-                                'max': max_val,
-                            })
+                name = item.get('name', '')
+                vals = _extract_metric_values(item)
+                if vals:
+                    mean_val = statistics.mean(vals) if vals else 0
+                    max_val = max(vals) if vals else 0
+                    if max_val >= 2 or mean_val >= 2:
+                        result.append({
+                            'vs': vs_name,
+                            'metric': name,
+                            'trend': trend_period,
+                            'mean': mean_val,
+                            'max': max_val,
+                        })
     return result
 
 
-def _extract_metric_values(item, metric_key):
-    """Extract numeric values from a trend item for a given metric key."""
-    if metric_key not in item:
+def _extract_metric_values(item):
+    """Extract numeric values from a trend API item dict.
+
+    Trend API returns flat arrays: {"name": "connection_rate", "values": [1340, ...]}
+    """
+    vals = item.get('values', [])
+    if not isinstance(vals, list):
         return []
-    metric_data = item[metric_key]
-    values = []
-    for period_key in ('60s', '300s', '3600s', 'raw'):
-        if period_key in metric_data and isinstance(metric_data[period_key], list):
-            for entry in metric_data[period_key]:
-                if isinstance(entry, list) and len(entry) >= 2:
-                    v = entry[1]
-                    if isinstance(v, (int, float)) and math.isfinite(v):
-                        values.append(v)
-    return values
+    return [float(v) for v in vals if isinstance(v, (int, float)) and math.isfinite(v)]
 
 
 def traffic_analysis(client, db_path=None, vs_name=None):

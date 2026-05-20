@@ -156,9 +156,12 @@ class TestDBFallback(unittest.TestCase):
         self.client.get_virtual_services.return_value = {
             'items': [{'name': 'vs_test'}]
         }
-        # Mock get_vs_trend_by_name
+        # Mock get_vs_trend_by_name — trend API returns flat arrays in 'values'
         self.client.get_vs_trend_by_name.return_value = {
-            'items': [{'name': 'vs_test', 'connection-rate': {'60s': [[1700000000, 100.0]]}}]
+            'items': [
+                {'name': 'connection_rate', 'values': [100.0, 200.0, 300.0], 'unit': 'REQUEST-PER-SECOND', 'feature': 'ENABLE'},
+                {'name': 'connection', 'values': [5000.0, 6000.0, 7000.0], 'unit': 'COUNT', 'feature': 'ENABLE'},
+            ]
         }
         self.now_ts = int(datetime.now().timestamp())
 
