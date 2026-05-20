@@ -9,6 +9,7 @@ import os
 import signal
 import sqlite3
 import sys
+import threading
 import time
 
 # Cross-skill import: ad-ops provides ADClient
@@ -94,6 +95,8 @@ class VSCollector:
         self.consecutive_failures = 0
         self.conn = None
         self.running = False
+        self.stop_event = None  # injected by run_collector_multi()
+        self.fatal_error = None
 
         # Derive default DB name from host if not explicitly provided
         if not db_path:
@@ -106,6 +109,12 @@ class VSCollector:
             self.db_path = os.path.abspath(db_path)
         else:
             self.db_path = db_path
+
+    @property
+    def host_slug(self):
+        """Filesystem-safe host identifier for logging."""
+        import re
+        return re.sub(r'[^a-zA-Z0-9._-]', '_', self.host)
 
     def open_db(self):
         """Open SQLite connection and create the vs_samples table if needed."""
@@ -166,7 +175,7 @@ class VSCollector:
             or None on failure.
 
         Raises:
-            SystemExit: (code 3) on SQLite write failure.
+            RuntimeError: on SQLite write failure.
         """
         try:
             data = self.client.get_vs_stat()
@@ -192,8 +201,8 @@ class VSCollector:
                 )
             self.conn.commit()
         except Exception as e:
-            print(f"错误: 数据库写入失败: {e}", file=sys.stderr)
-            sys.exit(3)
+            print(f"[{self.host_slug}] 错误: 数据库写入失败: {e}", file=sys.stderr)
+            raise RuntimeError(f"数据库写入失败: {e}")
 
         # Check if we were in STALLED state and just recovered
         if self.consecutive_failures >= 5:
@@ -239,8 +248,13 @@ def parse_args(argv=None):
     )
     parser.add_argument(
         "--host",
-        required=True,
+        default="",
         help="AD device address (e.g. https://10.74.27.42)",
+    )
+    parser.add_argument(
+        "--hosts",
+        default="",
+        help="多设备地址，逗号分隔 (多线程采集)",
     )
     parser.add_argument(
         "--user",
@@ -266,15 +280,98 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
+def _collect_loop(collector):
+    """Collection loop driven by stop_event. Runs in a daemon thread."""
+    collector.open_db()
+    collector.cleanup_old_data()
+    max_consecutive_failures = 30
+    while not collector.stop_event.is_set():
+        try:
+            collector.run_once()
+        except Exception as e:
+            collector.consecutive_failures += 1
+            print(f"[{collector.host_slug}] 采集异常: {e}", file=sys.stderr)
+            if collector.consecutive_failures >= max_consecutive_failures:
+                collector.fatal_error = str(e)
+                collector.stop_event.set()
+                break
+        collector.stop_event.wait(timeout=collector.interval)
+    collector.close_db()
+
+
+def run_collector_multi(devices, db_paths, interval=30):
+    """Launch multiple collectors in parallel threads with a shared stop_event.
+
+    Args:
+        devices: list of dicts [{host, password, user}, ...]
+        db_paths: dict {host: db_path}
+        interval: sampling interval in seconds
+
+    The function blocks until SIGINT/SIGBREAK is received, then stops all collectors.
+    """
+    from multi_device import resolve_device_pw
+
+    stop_event = threading.Event()
+    threads = []
+    collectors = []
+
+    for d in devices:
+        pw = resolve_device_pw(d)
+        c = VSCollector(
+            d["host"], pw, d.get("user", "admin"),
+            db_path=db_paths.get(d["host"], ""), interval=interval
+        )
+        c.stop_event = stop_event
+        t = threading.Thread(target=_collect_loop, args=(c,), daemon=True)
+        t.start()
+        threads.append(t)
+        collectors.append(c)
+
+    # Main thread waits for signal
+    import signal as sig_module
+    def _handle_signal(signum, frame):
+        stop_event.set()
+    sig_module.signal(sig_module.SIGINT, _handle_signal)
+    if hasattr(sig_module, 'SIGBREAK'):
+        sig_module.signal(sig_module.SIGBREAK, _handle_signal)
+
+    for t in threads:
+        t.join()
+
+    for c in collectors:
+        try:
+            c.close_db()
+        except Exception:
+            pass
+
+
 def main():
     """CLI entry point for the VS collector daemon."""
     args = parse_args()
 
     # Resolve password: --password > AD_PASS env var
     password = args.password or os.environ.get("AD_PASS", "")
-    if not password:
+    if not password and not (hasattr(args, 'hosts') and args.hosts):
         print("错误: 未指定密码，请使用 --password 或设置环境变量 AD_PASS", file=sys.stderr)
         sys.exit(1)
+
+    # Multi-device mode
+    if hasattr(args, 'hosts') and args.hosts:
+        devices = []
+        for host in args.hosts.split(","):
+            host = host.strip()
+            if host:
+                devices.append({"host": host, "user": args.user, "password": password})
+
+        # Derive DB paths per device
+        db_paths = {}
+        for d in devices:
+            import re
+            safe = re.sub(r'[^a-zA-Z0-9._-]', '_', d["host"])
+            db_paths[d["host"]] = f"vs_samples_{safe}.db"
+
+        run_collector_multi(devices, db_paths, interval=args.interval)
+        sys.exit(0)
 
     # Derive default DB path from host if not explicitly provided
     if not args.db:

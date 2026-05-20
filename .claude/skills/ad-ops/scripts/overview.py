@@ -22,6 +22,10 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from ad_api import ADClient
+from multi_device import (
+    run_multi, parse_hosts_arg, load_devices_json,
+    compute_multi_exit_code, render_multi_summary, host_slug,
+)
 
 
 # =============================================================================
@@ -500,6 +504,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="AD 设备地址 (可设置环境变量 AD_HOST)",
     )
     parser.add_argument(
+        "--hosts",
+        default="",
+        help="多设备地址，逗号分隔 (如 https://IP1,https://IP2)",
+    )
+    parser.add_argument(
+        "--devices",
+        default="",
+        help="设备清单 JSON 文件路径 (密码不同时使用)",
+    )
+    parser.add_argument(
         "--user", "-u",
         default=os.environ.get("AD_USER", "admin"),
         help="用户名 (默认: admin)",
@@ -518,11 +532,62 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _overview_one(client, subcommand="all"):
+    """Single-device overview for ThreadPoolExecutor — returns dict, no sys.exit."""
+    overview = build_overview(client, subcommand)
+    markdown = render_markdown(overview)
+    return {"overview": overview, "markdown": markdown}
+
+
 def main() -> None:
     """CLI entry point."""
     sys.stdout.reconfigure(encoding='utf-8')
     parser = build_parser()
     args = parser.parse_args()
+
+    if args.hosts and args.host:
+        print("警告: --hosts 和 --host 同时指定，--host 将被忽略", file=sys.stderr)
+
+    # -- Multi-device mode -----------------------------------------------------
+    if args.hosts or args.devices:
+        if args.hosts:
+            devices = parse_hosts_arg(args.hosts, args.user, args.password)
+        else:
+            devices = load_devices_json(args.devices)
+
+        if not devices:
+            print("错误: 设备列表为空", file=sys.stderr)
+            sys.exit(4)
+
+        results = run_multi(devices, _overview_one, subcommand=args.subcommand)
+
+        if args.format == "json":
+            output = {
+                "mode": "multi",
+                "summary": {
+                    "total": len(results),
+                    "success": sum(1 for v in results.values() if "error" not in v),
+                    "failed": sum(1 for v in results.values() if "error" in v),
+                },
+                "results": results,
+            }
+            print(json.dumps(output, indent=2, ensure_ascii=False))
+        else:
+            lines = [render_multi_summary(results, "AD Device Overview — 多设备")]
+            lines.append("---")
+            for host, result in results.items():
+                if "error" in result:
+                    lines.append(f"## {host}")
+                    lines.append(f"> 错误: {result['error']}")
+                else:
+                    lines.append(f"## {host}")
+                    lines.append(result.get("markdown", ""))
+                lines.append("")
+            lines.append("---")
+            lines.append(render_multi_summary(results, "", {}))
+            print("\n".join(lines))
+
+        sys.exit(compute_multi_exit_code(results))
 
     # -- Parameter validation -------------------------------------------------
     if not args.host:

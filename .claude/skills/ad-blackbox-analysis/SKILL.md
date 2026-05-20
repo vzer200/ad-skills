@@ -20,8 +20,17 @@ description: 深信服 AD 设备黑盒日志分析技能，支持导出黑盒日
 ## CLI 命令参考
 
 ```bash
+# 单设备
 python scripts/blackbox.py --host https://10.146.10.254 --user admin --password admin \
   --from-date 2026-05-03 --to-date 2026-05-09 --archive-password admin
+
+# 多设备（同密码）
+python scripts/blackbox.py --hosts "https://192.168.8.30,https://192.168.8.31" \
+  --password xxx --from-date 2026-05-03 --to-date 2026-05-09
+
+# 多设备（异密码）
+python scripts/blackbox.py --devices devices.json \
+  --from-date 2026-05-03 --to-date 2026-05-09
 ```
 
 ## Workflow
@@ -33,7 +42,7 @@ python scripts/blackbox.py --host https://10.146.10.254 --user admin --password 
 ## Key Rules
 
 ### Time Range Limit
-**最大 7 天**。超过时自动调整为最近 7 天并告知用户。
+**最大 7 天**。超过时 LLM 必须调整为最近 7 天并告知用户。脚本本身不执行此校验。
 
 ### Password
 使用 `password` 参数（明文），不用 `pk_password`。
@@ -68,15 +77,18 @@ blackbox.tar.gz (ZIP加密)
 
 | 操作 | 必须使用 | 禁止使用 |
 |------|----------|----------|
-| 导出黑盒 | `python scripts/blackbox.py` | ❌ 直接调 API |
-| 查询进度 | `python scripts/blackbox.py` | ❌ 直接调 API |
+| 单设备黑盒 | `python scripts/blackbox.py --host ...` | ❌ 直接调 API |
+| 多设备黑盒 | `python scripts/blackbox.py --hosts "..."` | ❌ 直接调 API |
 | 分析日志 | 脚本输出 | ❌ LLM 直读 CSV |
 
 ## 已知设备
 
-| 设备 | IP | 用户名 | 密码 |
-|------|-----|------|------|
-| AD1 | 10.146.10.254 | admin | admin |
+> 权威来源: 项目根目录 `devices.json`。密码通过 `password_from` 引用环境变量，禁止明文存储。
+
+| 设备 | IP | 用户名 |
+|------|-----|------|
+| AD1 | 192.168.8.30 | admin |
+| AD2 | 192.168.8.31 | admin |
 
 ## 行为准则
 
@@ -95,6 +107,17 @@ blackbox.tar.gz (ZIP加密)
 
 **必须将脚本 stdout 内容直接展示在对话消息正文中**，不要放在 shell 执行结果的折叠区域中。
 
+- 多设备输出含汇总表 + 每设备分块，可能较长
+- LLM 全文展示，不截断、不折叠、不选择性展示
+- 超过单条消息限制时分多条展示（保持设备分块完整）
+
+## 多设备触发决策
+
+1. 用户提到多个 IP/设备名 → `--hosts`
+2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
+3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
+4. 密码不同时 → 必须用 `--devices` JSON 文件
+
 ## 外部依赖
 
 | 依赖 | 说明 |
@@ -106,13 +129,11 @@ blackbox.tar.gz (ZIP加密)
 | 场景 | exit code |
 |------|----------|
 | 完全成功 | 0 |
-| 连接失败 | 1 |
-| 全部 API 失败 | 1 |
+| 连接/API 失败 | 1 |
 | 认证失败 | 2 |
-| SQLite 写入失败 | 3 |
 | 参数错误 | 4 |
 | 部分失败 | 5 |
-| 采集器重复启动 | 6 |
+| **多设备部分失败** | **7** |
 | ADClient import 失败 | 9 |
 
 ## 相关技能

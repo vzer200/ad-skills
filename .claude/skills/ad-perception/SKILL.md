@@ -21,10 +21,17 @@ AD 设备感知分析技能，提供 VS 流量趋势异常检测、设备状态�
 
 ```bash
 # 采集器（常驻后台）
-python scripts/collector.py --host https://x.x.x.x --user admin --password xxx [--db vs_samples.db] [--interval 60]
+python scripts/collector.py --host https://x.x.x.x --user admin --password xxx [--db vs_samples.db] [--interval 30]
 
-# 全维度感知分析
+# 多设备采集
+python scripts/collector.py --hosts "https://192.168.8.30,https://192.168.8.31" --password xxx [--interval 30]
+
+# 全维度感知分析（单设备）
 python scripts/perception.py analyze --host https://x.x.x.x [--db vs_samples.db] [--format json]
+
+# 多设备感知分析
+python scripts/perception.py analyze --hosts "https://192.168.8.30,https://192.168.8.31" --password xxx [--db ...]
+python scripts/perception.py analyze --devices devices.json [--db ...]
 
 # 单维度
 python scripts/perception.py traffic --host ... --vs <name> [--db ...] [--format json]
@@ -38,7 +45,7 @@ python scripts/perception.py conflict --host ... [--format json]
 ┌─ 采集器 ─────────────────────────────────────────┐
 │ python scripts/collector.py --host ...             │
 │  → 首次启动: 建表                                 │
-│  → 每 60s: get_vs_stat → INSERT                  │
+│  → 每 30s: get_vs_stat → INSERT                  │
 │  → 保持运行（建议 Windows 任务计划 / systemd）     │
 └──────────────────────────────────────────────────┘
 
@@ -56,18 +63,22 @@ python scripts/perception.py conflict --host ... [--format json]
 
 | 操作 | 必须使用 | 禁止使用 |
 |------|----------|----------|
-| 总览快照 | `python scripts/overview.py` | ❌ ad-ops 直调 API |
+| 总览快照 | `python ../ad-ops/scripts/overview.py` | ❌ ad-ops 直调 API |
 | 启动采集器 | `python scripts/collector.py` | ❌ 手动 HTTP 请求 |
-| 感知分析 | `python scripts/perception.py analyze/traffic/state/conflict` | ❌ LLM 直调 API |
+| 单设备感知分析 | `python scripts/perception.py analyze --host ...` | ❌ LLM 直调 API |
+| 多设备感知分析 | `python scripts/perception.py analyze --hosts "..."` | ❌ LLM 直调 API |
 | 展示报告 | 脚本 stdout 原样贴入对话 | ❌ LLM 修改/总结/补全 |
 
 ## 已知设备
 
+> 权威来源: 项目根目录 `devices.json`。密码通过 `password_from` 引用环境变量，禁止明文存储。
+
 | 设备 | IP | 用户 |
 |------|-----|------|
+| AD1 | 192.168.8.30 | admin |
+| AD2 | 192.168.8.31 | admin |
 | AD1 (21039) | 14.18.243.211:21039 | admin |
 | AD2 (21044) | 14.18.243.211:21044 | admin |
-| AD1 (旧) | 10.146.10.254 | admin |
 
 > 密码通过 `--password` 或环境变量 `AD_PASS` 传入，不写入文件。
 
@@ -90,14 +101,25 @@ python scripts/perception.py conflict --host ... [--format json]
 
 **必须将脚本 stdout 内容直接展示在对话消息正文中**，不要放在 shell 执行结果的折叠区域中。
 
+- 多设备输出含汇总表 + 每设备分块，可能较长
+- LLM 全文展示，不截断、不折叠、不选择性展示
+- 超过单条消息限制时分多条展示（保持设备分块完整）
+
+## 多设备触发决策
+
+1. 用户提到多个 IP/设备名 → `--hosts`
+2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
+3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
+4. 密码不同时 → 必须用 `--devices` JSON 文件
+
 ## 外部依赖
 
 | 依赖 | 说明 |
 |------|------|
-| `scripts/ad_api.py` | 提供 `ADClient`（API 调用），import 失败 exit 9 |
+| `../ad-ops/scripts/ad_api.py` | 提供 `ADClient`（API 调用），import 失败 exit 9 |
 | `ad-check-analysis` 巡检报告 | `perception.py state --disk-source` 需要 ad.json 中的 `disk_check`。**未提供时脚本标注缺失，不阻止其余分析** |
 | SSL 证书 | `ADClient` 禁用 TLS 验证（`CERT_NONE`），仅适用于内网自签名环境 |
-| 采集器累积时间 | 首次启动后需累积 ≥ 100 个采样点（约 2h）才能跑 3σ |
+| 采集器累积时间 | 首次启动后每个 VS metric 需累积 ≥ 30 个采样点（约 15min at 30s 间隔）才能跑 3σ |
 
 ## 错误码
 
@@ -111,6 +133,7 @@ python scripts/perception.py conflict --host ... [--format json]
 | 参数错误 | 4 |
 | 部分失败（其余正常） | 5 |
 | 采集器重复启动 | 6 |
+| **多设备部分失败** | **7** |
 | ADClient import 失败 | 9 |
 
 ## 相关技能

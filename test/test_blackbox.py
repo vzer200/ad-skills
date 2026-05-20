@@ -116,11 +116,11 @@ class TestBlackboxExitCodes(unittest.TestCase):
 
     def test_missing_args_exit_4(self):
         with patch("sys.argv", ["blackbox.py"]):
-            # argparse exits with 2 for missing required args by default
+            # --host is now optional; missing both --host and --hosts exits 4
             with self.assertRaises(SystemExit) as cm:
                 from blackbox import main
                 main()
-            self.assertEqual(cm.exception.code, 2)
+            self.assertEqual(cm.exception.code, 4)
 
 
 if __name__ == "__main__":

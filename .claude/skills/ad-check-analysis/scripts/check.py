@@ -26,6 +26,14 @@ try:
 except ImportError as e:
     print(f"错误: 无法导入 ad_api: {e}", file=sys.stderr)
     sys.exit(9)
+try:
+    from multi_device import (
+        run_multi, parse_hosts_arg, load_devices_json,
+        compute_multi_exit_code, render_multi_summary, host_slug,
+    )
+except ImportError as e:
+    print(f"错误: 无法导入 multi_device: {e}", file=sys.stderr)
+    sys.exit(9)
 
 import urllib.error
 import urllib.parse
@@ -92,15 +100,14 @@ def start_check(
     print(f"         event_id={event_id}  state={result.get('state')}")
     print("         巡检已在设备后台执行，请使用 progress 命令轮询进度。")
 
-    # 用 run_check 返回的 start_time（这是刚启动巡检的时间，不是上一个报告的）
     check_start_time = result.get("start_time", "")
     meta = {
         "scene": scene,
         "host": client.host,
         "event_id": event_id,
-        "report_name": "",          # 巡检未完成，暂无报告名
-        "start_time": check_start_time,   # 关键：用刚启动巡检的时间
-        "pre_run_latest_name": pre_run_latest_name,  # 启动前的最新报告名，wait 用作"新报告"判定兜底
+        "report_name": "",
+        "t0_int": _normalize_start_time(check_start_time),
+        "pre_run_latest_name": pre_run_latest_name,
         "work_dir": work_dir,
     }
     meta_path = os.path.join(work_dir, "_meta.json")
@@ -115,6 +122,7 @@ def wait_and_download(
     work_dir: str = "/tmp/ad_check",
     poll_interval: int = 10,
     timeout: int = 600,
+    max_attempts: int = 1,
 ) -> Dict[str, Any]:
     """
     步骤 4-6：轮询历史记录确认新报告生成 → 下载报告 → 解压保存元数据
@@ -130,12 +138,12 @@ def wait_and_download(
         meta = json.load(f)
 
     scene = meta.get("scene", "?")
-    target_start_time = meta.get("start_time", "")
+    t0_int = meta.get("t0_int", 0)
     pre_run_latest_name = meta.get("pre_run_latest_name", "")
 
-    if not target_start_time and not pre_run_latest_name:
+    if not t0_int and not pre_run_latest_name:
         raise RuntimeError(
-            "无法判定新报告：_meta.json 缺少 start_time 和 pre_run_latest_name。"
+            "无法判定新报告：_meta.json 缺少 t0_int 和 pre_run_latest_name。"
             "请用最新版 run 重新启动巡检后再 wait。"
         )
 
@@ -144,7 +152,7 @@ def wait_and_download(
     deadline = time.time() + timeout
     latest = None
     attempt = 0
-    while time.time() < deadline:
+    while time.time() < deadline and attempt < max_attempts:
         attempt += 1
         try:
             history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
@@ -156,10 +164,10 @@ def wait_and_download(
             top_name = top.get("name", "")
             top_start = top.get("start_time", "")
             top_end = top.get("end_time", "")
-            if target_start_time:
-                is_new = (top_start == target_start_time)
+            if t0_int:
+                is_new = _is_new_report(top, pre_run_latest_name, t0_int)
             else:
-                is_new = (top_name != pre_run_latest_name)
+                is_new = bool(top_end) and top_name != pre_run_latest_name
             is_finished = bool(top_end)
             state = "FINISHED" if is_finished else "RUNNING"
             tag = "✓ 新报告" if is_new else "× 旧报告"
@@ -173,15 +181,15 @@ def wait_and_download(
 
     if latest is None:
         raise RuntimeError(
-            f"超时 ({timeout}s) 未检测到本次巡检的完成报告。"
-            f"target_start_time={target_start_time!r} pre_run_latest_name={pre_run_latest_name!r}"
+            f"未检测到本次巡检的完成报告 (attempts={attempt})。"
+            "请使用 progress 确认完成后再 wait，或增加重试次数。"
         )
 
     # ── 步骤 5: 下载报告 ─────────────────────────────────────────────
     print("[步骤 5] 下载巡检报告…")
     report_name = latest["name"]
     report_scene = latest.get("scene", scene)
-    start_time = latest.get("start_time", target_start_time)
+    start_time = latest.get("start_time", "")
     print(f"         报告: {report_name}")
 
     try:
@@ -986,7 +994,112 @@ def render_markdown(
 # CLI
 # ---------------------------------------------------------------------------
 
+WINDOW = 120  # 新报告判定窗口（秒），POST 与 history start_time 差值上限
+
+
+def _normalize_start_time(s):
+    """提取字符串中所有数字，转为 YYYYMMDDHHMMSS 整数。"""
+    digits = ''.join(c for c in s if c.isdigit())
+    if len(digits) >= 14:
+        return int(digits[:14])
+    return 0
+
+
+def _is_new_report(top_item, pre_run_latest_name, t0_int):
+    """判定 history[0] 是否为本轮巡检产生的新报告。
+
+    Args:
+        top_item: history API items[0]
+        pre_run_latest_name: 启动巡检前 history[0].name
+        t0_int: POST 响应的 start_time 归一化整数 (YYYYMMDDHHMMSS)
+
+    Returns:
+        True 表示该记录是本轮巡检产生的新报告
+    """
+    top_name = top_item.get("name", "")
+    top_start = top_item.get("start_time", "")
+    top_end = top_item.get("end_time", "")
+
+    if not top_end:
+        return False
+    if top_name == pre_run_latest_name:
+        return False
+
+    top_int = _normalize_start_time(top_start)
+    if top_int == 0:
+        return False
+
+    diff = abs(top_int - t0_int)
+    # 跨分钟秒级进位修正 (18:59:55 vs 19:00:05 → diff=4050 → 修正为 50)
+    if 4000 < diff < 10000:
+        diff = diff - 4000
+    return diff < WINDOW
+
+
+def _progress_one(client, **kw):
+    """Single-device progress query for ThreadPoolExecutor, with NO_RUNNING fallback."""
+    result = client._request("GET", "/debug/sys/offline-check", params={"type": "progress"})
+    if result.get("state") == "NO_RUNNING":
+        try:
+            history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
+            items = history.get("items", [])
+            if items:
+                latest = items[0]
+                result["history_latest"] = {
+                    "name": latest.get("name", ""),
+                    "scene": latest.get("scene", ""),
+                    "start_time": latest.get("start_time", ""),
+                    "end_time": latest.get("end_time", ""),
+                    "finished": latest.get("end_time") != "",
+                }
+        except Exception:
+            pass
+    return result
+
+
+def _start_only(client, scene="标准巡检", force=False, work_dir=None):
+    """Start check only — returns immediately with work_dir and event_id, no sys.exit."""
+    import tempfile
+    if work_dir is None:
+        slug = host_slug(client.host)
+        work_dir = os.path.join(tempfile.gettempdir(), f"ad_check_{slug}")
+    meta = start_check(client, scene, force=force, work_dir=work_dir)
+    return {
+        "host": client.host,
+        "work_dir": work_dir,
+        "event_id": meta.get("event_id", ""),
+        "scene": meta.get("scene", ""),
+    }
+
+
+def _check_one(client, scene="标准巡检", force=False, work_dir=None):
+    """Atomic check for a single device — run+wait+analyze+render, no sys.exit."""
+    import tempfile
+    if work_dir is None:
+        slug = host_slug(client.host)
+        work_dir = os.path.join(tempfile.gettempdir(), f"ad_check_{slug}")
+
+    # Step 1-3: Start check
+    meta = start_check(client, scene, force=force, work_dir=work_dir)
+
+    # Step 4-6: Wait and download
+    meta = wait_and_download(client, work_dir=work_dir, max_attempts=60)
+
+    # Analyze
+    with open(meta["ad_json_path"], encoding="utf-8") as f:
+        data = json.load(f)
+    analysis = analyze(data)
+    report = render_markdown(analysis, meta)
+
+    return {
+        "meta": meta,
+        "analysis": analysis,
+        "markdown": report,
+    }
+
+
 def main():
+    sys.stdout.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description="AD 设备巡检工具")
     sub = parser.add_subparsers(dest="command", help="子命令")
 
@@ -996,9 +1109,15 @@ def main():
     p_scenes.add_argument("--username", default="admin")
     p_scenes.add_argument("--password", default="")
 
-    # run — 步骤 1-3：场景确认 + 上限检查 + 启动，然后立即退出
-    p_run = sub.add_parser("run", help="启动巡检（仅启动，不轮询）")
-    p_run.add_argument("--host", required=True, help="设备地址 https://IP")
+    # run — 步骤 1-3：场景确认 + 上限检查 + 启动
+    # 单设备 / --no-wait: 启动后立即退出
+    # 多设备 (默认): 启动 + 等待完成 + 下载分析
+    p_run = sub.add_parser("run", help="启动巡检")
+    p_run.add_argument("--host", default="", help="设备地址 https://IP")
+    p_run.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
+    p_run.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
+    p_run.add_argument("--wait", action="store_true", help="多设备模式：等待巡检完成并输出报告")
+    p_run.add_argument("--no-wait", action="store_true", help="多设备模式：仅启动，不等待完成（默认）")
     p_run.add_argument("--username", default="admin")
     p_run.add_argument("--password", default="")
     p_run.add_argument("--scene", default="标准巡检", help="巡检场景")
@@ -1006,7 +1125,7 @@ def main():
     p_run.add_argument("--output", help="工作目录（默认 /tmp/ad_check_<timestamp>）")
 
     # wait — 步骤 4-6：轮询确认新报告生成 → 下载 → 分析
-    p_wait = sub.add_parser("wait", help="轮询等待巡检完成并下载报告（含分析）")
+    p_wait = sub.add_parser("wait", help="下载巡检报告并分析（请先用 progress 确认已完成）")
     p_wait.add_argument("--host", required=True)
     p_wait.add_argument("--username", default="admin")
     p_wait.add_argument("--password", default="")
@@ -1019,13 +1138,15 @@ def main():
 
     # history
     p_hist = sub.add_parser("history", help="查看历史巡检记录")
-    p_hist.add_argument("--host", required=True)
+    p_hist.add_argument("--host", default="", help="设备地址 https://IP")
+    p_hist.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
     p_hist.add_argument("--username", default="admin")
     p_hist.add_argument("--password", default="")
 
     # progress
     p_prog = sub.add_parser("progress", help="查询巡检进度（单次）")
-    p_prog.add_argument("--host", required=True)
+    p_prog.add_argument("--host", default="", help="设备地址 https://IP")
+    p_prog.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
     p_prog.add_argument("--username", default="admin")
     p_prog.add_argument("--password", default="")
 
@@ -1052,6 +1173,40 @@ def main():
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     elif args.command == "run":
+        if args.hosts:
+            if args.devices:
+                devices = load_devices_json(args.devices)
+            else:
+                devices = parse_hosts_arg(args.hosts, args.username, args.password)
+            if not devices:
+                print("错误: 设备列表为空", file=sys.stderr)
+                sys.exit(4)
+
+            if args.wait:
+                # 同步模式：等待所有设备完成（需平台超时充足）
+                results = run_multi(devices, _check_one, scene=args.scene, force=args.force)
+                for host, result in results.items():
+                    if "error" in result:
+                        print(f"\n## {host}\n> 错误: {result['error']}\n")
+                    else:
+                        print(f"\n## {host}\n")
+                        print(result.get("markdown", ""))
+                print(f"\n---\n{render_multi_summary(results, 'AD 巡检 — 多设备')}")
+                sys.exit(compute_multi_exit_code(results))
+            else:
+                # 异步模式（默认）：启动后立即退出，返回 work_dir 供 LLM 轮询
+                results = run_multi(devices, _start_only, scene=args.scene, force=args.force)
+                for host, r in results.items():
+                    if "error" in r:
+                        print(f"[{host}] 错误: {r['error']}", file=sys.stderr)
+                    else:
+                        print(f"[{host}] work_dir={r['work_dir']} event_id={r['event_id']}")
+                sys.exit(compute_multi_exit_code(results))
+
+        if not args.host:
+            print("错误: 必须指定 --host 或 --hosts", file=sys.stderr)
+            sys.exit(4)
+
         client = ADClient(args.host, args.username, args.password)
         work_dir = args.output or f"/tmp/ad_check_{int(time.time())}"
         try:
@@ -1114,6 +1269,17 @@ def main():
             sys.exit(1)
 
     elif args.command == "history":
+        if args.hosts:
+            devices = parse_hosts_arg(args.hosts, args.username, args.password)
+            results = run_multi(devices, lambda client, **kw: client._request("GET", "/debug/sys/offline-check", params={"type": "history"}))
+            output = {"mode": "multi", "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v), "failed": sum(1 for v in results.values() if "error" in v)}, "results": results}
+            print(json.dumps(output, indent=2, ensure_ascii=False))
+            sys.exit(compute_multi_exit_code(results))
+
+        if not args.host:
+            print("错误: 必须指定 --host 或 --hosts", file=sys.stderr)
+            sys.exit(4)
+
         client = ADClient(args.host, args.username, args.password)
         try:
             result = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
@@ -1123,28 +1289,19 @@ def main():
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     elif args.command == "progress":
+        if hasattr(args, 'hosts') and args.hosts:
+            devices = parse_hosts_arg(args.hosts, args.username, args.password)
+            results = run_multi(devices, _progress_one)
+            output = {"mode": "multi", "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v), "failed": sum(1 for v in results.values() if "error" in v)}, "results": results}
+            print(json.dumps(output, indent=2, ensure_ascii=False))
+            sys.exit(compute_multi_exit_code(results))
+
+        if not args.host:
+            print("错误: 必须指定 --host 或 --hosts", file=sys.stderr)
+            sys.exit(4)
+
         client = ADClient(args.host, args.username, args.password)
-        try:
-            result = client._request("GET", "/debug/sys/offline-check", params={"type": "progress"})
-        except (ADConnectionError, ADAuthError, ADAPIError) as e:
-            print(f"❌ API 调用失败: {e}", file=sys.stderr)
-            sys.exit(1)
-        # NO_RUNNING 时辅助查 history 判断巡检是否已完成
-        if result.get("state") == "NO_RUNNING":
-            try:
-                history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
-                items = history.get("items", [])
-                if items:
-                    latest = items[0]
-                    result["history_latest"] = {
-                        "name": latest.get("name", ""),
-                        "scene": latest.get("scene", ""),
-                        "start_time": latest.get("start_time", ""),
-                        "end_time": latest.get("end_time", ""),
-                        "finished": latest.get("end_time") != "",
-                    }
-            except (ADConnectionError, ADAuthError, ADAPIError):
-                pass  # NO_RUNNING 时的辅助查询失败不报错，仅作为信息提示
+        result = _progress_one(client)
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     elif args.command == "analyze":

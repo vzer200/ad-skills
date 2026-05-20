@@ -11,15 +11,18 @@ description: 深信服 AD 设备运维管理技能，支持用户/虚拟服务/P
 
 | 功能 | 说明 |
 |------|------|
-| 用户管理 | 用户的增删改查 |
-| 虚拟服务 | 虚拟服务的增删改查 |
-| 池管理 | 池的增删改查 |
+| 用户管理 | 用户的查询 |
+| 虚拟服务 | 虚拟服务的查询 |
+| 池管理 | 池的查询 |
 | SSL 证书 | 证书列表及有效期查询 |
 | HA 状态 | 高可用状态和集群信息查询 |
-| SSH 配置 | SSH 启用/禁用/状态查询 |
+| SSH 配置 | SSH 状态查询 |
 | 系统统计 | VS 指标、吞吐趋势、节点状态 |
+| 设备总览 | 设备概览快照（overview.py） |
 
 ## CLI 命令参考
+
+### ad_api.py（单设备）
 
 ```bash
 python scripts/ad_api.py --host https://10.146.10.254 --password admin users list
@@ -28,6 +31,25 @@ python scripts/ad_api.py --host https://10.146.10.254 --password admin pool list
 python scripts/ad_api.py --host https://10.146.10.254 --password admin stat sys
 python scripts/ad_api.py --host https://10.146.10.254 --password admin ha status
 python scripts/ad_api.py --host https://10.146.10.254 --password admin cert list
+```
+
+### overview.py（设备总览）
+
+```bash
+# 单设备
+python scripts/overview.py all --host https://192.168.8.30 --password xxx [--format json]
+python scripts/overview.py vs --host ... [--format json]
+python scripts/overview.py pool --host ... [--format json]
+python scripts/overview.py cert --host ... [--format json]
+python scripts/overview.py hardware --host ... [--format json]
+python scripts/overview.py ha --host ... [--format json]
+python scripts/overview.py traffic --host ... [--format json]
+
+# 多设备（同密码）
+python scripts/overview.py all --hosts "https://192.168.8.30,https://192.168.8.31" --password xxx
+
+# 多设备（异密码）
+python scripts/overview.py all --devices devices.json
 ```
 
 ## API Reference
@@ -56,13 +78,18 @@ python scripts/ad_api.py --host https://10.146.10.254 --password admin cert list
 
 | 操作 | 必须使用 | 禁止使用 |
 |------|----------|----------|
-| 所有操作 | `python scripts/ad_api.py` | ❌ 直接调 API |
+| API 操作 | `python scripts/ad_api.py` | ❌ 直接调 API |
+| 单设备总览 | `python scripts/overview.py all --host ...` | ❌ 直接调 API |
+| 多设备总览 | `python scripts/overview.py all --hosts "..."` | ❌ 直接调 API |
 
 ## 已知设备
 
-| 设备 | IP | 用户名 | 密码 |
-|------|-----|------|------|
-| AD1 | 10.146.10.254 | admin | admin |
+> 权威来源: 项目根目录 `devices.json`。密码通过 `password_from` 引用环境变量，禁止明文存储。
+
+| 设备 | IP | 用户名 | 密码来源 |
+|------|-----|------|----------|
+| AD1 | 192.168.8.30 | admin | $env:AD1_PASS |
+| AD2 | 192.168.8.31 | admin | $env:AD2_PASS |
 
 ## 行为准则
 
@@ -79,11 +106,22 @@ python scripts/ad_api.py --host https://10.146.10.254 --password admin cert list
 
 **必须将脚本 stdout 内容直接展示在对话消息正文中**，不要放在 shell 执行结果的折叠区域中。
 
+- 多设备输出含汇总表 + 每设备分块，可能较长
+- LLM 全文展示，不截断、不折叠、不选择性展示
+- 超过单条消息限制时分多条展示（保持设备分块完整）
+
+## 多设备触发决策
+
+1. 用户提到多个 IP/设备名 → `--hosts`
+2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
+3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
+4. 密码不同时 → 必须用 `--devices` JSON 文件
+
 ## 外部依赖
 
 | 依赖 | 说明 |
 |------|------|
-| Python 标准库 | `http.client`, `json`, `ssl`, `sys` |
+| Python 标准库 | `json`, `ssl`, `sys`, `urllib.request` |
 | 网络 | HTTPS only, self-signed certs ignored by default, timeout 30s |
 | API Base Path | `/api/lb/current-version/` |
 
@@ -92,13 +130,11 @@ python scripts/ad_api.py --host https://10.146.10.254 --password admin cert list
 | 场景 | exit code |
 |------|----------|
 | 完全成功 | 0 |
-| 连接失败 | 1 |
-| 全部 API 失败 | 1 |
+| 连接/API 失败 | 1 |
 | 认证失败 | 2 |
-| SQLite 写入失败 | 3 |
 | 参数错误 | 4 |
 | 部分失败 | 5 |
-| 采集器重复启动 | 6 |
+| **多设备部分失败** | **7** |
 | ADClient import 失败 | 9 |
 
 ## 相关技能

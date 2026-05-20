@@ -26,14 +26,26 @@ python scripts/check.py scenes --host https://192.168.8.30
 # 启动巡检（步骤 1-3 合一）
 python scripts/check.py run --host https://192.168.8.30 --scene "标准巡检" --force
 
-# 轮询进度
+# 多设备巡检（并行启动，逐台轮询）
+python scripts/check.py run --hosts "https://192.168.8.30,https://192.168.8.31" --scene "标准巡检" --password xxx --force
+
+# 多设备巡检（同步等待，需平台超时充足）
+python scripts/check.py run --hosts "https://192.168.8.30,https://192.168.8.31" --scene "标准巡检" --password xxx --force --wait
+
+# 轮询进度（单设备）
 python scripts/check.py progress --host https://192.168.8.30
+
+# 轮询进度（多设备并行查询）
+python scripts/check.py progress --hosts "https://192.168.8.30,https://192.168.8.31" --password xxx
 
 # 等待完成+下载+分析
 python scripts/check.py wait --host https://192.168.8.30 --work-dir /tmp/ad_check_xxx
 
-# 查看历史
+# 查看历史（单设备）
 python scripts/check.py history --host https://192.168.8.30
+
+# 查看历史（多设备）
+python scripts/check.py history --hosts "https://192.168.8.30,https://192.168.8.31" --password xxx
 
 # 分析本地报告
 python scripts/check.py analyze --path /tmp/ad_check_xxx
@@ -45,17 +57,38 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 |------|----------|----------|
 | 查看场景 | `python scripts/check.py scenes` | ❌ 直接调 API |
 | 启动巡检 | `python scripts/check.py run` | ❌ 直接调 POST |
+| 多设备巡检 | `python scripts/check.py run --hosts "..."` | ❌ 循环调用单设备 |
 | 轮询进度 | `python scripts/check.py progress` | ❌ 直接调 `type=progress` |
 | 轮询+下载 | `python scripts/check.py wait` | ❌ 手动查 history + download |
 | 查询历史 | `python scripts/check.py history` | ❌ 直接调 `type=history` |
+| 多设备历史 | `python scripts/check.py history --hosts "..."` | ❌ 循环调用单设备 |
 | 分析报告 | `python scripts/check.py analyze` | ❌ 手动解析 |
 
 ## 已知设备
 
-| 设备名 | IP 地址 | 用户名 | 密码 |
-|--------|---------|--------|------|
-| AD1 | 192.168.8.30 | admin | root1234+ |
-| AD2 | 192.168.8.31 | admin | root1234++ |
+> 权威来源: 项目根目录 `devices.json`。密码通过 `password_from` 引用环境变量，禁止明文存储。
+
+| 设备名 | IP 地址 | 用户名 |
+|--------|---------|--------|
+| AD1 | 192.168.8.30 | admin |
+| AD2 | 192.168.8.31 | admin |
+
+## 多设备触发决策
+
+1. 用户提到多个 IP/设备名 → `--hosts`
+2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
+3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
+4. 密码不同时 → 必须用 `--devices` JSON 文件
+
+### 多设备子命令支持
+
+| 子命令 | 多设备 | 说明 |
+|--------|--------|------|
+| `run` | ✅ | `--hosts` 并行启动多台，默认异步（需 `--wait` 同步） |
+| `scenes` | ❌ | 无意义（场景列表是设备相关的） |
+| `progress` | ✅ | `--hosts` 并行查询多台进度 |
+| `history` | ✅ | 并行查询多台历史 |
+| `analyze` | ❌ | 用 `--path` 不连设备 |
 
 ## 行为准则
 
@@ -108,11 +141,55 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 
 ### 执行步骤
 
-1. **确认场景**: 用户指定 → 直接使用；未指定 → 展示列表
-2. **检查上限**: `run` 命令自动检查并输出结论，=5 条时询问用户
-3. **启动巡检**: `run` 后台启动，返回 `event_id` 和 `work_dir`
-4. **轮询进度**: `progress` 每 10s 轮询（某些设备 `type=progress` 不可靠时用 `history` 备用）
-5. **下载分析**: `wait` 自动轮询 → 下载 ZIP → 解压 → 输出 Markdown 报告
+**LLM 必须严格遵循以下步骤，全程使用脚本，禁止直接调 API。**
+
+#### 第 1 步：确认巡检场景
+
+- 用户明确指定场景 → 直接使用
+- 用户未指定 → 调用 `scenes` 获取可用场景列表，展示给用户选择
+
+#### 第 2 步：检查巡检记录上限
+
+- `run` 命令自动检查并输出结论，`=5 条` 时询问用户是否强制巡检（`--force`）
+
+#### 第 3 步：启动巡检（立即退出）
+
+```bash
+# 多设备（推荐），AD1_ADDR/AD2_ADDR 从已知设备表查完整 URL
+python scripts/check.py run --hosts "https://AD1_ADDR,https://AD2_ADDR" --password xxx --scene "标准巡检" [--force]
+# 返回 work_dir 列表，LLM 记录每台设备对应的 work_dir
+
+# 单设备
+python scripts/check.py run --host https://AD_ADDR --password xxx --scene "标准巡检" [--force]
+```
+
+**启动后立即退出**，巡检在设备后台执行。脚本输出 `work_dir` 路径（如 `/tmp/ad_check_https___192.168.8.30`）。**`--host`/`--hosts` 必须传完整 URL，脚本不解析设备名。**
+
+#### 第 4 步：轮询进度（每 10s）
+
+```bash
+# 所有设备一起查（推荐）
+python scripts/check.py progress --hosts "https://AD1_ADDR,https://AD2_ADDR" --password xxx
+
+# 或逐台查
+python scripts/check.py progress --host https://AD_ADDR --password xxx
+```
+
+轮询直到每台设备的 `state` 变为 `"FINISHED"`。如果 `state=="NO_RUNNING"`，查看返回的 `history_latest.finished` 字段判断是否已完成。
+
+#### 第 5 步：下载分析
+
+```bash
+# 每台设备用其对应的 work_dir（第 3 步返回的）
+python scripts/check.py wait --host https://AD1_ADDR --work-dir /tmp/ad_check_xxx
+python scripts/check.py wait --host https://AD2_ADDR --work-dir /tmp/ad_check_yyy
+```
+
+`wait` 检查一次即返回（默认 `max_attempts=1`）。如果 `_is_new_report` 未通过（报告尚未生成或被其他会话的报告覆盖），会报错提示重试。LLM 应先通过 `progress` 确认完成后再调 `wait`。
+
+#### 第 6 步：展示报告
+
+脚本输出完整 Markdown，LLM 原样展示在对话中，不截断、不折叠。
 
 ### 进度状态
 
@@ -158,6 +235,10 @@ SSH_CHECK, WEAK_PASSWORD_CHECK, SSL_POLICY_CHECK, IP_LIMIT_CHECK, OPEN_PORT_CHEC
 
 **巡检完成后，必须将 Markdown 报告内容直接展示在对话消息正文中**，不要放在 shell 执行结果的折叠区域中。
 
+- 多设备输出含汇总表 + 每设备分块，可能较长
+- LLM 全文展示，不截断、不折叠、不选择性展示
+- 超过单条消息限制时分多条展示（保持设备分块完整）
+
 ## 外部依赖
 
 | 依赖 | 说明 |
@@ -170,13 +251,11 @@ SSH_CHECK, WEAK_PASSWORD_CHECK, SSL_POLICY_CHECK, IP_LIMIT_CHECK, OPEN_PORT_CHEC
 | 场景 | exit code |
 |------|----------|
 | 完全成功 | 0 |
-| 连接失败 | 1 |
-| 全部 API 失败 | 1 |
+| 连接/API 失败 | 1 |
 | 认证失败 | 2 |
-| SQLite 写入失败 | 3 |
 | 参数错误 | 4 |
 | 部分失败 | 5 |
-| 采集器重复启动 | 6 |
+| **多设备部分失败** | **7** |
 | ADClient import 失败 | 9 |
 
 ## 相关技能

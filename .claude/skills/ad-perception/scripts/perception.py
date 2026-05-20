@@ -24,6 +24,10 @@ except ImportError as e:
     print(f"错误: 无法导入 ad_api: {e}", file=sys.stderr)
     sys.exit(9)
 from db_schema import VS_SAMPLES_DDL, COLUMNS
+from multi_device import (
+    run_multi, parse_hosts_arg, load_devices_json,
+    compute_multi_exit_code, render_multi_summary, host_slug,
+)
 
 import argparse
 import json
@@ -757,12 +761,21 @@ def _compute_exit_code(results):
     return 0  # all success
 
 
+def _analyze_one(client, db_path=None, disk_source=None):
+    """Single-device analysis for ThreadPoolExecutor."""
+    result = analyze_full(client, db_path=db_path, disk_source=disk_source)
+    result['device'] = client.host
+    return result
+
+
 def main():
     """CLI entry point."""
     sys.stdout.reconfigure(encoding='utf-8')
     # 公共参数：同时注册在父解析器和所有子命令上，LLM 无论放前放后都能解析
     def _add_common_args(p):
         p.add_argument("--host", default="", help="AD device URL (e.g. https://x.x.x.x)")
+        p.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
+        p.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
         p.add_argument("--user", default="admin", help="Username (default: admin)")
         p.add_argument("--password", default="", help="Password (overrides AD_PASS env var)")
         p.add_argument("--db", default="", help="SQLite database path")
@@ -789,15 +802,53 @@ def main():
     user = args.user
     password = os.environ.get("AD_PASS", "") or args.password
 
+    db_path = os.path.abspath(args.db) if args.db else None
+    output_format = args.format
+
+    # Multi-device mode
+    if args.hosts or args.devices:
+        if args.host:
+            print("警告: --hosts 和 --host 同时指定，--host 将被忽略", file=sys.stderr)
+        if args.hosts:
+            devices = parse_hosts_arg(args.hosts, args.user, args.password)
+        else:
+            devices = load_devices_json(args.devices)
+
+        if not devices:
+            print("错误: 设备列表为空", file=sys.stderr)
+            sys.exit(4)
+
+        disk_src = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
+        results = run_multi(devices, _analyze_one, db_path=db_path, disk_source=disk_src)
+
+        if output_format == "json":
+            output = {
+                "mode": "multi",
+                "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v),
+                           "failed": sum(1 for v in results.values() if "error" in v)},
+                "results": results,
+            }
+            print(render_json(output))
+        else:
+            lines = [render_multi_summary(results, "AD 感知分析报告 — 多设备")]
+            lines.append("---")
+            for host, result in results.items():
+                if "error" in result:
+                    lines.append(f"## {host}")
+                    lines.append(f"> 错误: {result['error']}")
+                else:
+                    lines.append(render_markdown(result))
+                lines.append("")
+            print("\n".join(lines))
+        sys.exit(compute_multi_exit_code(results))
+
+    # Single-device mode
     if not host:
         print("错误: 未指定设备地址，请使用 --host 指定 AD 设备 URL", file=sys.stderr)
         sys.exit(4)
     if not password:
         print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
         sys.exit(4)
-
-    db_path = os.path.abspath(args.db) if args.db else None
-    output_format = args.format
 
     try:
         client = ADClient(host=host, username=user, password=password)
