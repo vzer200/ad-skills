@@ -463,9 +463,9 @@ class TestLogCorrelation(unittest.TestCase):
         self.client = MagicMock()
         self.client.get_service_log.return_value = {
             'items': [
-                {'date': '2026-05-19', 'time': '10:00:00', 'user': 'admin', 'action': 'login', 'status': 'success'},
-                {'date': '2026-05-19', 'time': '10:30:00', 'user': 'admin', 'action': 'config_change', 'status': 'success'},
-                {'date': '2026-05-19', 'time': '11:00:00', 'user': 'admin', 'action': 'logout', 'status': 'success'},
+                {'date': '2026-05-19', 'time': '10:00:00', 'level': 'INFO', 'module': 'AUTH', 'detail': '用户 admin 登录成功'},
+                {'date': '2026-05-19', 'time': '10:30:00', 'level': 'ALERT', 'module': 'CONFIG', 'detail': '配置变更: VS test 修改'},
+                {'date': '2026-05-19', 'time': '11:00:00', 'level': 'INFO', 'module': 'AUTH', 'detail': '用户 admin 登出'},
             ]
         }
 

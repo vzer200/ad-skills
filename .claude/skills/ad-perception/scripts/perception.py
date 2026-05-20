@@ -565,9 +565,9 @@ def log_correlation(client, anomalies, limit=20):
             if abs(log_ts - anomaly_ts) <= 300:  # 5 min = 300 seconds
                 matched.append({
                     'time': f'{date_str} {time_str}',
-                    'user': entry.get('user', ''),
-                    'action': entry.get('action', ''),
-                    'status': entry.get('status', ''),
+                    'level': entry.get('level', ''),
+                    'module': entry.get('module', ''),
+                    'detail': entry.get('detail', ''),
                 })
                 break
 
@@ -662,10 +662,10 @@ def render_markdown(results):
         if logs.get('status') == 'ok':
             entries = logs.get('entries', [])
             if entries:
-                lines.append('| 时间 | 用户 | 操作 | 状态 |')
+                lines.append('| 时间 | 级别 | 模块 | 详情 |')
                 lines.append('|---|---|---|---|')
                 for e in entries:
-                    lines.append(f"| {e.get('time', '')} | {e.get('user', '')} | {e.get('action', '')} | {e.get('status', '')} |")
+                    lines.append(f"| {e.get('time', '')} | {e.get('level', '')} | {e.get('module', '')} | {e.get('detail', '')} |")
             else:
                 lines.append('未在异常时间点附近找到关联日志条目。')
         elif logs.get('status') == 'no_match':
