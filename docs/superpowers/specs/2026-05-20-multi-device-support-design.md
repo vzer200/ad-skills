@@ -31,6 +31,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as
 
 MAX_WORKERS = 10  # 硬上限，防止 API 限流
 
+def _resolve_pw(d, fallback=""):
+    """解析设备密码：password 字段 > password_from 环境变量 > fallback"""
+    if d.get("password"):
+        return d["password"]
+    if d.get("password_from"):
+        return os.environ.get(d["password_from"], "")
+    return fallback
+
 def run_multi(devices, func, **kwargs):
     """
     devices: list of dicts [{host, user, password, name}, ...]
@@ -38,14 +46,24 @@ def run_multi(devices, func, **kwargs):
     kwargs: 公共参数传给 func（如 subcommand, scene, work_dir_base 等）
     """
     results = {}
+    common_pw = kwargs.pop("password", os.environ.get("AD_PASS", ""))
     total_timeout = kwargs.pop("_timeout", 900)  # 最长 15 分钟
     with ThreadPoolExecutor(max_workers=min(len(devices), MAX_WORKERS)) as ex:
         futures = {}
+        # 解析密码：password 字段 > password_from 环境变量 > 公共 --password > AD_PASS
+        def _resolve_pw(d, fallback=""):
+            if d.get("password"):
+                return d["password"]
+            if d.get("password_from"):
+                return os.environ.get(d["password_from"], "")
+            return fallback
+
         for d in devices:
+            pw = _resolve_pw(d, common_pw)
             client = ADClient(
                 host=d["host"],
                 username=d.get("user", "admin"),
-                password=d.get("password", kwargs.get("password", ""))
+                password=pw
             )
             # 只传 func 需要的参数，不是 **d
             futures[ex.submit(func, client, **kwargs)] = d
@@ -79,7 +97,7 @@ def run_multi(devices, func, **kwargs):
 - 新增 `--hosts` 参数（逗号分隔）
 - 提交给线程的函数：`_overview_one(client, subcommand)`  → 调用 `build_overview()` + `render_markdown()`
 - 输出：每设备 `## {name or host}` 分块
-- 退出码：全部成功 → 0，部分失败 → 6，全部失败 → 1
+- 退出码：全部成功 → 0，部分失败 → 7，全部失败 → 1
 
 #### perception.py
 
@@ -128,7 +146,8 @@ def run_collector_multi(devices, db_paths, interval=30):
     threads = []
     collectors = []
     for d in devices:
-        c = VSCollector(d["host"], d.get("password", ""), d.get("user", "admin"),
+        pw = _resolve_pw(d)
+        c = VSCollector(d["host"], pw, d.get("user", "admin"),
                         db_path=db_paths[d["host"]], interval=interval)
         c.stop_event = stop_event  # 注入停止信号
         t = threading.Thread(target=_collect_loop, args=(c,), daemon=True)
@@ -150,8 +169,17 @@ def run_collector_multi(devices, db_paths, interval=30):
 def _collect_loop(collector):
     collector.open_db()
     collector.cleanup_old_data()
+    max_consecutive_failures = 30  # 15分钟
     while not collector.stop_event.is_set():
-        collector.run_once()
+        try:
+            collector.run_once()
+        except Exception as e:
+            collector.consecutive_failures += 1
+            print(f"[{collector.host_slug}] 采集异常: {e}", file=sys.stderr)
+            if collector.consecutive_failures >= max_consecutive_failures:
+                collector.fatal_error = str(e)
+                collector.stop_event.set()  # 停止该设备采集
+                break
         collector.stop_event.wait(timeout=collector.interval)
     collector.close_db()
 ```
@@ -186,7 +214,7 @@ def _collect_loop(collector):
 
 ---
 
-> 1/2 台正常，1/2 台异常。部分失败 (exit 6)
+> 1/2 台正常，1/2 台异常。部分失败 (exit 7)
 ```
 
 #### JSON
@@ -209,7 +237,7 @@ def _collect_loop(collector):
 | 全部设备成功 | 0 |
 | 全部设备失败 | 1 |
 | 认证失败（全部） | 2 |
-| 部分成功部分失败 | **6**（区别于单设备超时 exit 5） |
+| 部分成功部分失败 | **7**（区别于 exit 6 采集器重复启动、exit 5 单设备超时） |
 | 参数错误 | 4 |
 
 ### 2.7 线程安全约束
@@ -227,24 +255,54 @@ def _collect_loop(collector):
 
 ### 2.9 SKILL.md 更新
 
-4 个 SKILL.md 各增加：
+4 个 SKILL.md 各做以下改动：
 
-1. **CLI 命令参考**：新增 `--hosts` 示例
-2. **多设备触发条件**：告知 LLM 何时用 `--hosts` 而非 `--host`
-3. **多设备输出说明**：LLM 原样展示，不做修改
+#### 2.9.1 脚本强制规则表新增多设备行
 
-示例（ad-ops SKILL.md）：
+| Skill | 新增行 |
+|-------|--------|
+| ad-ops | `多设备总览 \| python .claude/skills/ad-ops/scripts/overview.py all --hosts "..."` |
+| ad-perception | `多设备感知分析 \| python scripts/perception.py analyze --hosts "..."` |
+| ad-check-analysis | `多设备巡检 \| python scripts/check.py run --hosts "..." --scene "..."` |
+| ad-blackbox-analysis | `多设备黑盒 \| python scripts/blackbox.py --hosts "..." --from-date ...` |
+
+#### 2.9.2 CLI 命令参考补充
+
+- **ad-ops**：补充 `overview.py` 完整 CLI（当前缺失，只列出了 `ad_api.py`）
+- **ad-perception**：修复跨 Skill CLI 路径——`scripts/overview.py` 改为 `../ad-ops/scripts/overview.py` 或绝对路径
+
+#### 2.9.3 多设备触发决策树
+
 ```markdown
-### 多设备模式
+### 多设备判断
 
-当用户提到 2 台及以上设备、"所有设备"、"批量"、"同时" 时，使用 `--hosts`：
-
-```bash
-python scripts/overview.py all --hosts "https://IP1,https://IP2" --password xxx
+1. 用户提到多个 IP/设备名 → `--hosts`
+2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
+3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
+4. 密码不同时 → 必须用 `--devices` JSON 文件
 ```
 
-- 多设备输出包含汇总表 + 每设备分块
-- LLM 原样展示，不修改输出内容
+#### 2.9.4 设备注册权威来源
+
+在项目根新建 `devices.json` 作为 4 个 Skill 的统一设备表：
+
+```json
+{
+  "devices": [
+    {"name": "AD1", "host": "https://192.168.8.30", "user": "admin", "password_from": "AD1_PASS"},
+    {"name": "AD2", "host": "https://192.168.8.31", "user": "admin", "password_from": "AD2_PASS"}
+  ]
+}
+```
+
+密码通过 `password_from` 引用环境变量名，禁止明文。4 个 SKILL.md 的"已知设备"表统一引用此文件。
+
+#### 2.9.5 报告展示规则补充
+
+```markdown
+- 多设备输出含汇总表 + 每设备分块，可能较长
+- LLM 全文展示，不截断、不折叠、不选择性展示
+- 超过单条消息限制时分多条展示（保持设备分块完整）
 ```
 
 ## 3. 改动范围
@@ -256,11 +314,12 @@ python scripts/overview.py all --hosts "https://IP1,https://IP2" --password xxx
 | 3 | `ad-perception/scripts/collector.py` | 修改 | 多线程采集 + threading.Event + sys.exit(3)→异常 |
 | 4 | `ad-check-analysis/scripts/check.py` | 修改 | `_check_one()` 原子化 + 子命令矩阵 |
 | 5 | `ad-blackbox-analysis/scripts/blackbox.py` | 修改 | `--hosts` + 独立输出目录 |
-| 6 | `ad-ops/SKILL.md` | 修改 | 加多设备 CLI 示例 + 触发条件 |
-| 7 | `ad-perception/SKILL.md` | 修改 | 同上 |
-| 8 | `ad-check-analysis/SKILL.md` | 修改 | 同上 |
-| 9 | `ad-blackbox-analysis/SKILL.md` | 修改 | 同上 |
-| 10 | `test/test_multi_device.py` | 新建 | Mock 多设备并行测试 |
+| 6 | `ad-ops/SKILL.md` | 修改 | 加多设备 CLI + 脚本强制规则行 + overview.py CLI 补充 |
+| 7 | `ad-perception/SKILL.md` | 修改 | 加多设备 CLI + 修复跨 Skill 路径 |
+| 8 | `ad-check-analysis/SKILL.md` | 修改 | 加多设备 CLI + 触发决策树 |
+| 9 | `ad-blackbox-analysis/SKILL.md` | 修改 | 加多设备 CLI |
+| 10 | `devices.json` | **新建** | 统一设备注册表（password_from 环境变量引用） |
+| 11 | `test/test_multi_device.py` | 新建 | Mock 多设备并行测试 |
 
 ## 4. 风险
 
