@@ -10,7 +10,7 @@ import tempfile
 import os as _os
 from unittest.mock import patch, MagicMock
 
-from blackbox import BlackboxAnalyzer, generate_report
+from blackbox import BlackboxAnalyzer
 from ad_api import ADError, ADAuthError, ADAPIError, ADConnectionError
 
 
@@ -104,7 +104,8 @@ class TestBlackboxAnalyzer(unittest.TestCase):
                 "statuses": {"SUCCESS": 2},
             }
         }
-        report = generate_report(results)
+        analyzer = BlackboxAnalyzer(self.extract_path)
+        report = analyzer.generate_report(results)
         self.assertIn("黑盒日志分析报告", report)
         self.assertIn("20260519", report)
         self.assertIn("2", report)
