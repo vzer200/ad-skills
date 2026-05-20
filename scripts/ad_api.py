@@ -96,7 +96,6 @@ class ADClient:
         """
         url = f"{self.host}/api/lb/current-version{endpoint}"
         if params:
-            import urllib.parse
             qs = urllib.parse.urlencode(params)
             url = f"{url}?{qs}" if '?' not in url else f"{url}&{qs}"
 
