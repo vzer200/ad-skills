@@ -1,6 +1,6 @@
 ---
 name: ad-ops
-description: Use when managing Sangfor AD devices - users, virtual services, pools, SSL certs, HA status, SSH config, or system stats
+description: 深信服 AD 设备运维管理技能，支持用户/虚拟服务/Pool/SSL证书/HA状态/SSH配置/系统统计、设备总览快照等操作。当用户提到"运维"、"设备管理"、"查询VS"、"查看证书"、"设备状态"、"系统统计"、"设备总览"、"AD操作"时触发。
 ---
 
 # AD 智能运维

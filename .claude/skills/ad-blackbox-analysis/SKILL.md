@@ -1,6 +1,6 @@
 ---
 name: ad-blackbox-analysis
-description: Use when exporting or analyzing AD blackbox logs for troubleshooting, security audit, or performance analysis
+description: 深信服 AD 设备黑盒日志分析技能，支持导出黑盒日志、解析审计日志和系统日志、生成分析报告。当用户提到"黑盒"、"黑盒日志"、"日志导出"、"审计日志"、"blackbox"时触发。
 ---
 
 # AD 黑盒日志分析
