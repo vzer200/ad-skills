@@ -16,33 +16,38 @@ from ad_api import (
 )
 
 
+class _FakeResponse:
+    """Simulates urllib response for testing."""
+    def __init__(self, body, status=200):
+        self._bytes = json.dumps(body).encode("utf-8") if not isinstance(body, bytes) else body
+        self.status = status
+
+    def read(self):
+        return self._bytes
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        pass
+
+
 class TestADClientHTTP(unittest.TestCase):
     """Test ADClient._request at the urlopen layer."""
 
     def setUp(self):
         self.client = ADClient(host="https://10.0.0.1", username="admin", password="test123")
 
-    def _mock_response(self, status=200, body=None):
-        if body is None:
-            body = {"status": "ok"}
-        resp = MagicMock()
-        resp.read.return_value = json.dumps(body).encode("utf-8")
-        resp.status = status
-        cm = MagicMock()
-        cm.__enter__.return_value = resp
-        cm.__exit__.return_value = None
-        return cm
-
     @patch("urllib.request.urlopen")
     def test_get_users_correct_url(self, mock_urlopen):
-        mock_urlopen.return_value = self._mock_response()
+        mock_urlopen.return_value = _FakeResponse()
         self.client.get_users()
         req = mock_urlopen.call_args[0][0]
         self.assertIn("/api/lb/current-version/sys/user/", req.full_url)
 
     @patch("urllib.request.urlopen")
     def test_auth_header_present(self, mock_urlopen):
-        mock_urlopen.return_value = self._mock_response()
+        mock_urlopen.return_value = _FakeResponse()
         self.client.get_users()
         req = mock_urlopen.call_args[0][0]
         auth = req.get_header("Authorization")
@@ -51,26 +56,26 @@ class TestADClientHTTP(unittest.TestCase):
 
     @patch("urllib.request.urlopen")
     def test_get_ssl_certificates(self, mock_urlopen):
-        mock_urlopen.return_value = self._mock_response({"items": [{"name": "cert1"}]})
+        mock_urlopen.return_value = _FakeResponse({"items": [{"name": "cert1"}]})
         result = self.client.get_ssl_certificates()
         self.assertEqual(result["items"][0]["name"], "cert1")
 
     @patch("urllib.request.urlopen")
     def test_get_sys_system(self, mock_urlopen):
-        mock_urlopen.return_value = self._mock_response({"cpu_usage": 50.0})
+        mock_urlopen.return_value = _FakeResponse({"cpu_usage": 50.0})
         result = self.client.get_sys_system()
         self.assertEqual(result["cpu_usage"], 50.0)
 
     @patch("urllib.request.urlopen")
     def test_get_last_event(self, mock_urlopen):
-        mock_urlopen.return_value = self._mock_response({"items": [{"event_id": "ev1"}]})
+        mock_urlopen.return_value = _FakeResponse({"items": [{"event_id": "ev1"}]})
         result = self.client.get_last_event()
         req = mock_urlopen.call_args[0][0]
         self.assertIn("/last-event", req.full_url)
 
     @patch("urllib.request.urlopen")
     def test_create_user_post_body(self, mock_urlopen):
-        mock_urlopen.return_value = self._mock_response()
+        mock_urlopen.return_value = _FakeResponse()
         self.client.create_user({"name": "testuser", "password": "pwd"})
         req = mock_urlopen.call_args[0][0]
         self.assertEqual(req.method, "POST")
@@ -79,7 +84,7 @@ class TestADClientHTTP(unittest.TestCase):
 
     @patch("urllib.request.urlopen")
     def test_delete_user_method(self, mock_urlopen):
-        mock_urlopen.return_value = self._mock_response()
+        mock_urlopen.return_value = _FakeResponse()
         self.client.delete_user("testuser")
         req = mock_urlopen.call_args[0][0]
         self.assertEqual(req.method, "DELETE")
@@ -87,14 +92,14 @@ class TestADClientHTTP(unittest.TestCase):
 
     @patch("urllib.request.urlopen")
     def test_params_appended_to_url(self, mock_urlopen):
-        mock_urlopen.return_value = self._mock_response()
+        mock_urlopen.return_value = _FakeResponse()
         self.client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
         req = mock_urlopen.call_args[0][0]
         self.assertIn("type=history", req.full_url)
 
     @patch("urllib.request.urlopen")
     def test_params_merged_with_existing_query(self, mock_urlopen):
-        mock_urlopen.return_value = self._mock_response()
+        mock_urlopen.return_value = _FakeResponse()
         self.client._request("GET", "/endpoint?existing=1", params={"new": "2"})
         req = mock_urlopen.call_args[0][0]
         self.assertIn("existing=1", req.full_url)

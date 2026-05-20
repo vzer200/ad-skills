@@ -149,7 +149,7 @@ class TestRenderMarkdown(unittest.TestCase):
                 {"priority": "高", "suggestion": "Test suggestion", "check": "CPU_CHECK"}
             ],
         }
-        meta = {"device_info": {}, "check_time": "2026-01-01 00:00:00"}
+        meta = {"device_info": {"app_version": "v1", "gateway_id": "", "run_time": ""}, "check_time": "2026-01-01 00:00:00"}
         output = render_markdown(analysis, meta)
         self.assertIn("优化建议", output)
         self.assertIn("健康评分", output)
