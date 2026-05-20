@@ -176,13 +176,11 @@ class TestExitCodes(unittest.TestCase):
                 mock_client = MagicMock()
                 mock_client._request.side_effect = ADAuthError("HTTP 401", http_code=401)
                 mock_client_class.return_value = mock_client
-                try:
+                # ADAuthError in start_check → wrapped as RuntimeError → exit 4
+                with self.assertRaises(SystemExit) as cm:
                     from check import main
                     main()
-                except SystemExit as e:
-                    # ADAuthError raised during scene check → wrapped as RuntimeError → exit 4
-                    # In other code paths ADAuthError → exit 2 directly
-                    self.assertIn(e.code, (2, 4))
+                self.assertEqual(cm.exception.code, 4)
 
 
 if __name__ == "__main__":

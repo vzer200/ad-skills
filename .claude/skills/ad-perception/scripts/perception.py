@@ -760,36 +760,38 @@ def _compute_exit_code(results):
 def main():
     """CLI entry point."""
     sys.stdout.reconfigure(encoding='utf-8')
-    parser = argparse.ArgumentParser(description="AD Device Perception Analysis")
-    parser.add_argument("--host", required=True, help="AD device URL (e.g. https://x.x.x.x)")
-    parser.add_argument("--user", default="admin", help="Username (default: admin)")
-    parser.add_argument("--password", default="", help="Password (overrides AD_PASS env var)")
-    parser.add_argument("--db", default="", help="SQLite database path")
-    parser.add_argument("--format", choices=["markdown", "json"], default="markdown", help="Output format")
+    # 公共参数：同时注册在父解析器和所有子命令上，LLM 无论放前放后都能解析
+    def _add_common_args(p):
+        p.add_argument("--host", default="", help="AD device URL (e.g. https://x.x.x.x)")
+        p.add_argument("--user", default="admin", help="Username (default: admin)")
+        p.add_argument("--password", default="", help="Password (overrides AD_PASS env var)")
+        p.add_argument("--db", default="", help="SQLite database path")
+        p.add_argument("--format", choices=["markdown", "json"], default="markdown", help="Output format")
 
+    parser = argparse.ArgumentParser(description="AD Device Perception Analysis")
+    _add_common_args(parser)
     subparsers = parser.add_subparsers(dest="command", help="Subcommand")
 
-    # analyze (default)
     analyze_p = subparsers.add_parser("analyze", help="Full analysis (default)")
-
-    # traffic
+    _add_common_args(analyze_p)
+    analyze_p.add_argument("--disk-source", default="", help="Check report directory with ad.json")
     traffic_p = subparsers.add_parser("traffic", help="Flow anomaly detection")
-    traffic_p.add_argument("--vs", default="", help="VS name filter")
-
-    # state
+    _add_common_args(traffic_p); traffic_p.add_argument("--vs", default="", help="VS name filter")
     state_p = subparsers.add_parser("state", help="Device state anomaly detection")
-    state_p.add_argument("--disk-source", default="", help="Check report directory with ad.json")
-
-    # conflict
-    subparsers.add_parser("conflict", help="Address conflict detection")
+    _add_common_args(state_p); state_p.add_argument("--disk-source", default="", help="Check report directory with ad.json")
+    conflict_p = subparsers.add_parser("conflict", help="Address conflict detection")
+    _add_common_args(conflict_p)
 
     args = parser.parse_args()
     cmd = args.command or "analyze"
 
     host = args.host
     user = args.user
-    password = args.password or os.environ.get("AD_PASS", "")
+    password = os.environ.get("AD_PASS", "") or args.password
 
+    if not host:
+        print("错误: 未指定设备地址，请使用 --host 指定 AD 设备 URL", file=sys.stderr)
+        sys.exit(4)
     if not password:
         print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
         sys.exit(4)
