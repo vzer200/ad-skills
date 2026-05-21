@@ -15,4 +15,14 @@ CREATE TABLE IF NOT EXISTS vs_samples (
 );
 """
 
+DEVICE_STATE_DDL = """
+CREATE TABLE IF NOT EXISTS device_state (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts INTEGER NOT NULL,
+    metric TEXT NOT NULL,
+    value REAL NOT NULL,
+    UNIQUE(ts, metric)
+);
+"""
+
 COLUMNS = ["ts", "vs_name", "metric", "value"]

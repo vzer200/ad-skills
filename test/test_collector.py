@@ -27,10 +27,11 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from collector import (
-    VSCollector, _inject_trend_into_db, collect_once, collect_and_analyze,
-    _derive_db_path,
+    VSCollector, _inject_trend_into_db, _inject_system_trend_into_db,
+    collect_once, collect_system_once, collect_and_analyze,
+    _derive_db_path, _fetch_system_trend,
 )
-from db_schema import VS_SAMPLES_DDL, COLUMNS
+from db_schema import VS_SAMPLES_DDL, DEVICE_STATE_DDL, COLUMNS
 
 
 class TestCollector(unittest.TestCase):
@@ -595,6 +596,165 @@ class TestDeriveDBPath(unittest.TestCase):
         path = _derive_db_path("https://10.0.0.1:8443/")
         self.assertNotIn(":", path.split("vs_samples_")[1])
         self.assertNotIn("/", path)
+
+
+class TestSystemTrend(unittest.TestCase):
+    """Tests for system metric trend collection functions."""
+
+    def setUp(self):
+        fd, self.db_path = tempfile.mkstemp(suffix='.db')
+        os.close(fd)
+        self.client = MagicMock()
+
+    def tearDown(self):
+        try:
+            os.unlink(self.db_path)
+        except PermissionError:
+            pass
+
+    def test_fetch_system_trend_calls_request(self):
+        """_fetch_system_trend should call client._request with correct path and params."""
+        client = MagicMock()
+        client._request.return_value = {'values': [10, 20, 30]}
+        result = _fetch_system_trend(client, 'cpu_usage')
+        client._request.assert_called_once_with(
+            'GET',
+            '/stat/sys/system/cpu_usage',
+            params={'trend': 'last-hour', 'all_properties': 'true'},
+        )
+        self.assertEqual(result, {'values': [10, 20, 30]})
+
+    def test_inject_system_cpu_series_format(self):
+        """CPU trend data with series[TotalCpu] should be injected with API timestamps."""
+        t0 = int(time.time()) - 1800  # recent enough to survive 7-day cleanup
+        trend_data = {
+            'start_time': t0,
+            'step_time': 60,
+            'series': [
+                {'name': 'TotalCpu', 'values': [10.0, 20.0, 30.0]},
+                {'name': 'CPU0[0]', 'values': [8.0, 18.0, 28.0]},
+            ],
+        }
+        count = _inject_system_trend_into_db(self.db_path, 'cpu', trend_data)
+        self.assertEqual(count, 3)
+
+        conn = sqlite3.connect(self.db_path)
+        rows = conn.execute("SELECT ts, metric, value FROM device_state ORDER BY ts").fetchall()
+        conn.close()
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(rows[0][1], 'cpu')
+        self.assertEqual(rows[0][0], t0)       # start_time + 0*60
+        self.assertEqual(rows[0][2], 10.0)
+        self.assertEqual(rows[1][0], t0 + 60)  # start_time + 1*60
+        self.assertEqual(rows[1][2], 20.0)
+        self.assertEqual(rows[2][0], t0 + 120) # start_time + 2*60
+        self.assertEqual(rows[2][2], 30.0)
+
+    def test_inject_system_cpu_no_total_cpu_raises(self):
+        """If no TotalCpu key is found in series, ValueError should be raised."""
+        trend_data = {
+            'start_time': 1000,
+            'step_time': 60,
+            'series': [
+                {'name': 'CPU0[0]', 'values': [8.0, 18.0]},
+                {'name': 'CPU0[1]', 'values': [13.0, 9.0]},
+            ],
+        }
+        with self.assertRaises(ValueError) as ctx:
+            _inject_system_trend_into_db(self.db_path, 'cpu', trend_data)
+        self.assertIn('no TotalCpu key', str(ctx.exception))
+
+    def test_inject_system_memory_flat_values(self):
+        """Memory trend data with flat values array should be injected."""
+        t0 = int(time.time()) - 1800  # recent enough to survive 7-day cleanup
+        trend_data = {
+            'start_time': t0,
+            'step_time': 60,
+            'values': [36.0, 37.0, 38.0],
+        }
+        count = _inject_system_trend_into_db(self.db_path, 'memory', trend_data)
+        self.assertEqual(count, 3)
+
+        conn = sqlite3.connect(self.db_path)
+        rows = conn.execute("SELECT ts, metric, value FROM device_state ORDER BY ts").fetchall()
+        conn.close()
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(rows[0][1], 'memory')
+        self.assertEqual(rows[0][0], t0)
+        self.assertEqual(rows[1][0], t0 + 60)
+
+    def test_inject_system_unknown_format_raises(self):
+        """Unknown format (no series, no values) should raise ValueError."""
+        with self.assertRaises(ValueError) as ctx:
+            _inject_system_trend_into_db(self.db_path, 'cpu', {'unknown_key': []})
+        self.assertIn('Unknown system trend format', str(ctx.exception))
+
+    @patch('collector._fetch_system_trend')
+    def test_collect_system_once_integration(self, mock_fetch):
+        """collect_system_once should fetch all 3 metrics and inject them."""
+        t0 = int(time.time()) - 1800  # recent enough to survive 7-day cleanup
+        mock_fetch.side_effect = [
+            {   # cpu_usage
+                'start_time': t0, 'step_time': 60,
+                'series': [{'name': 'TotalCpu', 'values': [10.0, 20.0]}],
+            },
+            {   # memory_usage
+                'start_time': t0, 'step_time': 60,
+                'values': [30.0, 40.0],
+            },
+            {   # connection_rate
+                'start_time': t0, 'step_time': 60,
+                'values': [0.0, 0.0],
+            },
+        ]
+        count = collect_system_once(self.client, self.db_path)
+        self.assertEqual(count, 6)  # 2 + 2 + 2
+
+        conn = sqlite3.connect(self.db_path)
+        metrics = conn.execute(
+            "SELECT DISTINCT metric FROM device_state ORDER BY metric"
+        ).fetchall()
+        conn.close()
+        metric_names = {r[0] for r in metrics}
+        self.assertEqual(metric_names, {'cpu', 'memory', 'connection_rate'})
+
+    def test_device_state_cleanup_7day(self):
+        """Rows older than 7 days in device_state should be deleted during injection."""
+        conn = sqlite3.connect(self.db_path)
+        conn.executescript(DEVICE_STATE_DDL)
+
+        now = int(time.time())
+        old_ts = now - 8 * 86400
+        recent_ts = now - 1 * 86400
+
+        conn.execute(
+            "INSERT INTO device_state (ts, metric, value) VALUES (?, ?, ?)",
+            (old_ts, 'cpu', 10.0),
+        )
+        conn.execute(
+            "INSERT INTO device_state (ts, metric, value) VALUES (?, ?, ?)",
+            (recent_ts, 'cpu', 20.0),
+        )
+        conn.commit()
+        conn.close()
+
+        # Trigger cleanup by injecting new data
+        trend_data = {
+            'start_time': now, 'step_time': 60,
+            'values': [50.0],
+        }
+        _inject_system_trend_into_db(self.db_path, 'cpu', trend_data)
+
+        conn = sqlite3.connect(self.db_path)
+        rows = conn.execute(
+            "SELECT ts, metric, value FROM device_state ORDER BY ts"
+        ).fetchall()
+        conn.close()
+
+        timestamps = [r[0] for r in rows]
+        self.assertNotIn(old_ts, timestamps)
+        self.assertIn(recent_ts, timestamps)
+        self.assertGreaterEqual(len(rows), 2)  # recent + newly injected
 
 
 if __name__ == "__main__":

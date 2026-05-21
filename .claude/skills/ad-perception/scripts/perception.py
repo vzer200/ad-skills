@@ -123,6 +123,43 @@ def query_traffic_db(db_path, vs_name=None, days=7):
         return None
 
 
+def query_device_state_db(db_path, metric=None, days=7):
+    """
+    Query SQLite for device state data.
+
+    Args:
+        db_path: path to SQLite database
+        metric: optional metric filter
+        days: lookback days (default 7)
+
+    Returns:
+        list of dicts [{'ts': int, 'metric': str, 'value': float}, ...]
+        or None if db_path doesn't exist or error
+    """
+    if not db_path or not os.path.isfile(db_path):
+        return None
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cutoff = int(datetime.now().timestamp()) - days * 86400
+        if metric:
+            cursor.execute(
+                "SELECT ts, metric, value FROM device_state WHERE ts > ? AND metric = ? ORDER BY ts",
+                (cutoff, metric)
+            )
+        else:
+            cursor.execute(
+                "SELECT ts, metric, value FROM device_state WHERE ts > ? ORDER BY ts",
+                (cutoff,)
+            )
+        rows = [dict(r) for r in cursor.fetchall()]
+        conn.close()
+        return rows
+    except Exception:
+        return None
+
+
 def _run_3sigma_on_vs_group(points_by_vs_metric):
     """
     Run 3σ per (VS, metric) group.
@@ -287,17 +324,26 @@ def traffic_analysis(client, db_path=None, vs_name=None):
     return result
 
 
-def state_analysis(client, disk_source=None):
+def state_analysis(client, disk_source=None, db_path=None):
     """
     Device state anomaly detection.
 
     Checks CPU, memory, fan, power, interface status from API,
     and optionally disk from local check report.
 
+    If db_path is provided, runs 3σ anomaly detection on historical
+    device state data from SQLite.
+
+    Args:
+        client: ADClient instance
+        disk_source: optional path to check report directory with ad.json
+        db_path: optional path to SQLite database with device_state table
+
     Returns dict with:
         status: 'ok' | 'warning' | 'critical' | 'error'
-        items: list of metric dicts {metric, value, level, message}
+        items: list of metric dicts {metric, value, level, message, ...}
         disk: dict with availability info
+        anomalies: list of 3σ anomaly dicts
     """
     items = []
     has_warn = False
@@ -437,6 +483,70 @@ def state_analysis(client, disk_source=None):
         items.append({'metric': 'disk', 'value': None, 'level': 'ok',
                       'message': '磁盘: 未提供巡检数据'})
 
+    # 3σ anomaly detection on historical data
+    anomalies = []
+    if db_path and os.path.isfile(db_path):
+        rows = query_device_state_db(db_path)
+        if rows is not None and len(rows) > 0:
+            # Group by metric
+            groups = {}
+            for row in rows:
+                m = row['metric']
+                if m not in groups:
+                    groups[m] = []
+                groups[m].append({'ts': row['ts'], 'value': row['value']})
+
+            has_enough = any(len(pts) >= 30 for pts in groups.values())
+
+            if not has_enough:
+                # Injection branch: try to collect system trend data
+                try:
+                    from collector import collect_system_once
+                except ImportError:
+                    pass
+                else:
+                    injected = collect_system_once(client, db_path)
+                    if injected > 0:
+                        rows = query_device_state_db(db_path)
+                        if rows is not None:
+                            groups = {}
+                            for row in rows:
+                                m = row['metric']
+                                if m not in groups:
+                                    groups[m] = []
+                                groups[m].append({'ts': row['ts'], 'value': row['value']})
+
+            # Run 3σ per metric
+            for metric, points in groups.items():
+                if len(points) < 30:
+                    continue
+                points.sort(key=lambda x: x['ts'])
+                detected = detect_anomaly_3sigma(points)
+                for a in detected:
+                    a['metric'] = metric
+                    anomalies.append(a)
+
+        # Annotate items with anomaly info (most recent anomaly per metric)
+        if anomalies:
+            latest_by_metric = {}
+            for a in anomalies:
+                m = a['metric']
+                if m not in latest_by_metric or a['ts'] > latest_by_metric[m]['ts']:
+                    latest_by_metric[m] = a
+
+            for item in items:
+                if item['metric'] in latest_by_metric:
+                    a = latest_by_metric[item['metric']]
+                    baseline = a['baseline_mean']
+                    value = a['value']
+                    item['baseline_mean'] = baseline
+                    item['z'] = a['z']
+                    item['direction'] = a['direction']
+                    if baseline != 0:
+                        item['deviation_pct'] = (value - baseline) / baseline * 100
+                    else:
+                        item['deviation_pct'] = 0
+
     # Determine overall status
     if has_critical:
         status = 'critical'
@@ -445,7 +555,7 @@ def state_analysis(client, disk_source=None):
     else:
         status = 'ok'
 
-    return {'status': status, 'items': items, 'disk': disk_info}
+    return {'status': status, 'items': items, 'disk': disk_info, 'anomalies': anomalies}
 
 
 def conflict_analysis(client):
@@ -689,6 +799,29 @@ def render_markdown(results):
         lines.append(f'CPU: {cpu_val}%, 内存: {mem_val}%')
         lines.append('')
 
+        # 3σ anomalies table (same format as traffic section)
+        state_anomalies = state.get('anomalies', [])
+        if state_anomalies:
+            from datetime import datetime as dt_mod
+            lines.append('**3σ 异常检测:**')
+            lines.append('')
+            lines.append('| 指标 | 时间 | 当前值 | 正常范围 | 偏离幅度 | 方向 | 严重程度 |')
+            lines.append('|---|---|---|---|---|---|---|')
+            for a in state_anomalies:
+                ts_str = dt_mod.fromtimestamp(a['ts']).strftime('%m-%d %H:%M') if a.get('ts') else 'N/A'
+                baseline = a['baseline_mean']
+                value = a['value']
+                pct = ((value - baseline) / baseline * 100) if baseline != 0 else 0
+                z = a['z']
+                if z > 10:
+                    severity = '🔴 严重'
+                elif z > 5:
+                    severity = '🟡 明显'
+                else:
+                    severity = '🟠 轻微'
+                lines.append(f"| {a['metric']} | {ts_str} | {value:.1f} | {baseline:.1f} | {pct:+.1f}% | {a['direction']} | {severity} |")
+            lines.append('')
+
         non_ok = [i for i in items if i.get('level') not in ('ok', None)]
         if non_ok:
             lines.append('| 指标 | 当前值 | 级别 | 描述 |')
@@ -779,7 +912,7 @@ def analyze_full(client, db_path=None, disk_source=None):
 
     # State analysis
     try:
-        state_result = state_analysis(client, disk_source=disk_source)
+        state_result = state_analysis(client, disk_source=disk_source, db_path=db_path)
     except Exception as e:
         state_result = {'status': 'error', 'items': [], 'error': str(e), 'disk': {'available': False, 'value': None, 'source': 'none'}}
     result['state'] = state_result
@@ -974,7 +1107,7 @@ def main():
 
         elif cmd == "state":
             disk_source = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
-            result = state_analysis(client, disk_source=disk_source)
+            result = state_analysis(client, disk_source=disk_source, db_path=db_path)
             _print_result(result, output_format)
             sys.exit(0 if result.get('status') != 'error' else 1)
 

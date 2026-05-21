@@ -720,5 +720,101 @@ class TestServiceLogs(unittest.TestCase):
         self.assertEqual(len(result['entries']), 2)
 
 
+class TestState3Sigma(unittest.TestCase):
+    """Tests for device state 3σ anomaly detection."""
+
+    def setUp(self):
+        self.client = MagicMock()
+        self.client.host = 'https://10.0.0.1'
+        self.client.get_sys_system.return_value = {
+            'cpu_usage': {'value': 15, 'unit': 'PERCENT'},
+            'memory_usage': {'value': 40, 'unit': 'PERCENT'},
+        }
+
+    def _create_device_state_db(self, metric, base_val, num_points=60):
+        """Create a temp SQLite DB with historic device_state data."""
+        fd, db_path = tempfile.mkstemp(suffix='.db')
+        os.close(fd)
+        conn = sqlite3.connect(db_path)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS device_state (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ts INTEGER NOT NULL,
+                metric TEXT NOT NULL,
+                value REAL NOT NULL,
+                UNIQUE(ts, metric)
+            )
+        """)
+        now = int(datetime.now().timestamp())
+        for i in range(num_points):
+            conn.execute(
+                "INSERT OR IGNORE INTO device_state (ts, metric, value) VALUES (?, ?, ?)",
+                (now - (num_points - i) * 60, metric, base_val + (i % 10) * 0.5)
+            )
+        conn.commit()
+        conn.close()
+        return db_path
+
+    def test_state_analysis_with_db_runs_3sigma(self):
+        """state_analysis with db_path should return anomalies key."""
+        db_path = self._create_device_state_db('cpu', 12.0)
+        try:
+            result = state_analysis(self.client, db_path=db_path)
+            self.assertIn('anomalies', result)
+            self.assertIsInstance(result['anomalies'], list)
+        finally:
+            if os.path.isfile(db_path):
+                os.unlink(db_path)
+
+    def test_state_analysis_without_db_still_works(self):
+        """state_analysis without db_path should work (backward compat)."""
+        result = state_analysis(self.client)
+        self.assertEqual(result['status'], 'ok')
+        self.assertIn('items', result)
+        self.assertIn('anomalies', result)
+
+    def test_static_threshold_still_runs_with_3sigma(self):
+        """CPU >= 90% should still be critical even with 3σ."""
+        self.client.get_sys_system.return_value = {
+            'cpu_usage': {'value': 95, 'unit': 'PERCENT'},
+            'memory_usage': {'value': 40, 'unit': 'PERCENT'},
+        }
+        db_path = self._create_device_state_db('cpu', 12.0)
+        try:
+            result = state_analysis(self.client, db_path=db_path)
+            cpu_items = [i for i in result['items'] if i['metric'] == 'cpu']
+            self.assertTrue(any(i['level'] == 'critical' for i in cpu_items))
+        finally:
+            if os.path.isfile(db_path):
+                os.unlink(db_path)
+
+    def test_render_markdown_shows_3sigma_table(self):
+        """render_markdown should show 3σ table when state has anomalies."""
+        anomaly = {
+            'ts': int(datetime.now().timestamp()) - 120,
+            'metric': 'cpu', 'value': 45.0, 'baseline_mean': 12.0,
+            'z': 15.0, 'direction': '上升',
+        }
+        results = {
+            'device': 'https://10.0.0.1',
+            'traffic': {'status': 'ok', 'anomalies': [], 'error': None},
+            'state': {
+                'status': 'warning',
+                'items': [
+                    {'metric': 'cpu', 'value': 45.0, 'level': 'warn', 'message': 'CPU: 45%'},
+                    {'metric': 'memory', 'value': 40.0, 'level': 'ok', 'message': 'Memory: 40%'},
+                ],
+                'disk': {'available': False, 'value': None, 'source': 'none'},
+                'anomalies': [anomaly],
+            },
+            'logs': {'status': 'no_anomaly', 'entries': []},
+            'conflicts': {'status': 'ok', 'vs_overlaps': [], 'pool_overlaps': []},
+        }
+        output = render_markdown(results)
+        self.assertIn('3σ 异常检测', output)
+        self.assertIn('cpu', output)
+        self.assertIn('🔴 严重', output)
+
+
 if __name__ == '__main__':
     unittest.main()

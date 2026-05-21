@@ -26,7 +26,129 @@ try:
 except ImportError as e:
     print(f"错误: 无法导入 ad_api: {e}", file=sys.stderr)
     sys.exit(9)
-from db_schema import VS_SAMPLES_DDL, COLUMNS
+from db_schema import VS_SAMPLES_DDL, COLUMNS, DEVICE_STATE_DDL
+
+
+SYSTEM_METRICS = ["cpu_usage", "memory_usage", "connection_rate"]
+
+METRIC_NAME_MAP = {"cpu_usage": "cpu", "memory_usage": "memory", "connection_rate": "connection_rate"}
+
+TOTAL_CPU_KEYS = {"TotalCpu", "total_cpu", "totalcpu"}
+
+
+def _fetch_system_trend(client, api_metric):
+    """Fetch system trend data from the AD device API.
+
+    Args:
+        client: ``ADClient`` instance.
+        api_metric: API metric name (e.g. ``'cpu_usage'``, ``'memory_usage'``).
+
+    Returns:
+        Response dict, or None on error.
+    """
+    try:
+        return client._request(
+            "GET",
+            f"/stat/sys/system/{api_metric}",
+            params={"trend": "last-hour", "all_properties": "true"},
+        )
+    except Exception:
+        return None
+
+
+def _inject_system_trend_into_db(db_path, metric_name, trend_data):
+    """Inject system trend API data into SQLite.
+
+    Handles three formats:
+    - ``series`` (CPU): finds the first series whose name is in TOTAL_CPU_KEYS.
+    - ``values`` (memory, connection_rate): injects the flat values array.
+    - Neither: raises ValueError.
+
+    Timestamps are computed from the API's ``start_time`` + ``i * step_time``.
+
+    Args:
+        db_path: path to SQLite database file.
+        metric_name: internal metric name (e.g. ``'cpu'``, ``'memory'``).
+        trend_data: dict returned by ``_fetch_system_trend``.
+
+    Returns:
+        Number of rows written (int).
+
+    Raises:
+        ValueError: if the trend data format is unrecognized.
+    """
+    if not isinstance(trend_data, dict):
+        return 0
+
+    conn = sqlite3.connect(db_path)
+    conn.executescript(DEVICE_STATE_DDL)
+
+    # Cleanup data older than 7 days to prevent unbounded growth
+    cutoff = int(time.time()) - 7 * 86400
+    conn.execute("DELETE FROM device_state WHERE ts < ?", (cutoff,))
+
+    start_time = trend_data.get("start_time", 0)
+    step_time = trend_data.get("step_time", 60)
+    values_array = None
+
+    if "series" in trend_data:
+        # CPU format: find first matching TotalCpu series
+        target_series = None
+        for s in trend_data["series"]:
+            if s.get("name", "") in TOTAL_CPU_KEYS:
+                target_series = s
+                break
+        if target_series is None:
+            raise ValueError("CPU trend: no TotalCpu key found")
+        values_array = target_series.get("values", [])
+    elif "values" in trend_data:
+        # Memory / connection_rate format: flat values array
+        values_array = trend_data["values"]
+    else:
+        raise ValueError(f"Unknown system trend format for {metric_name}")
+
+    total = 0
+    for i, v in enumerate(values_array):
+        if not isinstance(v, (int, float)):
+            continue
+        ts = start_time + i * step_time
+        conn.execute(
+            "INSERT OR REPLACE INTO device_state (ts, metric, value) VALUES (?, ?, ?)",
+            (ts, metric_name, float(v)),
+        )
+        total += 1
+
+    conn.commit()
+    conn.close()
+    return total
+
+
+def collect_system_once(client, db_path):
+    """Collect system metrics (CPU, memory, connection rate) trend data.
+
+    Individual metric failures do not block other metrics.
+
+    Args:
+        client: ``ADClient`` instance.
+        db_path: path to SQLite database file.
+
+    Returns:
+        Total number of rows written (int).
+    """
+    total = 0
+    for api_metric in SYSTEM_METRICS:
+        try:
+            trend_data = _fetch_system_trend(client, api_metric)
+        except Exception:
+            continue
+        if trend_data:
+            try:
+                total += _inject_system_trend_into_db(
+                    db_path, METRIC_NAME_MAP[api_metric], trend_data
+                )
+            except Exception:
+                continue
+    return total
 
 
 def _inject_trend_into_db(db_path, vs_name, trend_data):
@@ -108,6 +230,8 @@ def collect_once(client, db_path):
             continue
         if trend_data:
             total += _inject_trend_into_db(db_path, vn, trend_data)
+
+    total += collect_system_once(client, db_path)
 
     return total
 
