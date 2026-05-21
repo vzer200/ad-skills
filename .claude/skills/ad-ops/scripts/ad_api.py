@@ -635,7 +635,33 @@ def main():
 
     args = parser.parse_args()
 
-    # 检查参数
+    # --- Multi-device mode ---
+    if args.hosts or args.devices:
+        # login is single-device only
+        if args.command == "login":
+            print("错误: login 不支持多设备模式，请使用 --host", file=sys.stderr)
+            sys.exit(4)
+
+        # --hosts and --host conflict
+        if args.hosts and args.host:
+            print("警告: --hosts 和 --host 同时指定，--host 将被忽略", file=sys.stderr)
+
+        # Resolve devices
+        if args.hosts:
+            devices = parse_hosts_arg(args.hosts, args.user, args.password)
+        else:
+            devices = load_devices_json(args.devices)
+
+        if not devices:
+            print("错误: 设备列表为空", file=sys.stderr)
+            sys.exit(4)
+
+        # Parallel execution
+        results = run_multi(devices, _execute_command, args=args)
+        print(json.dumps(results, indent=2, ensure_ascii=False))
+        sys.exit(compute_multi_exit_code(results))
+
+    # --- Single-device mode ---
     if not args.host:
         print("错误: 未指定 AD 设备地址", file=sys.stderr)
         print("使用 --host 或设置环境变量 AD_HOST", file=sys.stderr)
@@ -667,73 +693,20 @@ def main():
 
     # 执行命令
     try:
-        if args.command == "login":
-            result = client.get_users()
-            print("✓ 登录成功")
-            output(result)
-
-        elif args.command == "users":
-            if args.subcommand == "list":
-                output(client.get_users())
-            elif args.subcommand == "get":
-                output(client.get_user(args.name))
-
-        elif args.command == "slb":
-            if args.subcommand == "list":
-                output(client.get_virtual_services())
-            elif args.subcommand == "get":
-                output(client.get_virtual_service(args.name))
-
-        elif args.command == "pool":
-            if args.subcommand == "list":
-                output(client.get_pools())
-            elif args.subcommand == "get":
-                output(client.get_pool(args.name))
-
-        elif args.command == "stat":
-            if args.subcommand == "device":
-                output(client.get_system_status())
-            elif args.subcommand == "sys":
-                output(client.get_sys_system())
-            elif args.subcommand == "vs":
-                output(client.get_vs_stat())
-            elif args.subcommand == "vs-get":
-                output(client.get_vs_stat_by_name(args.name))
-            elif args.subcommand == "trend":
-                items = args.items.split(",") if args.items else None
-                output(client.get_vs_summary_trend(items=items, trend=args.trend))
-            elif args.subcommand == "vs-trend":
-                items = args.items.split(",") if args.items else None
-                output(client.get_vs_trend_by_name(args.name, items=items, trend=args.trend))
-            elif args.subcommand == "pool":
-                output(client.get_pool_node_stat(args.pool))
-            elif args.subcommand == "nodes":
-                output(client.get_all_node_stat())
-            elif args.subcommand == "cpu":
-                output(client.get_cpu_status())
-            elif args.subcommand == "mem":
-                output(client.get_memory_status())
-            elif args.subcommand == "disk":
-                output(client.get_disk_status())
-            elif args.subcommand == "net":
-                output(client.get_network_status())
-
-        elif args.command == "cert":
-            if args.subcommand == "list":
-                output(client.get_ssl_certificates())
-
-        elif args.command == "log":
-            if args.subcommand == "service":
-                output(client.get_service_log(limit=args.limit))
-
-        elif args.command == "ha":
-            if args.subcommand == "status":
-                output(client.get_ha_status())
-            elif args.subcommand == "cluster":
-                output(client.get_ha_cluster())
-
-        else:
+        if args.command is None:
             parser.print_help()
+            sys.exit(0)
+
+        if args.command == "login":
+            result = _execute_command(client, args)
+            print("✓ 登录成功")
+            output(result["data"])
+        else:
+            result = _execute_command(client, args)
+            if result is not None:
+                output(result)
+            else:
+                parser.print_help()
 
     except Exception as e:
         print(f"错误: {e}", file=sys.stderr)
