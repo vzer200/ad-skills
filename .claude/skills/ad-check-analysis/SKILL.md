@@ -1,13 +1,136 @@
 ---
 name: ad-check-analysis
-description: 深信服 AD 设备系统巡检技能，支持标准巡检和全量巡检，自动执行巡检任务、下载巡检报告并分析巡检结果，生成健康评估报告。当用户提到"巡检"、"系统巡检"、"AD巡检"、"健康检查"、"巡检分析"、"全量巡检"、"标准巡检"时触发。
-version: "2.0.0"
+description: 深信服 AD 设备系统巡检技能，支持标准巡检、安全巡检和全量巡检，自动执行巡检任务、下载巡检报告并分析巡检结果，生成健康评估报告。当用户提到"巡检"、"系统巡检"、"AD巡检"、"健康检查"、"巡检分析"、"全量巡检"、"标准巡检"、"安全巡检"时触发。
+version: "2.1.0"
 updated_at: "2026-05-21"
 ---
 
 # AD 巡检分析
 
 深信服 AD 设备系统巡检技能。
+
+---
+
+## 工作流决策树
+
+> **LLM 必须严格按以下决策树执行，禁止跳过任何步骤。**
+
+### 步骤 0：判断单设备 / 多设备
+
+| 用户输入特征 | 判定 | 执行流程 |
+|-------------|------|---------|
+| 提到单个 IP / 单个设备名（如 "AD1"、"192.168.8.30"） | **单设备** | → [流程 A](#流程-a单设备巡检) |
+| 未提及任何设备 | **单设备** | → [流程 A](#流程-a单设备巡检)，需额外询问设备 |
+| 提到多个 IP / 多个设备名 / "所有" / "全部" / "批量" / "都" | **多设备** | → [流程 B](#流程-b多设备巡检) |
+
+---
+
+### 流程 A：单设备巡检
+
+#### A1. 确定设备 【必须】
+
+- 用户指定了设备（IP 或设备名如 "AD1"）→ 直接使用，从 [已知设备](#已知设备) 查完整 URL
+- 用户未指定 → **【询问用户】** 要巡检哪台设备，列出已知设备供选择
+
+#### A2. 确定场景 【必须】
+
+- 用户消息中包含场景关键词（"标准"、"安全"、"全量"）→ 直接使用
+- 用户未指定 → **【询问用户】**：
+  > "将对 {设备名} 执行**标准巡检**。可选场景：标准巡检 / 安全巡检 / 全量巡检。是否继续？"
+  - 确认 → 使用标准巡检，进入 A3
+  - 修改 → 让用户选择其他场景，进入 A3
+  - 取消 → 终止流程
+
+#### A3. 检查历史记录 【必须】
+
+调用 `check.py history` 查询历史记录：
+
+```bash
+python scripts/check.py history --host https://IP --password xxx
+```
+
+- `len(items) < 5` → 直接进入 A4（**不带 `--force`**）
+- `len(items) == 5` → **【询问用户】**：
+  > "巡检记录已达 5 条上限，强制巡检会删除最早一条记录。是否继续？"
+  - 同意 → 带 `--force` 进入 A4
+  - 拒绝 → 终止流程
+
+#### A4. 启动巡检 【必须】
+
+```bash
+python scripts/check.py run --host https://IP --password xxx --scene "场景名" [--force]
+```
+
+记录返回的 `work_dir` 路径。
+
+#### A5. 轮询进度 【必须】
+
+每 10s 调用，直到 `state` 变为 `FINISHED`：
+
+```bash
+python scripts/check.py progress --host https://IP --password xxx
+```
+
+#### A6. 下载分析 【必须】
+
+```bash
+python scripts/check.py wait --host https://IP --work-dir <A4返回的路径>
+```
+
+#### A7. 展示报告 【必须】
+
+脚本输出的 Markdown **全文展示**在对话中，不截断、不折叠。
+
+---
+
+### 流程 B：多设备巡检
+
+#### B1. 确定设备列表 【必须】
+
+- 用户指定了设备（IP/设备名列表、"所有"、"全部"等）→ 从 [已知设备](#已知设备) 解析
+- 用户未指定 → **自动从 `devices.json` 读取所有已知设备**
+- 只有 1 台设备 → **降级为 [流程 A](#流程-a单设备巡检)**
+
+#### B2. 确定场景 【必须】
+
+- 用户指定了场景 → 直接使用
+- 用户未指定 → **默认标准巡检，直接执行**（不需要确认）
+- 所有设备**统一使用同一种场景**，不支持混用
+
+#### B3. 启动巡检 【必须】
+
+多设备不查历史记录，直接带 `--force`：
+
+```bash
+python scripts/check.py run --hosts "https://IP1,https://IP2" --password xxx --scene "场景名" --force
+```
+
+记录每台设备返回的 `work_dir`。
+
+#### B4. 轮询进度 【必须】
+
+每 10s 并行查询所有设备：
+
+```bash
+python scripts/check.py progress --hosts "https://IP1,https://IP2" --password xxx
+```
+
+轮询直到每台设备 `state` 变为 `FINISHED`。
+
+#### B5. 下载分析 【必须】
+
+每台设备分别调用：
+
+```bash
+python scripts/check.py wait --host https://IP1 --work-dir <B3返回的work_dir1>
+python scripts/check.py wait --host https://IP2 --work-dir <B3返回的work_dir2>
+```
+
+#### B6. 展示报告 【必须】
+
+多设备报告含汇总表 + 每设备详细报告，**全文展示**在对话中，不截断、不折叠。
+
+---
 
 ## 适用场景
 
@@ -28,22 +151,24 @@ updated_at: "2026-05-21"
 
 | 功能 | 说明 |
 |------|------|
-| 巡检场景查询 | 获取可用巡检场景列表 |
-| 执行巡检 | 触发标准巡检或全量巡检 |
+| 巡检场景查询 | 获取可用巡检场景列表（标准巡检 / 安全巡检 / 全量巡检） |
+| 执行巡检 | 触发标准巡检、安全巡检或全量巡检 |
 | 进度查询 | 查询巡检任务执行进度 |
 | 报告下载 | 下载并解压巡检报告 |
 | 结果分析 | 解析 ad.json 并产出 Markdown 报告 |
 
 ## CLI 命令参考
 
+> 以下为命令参考。LLM 执行时必须遵循上方 [工作流决策树](#工作流决策树)，不得跳过交互步骤直接调命令。
+
 ```bash
 # 查看巡检场景
 python scripts/check.py scenes --host https://192.168.8.30
 
-# 启动巡检（步骤 1-3 合一）
+# 启动巡检（单设备）
 python scripts/check.py run --host https://192.168.8.30 --scene "标准巡检" --force
 
-# 多设备巡检（并行启动，逐台轮询）
+# 多设备巡检（并行启动）
 python scripts/check.py run --hosts "https://192.168.8.30,https://192.168.8.31" --scene "标准巡检" --password xxx --force
 
 # 多设备巡检（同步等待，需平台超时充足）
@@ -55,7 +180,7 @@ python scripts/check.py progress --host https://192.168.8.30
 # 轮询进度（多设备并行查询）
 python scripts/check.py progress --hosts "https://192.168.8.30,https://192.168.8.31" --password xxx
 
-# 等待完成+下载+分析
+# 下载分析
 python scripts/check.py wait --host https://192.168.8.30 --work-dir /tmp/ad_check_xxx
 
 # 查看历史（单设备）
@@ -117,17 +242,10 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 | 查看历史记录（多设备） | `check.py history --hosts "..."` | `--password` |
 | 分析本地巡检报告 | `check.py analyze --path ...` | `--host`, `--scene`（可选覆盖） |
 
-### 多设备触发
-
-1. 用户提到多个 IP/设备名 → `--hosts`
-2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
-3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
-4. 密码不同时 → 必须用 `--devices` JSON 文件
-
 ## 行为准则
 
 ### 必须行为
-- ✅ 必须每次查询都要通过脚本调用获取实时数据，绝对不允许使用历史缓存数据或者捏造数据
+- ✅ 必须按 [工作流决策树](#工作流决策树) 逐步执行，禁止跳过交互步骤
 - ✅ 所有操作通过 `scripts/check.py` 子命令
 - ✅ 巡检分析仅使用巡检报告返回的数据
 - ✅ 报告内容直接展示在对话消息正文中
@@ -139,23 +257,6 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 - ❌ 填充未从巡检报告中获取的数据
 - ❌ 使用 ad-ops 的 `ad_api.py` 来完成巡检操作
 - ❌ 脚本返回异常/报错时，LLM 不得尝试绕过脚本、换用其他方式、或自行补救。必须原样将错误信息报告给用户，由用户决定下一步操作
-
----
-
-## 巡检场景选择规则
-
-1. **用户明确指定场景** → 直接执行对应巡检
-2. **用户未指定场景** → 调用 `scenes` 获取可用场景列表，展示给用户选择后再执行
-
-获取场景 API: `GET /api/lb/current-version/sys/offline-check`，返回 `items[].name`。
-
----
-
-## 巡检记录限制
-
-- **最大保存数**: 5 条
-- **超过限制**: 使用 `--force` 强制巡检（会删除最早的报告），需先征得用户同意
-- ⚠️ `total_items` 是上限值（固定为 5），判断记录数量用 `len(items)`
 
 ---
 
@@ -174,58 +275,6 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 | `type=progress` | URL 参数 | 查询进度 |
 | `type=history` | URL 参数 | 查询历史 |
 | `type=download&key={name}&encrypt=false` | URL 参数 | 下载报告 |
-
-### 执行步骤
-
-**LLM 必须严格遵循以下步骤，全程使用脚本，禁止直接调 API。**
-
-#### 第 1 步：确认巡检场景
-
-- 用户明确指定场景 → 直接使用
-- 用户未指定 → 调用 `scenes` 获取可用场景列表，展示给用户选择
-
-#### 第 2 步：检查巡检记录上限
-
-- `run` 命令自动检查并输出结论，`=5 条` 时询问用户是否强制巡检（`--force`）
-
-#### 第 3 步：启动巡检（立即退出）
-
-```bash
-# 多设备（推荐），AD1_ADDR/AD2_ADDR 从已知设备表查完整 URL
-python scripts/check.py run --hosts "https://AD1_ADDR,https://AD2_ADDR" --password xxx --scene "标准巡检" [--force]
-# 返回 work_dir 列表，LLM 记录每台设备对应的 work_dir
-
-# 单设备
-python scripts/check.py run --host https://AD_ADDR --password xxx --scene "标准巡检" [--force]
-```
-
-**启动后立即退出**，巡检在设备后台执行。脚本输出 `work_dir` 路径（如 `/tmp/ad_check_https___192.168.8.30`）。**`--host`/`--hosts` 必须传完整 URL，脚本不解析设备名。**
-
-#### 第 4 步：轮询进度（每 10s）
-
-```bash
-# 所有设备一起查（推荐）
-python scripts/check.py progress --hosts "https://AD1_ADDR,https://AD2_ADDR" --password xxx
-
-# 或逐台查
-python scripts/check.py progress --host https://AD_ADDR --password xxx
-```
-
-轮询直到每台设备的 `state` 变为 `"FINISHED"`。如果 `state=="NO_RUNNING"`，查看返回的 `history_latest.finished` 字段判断是否已完成。
-
-#### 第 5 步：下载分析
-
-```bash
-# 每台设备用其对应的 work_dir（第 3 步返回的）
-python scripts/check.py wait --host https://AD1_ADDR --work-dir /tmp/ad_check_xxx
-python scripts/check.py wait --host https://AD2_ADDR --work-dir /tmp/ad_check_yyy
-```
-
-`wait` 检查一次即返回（默认 `max_attempts=1`）。如果 `_is_new_report` 未通过（报告尚未生成或被其他会话的报告覆盖），会报错提示重试。LLM 应先通过 `progress` 确认完成后再调 `wait`。
-
-#### 第 6 步：展示报告
-
-脚本输出完整 Markdown，LLM 原样展示在对话中，不截断、不折叠。
 
 ### 进度状态
 
