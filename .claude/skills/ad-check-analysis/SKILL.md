@@ -73,13 +73,6 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 | AD1 | 192.168.8.30 | admin |
 | AD2 | 192.168.8.31 | admin |
 
-## 多设备触发决策
-
-1. 用户提到多个 IP/设备名 → `--hosts`
-2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
-3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
-4. 密码不同时 → 必须用 `--devices` JSON 文件
-
 ### 多设备子命令支持
 
 | 子命令 | 多设备 | 说明 |
