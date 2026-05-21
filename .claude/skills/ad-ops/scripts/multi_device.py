@@ -91,19 +91,25 @@ def run_multi(
             futures[ex.submit(func, client, **kwargs)] = d
 
         deadline = time.monotonic() + total_timeout
-        for f in as_completed(futures, timeout=total_timeout):
-            d = futures[f]
-            remaining = deadline - time.monotonic()
-            try:
-                if remaining <= 0:
-                    raise FutureTimeout("全局超时")
-                results[d["host"]] = f.result(timeout=max(remaining, 1))
-            except FutureTimeout:
-                results[d["host"]] = {"error": "超时（仍在执行）"}
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except Exception as e:
-                results[d["host"]] = {"error": f"{type(e).__name__}: {e}"}
+        try:
+            for f in as_completed(futures, timeout=total_timeout):
+                d = futures[f]
+                remaining = deadline - time.monotonic()
+                try:
+                    if remaining <= 0:
+                        raise FutureTimeout("全局超时")
+                    results[d["host"]] = f.result(timeout=max(remaining, 1))
+                except FutureTimeout:
+                    results[d["host"]] = {"error": "超时（仍在执行）"}
+                except (KeyboardInterrupt, SystemExit):
+                    raise
+                except Exception as e:
+                    results[d["host"]] = {"error": f"{type(e).__name__}: {e}"}
+        except FutureTimeout:
+            # as_completed itself timed out — capture remaining futures
+            for f, d in futures.items():
+                if d["host"] not in results:
+                    results[d["host"]] = {"error": "超时（仍在执行）"}
 
     return results
 
@@ -121,7 +127,12 @@ def compute_multi_exit_code(results: Dict[str, Any]) -> int:
     if total == 0:
         return 4
 
-    success_count = sum(1 for v in results.values() if "error" not in v)
+    def _has_error(v):
+        if v is None:
+            return True
+        return "error" in v if isinstance(v, dict) else True
+
+    success_count = sum(1 for v in results.values() if not _has_error(v))
     failed_count = total - success_count
 
     if failed_count == 0:
@@ -129,7 +140,7 @@ def compute_multi_exit_code(results: Dict[str, Any]) -> int:
 
     if success_count == 0:
         # Check if all failures are auth-related
-        auth_keywords = ("401", "认证失败", "Authentication", "ADAuthError")
+        auth_keywords = ("401", "403", "认证失败", "Authentication", "ADAuthError")
         all_auth = all(
             any(kw in v.get("error", "") for kw in auth_keywords)
             for v in results.values()
@@ -189,10 +200,6 @@ def host_slug(host: str) -> str:
     import re
     return re.sub(r'[^a-zA-Z0-9._-]', '_', host)
 
-
-def _print_error(msg: str) -> None:
-    """Print to stderr with a consistent prefix."""
-    print(msg, file=sys.stderr)
 
 if __name__ == "__main__":
     print("This module is not meant to be run directly.", file=sys.stderr)

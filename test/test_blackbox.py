@@ -235,7 +235,11 @@ class TestValidateDateRange(unittest.TestCase):
         from blackbox import _validate_date_range
         self.assertTrue(_validate_date_range("2026-05-01", "2026-05-04"))
 
-    def test_exactly_7_days_invalid(self):
+    def test_exactly_7_calendar_days_valid(self):
+        from blackbox import _validate_date_range
+        self.assertTrue(_validate_date_range("2026-05-01", "2026-05-07"))
+
+    def test_over_7_calendar_days_invalid(self):
         from blackbox import _validate_date_range
         self.assertFalse(_validate_date_range("2026-05-01", "2026-05-08"))
 

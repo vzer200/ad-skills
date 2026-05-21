@@ -24,7 +24,7 @@ from typing import Any, Dict, List, Optional
 from ad_api import ADClient
 from multi_device import (
     run_multi, parse_hosts_arg, load_devices_json,
-    compute_multi_exit_code, render_multi_summary, host_slug,
+    compute_multi_exit_code, render_multi_summary,
 )
 
 
@@ -59,17 +59,6 @@ def cert_level(days_left: int) -> str:
     return "ok"
 
 
-def cert_level_cn(days_left: int) -> str:
-    """Return the Chinese severity level for a certificate."""
-    if days_left <= 30:
-        return "严重"
-    if days_left <= 60:
-        return "警告"
-    if days_left <= 90:
-        return "提示"
-    return "正常"
-
-
 # =============================================================================
 # Helper: hardware component levels
 # =============================================================================
@@ -91,6 +80,17 @@ def fan_level(status: str) -> str:
     if s != "normal":
         return "warning"
     return "ok"
+
+
+def cert_level_cn(days_left: int) -> str:
+    """Return the Chinese severity level for a certificate."""
+    if days_left <= 30:
+        return "严重"
+    if days_left <= 60:
+        return "警告"
+    if days_left <= 90:
+        return "提示"
+    return "正常"
 
 
 def power_level(status: str) -> str:

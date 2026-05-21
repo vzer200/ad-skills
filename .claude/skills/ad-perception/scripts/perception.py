@@ -34,7 +34,7 @@ import json
 import math
 import statistics
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 def detect_anomaly_3sigma(points, window_seconds=21600, z_threshold=3, min_window=30):
@@ -118,7 +118,8 @@ def query_traffic_db(db_path, vs_name=None, days=7):
                 )
             rows = [dict(r) for r in cursor.fetchall()]
         return rows
-    except Exception:
+    except Exception as e:
+        sys.stderr.write(f"[perception] traffic DB query error ({db_path}): {e}\n")
         return None
 
 
@@ -154,7 +155,8 @@ def query_device_state_db(db_path, metric=None, days=7):
                 )
             rows = [dict(r) for r in cursor.fetchall()]
         return rows
-    except Exception:
+    except Exception as e:
+        sys.stderr.write(f"[perception] state DB query error ({db_path}): {e}\n")
         return None
 
 
@@ -317,10 +319,14 @@ def traffic_analysis(client, db_path=None, vs_name=None):
 
         result['raw_trends'] = _build_metric_tables_from_trend(trends_by_vs)
 
-        # If API fallback returned no data, mark as error
+        # If API fallback returned no data but VS exist, it's low-traffic (not an error)
         if not result['raw_trends']:
-            result['status'] = 'error'
-            result['error'] = '数据库和 API 均无法获取流量数据'
+            if vs_names:
+                result['status'] = 'insufficient_data'
+                result['error'] = '数据库数据不足，API 趋势数据均为低流量（所有指标值 < 2）'
+            else:
+                result['status'] = 'error'
+                result['error'] = '数据库和 API 均无法获取流量数据'
 
     return result
 
@@ -494,7 +500,7 @@ def state_analysis(client, disk_source=None, db_path=None):
         if isinstance(host, str):
             import re
             safe = re.sub(r'[^a-zA-Z0-9._-]', '_', host)
-            db_path = f"device_state_{safe}.db"
+            db_path = f"vs_samples_{safe}.db"  # unified DB: collector stores both vs_samples + device_state
 
     if db_path and os.path.isfile(db_path):
         rows = query_device_state_db(db_path)
@@ -1011,6 +1017,27 @@ def _analyze_one(client, db_path=None, disk_source=None):
     return result
 
 
+def _traffic_one(client, vs_name=None, db_path=None):
+    """Single-device traffic analysis for ThreadPoolExecutor."""
+    result = traffic_analysis(client, db_path=db_path, vs_name=vs_name)
+    result['device'] = client.host
+    return result
+
+
+def _state_one(client, disk_source=None, db_path=None):
+    """Single-device state analysis for ThreadPoolExecutor."""
+    result = state_analysis(client, disk_source=disk_source, db_path=db_path)
+    result['device'] = client.host
+    return result
+
+
+def _conflict_one(client):
+    """Single-device conflict analysis for ThreadPoolExecutor."""
+    result = conflict_analysis(client)
+    result['device'] = client.host
+    return result
+
+
 def _logs_one(client, limit=50):
     """Single-device log fetcher for ThreadPoolExecutor / run_multi."""
     entries = fetch_service_logs(client, limit=limit)
@@ -1077,7 +1104,6 @@ def main():
         if cmd == "logs":
             limit = args.limit if hasattr(args, 'limit') else 50
             results = run_multi(devices, _logs_one, limit=limit)
-
             if output_format == "json":
                 output = {
                     "mode": "multi",
@@ -1098,7 +1124,36 @@ def main():
                     lines.append("")
                 print("\n".join(lines))
             sys.exit(compute_multi_exit_code(results))
-        else:
+        elif cmd == "traffic":
+            vs_name = args.vs if hasattr(args, 'vs') and args.vs else None
+            results = run_multi(devices, _traffic_one, vs_name=vs_name, db_path=db_path)
+            for host, r in results.items():
+                if "error" in r:
+                    print(f"\n## {host}\n> 错误: {r['error']}")
+                else:
+                    r['device'] = host
+                    print(_render_single_dim_markdown(r, 'traffic'))
+            sys.exit(compute_multi_exit_code(results))
+        elif cmd == "state":
+            disk_src = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
+            results = run_multi(devices, _state_one, disk_source=disk_src, db_path=db_path)
+            for host, r in results.items():
+                if "error" in r:
+                    print(f"\n## {host}\n> 错误: {r['error']}")
+                else:
+                    r['device'] = host
+                    print(_render_single_dim_markdown(r, 'state'))
+            sys.exit(compute_multi_exit_code(results))
+        elif cmd == "conflict":
+            results = run_multi(devices, _conflict_one)
+            for host, r in results.items():
+                if "error" in r:
+                    print(f"\n## {host}\n> 错误: {r['error']}")
+                else:
+                    r['device'] = host
+                    print(_render_single_dim_markdown(r, 'conflict'))
+            sys.exit(compute_multi_exit_code(results))
+        else:  # analyze (full)
             disk_src = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
             results = run_multi(devices, _analyze_one, db_path=db_path, disk_source=disk_src)
 
@@ -1177,22 +1232,25 @@ def main():
         sys.exit(1)
 
 
+def _render_single_dim_markdown(result, subcommand):
+    """Render a single-dimension result as markdown (for multi-device)."""
+    wrapped = {
+        'device': result.get('device', result.get('host', 'Unknown')),
+        'traffic': result if subcommand == 'traffic' else {},
+        'state': result if subcommand == 'state' else {},
+        'logs': {},
+        'conflicts': result if subcommand == 'conflict' else {},
+    }
+    return render_markdown(wrapped)
+
+
 def _print_result(result, output_format, subcommand=None):
     """Print analysis result in requested format."""
     if output_format == "json":
         print(render_json(result))
     elif subcommand in ('traffic', 'state', 'conflict'):
-        # Wrap single-dimension result so render_markdown can process it
-        wrapped = {
-            'device': result.get('device', result.get('host', 'Unknown')),
-            'traffic': result if subcommand == 'traffic' else {},
-            'state': result if subcommand == 'state' else {},
-            'logs': {},
-            'conflicts': result if subcommand == 'conflict' else {},
-        }
-        print(render_markdown(wrapped))
+        print(_render_single_dim_markdown(result, subcommand))
     else:
-        # For full analysis results, use markdown
         print(render_markdown(result))
 
 

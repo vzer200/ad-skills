@@ -18,7 +18,6 @@ import sys
 import time
 import tarfile
 import zipfile
-import urllib.request
 import tempfile
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
@@ -41,7 +40,7 @@ except ImportError as e:
 try:
     from multi_device import (
         run_multi, parse_hosts_arg, load_devices_json,
-        compute_multi_exit_code, render_multi_summary, host_slug,
+        compute_multi_exit_code, host_slug,
     )
 except ImportError as e:
     print(f"错误: 无法导入 multi_device: {e}", file=sys.stderr)
@@ -61,7 +60,7 @@ def _handle_ad_error(e):
         sys.exit(5)
 
 
-_DEFAULT_ARCHIVE_PASSWORD = "root1234+"
+_DEFAULT_ARCHIVE_PASSWORD = ""
 
 
 class BlackboxAnalyzer:
@@ -86,7 +85,7 @@ class BlackboxAnalyzer:
         if os.path.exists(tgz_path):
             print(f"解压 TGZ 文件: {tgz_path}")
             with tarfile.open(tgz_path, "r:gz") as tf:
-                tf.extractall(self.hislog_path)
+                tf.extractall(self.hislog_path, filter='data')
         
         print("解压完成")
     
@@ -208,15 +207,15 @@ class BlackboxAnalyzer:
 
 def _blackbox_start(client, from_date="", to_date="", archive_password=_DEFAULT_ARCHIVE_PASSWORD, output_dir=""):
     """Start blackbox export only — returns immediately with event_id and output_dir."""
+    if not from_date or not to_date:
+        return {"error": "必须指定 --from-date 和 --to-date"}
+
     slug = host_slug(client.host)
     if not output_dir:
         output_dir = os.path.join(tempfile.gettempdir(), f"blackbox_{slug}")
     else:
         output_dir = os.path.join(output_dir, slug)
     os.makedirs(output_dir, exist_ok=True)
-
-    if not from_date or not to_date:
-        return {"error": "必须指定 --from-date 和 --to-date"}
 
     result = client.export_blackbox_log(from_date, to_date, archive_password)
     event_id = result.get("event_id")
@@ -365,9 +364,9 @@ def _validate_date_range(from_date, to_date):
         if span < 0:
             print("错误: 结束日期早于开始日期", file=sys.stderr)
             return False
-        if span >= 7:
+        if span > 6:
             print(
-                f"错误: 日期范围 ({from_date} ~ {to_date}) 跨 {span} 天，超过 7 天上限",
+                f"错误: 日期范围 ({from_date} ~ {to_date}) 跨 {span + 1} 个日历日，超过 7 天上限",
                 file=sys.stderr,
             )
             return False
@@ -420,7 +419,7 @@ def _main_progress():
             sys.exit(4)
 
         client = ADClient(args.host, args.user, args.password)
-        result = _blackbox_progress(client, args.output)
+        result = _blackbox_progress_one(client, output_dir=args.output)
         is_error = "error" in result
         print(json.dumps(result, indent=2, ensure_ascii=False))
         sys.exit(5 if is_error else 0)

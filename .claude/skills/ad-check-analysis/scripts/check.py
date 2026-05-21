@@ -76,9 +76,13 @@ def start_check(
     scene: str,
     force: bool = False,
     work_dir: str = None,
+    skip_history: bool = False,
 ) -> Dict[str, Any]:
     """
     步骤 1-3：场景确认 + 记录上限检查 + 后台启动巡检
+
+    Args:
+        skip_history: 多设备模式跳过历史记录查询（SKILL.md B3）
     """
     if work_dir is None:
         work_dir = os.path.join(tempfile.gettempdir(), "ad_check")
@@ -92,17 +96,22 @@ def start_check(
     if scene not in scene_names:
         raise CheckSceneNotFoundError(f"场景 '{scene}' 不存在，可用: {scene_names}")
 
-    # 步骤 2: 检查巡检记录上限
-    history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
-    pre_run_items = history.get("items", [])
-    count = len(pre_run_items)
-    pre_run_latest_name = pre_run_items[0].get("name", "") if pre_run_items else ""
-    need_force = count >= 5
-    print(f"[步骤 2] 巡检记录: {count}/5 {'(已达上限，需 --force)' if need_force else '(未达上限，可直接执行)'}")
-    if need_force and not force:
-        raise CheckLimitReachedError(
-            "巡检记录已达 5 条上限，需要使用 --force 参数强制巡检（会删除最早一条记录）"
-        )
+    # 步骤 2: 检查巡检记录上限（多设备模式跳过）
+    pre_run_latest_name = ""
+    need_force = False
+    if skip_history:
+        print(f"[步骤 2] 多设备模式跳过历史记录查询")
+    else:
+        history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
+        pre_run_items = history.get("items", [])
+        count = len(pre_run_items)
+        pre_run_latest_name = pre_run_items[0].get("name", "") if pre_run_items else ""
+        need_force = count >= 5
+        print(f"[步骤 2] 巡检记录: {count}/5 {'(已达上限，需 --force)' if need_force else '(未达上限，可直接执行)'}")
+        if need_force and not force:
+            raise CheckLimitReachedError(
+                "巡检记录已达 5 条上限，需要使用 --force 参数强制巡检（会删除最早一条记录）"
+            )
 
     # 步骤 3: 后台启动巡检（立即返回）
     print(f"[步骤 3] 启动巡检: scene='{scene}' force={force}")
@@ -1546,7 +1555,7 @@ def render_markdown(
     device_label = meta.get("host", "?")
     try:
         import json as _json
-        _devices_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "devices.json")
+        _devices_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "devices.json")
         if os.path.isfile(_devices_path):
             with open(_devices_path, encoding="utf-8") as _f:
                 _data = _json.load(_f)
@@ -1712,7 +1721,7 @@ def _start_only(client, scene="标准巡检", force=False, work_dir=None):
     if work_dir is None:
         slug = host_slug(client.host)
         work_dir = os.path.join(tempfile.gettempdir(), f"ad_check_{slug}")
-    meta = start_check(client, scene, force=force, work_dir=work_dir)
+    meta = start_check(client, scene, force=force, work_dir=work_dir, skip_history=True)
     return {
         "host": client.host,
         "work_dir": work_dir,
@@ -1728,8 +1737,8 @@ def _check_one(client, scene="标准巡检", force=False, work_dir=None):
         slug = host_slug(client.host)
         work_dir = os.path.join(tempfile.gettempdir(), f"ad_check_{slug}")
 
-    # Step 1-3: Start check
-    meta = start_check(client, scene, force=force, work_dir=work_dir)
+    # Step 1-3: Start check (multi-device, skip history)
+    meta = start_check(client, scene, force=force, work_dir=work_dir, skip_history=True)
 
     # Step 4-6: Wait and download
     meta = wait_and_download(client, work_dir=work_dir, max_attempts=60)

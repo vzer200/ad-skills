@@ -132,7 +132,7 @@ def main():
 
     args = parser.parse_args()
 
-    password = os.environ.get("AD_PASS", "") or args.password
+    password = args.password or os.environ.get("AD_PASS", "")
 
     # Multi-device mode
     if args.hosts or args.devices:

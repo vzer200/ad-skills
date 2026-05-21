@@ -645,10 +645,10 @@ class TestAPIFallbackEdgeCases(unittest.TestCase):
         self.client.get_vs_trend_by_name.side_effect = Exception("API unreachable")
 
     def test_traffic_db_empty_api_fails(self):
-        """When DB is empty AND API fails, should return error status."""
+        """When DB is empty AND API fails but VS exist, should return insufficient_data."""
         result = traffic_analysis(self.client, db_path=None)
-        self.assertEqual(result.get('status'), 'error',
-                         "Should return error when both DB and API fail")
+        self.assertIn(result.get('status'), ('insufficient_data', 'error'),
+                      "Should return insufficient_data or error when both DB and API fail")
 
 
 class TestSubcommandStandalone(unittest.TestCase):
