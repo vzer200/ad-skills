@@ -42,14 +42,10 @@ python scripts/blackbox.py progress --hosts "https://192.168.8.30,https://192.16
 python scripts/blackbox.py download --host https://192.168.8.30 --password xxx \
   --output /tmp/blackbox_analysis/https___192.168.8.30
 
-# === 同步模式（需平台超时 > 5min）===
-
-# 单设备（阻塞等待完成）
+# 单设备（异步启动，与多设备一致）
 python scripts/blackbox.py --host https://10.146.10.254 --user admin --password admin \
   --from-date 2026-05-03 --to-date 2026-05-09 --archive-password admin
-
-# 多设备同步等待
-python scripts/blackbox.py --hosts "..." --password xxx --from-date ... --to-date ... --wait
+# 返回: event_id=xxx output_dir=/tmp/blackbox_analysis/...
 
 # 多设备（异密码）
 python scripts/blackbox.py --devices devices.json \
@@ -64,11 +60,8 @@ python scripts/blackbox.py --host https://192.168.8.30 --password xxx \
 ## Workflow
 
 ```
-异步模式（推荐）:
+异步模式:
   export (--hosts) → progress (每10s轮询) → download (仅SUCCESS后)
-
-同步模式（需平台超时 > 5min）:
-  export (--hosts --wait) → 阻塞等待 → 下载+分析
 ```
 
 ### 异步轮询流程（LLM 执行指南）

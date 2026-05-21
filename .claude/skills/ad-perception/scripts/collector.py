@@ -52,6 +52,10 @@ def _inject_trend_into_db(db_path, vs_name, trend_data):
     conn = sqlite3.connect(db_path)
     conn.executescript(VS_SAMPLES_DDL)
 
+    # Cleanup data older than 30 days to prevent unbounded growth
+    cutoff = int(time.time()) - 30 * 86400
+    conn.execute("DELETE FROM vs_samples WHERE ts < ?", (cutoff,))
+
     now = int(time.time())
     total = 0
 

@@ -569,8 +569,6 @@ def main():
     parser.add_argument("--host", default="", help="AD 设备地址")
     parser.add_argument("--hosts", default="", help="多设备地址，逗号分隔 (如 https://IP1,https://IP2)")
     parser.add_argument("--devices", default="", help="设备清单 JSON 文件路径 (密码不同时使用)")
-    parser.add_argument("--wait", action="store_true", help="多设备模式：等待导出完成并输出报告")
-    parser.add_argument("--no-wait", action="store_true", help="多设备模式：仅启动导出，不等待完成（默认）")
     parser.add_argument("--complete", default="", help="已废弃：请使用 download 子命令")
     parser.add_argument("--user", default="admin", help="用户名")
     parser.add_argument("--password", help="密码")
@@ -620,36 +618,18 @@ def main():
                 print("错误: 设备列表为空", file=sys.stderr)
                 sys.exit(4)
 
-            if args.wait:
-                # 同步模式：等待所有设备完成（需平台超时充足）
-                results = run_multi(devices, _blackbox_one,
-                                  from_date=args.from_date or "",
-                                  to_date=args.to_date or "",
-                                  archive_password=args.archive_password,
-                                  output_dir=args.output)
-                for host, result in results.items():
-                    if "error" in result:
-                        print(f"\n## {host}\n> 错误: {result['error']}")
-                    else:
-                        print(f"\n## {host}")
-                        print(f"输出目录: {result.get('output_dir', '')}")
-                        print(f"报告路径: {result.get('report_path', '')}")
-                        print(result.get("report", ""))
-                print(f"\n---\n{render_multi_summary(results, 'AD 黑盒日志分析 — 多设备')}")
-                sys.exit(compute_multi_exit_code(results))
-            else:
-                # 异步模式（默认）：启动导出后立即退出
-                results = run_multi(devices, _blackbox_start,
-                                  from_date=args.from_date or "",
-                                  to_date=args.to_date or "",
-                                  archive_password=args.archive_password,
-                                  output_dir=args.output)
-                for host, r in results.items():
-                    if "error" in r:
-                        print(f"[{host}] 错误: {r['error']}", file=sys.stderr)
-                    else:
-                        print(f"[{host}] event_id={r['event_id']} output_dir={r['output_dir']}")
-                sys.exit(compute_multi_exit_code(results))
+            # 异步模式：启动导出后立即退出，LLM 用 progress/download 轮询
+            results = run_multi(devices, _blackbox_start,
+                              from_date=args.from_date or "",
+                              to_date=args.to_date or "",
+                              archive_password=args.archive_password,
+                              output_dir=args.output)
+            for host, r in results.items():
+                if "error" in r:
+                    print(f"[{host}] 错误: {r['error']}", file=sys.stderr)
+                else:
+                    print(f"[{host}] event_id={r['event_id']} output_dir={r['output_dir']}")
+            sys.exit(compute_multi_exit_code(results))
 
         # Single-device validation
         if not args.host:
@@ -659,14 +639,13 @@ def main():
         client = ADClient(args.host, args.user, args.password)
 
         if args.from_date and args.to_date:
-            result = _blackbox_one(client, from_date=args.from_date, to_date=args.to_date,
-                                   archive_password=args.archive_password, output_dir=args.output)
+            # 异步模式：启动导出后立即退出，LLM 用 progress/download 轮询
+            result = _blackbox_start(client, from_date=args.from_date, to_date=args.to_date,
+                                     archive_password=args.archive_password, output_dir=args.output)
             if "error" in result:
                 print(f"错误: {result['error']}", file=sys.stderr)
                 sys.exit(5)
-            print(f"输出目录: {result.get('output_dir', '')}")
-            print(f"报告路径: {result.get('report_path', '')}")
-            print(result.get("report", ""))
+            print(f"event_id={result['event_id']} output_dir={result['output_dir']}")
             sys.exit(0)
         else:
             analyzer = BlackboxAnalyzer(args.output)
