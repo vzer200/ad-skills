@@ -39,6 +39,34 @@ CPU: 15%, 内存: 42%
 ✅ 未发现 VS IP:Port 重叠或 Pool 节点重复。
 ```
 
+### 有冲突时
+
+```markdown
+## 地址冲突
+**VS IP:Port 重叠:**
+| VS A | VS B | 重叠地址 |
+|---|---|---|
+| web_app | web_app_backup | 10.0.0.1:443 |
+
+**Pool 节点重复:**
+| 节点地址 | 所属 Pool |
+|---|---|
+| 192.168.1.10:8080 | pool_a, pool_b |
+```
+
+## 服务日志查询（render_logs_markdown）
+
+`perception.py logs` 子命令独立输出：
+
+```markdown
+## 服务日志 (https://192.168.8.30)
+| 时间 | 级别 | 模块 | 详情 |
+|---|---|---|---|
+| 2026-05-21 14:25:30 | WARN | connection | Connection limit approaching threshold |
+| 2026-05-21 14:20:15 | ERROR | auth | Authentication failed for user operator |
+| 2026-05-21 14:15:00 | INFO | system | Configuration updated successfully |
+```
+
 ## 数据不足回退
 
 ```markdown
@@ -53,6 +81,28 @@ CPU: 15%, 内存: 42%
 ⚠️ 数据不足，无法进行 3σ 异常检测。
 ```
 
+## 错误和边界情况
+
+```markdown
+## 流量分析
+❌ 流量分析失败: Connection timed out
+
+## 设备状态
+❌ 设备状态获取失败: 401 Unauthorized
+
+## 地址冲突
+❌ 冲突检测失败: Failed to get virtual services
+```
+
+### 磁盘状态变体
+
+| disk_source | 输出 |
+|-------------|------|
+| `none`（未提供 --disk-source） | `磁盘: 未提供巡检数据` |
+| `error`（ad.json 损坏） | `磁盘: 巡检报告损坏` |
+| `ad.json` 且 available=false | `磁盘: 巡检报告不可用` |
+| `ad.json` 且 available=true | `磁盘: {value}` |
+
 ## 结构说明
 
 | Section | 触发条件 | 表格列数 |
@@ -60,13 +110,16 @@ CPU: 15%, 内存: 42%
 | `# AD 感知分析报告` | 始终 | - |
 | `## 流量分析` | 始终 | 8 列（有异常）/ 5 列（回退）/ 无表格（无异常） |
 | `## 设备状态` | 始终 | 7 列（3σ 表）/ 4 列（阈值告警表） |
-| `## 日志关联` | 有异常时 | 4 列 |
+| `## 日志关联` | 有异常时（analyze 命令内） | 4 列 |
+| `## 服务日志 ({host})` | `logs` 子命令独立输出 | 4 列 |
 | `## 地址冲突` | 始终 | 3 列（VS 重叠）/ 2 列（Pool 重复） |
 
 ### 严重程度判定规则
 
+`render_markdown()` 中的判定逻辑（z ≤ 3 的数据已在 `detect_anomaly_3sigma()` 中被过滤，不会到达渲染函数）：
+
 | Z-Score 范围 | 严重程度 |
 |-------------|---------|
 | z > 10 | 🔴 严重 |
-| 5 < z ≤ 10 | 🟡 明显 |
-| 3 < z ≤ 5 | 🟠 轻微 |
+| z > 5 | 🟡 明显 |
+| z ≤ 5 | 🟠 轻微 |
