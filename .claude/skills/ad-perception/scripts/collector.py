@@ -52,8 +52,8 @@ def _inject_trend_into_db(db_path, vs_name, trend_data):
     conn = sqlite3.connect(db_path)
     conn.executescript(VS_SAMPLES_DDL)
 
-    # Cleanup data older than 30 days to prevent unbounded growth
-    cutoff = int(time.time()) - 30 * 86400
+    # Cleanup data older than 7 days to prevent unbounded growth
+    cutoff = int(time.time()) - 7 * 86400
     conn.execute("DELETE FROM vs_samples WHERE ts < ?", (cutoff,))
 
     now = int(time.time())
@@ -276,7 +276,7 @@ class VSCollector:
             cutoff: optional Unix timestamp cutoff (default: now - 30 days).
         """
         if cutoff is None:
-            cutoff = int(time.time()) - 30 * 86400
+            cutoff = int(time.time()) - 7 * 86400
         self.conn.execute("BEGIN")
         self.conn.execute("DELETE FROM vs_samples WHERE ts < ?", (cutoff,))
         self.conn.execute("COMMIT")
