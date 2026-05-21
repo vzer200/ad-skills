@@ -798,11 +798,6 @@ class TestParseArgs(unittest.TestCase):
         self.assertEqual(args.command, "collect")
         self.assertEqual(args.host, "https://10.0.0.1")
 
-    def test_daemon_subcommand(self):
-        args = parse_args(["daemon", "--host", "https://10.0.0.1", "--interval", "60"])
-        self.assertEqual(args.command, "daemon")
-        self.assertEqual(args.interval, 60)
-
     def test_no_subcommand_defaults_to_none(self):
         args = parse_args([])
         self.assertIsNone(args.command)

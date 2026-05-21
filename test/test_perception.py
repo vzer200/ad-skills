@@ -212,7 +212,10 @@ class TestDBFallback(unittest.TestCase):
             self.client.get_vs_trend_by_name.assert_called()
         finally:
             if os.path.isfile(db_path):
-                os.unlink(db_path)
+                try:
+                    os.unlink(db_path)
+                except PermissionError:
+                    pass  # Windows SQLite WAL file lock may delay release
 
     def test_db_enough_points_no_api_call(self):
         """>= 100 total points in DB should NOT trigger API fallback."""
@@ -226,7 +229,10 @@ class TestDBFallback(unittest.TestCase):
             self.assertIsInstance(result['anomalies'], list)
         finally:
             if os.path.isfile(db_path):
-                os.unlink(db_path)
+                try:
+                    os.unlink(db_path)
+                except PermissionError:
+                    pass  # Windows SQLite WAL file lock may delay release
 
     def test_render_raw_trend_when_db_insufficient(self):
         """When DB has insufficient data, output should show raw trend table with '数据不足'."""
@@ -237,7 +243,10 @@ class TestDBFallback(unittest.TestCase):
             self.assertIn('raw_trends', result)
         finally:
             if os.path.isfile(db_path):
-                os.unlink(db_path)
+                try:
+                    os.unlink(db_path)
+                except PermissionError:
+                    pass  # Windows SQLite WAL file lock may delay release
 
     def test_injection_branch_seeds_db_and_reruns_3sigma(self):
         """When DB has < 100 points, injection branch seeds trend data then re-runs 3σ."""
@@ -265,7 +274,10 @@ class TestDBFallback(unittest.TestCase):
             self.assertIn('anomalies', result)
         finally:
             if os.path.isfile(db_path):
-                os.unlink(db_path)
+                try:
+                    os.unlink(db_path)
+                except PermissionError:
+                    pass  # Windows SQLite WAL file lock may delay release
 
     def test_injection_branch_no_data_still_falls_back(self):
         """When injection fails (collect_once returns 0), should fall back to API."""
@@ -278,7 +290,10 @@ class TestDBFallback(unittest.TestCase):
             self.assertEqual(result['source'], 'api_fallback')
         finally:
             if os.path.isfile(db_path):
-                os.unlink(db_path)
+                try:
+                    os.unlink(db_path)
+                except PermissionError:
+                    pass  # Windows SQLite WAL file lock may delay release
 
     def test_injection_adds_some_but_still_insufficient(self):
         """When injection adds rows but total still < 100, should fall back to API."""
@@ -300,7 +315,10 @@ class TestDBFallback(unittest.TestCase):
             self.assertEqual(result['source'], 'api_fallback')
         finally:
             if os.path.isfile(db_path):
-                os.unlink(db_path)
+                try:
+                    os.unlink(db_path)
+                except PermissionError:
+                    pass  # Windows SQLite WAL file lock may delay release
 
 
 class TestStateAnalysis(unittest.TestCase):
@@ -775,7 +793,10 @@ class TestState3Sigma(unittest.TestCase):
             self.assertIsInstance(result['anomalies'], list)
         finally:
             if os.path.isfile(db_path):
-                os.unlink(db_path)
+                try:
+                    os.unlink(db_path)
+                except PermissionError:
+                    pass  # Windows SQLite WAL file lock may delay release
 
     def test_state_analysis_without_db_still_works(self):
         """state_analysis without db_path should work (backward compat)."""
@@ -797,7 +818,10 @@ class TestState3Sigma(unittest.TestCase):
             self.assertTrue(any(i['level'] == 'critical' for i in cpu_items))
         finally:
             if os.path.isfile(db_path):
-                os.unlink(db_path)
+                try:
+                    os.unlink(db_path)
+                except PermissionError:
+                    pass  # Windows SQLite WAL file lock may delay release
 
     def test_render_markdown_shows_3sigma_table(self):
         """render_markdown should show 3σ table when state has anomalies."""

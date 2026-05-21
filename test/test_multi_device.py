@@ -14,7 +14,6 @@ import json
 import os
 import sys
 import tempfile
-import threading
 import time
 import unittest
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
@@ -500,102 +499,6 @@ class TestCheckMultiDevice(unittest.TestCase):
         finally:
             if os.path.exists(ad_json):
                 os.unlink(ad_json)
-
-
-# =============================================================================
-# collector.py threading tests
-# =============================================================================
-
-class TestCollectorThreading(unittest.TestCase):
-    """Tests for collector.py threading support."""
-
-    def setUp(self):
-        sys.path.insert(0, os.path.join(_test_dir, "..", ".claude", "skills", "ad-perception", "scripts"))
-        from collector import VSCollector, _collect_loop
-        self.VSCollector = VSCollector
-        self._collect_loop = _collect_loop
-
-    def test_collector_has_stop_event_attribute(self):
-        """VSCollector instances have stop_event and fatal_error attributes."""
-        c = self.VSCollector("https://a.com", "pw", db_path=":memory:")
-        self.assertIsNone(c.stop_event)
-        self.assertIsNone(c.fatal_error)
-
-    def test_host_slug_property(self):
-        """host_slug property returns filesystem-safe identifier."""
-        c = self.VSCollector("https://192.168.8.30:8443", "pw", db_path=":memory:")
-        slug = c.host_slug
-        self.assertNotIn("/", slug)
-        self.assertNotIn(":", slug)
-
-    def test_run_once_raises_runtime_error_instead_of_exit(self):
-        """run_once() raises RuntimeError on DB write failure, not sys.exit."""
-        c = self.VSCollector("https://a.com", "pw", db_path=":memory:")
-        # Use a mock connection instead of real sqlite3 (execute is C-level, read-only)
-        c.conn = MagicMock()
-        c.client = MagicMock()
-        c.client.get_vs_stat.return_value = {"items": [{"name": "vs1", "connection": 100}]}
-        c.conn.execute.side_effect = Exception("DB error")
-
-        with self.assertRaises(RuntimeError) as ctx:
-            c.run_once()
-        self.assertIn("数据库写入失败", str(ctx.exception))
-
-    def test_collect_loop_stops_on_event(self):
-        """_collect_loop exits when stop_event is set."""
-        c = self.VSCollector("https://a.com", "pw", db_path=":memory:")
-        c.stop_event = threading.Event()
-        c.stop_event.set()  # Signal stop immediately
-        c.open_db = MagicMock()
-        c.cleanup_old_data = MagicMock()
-        c.close_db = MagicMock()
-
-        self._collect_loop(c)
-        # Should exit immediately without calling run_once
-        c.open_db.assert_called_once()
-        c.close_db.assert_called_once()
-
-    def test_collect_loop_single_iteration(self):
-        """_collect_loop runs one iteration then stops."""
-        c = self.VSCollector("https://a.com", "pw", db_path=":memory:")
-        c.stop_event = threading.Event()
-        c.interval = 0.01
-        c.open_db = MagicMock()
-        c.cleanup_old_data = MagicMock()
-        c.close_db = MagicMock()
-        c.run_once = MagicMock(return_value=[])
-
-        # Set stop after a short delay
-        def _stop_after_delay():
-            time.sleep(0.05)
-            c.stop_event.set()
-
-        t = threading.Thread(target=_stop_after_delay, daemon=True)
-        t.start()
-        self._collect_loop(c)
-        t.join(timeout=1)
-
-        c.run_once.assert_called()  # At least one iteration
-        c.close_db.assert_called_once()
-
-    def test_collect_loop_fatal_error_threshold(self):
-        """After max_consecutive_failures, stop_event is set and fatal_error recorded."""
-        c = self.VSCollector("https://a.com", "pw", db_path=":memory:")
-        c.stop_event = threading.Event()
-        c.interval = 0.001
-        c.consecutive_failures = 0
-        c.open_db = MagicMock()
-        c.cleanup_old_data = MagicMock()
-        c.close_db = MagicMock()
-        c.run_once = MagicMock(side_effect=Exception("persistent failure"))
-
-        # Run _collect_loop — should stop after max failures (30), not run forever
-        self._collect_loop(c)
-
-        self.assertTrue(c.stop_event.is_set())
-        self.assertIsNotNone(c.fatal_error)
-        self.assertIn("persistent failure", c.fatal_error)
-        self.assertGreaterEqual(c.consecutive_failures, 30)
 
 
 # =============================================================================

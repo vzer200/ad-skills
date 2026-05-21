@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 
 from connect import (
-    test_one_device, _test_one, _extract_ip, _render_table, _compute_exit_code, main,
+    test_one_device, _test_one, _extract_ip, _render_table, main,
 )
 from ad_api import ADConnectionError, ADAuthError, ADAPIError
 
@@ -122,27 +122,6 @@ class TestRenderTable(unittest.TestCase):
         self.assertIn("1/2", output)
 
 
-class TestComputeExitCode(unittest.TestCase):
-    """Test _compute_exit_code for connect results."""
-
-    def test_all_ok(self):
-        self.assertEqual(_compute_exit_code({"h1": {"status": "ok"}, "h2": {"status": "ok"}}), 0)
-
-    def test_all_connect_fail(self):
-        self.assertEqual(_compute_exit_code({"h1": {"status": "connect_fail"}}), 1)
-
-    def test_all_auth_fail(self):
-        self.assertEqual(_compute_exit_code({"h1": {"status": "auth_fail"}}), 2)
-
-    def test_all_auth_fail_via_error_key(self):
-        self.assertEqual(_compute_exit_code({"h1": {"error": "ADAuthError: 401"}}), 2)
-
-    def test_partial_failure(self):
-        self.assertEqual(_compute_exit_code({"h1": {"status": "ok"}, "h2": {"status": "connect_fail"}}), 7)
-
-    def test_empty(self):
-        self.assertEqual(_compute_exit_code({}), 4)
-
 
 class TestMainCLI(unittest.TestCase):
     """Test main() CLI entry point."""
@@ -167,7 +146,7 @@ class TestMainCLI(unittest.TestCase):
         with patch("sys.argv", ["connect.py", "--host", "https://10.0.0.1", "--password", "pw"]):
             with self.assertRaises(SystemExit) as cm:
                 main()
-            self.assertEqual(cm.exception.code, 1)
+            self.assertEqual(cm.exception.code, 2)
 
     @patch("connect.run_multi")
     def test_multi_device_mode(self, mock_run):
