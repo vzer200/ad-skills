@@ -22,35 +22,98 @@ description: 深信服 AD 设备运维管理技能，支持用户/虚拟服务/P
 
 ## CLI 命令参考
 
-### ad_api.py（单设备）
+### ad_api.py — 原始数据查询
+
+支持 `--host` (单设备) 和 `--hosts` / `--devices` (多设备)。
 
 ```bash
-python scripts/ad_api.py --host https://10.146.10.254 --password admin users list
-python scripts/ad_api.py --host https://10.146.10.254 --password admin slb list
-python scripts/ad_api.py --host https://10.146.10.254 --password admin pool list
-python scripts/ad_api.py --host https://10.146.10.254 --password admin stat sys
-python scripts/ad_api.py --host https://10.146.10.254 --password admin ha status
-python scripts/ad_api.py --host https://10.146.10.254 --password admin cert list
+# 用户
+python scripts/ad_api.py --host https://IP --password xxx users list          # 所有用户
+python scripts/ad_api.py --host https://IP --password xxx users get <name>     # 指定用户
+
+# 虚拟服务
+python scripts/ad_api.py --host https://IP --password xxx slb list             # 所有 VS
+python scripts/ad_api.py --host https://IP --password xxx slb get <name>       # 指定 VS
+
+# 节点池
+python scripts/ad_api.py --host https://IP --password xxx pool list            # 所有 Pool
+python scripts/ad_api.py --host https://IP --password xxx pool get <name>      # 指定 Pool
+
+# 系统状态
+python scripts/ad_api.py --host https://IP --password xxx stat sys             # CPU/内存/磁盘/连接
+python scripts/ad_api.py --host https://IP --password xxx stat cpu             # CPU 状态
+python scripts/ad_api.py --host https://IP --password xxx stat mem             # 内存状态
+python scripts/ad_api.py --host https://IP --password xxx stat disk            # 磁盘状态
+python scripts/ad_api.py --host https://IP --password xxx stat net             # 网络状态
+python scripts/ad_api.py --host https://IP --password xxx stat device          # 系统概览
+
+# VS 统计
+python scripts/ad_api.py --host https://IP --password xxx stat vs              # 所有 VS 瞬时状态
+python scripts/ad_api.py --host https://IP --password xxx stat vs-get <name>   # 指定 VS 瞬时状态
+python scripts/ad_api.py --host https://IP --password xxx stat trend           # 所有 VS 汇总趋势
+python scripts/ad_api.py --host https://IP --password xxx stat vs-trend <name> # 指定 VS 趋势
+python scripts/ad_api.py --host https://IP --password xxx stat nodes           # 全部节点状态
+python scripts/ad_api.py --host https://IP --password xxx stat pool <name>     # 指定 Pool 节点状态
+
+# 证书 / 日志 / HA
+python scripts/ad_api.py --host https://IP --password xxx cert list            # SSL 证书列表
+python scripts/ad_api.py --host https://IP --password xxx log service          # 服务日志
+python scripts/ad_api.py --host https://IP --password xxx ha status            # HA 状态
+python scripts/ad_api.py --host https://IP --password xxx ha cluster           # 集群信息
+
+# 多设备（所有查询子命令均支持）
+python scripts/ad_api.py --hosts "https://IP1,https://IP2" --password xxx users list
+python scripts/ad_api.py --hosts "https://IP1,https://IP2" --password xxx stat sys
+python scripts/ad_api.py --devices devices.json users list
 ```
 
-### overview.py（设备总览）
+### overview.py — 格式化快照
+
+带健康标签、颜色标记的格式化输出。支持 `--host` / `--hosts` / `--devices`。
 
 ```bash
-# 单设备
-python scripts/overview.py all --host https://192.168.8.30 --password xxx [--format json]
-python scripts/overview.py vs --host ... [--format json]
-python scripts/overview.py pool --host ... [--format json]
-python scripts/overview.py cert --host ... [--format json]
-python scripts/overview.py hardware --host ... [--format json]
-python scripts/overview.py ha --host ... [--format json]
-python scripts/overview.py traffic --host ... [--format json]
-
-# 多设备（同密码）
-python scripts/overview.py all --hosts "https://192.168.8.30,https://192.168.8.31" --password xxx
-
-# 多设备（异密码）
-python scripts/overview.py all --devices devices.json
+python scripts/overview.py all --host https://IP --password xxx [--format json]
+python scripts/overview.py vs --hosts "IP1,IP2" --password xxx
+python scripts/overview.py pool --host ...
+python scripts/overview.py cert --host ...
+python scripts/overview.py hardware --host ...
+python scripts/overview.py ha --host ...
+python scripts/overview.py traffic --host ...
 ```
+
+## 子命令选择决策
+
+### 工具选择：ad_api.py vs overview.py
+
+| 用户说 | 使用 | 原因 |
+|--------|------|------|
+| "总览" / "概览" / "快照" / "overview" / "设备概况" | `overview.py` | 格式化输出，含健康标签/颜色标记 |
+| "查询" / "列表" / "获取" / "具体某个" / "原始数据" | `ad_api.py` | 原始 JSON 输出，支持 get 单查 |
+
+### 资源查询决策表（ad_api.py）
+
+| 用户意图 | 命令 | 参数 |
+|----------|------|------|
+| 查看所有用户 | `ad_api.py users list` | `--host` 或 `--hosts` |
+| 查看某个用户 | `ad_api.py users get <name>` | `--host` 或 `--hosts` |
+| 查看所有虚拟服务 | `ad_api.py slb list` 或 `overview.py vs` | `--host[s]` |
+| 查看某个虚拟服务 | `ad_api.py slb get <name>` | `--host` 或 `--hosts` |
+| 查看所有节点池 | `ad_api.py pool list` 或 `overview.py pool` | `--host[s]` |
+| 查看某个节点池 | `ad_api.py pool get <name>` | `--host` 或 `--hosts` |
+| 查看设备硬件状态 | `ad_api.py stat sys` 或 `overview.py hardware` | `--host[s]` |
+| 查看所有 VS 流量统计 | `ad_api.py stat vs` 或 `overview.py traffic` | `--host[s]` |
+| 查看指定 VS 流量趋势 | `ad_api.py stat vs-trend <name>` | `--host` 或 `--hosts` |
+| 查看 SSL 证书 | `ad_api.py cert list` 或 `overview.py cert` | `--host[s]` |
+| 查看 HA 状态 | `ad_api.py ha status` 或 `overview.py ha` | `--host[s]` |
+| 查看服务日志 | `ad_api.py log service` | `--host` 或 `--hosts` |
+| 测试连接 | `ad_api.py login` | `--host`（不支持 `--hosts`） |
+
+### 多设备触发
+
+1. 用户提到多个 IP/设备名 → `--hosts`
+2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
+3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
+4. 密码不同时 → 必须用 `--devices` JSON 文件
 
 ## API Reference
 
@@ -78,9 +141,10 @@ python scripts/overview.py all --devices devices.json
 
 | 操作 | 必须使用 | 禁止使用 |
 |------|----------|----------|
-| API 操作 | `python scripts/ad_api.py` | ❌ 直接调 API |
-| 单设备总览 | `python scripts/overview.py all --host ...` | ❌ 直接调 API |
-| 多设备总览 | `python scripts/overview.py all --hosts "..."` | ❌ 直接调 API |
+| 单设备 API 查询 | `python scripts/ad_api.py --host ...` | ❌ 直接调 API |
+| 多设备 API 查询 | `python scripts/ad_api.py --hosts "..."` | ❌ 直接调 API |
+| 单设备总览快照 | `python scripts/overview.py all --host ...` | ❌ 直接调 API |
+| 多设备总览快照 | `python scripts/overview.py all --hosts "..."` | ❌ 直接调 API |
 
 ## 已知设备
 
@@ -109,13 +173,6 @@ python scripts/overview.py all --devices devices.json
 - 多设备输出含汇总表 + 每设备分块，可能较长
 - LLM 全文展示，不截断、不折叠、不选择性展示
 - 超过单条消息限制时分多条展示（保持设备分块完整）
-
-## 多设备触发决策
-
-1. 用户提到多个 IP/设备名 → `--hosts`
-2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
-3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
-4. 密码不同时 → 必须用 `--devices` JSON 文件
 
 ## 外部依赖
 
