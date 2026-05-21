@@ -912,7 +912,7 @@ def render_markdown(
             if k in results:
                 r = results[k]
                 detail = r.get('detail') or r['value']
-                rows.append(f"| {k} | {icon(r['status'])} {status_label(r['status'])} | {detail} |")
+                rows.append(f"| {k} | {icon(r['status'])} {status_label(r['status'])} | {detail.replace(chr(10), ' ')} |")
         return "\n".join(rows)
 
     # ── 健康评分（优先使用 analyze 返回的 health_scores） ─────────────
@@ -942,11 +942,11 @@ def render_markdown(
     device_label = meta.get("host", "?")
     try:
         import json as _json
-        _devices_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "devices.json")
+        _devices_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "devices.json")
         if os.path.isfile(_devices_path):
             with open(_devices_path, encoding="utf-8") as _f:
-                _devices = _json.load(_f)
-            for _d in _devices:
+                _data = _json.load(_f)
+            for _d in _data.get("devices", []):
                 _hosts = [_d.get("host", ""), _d.get("host", "").replace("https://", "http://")]
                 if meta.get("host", "") in _hosts:
                     device_label = _d.get("name", device_label)
