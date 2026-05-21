@@ -310,7 +310,7 @@ def traffic_analysis(client, db_path=None, vs_name=None):
         trends_by_vs = {}
         for vn in vs_names:
             trends = {}
-            for trend_period in ('last-hour', 'last-day', 'last-month'):
+            for trend_period in ('last-hour', 'last-day'):
                 trends[trend_period] = _fetch_trend_raw(client, vn, trend_period)
             trends_by_vs[vn] = trends
 
@@ -589,15 +589,23 @@ def conflict_analysis(client):
             vips = vs.get('vips', [])
             if isinstance(vips, str):
                 vips = [vips]
-            vport = vs.get('vport', '')
-            if not vips or not vport:
+            vports = vs.get('vports') or []
+            if isinstance(vports, str):
+                vports = [vports]
+            if not vports:
+                # Fallback to singular vport field
+                vport = vs.get('vport', '')
+                if vport:
+                    vports = [str(vport)]
+            if not vips or not vports:
                 continue
             for vip in vips:
-                key = (vip, str(vport))
-                if key not in vs_map:
-                    vs_map[key] = []
-                if name not in vs_map[key]:
-                    vs_map[key].append(name)
+                for vport in vports:
+                    key = (vip, str(vport))
+                    if key not in vs_map:
+                        vs_map[key] = []
+                    if name not in vs_map[key]:
+                        vs_map[key].append(name)
 
         for (ip, port), names in vs_map.items():
             if len(names) > 1:
@@ -1002,7 +1010,7 @@ def main():
         p.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
         p.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
         p.add_argument("--user", default="admin", help="Username (default: admin)")
-        p.add_argument("--password", default="", help="Password (overrides AD_PASS env var)")
+        p.add_argument("--password", default="", help="Password (falls back to AD_PASS env var)")
         p.add_argument("--db", default="", help="SQLite database path")
         p.add_argument("--format", choices=["markdown", "json"], default="markdown", help="Output format")
 
@@ -1028,7 +1036,7 @@ def main():
 
     host = args.host
     user = args.user
-    password = os.environ.get("AD_PASS", "") or args.password
+    password = args.password or os.environ.get("AD_PASS", "")
 
     db_path = os.path.abspath(args.db) if args.db else None
     output_format = args.format

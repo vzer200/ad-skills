@@ -12,6 +12,7 @@ import json
 import os
 import ssl
 import sys
+import time
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -131,21 +132,28 @@ class ADClient:
             method=method,
         )
 
-        # 发送请求
-        try:
-            with urllib.request.urlopen(
-                req,
-                context=self.ssl_context,
-                timeout=self.timeout,
-            ) as response:
-                return json.loads(response.read().decode("utf-8"))
-        except urllib.error.HTTPError as e:
-            error_body = e.read().decode("utf-8") if e.fp else ""
-            if e.code in (401, 403):
-                raise ADAuthError(f"HTTP {e.code}: {error_body}", http_code=e.code, original=e)
-            raise ADAPIError(f"HTTP {e.code}: {error_body}", http_code=e.code, response_body=error_body, original=e)
-        except urllib.error.URLError as e:
-            raise ADConnectionError(f"连接失败: {e.reason}", original=e)
+        # 发送请求 (带指数退避重试，仅对连接错误重试)
+        max_retries = 3
+        last_error = None
+        for attempt in range(max_retries):
+            try:
+                with urllib.request.urlopen(
+                    req,
+                    context=self.ssl_context,
+                    timeout=self.timeout,
+                ) as response:
+                    return json.loads(response.read().decode("utf-8"))
+            except urllib.error.HTTPError as e:
+                error_body = e.read().decode("utf-8") if e.fp else ""
+                if e.code in (401, 403):
+                    raise ADAuthError(f"HTTP {e.code}: {error_body}", http_code=e.code, original=e)
+                raise ADAPIError(f"HTTP {e.code}: {error_body}", http_code=e.code, response_body=error_body, original=e)
+            except urllib.error.URLError as e:
+                last_error = e
+                if attempt < max_retries - 1:
+                    time.sleep(2 ** attempt)
+                else:
+                    raise ADConnectionError(f"连接失败(已重试{max_retries}次): {e.reason}", original=e)
 
     def _raw_request(self, url_path):
         """Binary download. url_path must start with /cgi/ and not contain .."""
@@ -718,7 +726,8 @@ def main():
             if result is not None:
                 output(result)
             else:
-                parser.print_help()
+                print(f"错误: '{args.command}' 需要子命令，请使用 -h 查看可用子命令", file=sys.stderr)
+                sys.exit(4)
 
     except Exception as e:
         print(f"错误: {e}", file=sys.stderr)

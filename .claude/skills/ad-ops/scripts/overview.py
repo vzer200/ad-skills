@@ -300,7 +300,10 @@ def _process_hardware(sys_data: Dict[str, Any]) -> Dict[str, Any]:
     def _level_numeric(v, warn=80, crit=90):
         if v is None:
             return "unknown"
-        return hardware_component_level(float(v), warn, crit)
+        try:
+            return hardware_component_level(float(v), warn, crit)
+        except (ValueError, TypeError):
+            return "unknown"
 
     # fan: list of dicts or empty list
     fan_list = sys_data.get("fan") or []

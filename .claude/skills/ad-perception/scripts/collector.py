@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-VS traffic collection daemon — polls AD device VS statistics and stores in SQLite.
+VS traffic collection tool — fetches AD device VS statistics trend data and stores in SQLite.
 """
 
 import argparse
 import os
-import signal
 import sqlite3
 import sys
-import threading
 import time
 
 # Cross-skill import: ad-ops provides ADClient
@@ -361,8 +359,6 @@ class VSCollector:
         self.consecutive_failures = 0
         self.conn = None
         self.running = False
-        self.stop_event = None  # injected by run_collector_multi()
-        self.fatal_error = None
 
         # Derive default DB name from host if not explicitly provided
         if not db_path:
@@ -527,7 +523,7 @@ def _derive_db_path(host):
 def parse_args(argv=None):
     """Parse CLI arguments with subcommand routing."""
     parser = argparse.ArgumentParser(
-        description="AD VS traffic collection tool — one-shot collect or long-running daemon.",
+        description="AD VS traffic collection tool — one-shot collect with trend analysis.",
     )
     subparsers = parser.add_subparsers(dest="command", help="Subcommand")
 
@@ -537,82 +533,7 @@ def parse_args(argv=None):
     )
     _add_common_args(collect_p)
 
-    # daemon subcommand (deprecated, preserved for backward compatibility)
-    daemon_p = subparsers.add_parser(
-        "daemon", help="DEPRECATED: long-running collection daemon"
-    )
-    _add_common_args(daemon_p)
-    daemon_p.add_argument(
-        "--interval", type=int, default=30,
-        help="Sampling interval in seconds (default: 30)",
-    )
-
     return parser.parse_args(argv)
-
-
-def _collect_loop(collector):
-    """Collection loop driven by stop_event. Runs in a daemon thread."""
-    collector.open_db()
-    collector.cleanup_old_data()
-    max_consecutive_failures = 30
-    while not collector.stop_event.is_set():
-        try:
-            collector.run_once()
-        except Exception as e:
-            collector.consecutive_failures += 1
-            print(f"[{collector.host_slug}] 采集异常: {e}", file=sys.stderr)
-            if collector.consecutive_failures >= max_consecutive_failures:
-                collector.fatal_error = str(e)
-                collector.stop_event.set()
-                break
-        collector.stop_event.wait(timeout=collector.interval)
-    collector.close_db()
-
-
-def run_collector_multi(devices, db_paths, interval=30):
-    """Launch multiple collectors in parallel threads with a shared stop_event.
-
-    Args:
-        devices: list of dicts [{host, password, user}, ...]
-        db_paths: dict {host: db_path}
-        interval: sampling interval in seconds
-
-    The function blocks until SIGINT/SIGBREAK is received, then stops all collectors.
-    """
-    from multi_device import resolve_device_pw
-
-    stop_event = threading.Event()
-    threads = []
-    collectors = []
-
-    for d in devices:
-        pw = resolve_device_pw(d)
-        c = VSCollector(
-            d["host"], pw, d.get("user", "admin"),
-            db_path=db_paths.get(d["host"], ""), interval=interval
-        )
-        c.stop_event = stop_event
-        t = threading.Thread(target=_collect_loop, args=(c,), daemon=True)
-        t.start()
-        threads.append(t)
-        collectors.append(c)
-
-    # Main thread waits for signal
-    import signal as sig_module
-    def _handle_signal(signum, frame):
-        stop_event.set()
-    sig_module.signal(sig_module.SIGINT, _handle_signal)
-    if hasattr(sig_module, 'SIGBREAK'):
-        sig_module.signal(sig_module.SIGBREAK, _handle_signal)
-
-    for t in threads:
-        t.join()
-
-    for c in collectors:
-        try:
-            c.close_db()
-        except Exception:
-            pass
 
 
 def _collect_and_analyze_one(client, db_path):
@@ -620,67 +541,6 @@ def _collect_and_analyze_one(client, db_path):
     if not db_path:
         db_path = _derive_db_path(client.host)
     return collect_and_analyze(client, db_path)
-
-
-def _run_daemon(args):
-    """Run the legacy daemon mode (single or multi device)."""
-    password = args.password or os.environ.get("AD_PASS", "")
-
-    # Multi-device daemon mode
-    if hasattr(args, 'hosts') and args.hosts:
-        devices = []
-        for host in args.hosts.split(","):
-            host = host.strip()
-            if host:
-                devices.append({"host": host, "user": args.user, "password": password})
-
-        db_paths = {}
-        for d in devices:
-            db_paths[d["host"]] = _derive_db_path(d["host"])
-
-        run_collector_multi(devices, db_paths, interval=args.interval)
-        sys.exit(0)
-
-    # Single-device daemon mode
-    if not args.host:
-        print("错误: 未指定设备地址，请使用 --host 指定 AD 设备 URL", file=sys.stderr)
-        sys.exit(4)
-    if not password:
-        print("错误: 未指定密码，请使用 --password 或设置环境变量 AD_PASS", file=sys.stderr)
-        sys.exit(1)
-
-    if not args.db:
-        args.db = _derive_db_path(args.host)
-
-    collector = VSCollector(
-        host=args.host, password=password, username=args.user,
-        db_path=args.db, interval=args.interval,
-    )
-
-    pid_path = collector.db_path + ".pid"
-    signal.signal(signal.SIGINT, collector.handle_signal)
-    if hasattr(signal, 'SIGBREAK'):
-        signal.signal(signal.SIGBREAK, collector.handle_signal)
-
-    collector.start(pid_path)
-
-    last_cleanup_ts = int(time.time())
-    try:
-        while True:
-            rows = collector.run_once()
-            if rows is not None:
-                vs_set = {r[1] for r in rows}
-                ts_display = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
-                print(f"[{ts_display}] 采样 {len(vs_set)} 个 VS，{len(rows)} 条记录")
-            now = int(time.time())
-            if now - last_cleanup_ts >= 3600:
-                collector.cleanup_old_data()
-                last_cleanup_ts = now
-            time.sleep(collector.interval)
-    except SystemExit:
-        raise
-    except KeyboardInterrupt:
-        collector.handle_signal(signal.SIGINT, None)
 
 
 def _run_collect(args):
@@ -748,15 +608,10 @@ def _run_collect(args):
 
 
 def main():
-    """CLI entry point — routes to collect (one-shot) or daemon (deprecated)."""
+    """CLI entry point."""
     sys.stdout.reconfigure(encoding='utf-8')
     args = parse_args()
-
-    if args.command == "daemon":
-        _run_daemon(args)
-    else:
-        # Default: collect mode
-        _run_collect(args)
+    _run_collect(args)
 
 
 if __name__ == "__main__":
