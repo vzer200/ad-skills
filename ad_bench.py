@@ -1,5 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """AD 单臂打流脚本 —— Windows 既当客户端又当服务端
+独立基准测试工具，用于验证 AD 设备虚拟服务的连通性和吞吐量。
+不属于 skills 系统，仅供开发调试使用。
 
 用法:
     python ad_bench.py <VIP> [VIP端口] [后端端口] [并发数] [总请求数]

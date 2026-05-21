@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "docs/devices.schema.json",
+  "title": "AD Devices Configuration",
+  "description": "Schema for the AD device list configuration file (devices.json).",
+  "type": "object",
+  "required": ["devices"],
+  "properties": {
+    "devices": {
+      "type": "array",
+      "description": "List of AD devices.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "host"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Device display name."
+          },
+          "host": {
+            "type": "string",
+            "format": "uri",
+            "description": "Device management URL (e.g., https://x.x.x.x)."
+          },
+          "user": {
+            "type": "string",
+            "description": "Login username.",
+            "default": "admin"
+          },
+          "password": {
+            "type": "string",
+            "description": "Direct login password (mutually exclusive with password_from)."
+          },
+          "password_from": {
+            "type": "string",
+            "description": "Environment variable name whose value holds the login password (mutually exclusive with password)."
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
