@@ -235,7 +235,7 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 
 ## 已知设备
 
-> 权威来源: 项目根目录 `devices.json`。密码通过 `password_from` 引用环境变量，禁止明文存储。
+> 权威来源: 项目根目录 `devices.json`。
 
 | 设备名 | IP 地址 | 用户名 |
 |--------|---------|--------|
@@ -327,20 +327,6 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
   "check_results": { "cpu_check": {"status": "pass", "value": "17%"}, ... }
 }
 ```
-
-## 巡检结果分析
-
-### 功能巡检项
-
-APP_VERSION_CHECK, ADMIN_ROLE_CHECK, HEARTBEAT_ERROR_CHECK, DEVICE_SAFE_CHECK
-
-### 健康巡检项
-
-CPU_CHECK, MEMORY_CHECK, DISK_CHECK, NIC_STATE_CHECK, FAN_STATE_CHECK, POWER_STATE_CHECK, KERNEL_LOG_CHECK
-
-### 安全巡检项
-
-SSH_CHECK, WEAK_PASSWORD_CHECK, SSL_POLICY_CHECK, IP_LIMIT_CHECK, OPEN_PORT_CHECK
 
 ---
 

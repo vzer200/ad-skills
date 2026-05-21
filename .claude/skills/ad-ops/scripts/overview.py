@@ -282,7 +282,7 @@ def _process_cert(cert: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _extract_value(field):
+def _extract_value(field: Any) -> Any:
     """Extract numeric value from API field which may be a dict like
     {"model": "INSTANT", "value": 7, ...} or a raw number."""
     if isinstance(field, dict):
@@ -297,7 +297,7 @@ def _process_hardware(sys_data: Dict[str, Any]) -> Dict[str, Any]:
     cpu_val = _extract_value(sys_data.get("cpu_usage"))
     mem_val = _extract_value(sys_data.get("memory_usage"))
 
-    def _level_numeric(v, warn=80, crit=90):
+    def _level_numeric(v: Any, warn: float = 80, crit: float = 90) -> str:
         if v is None:
             return "unknown"
         try:
@@ -381,7 +381,7 @@ def render_markdown(overview: Dict[str, Any]) -> str:
     lines: List[str] = []
     api_errors = overview.get("api_errors", {})
 
-    def a(e):
+    def a(e: str) -> None:
         lines.append(e)
 
     a("# AD Device Overview")
@@ -465,7 +465,7 @@ def render_markdown(overview: Dict[str, Any]) -> str:
             a("| Component | Value | Status |")
             a("|-----------|-------|--------|")
 
-            def hw_row(label, value_str, level):
+            def hw_row(label: str, value_str: str, level: str) -> None:
                 cn = _level_cn(level)
                 a(f"| {label} | {value_str} | {cn} |")
 
@@ -543,7 +543,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _overview_one(client, subcommand="all"):
+def _overview_one(client: Any, subcommand: str = "all") -> Dict[str, Any]:
     """Single-device overview for ThreadPoolExecutor — returns dict, no sys.exit."""
     overview = build_overview(client, subcommand)
     markdown = render_markdown(overview)

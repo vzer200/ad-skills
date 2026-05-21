@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Multi-device inspection report rendering.
+多设备巡检报告渲染。
 
-Produces rich markdown reports from check analysis results, including
-per-device detail blocks, cross-device comparison, and summary tables.
+根据巡检分析结果生成丰富的 Markdown 报告，包括
+逐设备详情块、跨设备对比和汇总表。
 
-All functions in this module are specific to ad-check-analysis.
+本模块所有函数均为 ad-check-analysis 专用。
 """
 
 from typing import Any, Dict, Optional
 
 
 def _extract_ip(host: str) -> str:
-    """Extract IPv4 address from a host URL like https://192.168.8.30:443."""
+    """从主机 URL (如 https://192.168.8.30:443) 中提取 IPv4 地址。"""
     import re
     m = re.search(r'(\d+\.\d+\.\d+\.\d+)', host)
     return m.group(1) if m else host
 
 
 def _format_check_time(raw_time: str) -> str:
-    """Format YYYYMMDDHHMMSS to YYYY-MM-DD HH:MM:SS."""
+    """将 YYYYMMDDHHMMSS 格式化为 YYYY-MM-DD HH:MM:SS。"""
     if raw_time and len(raw_time) >= 14:
         return "{}-{}-{} {}:{}:{}".format(
             raw_time[:4], raw_time[4:6], raw_time[6:8],
@@ -30,7 +30,7 @@ def _format_check_time(raw_time: str) -> str:
 
 
 def _score_icon(score: int) -> str:
-    """Green/yellow/red circle based on score threshold."""
+    """根据分数阈值返回绿/黄/红圆形图标。"""
     if score >= 90:
         return "\U0001f7e2"
     elif score >= 70:
@@ -40,7 +40,7 @@ def _score_icon(score: int) -> str:
 
 
 def _check_icon(status: str) -> str:
-    """Icon for pass/fail/warn check status."""
+    """根据 pass/fail/warn 检查状态返回对应图标。"""
     return {"pass": "✅", "fail": "❌", "warn": "⚠️"}.get(status, status)
 
 
@@ -52,7 +52,7 @@ _CATEGORY_LABELS = {
 
 
 def _device_summary_status(result: Dict[str, Any]) -> str:
-    """Determine device-level status string (with icon) from a result dict."""
+    """从结果字典中确定设备级状态字符串(含图标)。"""
     if "error" in result:
         err = result["error"]
         if any(kw in err for kw in ("Auth", "401", "认证")):
@@ -70,7 +70,7 @@ def _render_device_detail_block(
     result: Dict[str, Any],
     device_name: str,
 ) -> str:
-    """Render a single device's detail block for the multi-device report."""
+    """为多设备报告渲染单个设备的详情块。"""
     ip = _extract_ip(host)
     heading = "### \U0001f50d {} ({}) 详细报告".format(device_name, ip)
 
@@ -189,7 +189,7 @@ def _render_cross_device_comparison(
     results: Dict[str, Any],
     device_names: Dict[str, str],
 ) -> str:
-    """Generate cross-device comparison table for items with inter-device differences."""
+    """生成跨设备对比表，列出设备间存在差异的检查项。"""
     valid_hosts = []
     for host, result in results.items():
         if "error" not in result and result.get("analysis"):
@@ -270,25 +270,24 @@ def render_multi_device_report(
     scene: str = "标准巡检",
     device_names: Optional[Dict[str, str]] = None,
 ) -> str:
-    """Render a rich multi-device inspection report in markdown.
+    """渲染丰富的多设备巡检报告(markdown 格式)。
 
-    Produces the full output format defined in
-    ad-check-analysis/examples/output-multi.md, including:
-      - Header with scene / time range / device count
-      - 6-column summary table
-      - Per-device detail blocks (category-grouped items, stats, suggestions)
-      - Cross-device comparison (when >=2 devices connected and >=1 has anomalies)
-      - Error blocks for failed devices
+    生成 ad-check-analysis/examples/output-multi.md 中定义的完整输出格式，包括:
+      - 头部: 场景 / 时间范围 / 设备数量
+      - 6 列汇总表
+      - 逐设备详情块 (按类别分组的检查项、统计、建议)
+      - 跨设备对比 (当 >=2 台设备连接且 >=1 台存在异常时)
+      - 失败设备的错误块
 
     Args:
-        results: {host: result_dict, ...} from run_multi().
-                 Success results carry {meta, analysis, markdown};
-                 error results carry {error}.
-        scene: inspection scene name.
-        device_names: optional {host: name} mapping for display.
+        results: run_multi() 返回的 {host: result_dict, ...}。
+                 成功结果包含 {meta, analysis, markdown}；
+                 失败结果包含 {error}。
+        scene: 巡检场景名称。
+        device_names: 可选的 {host: name} 映射，用于显示。
 
     Returns:
-        Markdown string with the full multi-device report.
+        完整的 markdown 多设备报告字符串。
     """
     device_names = device_names or {}
 

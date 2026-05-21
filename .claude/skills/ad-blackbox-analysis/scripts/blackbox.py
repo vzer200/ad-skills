@@ -140,7 +140,7 @@ class BlackboxAnalyzer:
             counts[value] = counts.get(value, 0) + 1
         return counts
     
-    def generate_report(self, audit_results: Dict) -> str:
+    def generate_report(self, audit_results: Dict[str, Any]) -> str:
         """生成分析报告"""
         report = []
         report.append("# AD 黑盒日志分析报告")
@@ -187,7 +187,7 @@ class BlackboxAnalyzer:
         return "\n".join(report)
 
 
-def _blackbox_start(client, from_date="", to_date="", archive_password="root1234+", output_dir=""):
+def _blackbox_start(client: Any, from_date: str = "", to_date: str = "", archive_password: str = "root1234+", output_dir: str = "") -> Dict[str, Any]:
     """Start blackbox export only — returns immediately with event_id and output_dir."""
     slug = host_slug(client.host)
     if not output_dir:
@@ -215,7 +215,7 @@ def _blackbox_start(client, from_date="", to_date="", archive_password="root1234
     return {"host": client.host, "event_id": event_id, "output_dir": output_dir}
 
 
-def _blackbox_download(client, output_dir, archive_password="root1234+"):
+def _blackbox_download(client: Any, output_dir: str, archive_password: str = "root1234+") -> Dict[str, Any]:
     """Complete an async export: check event, download, extract, analyze. No sys.exit."""
     meta_path = os.path.join(output_dir, "_export_meta.json")
     if not os.path.exists(meta_path):
@@ -266,7 +266,7 @@ def _blackbox_download(client, output_dir, archive_password="root1234+"):
     return {"error": f"未找到事件 event_id={event_id}"}
 
 
-def _blackbox_progress(client, output_dir):
+def _blackbox_progress(client: Any, output_dir: str) -> Dict[str, Any]:
     """Query blackbox export progress without downloading.
 
     Reads _export_meta.json for event_id, then queries get_last_event().
@@ -321,7 +321,7 @@ def _blackbox_progress(client, output_dir):
     return {"status": "NOT_FOUND"}
 
 
-def _blackbox_progress_one(client, **kw):
+def _blackbox_progress_one(client: Any, **kw: Any) -> Dict[str, Any]:
     """Single-device progress adapter for ThreadPoolExecutor."""
     output_base = kw.get("output_dir", "")
     slug = host_slug(client.host)
@@ -332,7 +332,7 @@ def _blackbox_progress_one(client, **kw):
     return _blackbox_progress(client, output_dir)
 
 
-def _validate_date_range(from_date, to_date):
+def _validate_date_range(from_date: str, to_date: str) -> bool:
     """Validate date range does not exceed 7 days. Returns True if valid."""
     if not from_date or not to_date:
         return True
@@ -355,7 +355,7 @@ def _validate_date_range(from_date, to_date):
     return True
 
 
-def _main_progress():
+def _main_progress() -> None:
     """Handle 'progress' subcommand — query blackbox export progress."""
     parser = argparse.ArgumentParser(
         prog="blackbox.py progress", description="查询黑盒导出进度"
@@ -414,7 +414,7 @@ def _main_progress():
         sys.exit(5)
 
 
-def _main_download():
+def _main_download() -> None:
     """Handle 'download' subcommand — download blackbox archive and analyze."""
     parser = argparse.ArgumentParser(
         prog="blackbox.py download", description="下载黑盒文件并分析（仅在 progress 返回 SUCCESS 后使用）"
@@ -462,7 +462,7 @@ def _main_download():
         sys.exit(5)
 
 
-def main():
+def main() -> None:
     sys.stdout.reconfigure(encoding='utf-8')
 
     # ── Route to subcommand if first arg is a known command ──────────────

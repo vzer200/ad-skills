@@ -31,9 +31,10 @@ from multi_device import (
 
 import argparse
 import json
+from typing import Any, Dict, Optional
 
 
-def test_one_device(host, username="admin", password=""):
+def test_one_device(host: str, username: str = "admin", password: str = "") -> Dict[str, str]:
     """Test connectivity and auth for a single device.
 
     Returns:
@@ -57,19 +58,19 @@ def test_one_device(host, username="admin", password=""):
         return {"host": host, "status": "error", "error": f"{type(e).__name__}: {e}"}
 
 
-def _test_one(client):
+def _test_one(client: Any) -> Dict[str, str]:
     """Worker function for run_multi (receives ADClient, returns result dict)."""
     return test_one_device(client.host, client.username, client.password)
 
 
-def _extract_ip(host):
+def _extract_ip(host: str) -> str:
     """Extract IPv4 from a host URL."""
     import re
     m = re.search(r'(\d+\.\d+\.\d+\.\d+)', host)
     return m.group(1) if m else host
 
 
-def _render_table(results):
+def _render_table(results: Dict[str, Any]) -> str:
     """Render a simple summary table."""
     lines = []
     lines.append("| 设备 | IP | 状态 |")
@@ -118,7 +119,7 @@ def _render_table(results):
     return "\n".join(lines)
 
 
-def _compute_exit_code(results):
+def _compute_exit_code(results: Dict[str, Any]) -> int:
     """Compute exit code for connect results.
 
     0 = all OK
@@ -150,7 +151,7 @@ def _compute_exit_code(results):
     return 7
 
 
-def main():
+def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
 
     parser = argparse.ArgumentParser(description="AD Device Connectivity Test")

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Shared SQL schema for collector.py and perception.py.
+collector.py 和 perception.py 共享的 SQL 表结构定义。
 """
 
 SCHEMA_VERSION = 1

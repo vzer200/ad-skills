@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-AD Device Perception Analysis CLI
-Analyzes traffic anomalies (3σ), device state (thresholds),
-address conflicts (IP:Port overlaps), and correlates logs.
+AD 设备感知分析 CLI
+分析流量异常(3σ)、设备状态(阈值)、地址冲突(IP:Port重叠)、日志关联。
 """
 
 import sys
@@ -35,20 +34,21 @@ import math
 import statistics
 import sqlite3
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
 
 
-def detect_anomaly_3sigma(points, window_seconds=21600, z_threshold=3, min_window=30):
+def detect_anomaly_3sigma(points: List[Dict[str, Any]], window_seconds: int = 21600, z_threshold: int = 3, min_window: int = 30) -> List[Dict[str, Any]]:
     """
-    Run 3σ anomaly detection on a sorted time series.
+    对排序后的时间序列运行 3σ 异常检测。
 
     Args:
-        points: list of dicts with 'ts' (int) and 'value' (float), sorted by ts ascending
-        window_seconds: lookback window in seconds (default 6h)
-        z_threshold: z-score threshold (default 3)
-        min_window: minimum number of valid points in window to compute stats
+        points: 包含 'ts' (int) 和 'value' (float) 的字典列表，按 ts 升序排列
+        window_seconds: 回溯窗口(秒)，默认 6h
+        z_threshold: z-score 阈值，默认 3
+        min_window: 窗口内统计所需的最小有效点数
 
     Returns:
-        list of anomaly dicts: {ts, value, baseline_mean, z, direction}
+        异常字典列表: {ts, value, baseline_mean, z, direction}
     """
     anomalies = []
     cleaned = [(p['ts'], p['value']) for p in points if math.isfinite(p.get('value', 0))]
@@ -86,18 +86,18 @@ def detect_anomaly_3sigma(points, window_seconds=21600, z_threshold=3, min_windo
     return anomalies
 
 
-def query_traffic_db(db_path, vs_name=None, days=7):
+def query_traffic_db(db_path: str, vs_name: Optional[str] = None, days: int = 7) -> Optional[List[Dict[str, Any]]]:
     """
-    Query SQLite for traffic data.
+    从 SQLite 查询流量数据。
 
     Args:
-        db_path: path to SQLite database
-        vs_name: optional VS name filter
-        days: lookback days (default 7)
+        db_path: SQLite 数据库路径
+        vs_name: 可选的 VS 名称过滤
+        days: 回溯天数，默认 7
 
     Returns:
-        list of dicts [{'ts': int, 'vs_name': str, 'metric': str, 'value': float}, ...]
-        or None if db_path doesn't exist or error
+        字典列表 [{'ts': int, 'vs_name': str, 'metric': str, 'value': float}, ...]
+        如果 db_path 不存在或出错则返回 None
     """
     if not db_path or not os.path.isfile(db_path):
         return None
@@ -123,18 +123,18 @@ def query_traffic_db(db_path, vs_name=None, days=7):
         return None
 
 
-def query_device_state_db(db_path, metric=None, days=7):
+def query_device_state_db(db_path: str, metric: Optional[str] = None, days: int = 7) -> Optional[List[Dict[str, Any]]]:
     """
-    Query SQLite for device state data.
+    从 SQLite 查询设备状态数据。
 
     Args:
-        db_path: path to SQLite database
-        metric: optional metric filter
-        days: lookback days (default 7)
+        db_path: SQLite 数据库路径
+        metric: 可选的指标过滤
+        days: 回溯天数，默认 7
 
     Returns:
-        list of dicts [{'ts': int, 'metric': str, 'value': float}, ...]
-        or None if db_path doesn't exist or error
+        字典列表 [{'ts': int, 'metric': str, 'value': float}, ...]
+        如果 db_path 不存在或出错则返回 None
     """
     if not db_path or not os.path.isfile(db_path):
         return None
@@ -160,15 +160,15 @@ def query_device_state_db(db_path, metric=None, days=7):
         return None
 
 
-def _run_3sigma_on_vs_group(points_by_vs_metric):
+def _run_3sigma_on_vs_group(points_by_vs_metric: Dict[Tuple[str, str], List[Dict[str, Any]]]) -> List[Dict[str, Any]]:
     """
-    Run 3σ per (VS, metric) group.
+    按 (VS, 指标) 分组运行 3σ 分析。
 
     Args:
-        points_by_vs_metric: dict keyed by (vs_name, metric) with list of point dicts
+        points_by_vs_metric: 以 (vs_name, metric) 为键、点字典列表为值的字典
 
     Returns:
-        list of anomaly dicts
+        异常字典列表
     """
     anomalies = []
     for (vs_name, metric), points in points_by_vs_metric.items():
@@ -182,8 +182,8 @@ def _run_3sigma_on_vs_group(points_by_vs_metric):
     return anomalies
 
 
-def _fetch_vs_names(client):
-    """Get all VS names from the device."""
+def _fetch_vs_names(client: Any) -> List[str]:
+    """从设备获取所有 VS 名称。"""
     try:
         data = client.get_virtual_services()
         return [item.get('name', '') for item in data.get('items', []) if item.get('name')]
@@ -191,8 +191,8 @@ def _fetch_vs_names(client):
         return []
 
 
-def _fetch_trend_raw(client, vs_name, trend="last-hour"):
-    """Fetch raw trend data for a VS and trend period."""
+def _fetch_trend_raw(client: Any, vs_name: str, trend: str = "last-hour") -> Optional[Dict[str, Any]]:
+    """获取指定 VS 和趋势周期的原始趋势数据。"""
     try:
         data = client.get_vs_trend_by_name(vs_name, trend=trend)
         return data
@@ -200,10 +200,10 @@ def _fetch_trend_raw(client, vs_name, trend="last-hour"):
         return None
 
 
-def _build_metric_tables_from_trend(trends_by_vs):
+def _build_metric_tables_from_trend(trends_by_vs: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
-    Build metric summary tables from raw API trend data.
-    Only includes metrics where max/mean >= 2.
+    根据 API 原始趋势数据构建指标汇总表。
+    仅包含 max/mean >= 2 的指标。
     """
     result = []
     for vs_name, trends in trends_by_vs.items():
@@ -228,10 +228,10 @@ def _build_metric_tables_from_trend(trends_by_vs):
     return result
 
 
-def _extract_metric_values(item):
-    """Extract numeric values from a trend API item dict.
+def _extract_metric_values(item: Dict[str, Any]) -> List[float]:
+    """从趋势 API 返回的字典中提取数值。
 
-    Trend API returns flat arrays: {"name": "connection_rate", "values": [1340, ...]}
+    趋势 API 返回扁平数组: {"name": "connection_rate", "values": [1340, ...]}
     """
     vals = item.get('values', [])
     if not isinstance(vals, list):
@@ -239,14 +239,14 @@ def _extract_metric_values(item):
     return [float(v) for v in vals if isinstance(v, (int, float)) and math.isfinite(v)]
 
 
-def traffic_analysis(client, db_path=None, vs_name=None):
+def traffic_analysis(client: Any, db_path: Optional[str] = None, vs_name: Optional[str] = None) -> Dict[str, Any]:
     """
-    Traffic analysis: try SQLite first, fall back to API.
+    流量分析: 优先使用 SQLite 数据，回退到 API。
 
-    Returns dict with:
+    返回字典包含:
         status: 'ok' | 'insufficient_data' | 'error'
-        anomalies: list of anomaly dicts (when status == 'ok')
-        error: str or None
+        anomalies: 异常字典列表 (当 status == 'ok' 时)
+        error: 错误信息或 None
     """
     result = {'status': 'ok', 'anomalies': [], 'error': None, 'source': 'sqlite'}
 
@@ -324,26 +324,26 @@ def traffic_analysis(client, db_path=None, vs_name=None):
     return result
 
 
-def state_analysis(client, disk_source=None, db_path=None):
+def state_analysis(client: Any, disk_source: Optional[str] = None, db_path: Optional[str] = None) -> Dict[str, Any]:
     """
-    Device state anomaly detection.
+    设备状态异常检测。
 
-    Checks CPU, memory, fan, power, interface status from API,
-    and optionally disk from local check report.
+    检查 API 返回的 CPU、内存、风扇、电源、接口状态，
+    并可选择从本地巡检报告中检查磁盘。
 
-    If db_path is provided, runs 3σ anomaly detection on historical
-    device state data from SQLite.
+    如果提供了 db_path，则对 SQLite 中的历史设备状态数据
+    运行 3σ 异常检测。
 
     Args:
-        client: ADClient instance
-        disk_source: optional path to check report directory with ad.json
-        db_path: optional path to SQLite database with device_state table
+        client: ADClient 实例
+        disk_source: 可选，包含 ad.json 的巡检报告目录路径
+        db_path: 可选，包含 device_state 表的 SQLite 数据库路径
 
-    Returns dict with:
+    返回字典包含:
         status: 'ok' | 'warning' | 'critical' | 'error'
-        items: list of metric dicts {metric, value, level, message, ...}
-        disk: dict with availability info
-        anomalies: list of 3σ anomaly dicts
+        items: 指标字典列表 {metric, value, level, message, ...}
+        disk: 包含磁盘可用性信息的字典
+        anomalies: 3σ 异常字典列表
     """
     items = []
     has_warn = False
@@ -361,7 +361,7 @@ def state_analysis(client, disk_source=None, db_path=None):
         }
 
     # Helper to extract value from API dict {"value": N, ...} or raw number
-    def _val(field, default=0):
+    def _val(field: Any, default: Any = 0) -> Any:
         if isinstance(field, dict):
             return field.get('value', default)
         return field if field is not None else default
@@ -559,18 +559,18 @@ def state_analysis(client, disk_source=None, db_path=None):
     return {'status': status, 'items': items, 'disk': disk_info, 'anomalies': anomalies}
 
 
-def conflict_analysis(client):
+def conflict_analysis(client: Any) -> Dict[str, Any]:
     """
-    Address conflict detection.
+    地址冲突检测。
 
-    Detects:
-    1. VS IP:Port overlap (Cartesian product of vips x vports)
-    2. Pool node overlap (same ip:port in different pools)
+    检测:
+    1. VS IP:Port 重叠 (vips x vports 笛卡尔积)
+    2. Pool 节点重复 (相同 ip:port 出现在不同的 pool 中)
 
-    Returns dict with:
+    返回字典包含:
         status: 'ok' | 'conflict_found' | 'error'
-        vs_overlaps: list of [vs_a, vs_b, ip:port]
-        pool_overlaps: list of [ip:port, [pool_a, pool_b]]
+        vs_overlaps: 列表 [[vs_names], 'ip:port']
+        pool_overlaps: 列表 ['ip:port', [pool_names]]
     """
     result = {
         'status': 'ok',
@@ -646,16 +646,16 @@ def conflict_analysis(client):
     return result
 
 
-def log_correlation(client, anomalies, limit=20):
+def log_correlation(client: Any, anomalies: List[Dict[str, Any]], limit: int = 20) -> Dict[str, Any]:
     """
-    Log correlation around anomaly timestamps.
+    围绕异常时间点的日志关联。
 
-    Only runs if anomalies exist. Queries service logs and matches
-    entries within ±5 minutes of anomaly timestamps.
+    仅当存在异常时运行。查询服务日志并匹配
+    异常时间点 ±5 分钟范围内的日志条目。
 
-    Returns dict with:
+    返回字典包含:
         status: 'ok' | 'no_anomaly' | 'no_match' | 'error'
-        entries: list of matching log entries
+        entries: 匹配的日志条目列表
     """
     if not anomalies:
         return {'status': 'no_anomaly', 'entries': []}
@@ -696,16 +696,16 @@ def log_correlation(client, anomalies, limit=20):
         return {'status': 'no_match', 'entries': []}
 
 
-def fetch_service_logs(client, limit=50):
+def fetch_service_logs(client: Any, limit: int = 50) -> List[Dict[str, Any]]:
     """
-    Fetch service logs from the device.
+    从设备获取服务日志。
 
     Args:
-        client: ADClient instance
-        limit: maximum number of log entries to return
+        client: ADClient 实例
+        limit: 返回的最大日志条数
 
     Returns:
-        list of log entry dicts sorted by date+time descending
+        按日期+时间降序排列的日志条目字典列表
     """
     data = client.get_service_log(limit=limit)
     if not isinstance(data, dict):
@@ -714,18 +714,18 @@ def fetch_service_logs(client, limit=50):
     return items
 
 
-def render_logs_markdown(entries, host):
+def render_logs_markdown(entries: List[Dict[str, Any]], host: str) -> str:
     """
-    Render service log entries as a markdown table.
+    将服务日志条目渲染为 markdown 表格。
 
-    This is a NEW independent function — do NOT modify existing render_markdown().
+    这是一个新的独立函数 —— 请勿修改已有的 render_markdown()。
 
     Args:
-        entries: list of log entry dicts [{date, time, level, module, detail, log_id}, ...]
-        host: device host URL
+        entries: 日志条目字典列表 [{date, time, level, module, detail, log_id}, ...]
+        host: 设备主机 URL
 
     Returns:
-        markdown string
+        markdown 字符串
     """
     lines = [f'## 服务日志 ({host})']
     lines.append('| 时间 | 级别 | 模块 | 详情 |')
@@ -740,8 +740,8 @@ def render_logs_markdown(entries, host):
     return '\n'.join(lines)
 
 
-def render_markdown(results):
-    """Render results as markdown string."""
+def render_markdown(results: Dict[str, Any]) -> str:
+    """将结果渲染为 markdown 字符串。"""
     lines = []
 
     # Device header
@@ -901,16 +901,16 @@ def render_markdown(results):
     return '\n'.join(lines)
 
 
-def render_json(results):
-    """Render results as JSON string."""
+def render_json(results: Dict[str, Any]) -> str:
+    """将结果渲染为 JSON 字符串。"""
     return json.dumps(results, ensure_ascii=False, indent=2, default=str)
 
 
-def analyze_full(client, db_path=None, disk_source=None):
+def analyze_full(client: Any, db_path: Optional[str] = None, disk_source: Optional[str] = None) -> Dict[str, Any]:
     """
-    Full analysis: runs all 4 dimensions and correlates logs.
+    全量分析: 运行全部 4 个维度并关联日志。
 
-    Returns dict with keys: device, traffic, state, logs, conflicts
+    返回字典，键为: device, traffic, state, logs, conflicts
     """
     result = {}
 
@@ -954,16 +954,16 @@ def analyze_full(client, db_path=None, disk_source=None):
     return result
 
 
-def _compute_exit_code(results):
+def _compute_exit_code(results: Dict[str, Any]) -> int:
     """
-    Compute process exit code based on analysis results.
+    根据分析结果计算进程退出码。
 
-    Rules:
-        0 = all success
-        1 = all data sources fail, or connection failure
-        2 = auth failure
-        4 = parameter error (not currently used here)
-        5 = partial failure (some pass, some fail)
+    规则:
+        0 = 全部成功
+        1 = 所有数据源失败或连接失败
+        2 = 认证失败
+        4 = 参数错误 (此处暂未使用)
+        5 = 部分失败 (部分通过，部分失败)
     """
     has_success = False
     has_failure = False
@@ -984,15 +984,15 @@ def _compute_exit_code(results):
     return 0  # all success
 
 
-def _analyze_one(client, db_path=None, disk_source=None):
-    """Single-device analysis for ThreadPoolExecutor."""
+def _analyze_one(client: Any, db_path: Optional[str] = None, disk_source: Optional[str] = None) -> Dict[str, Any]:
+    """单设备分析，供 ThreadPoolExecutor 调用。"""
     result = analyze_full(client, db_path=db_path, disk_source=disk_source)
     result['device'] = client.host
     return result
 
 
-def _logs_one(client, limit=50):
-    """Single-device log fetcher for ThreadPoolExecutor / run_multi."""
+def _logs_one(client: Any, limit: int = 50) -> Dict[str, Any]:
+    """单设备日志获取，供 ThreadPoolExecutor / run_multi 调用。"""
     entries = fetch_service_logs(client, limit=limit)
     return {
         'host': client.host,
@@ -1001,11 +1001,11 @@ def _logs_one(client, limit=50):
     }
 
 
-def main():
-    """CLI entry point."""
+def main() -> None:
+    """CLI 入口。"""
     sys.stdout.reconfigure(encoding='utf-8')
     # 公共参数：同时注册在父解析器和所有子命令上，LLM 无论放前放后都能解析
-    def _add_common_args(p):
+    def _add_common_args(p: argparse.ArgumentParser) -> None:
         p.add_argument("--host", default="", help="AD device URL (e.g. https://x.x.x.x)")
         p.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
         p.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
@@ -1157,8 +1157,8 @@ def main():
         sys.exit(1)
 
 
-def _print_result(result, output_format):
-    """Print analysis result in requested format."""
+def _print_result(result: Dict[str, Any], output_format: str) -> None:
+    """以指定格式输出分析结果。"""
     if output_format == "json":
         print(render_json(result))
     else:

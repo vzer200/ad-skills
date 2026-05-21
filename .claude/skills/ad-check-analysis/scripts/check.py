@@ -38,7 +38,7 @@ except ImportError as e:
     sys.exit(9)
 
 import zipfile
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
 
 # ---------------------------------------------------------------------------
@@ -316,11 +316,11 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     check_results = {}
     data_keys = set(data.keys())  # ad.json 中实际存在的字段集合
 
-    def has(*keys) -> bool:
+    def has(*keys: str) -> bool:
         """检查 ad.json 中是否包含至少一个指定字段"""
         return any(k in data_keys for k in keys)
 
-    def check(name: str, status: str, value: str = "", detail: str = ""):
+    def check(name: str, status: str, value: str = "", detail: str = "") -> None:
         check_results[name] = {"status": status, "value": str(value), "detail": detail}
 
     # ─────────────────────────────────────────────────────────────────────
@@ -768,6 +768,39 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
               "pass" if not dp else "warn",
               f"{len(dp)} 个风险端口: {', '.join(str(p) for p in dp[:3])}" if dp else "无")
 
+    # ── 诊断：检测 ad.json 中存在但未被映射的字段 ─────────────────────
+    _checked_fields = {
+        # 功能巡检
+        "ad_appversion", "admin", "security_check_state", "dns_proxy_enabled",
+        "dnat_dst_ip2net_if", "heartbeat_state", "static_ip_config",
+        "cluster_state", "cluster_virtual_mac", "ms_state", "node_pool_persist",
+        "static_route_health_check", "node_pool_health_check_detect",
+        "rs_level_check", "cluster_appgroup_unit", "dns_server_health",
+        "link_health_check", "static_proximity_check", "dns64_enabled",
+        "newly_added_policy_route", "ms_manage_ip_difference",
+        "snmp_alarm_enabled", "dns_pre_rule_exist", "dns_server_enabled",
+        "dnat_port_and_proto", "cluster_session_sync", "email_alarm_enabled",
+        "virtual_ip_pool_check", "proxy_policy_check", "dns_map_persist_enable",
+        "wan_max_bandwidth", "cluster_fault_switch_enabled", "syslog_enabled",
+        # 健康巡检
+        "auto_update", "base_cpu_usage", "base_cpu_mpstat",
+        "base_log_error_exist", "base_running_time", "base_file_ds",
+        "base_eth_abnormal", "base_core_process_lack", "base_kernel_log",
+        "remote_mt", "base_blackbox_state", "base_blackbox_dmesg", "disk_info",
+        "base_crash_time", "snmp_mem_rate", "acceleration", "fan_state",
+        "power_state", "bios_update_state", "alarms_enabled", "shm_sem_state",
+        "base_eth_info", "base_no_core", "id_conflict_list", "I350_nic_state",
+        "82599_nic_state", "snat_sport_exhaustion_log_num",
+        # 安全巡检
+        "ssh_authority", "patch_info", "base_report_stab", "weak_pwd",
+        "unsafe_algorithm", "unsafe_protocol", "enable_iplimit", "dangerous_port",
+        # 设备信息字段（不产生检查项，但占位避免误报）
+        "version", "gateway_id", "dst_ip",
+    }
+    _unmapped = data_keys - _checked_fields
+    if _unmapped:
+        print(f"[analyze] 未映射的 ad.json 字段 ({len(_unmapped)}): {sorted(_unmapped)}", file=sys.stderr)
+
     # ─────────────────────────────────────────────────────────────────────
     # 汇总（仅统计当前场景的检查项）
     # ─────────────────────────────────────────────────────────────────────
@@ -812,7 +845,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         feature_keys.extend(uncategorized)
 
     # ── 计算各维度健康评分 ─────────────────────────────────────────────
-    def _dimension_scores(keys):
+    def _dimension_scores(keys: List[str]) -> Dict[str, int]:
         p = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "pass")
         t = len(keys)
         s = round(p / max(t, 1) * 100)
@@ -888,10 +921,10 @@ def render_markdown(
     def status_label(s: str) -> str:
         return {"pass": "正常", "fail": "异常", "warn": "异常"}.get(s, s)
 
-    def score_icon_for(val):
+    def score_icon_for(val: Union[int, float]) -> str:
         return "🟢" if val >= 90 else ("🟡" if val >= 70 else "🔴")
 
-    def cat_summary(keys):
+    def cat_summary(keys: List[str]) -> Dict[str, int]:
         p = sum(1 for k in keys if k in results and results[k]["status"] == "pass")
         f = sum(1 for k in keys if k in results and results[k]["status"] == "fail")
         w = sum(1 for k in keys if k in results and results[k]["status"] == "warn")
@@ -906,7 +939,7 @@ def render_markdown(
     # ── 所有检查项分 pass / fail-warn 两组 ───────────────────────────
     all_keys = feature_keys + health_keys + secure_keys
 
-    def all_check_rows():
+    def all_check_rows() -> str:
         rows = []
         for k in all_keys:
             if k in results:
@@ -1038,7 +1071,7 @@ def render_markdown(
 WINDOW = 120  # 新报告判定窗口（秒），POST 与 history start_time 差值上限
 
 
-def _normalize_start_time(s):
+def _normalize_start_time(s: str) -> int:
     """提取字符串中所有数字，转为 YYYYMMDDHHMMSS 整数。"""
     digits = ''.join(c for c in s if c.isdigit())
     if len(digits) >= 14:
@@ -1046,7 +1079,7 @@ def _normalize_start_time(s):
     return 0
 
 
-def _is_new_report(top_item, pre_run_latest_name, t0_int):
+def _is_new_report(top_item: Dict[str, Any], pre_run_latest_name: str, t0_int: int) -> bool:
     """判定 history[0] 是否为本轮巡检产生的新报告。
 
     Args:
@@ -1081,7 +1114,7 @@ def _is_new_report(top_item, pre_run_latest_name, t0_int):
     return diff < WINDOW
 
 
-def _progress_one(client, **kw):
+def _progress_one(client: Any, **kw: Any) -> Dict[str, Any]:
     """Single-device progress query for ThreadPoolExecutor, with NO_RUNNING fallback."""
     result = client._request("GET", "/debug/sys/offline-check", params={"type": "progress"})
     if result.get("state") == "NO_RUNNING":
@@ -1102,7 +1135,7 @@ def _progress_one(client, **kw):
     return result
 
 
-def _start_only(client, scene="标准巡检", force=False, work_dir=None):
+def _start_only(client: Any, scene: str = "标准巡检", force: bool = False, work_dir: Optional[str] = None) -> Dict[str, Any]:
     """Start check only — returns immediately with work_dir and event_id, no sys.exit."""
     import tempfile
     if work_dir is None:
@@ -1117,7 +1150,7 @@ def _start_only(client, scene="标准巡检", force=False, work_dir=None):
     }
 
 
-def _check_one(client, scene="标准巡检", force=False, work_dir=None):
+def _check_one(client: Any, scene: str = "标准巡检", force: bool = False, work_dir: Optional[str] = None) -> Dict[str, Any]:
     """Atomic check for a single device — run+wait+analyze+render, no sys.exit."""
     import tempfile
     if work_dir is None:
@@ -1143,7 +1176,7 @@ def _check_one(client, scene="标准巡检", force=False, work_dir=None):
     }
 
 
-def main():
+def main() -> None:
     sys.stdout.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description="AD 设备巡检工具")
     sub = parser.add_subparsers(dest="command", help="子命令")

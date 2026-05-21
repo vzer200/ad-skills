@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-VS traffic collection tool — fetches AD device VS statistics trend data and stores in SQLite.
+VS 流量采集工具 —— 获取 AD 设备 VS 统计趋势数据并存入 SQLite。
 """
 
 import argparse
@@ -9,6 +9,7 @@ import os
 import sqlite3
 import sys
 import time
+from typing import Any, Dict, List, Optional, Tuple
 
 # Cross-skill import: ad-ops provides ADClient
 _scripts_dir = os.path.join(
@@ -34,15 +35,15 @@ METRIC_NAME_MAP = {"cpu_usage": "cpu", "memory_usage": "memory", "connection_rat
 TOTAL_CPU_KEYS = {"TotalCpu", "total_cpu", "totalcpu"}
 
 
-def _fetch_system_trend(client, api_metric):
-    """Fetch system trend data from the AD device API.
+def _fetch_system_trend(client: Any, api_metric: str) -> Optional[Dict[str, Any]]:
+    """从 AD 设备 API 获取系统趋势数据。
 
     Args:
-        client: ``ADClient`` instance.
-        api_metric: API metric name (e.g. ``'cpu_usage'``, ``'memory_usage'``).
+        client: ``ADClient`` 实例。
+        api_metric: API 指标名称 (例如 ``'cpu_usage'``, ``'memory_usage'``)。
 
     Returns:
-        Response dict, or None on error.
+        响应字典，出错时返回 None。
     """
     try:
         return client._request(
@@ -54,26 +55,26 @@ def _fetch_system_trend(client, api_metric):
         return None
 
 
-def _inject_system_trend_into_db(db_path, metric_name, trend_data):
-    """Inject system trend API data into SQLite.
+def _inject_system_trend_into_db(db_path: str, metric_name: str, trend_data: Dict[str, Any]) -> int:
+    """将系统趋势 API 数据注入 SQLite。
 
-    Handles three formats:
-    - ``series`` (CPU): finds the first series whose name is in TOTAL_CPU_KEYS.
-    - ``values`` (memory, connection_rate): injects the flat values array.
-    - Neither: raises ValueError.
+    处理三种格式:
+    - ``series`` (CPU): 找到名称在 TOTAL_CPU_KEYS 中的第一个序列。
+    - ``values`` (memory, connection_rate): 注入扁平的值数组。
+    - 两者都不是: 抛出 ValueError。
 
-    Timestamps are computed from the API's ``start_time`` + ``i * step_time``.
+    时间戳根据 API 的 ``start_time`` + ``i * step_time`` 计算。
 
     Args:
-        db_path: path to SQLite database file.
-        metric_name: internal metric name (e.g. ``'cpu'``, ``'memory'``).
-        trend_data: dict returned by ``_fetch_system_trend``.
+        db_path: SQLite 数据库文件路径。
+        metric_name: 内部指标名称 (例如 ``'cpu'``, ``'memory'``)。
+        trend_data: ``_fetch_system_trend`` 返回的字典。
 
     Returns:
-        Number of rows written (int).
+        写入的行数 (int)。
 
     Raises:
-        ValueError: if the trend data format is unrecognized.
+        ValueError: 趋势数据格式无法识别时抛出。
     """
     if not isinstance(trend_data, dict):
         return 0
@@ -121,17 +122,17 @@ def _inject_system_trend_into_db(db_path, metric_name, trend_data):
     return total
 
 
-def collect_system_once(client, db_path):
-    """Collect system metrics (CPU, memory, connection rate) trend data.
+def collect_system_once(client: Any, db_path: str) -> int:
+    """采集系统指标(CPU、内存、连接速率)趋势数据。
 
-    Individual metric failures do not block other metrics.
+    单个指标失败不会阻塞其他指标的采集。
 
     Args:
-        client: ``ADClient`` instance.
-        db_path: path to SQLite database file.
+        client: ``ADClient`` 实例。
+        db_path: SQLite 数据库文件路径。
 
     Returns:
-        Total number of rows written (int).
+        写入的总行数 (int)。
     """
     total = 0
     for api_metric in SYSTEM_METRICS:
@@ -149,21 +150,20 @@ def collect_system_once(client, db_path):
     return total
 
 
-def _inject_trend_into_db(db_path, vs_name, trend_data):
-    """Inject trend API ``last-hour`` data into SQLite with synthesized timestamps.
+def _inject_trend_into_db(db_path: str, vs_name: str, trend_data: Dict[str, Any]) -> int:
+    """将趋势 API ``last-hour`` 数据注入 SQLite，并合成时间戳。
 
-    Trend API returns flat arrays (~60 values per metric) without timestamps.
-    Synthesized as ``ts = now - (n - i) * 60`` where i=0 is oldest, i=n-1 is newest.
-    Uses ``INSERT OR REPLACE`` for idempotent writes against the UNIQUE(ts, vs_name, metric)
-    constraint.
+    趋势 API 返回不带时间戳的扁平数组(每指标约 60 个值)。
+    时间戳合成为 ``ts = now - (n - i) * 60``，其中 i=0 最旧，i=n-1 最新。
+    使用 ``INSERT OR REPLACE`` 实现幂等写入，依赖 UNIQUE(ts, vs_name, metric) 约束。
 
     Args:
-        db_path: path to SQLite database file.
-        vs_name: virtual service name.
-        trend_data: dict returned by ``ADClient.get_vs_trend_by_name(name, trend='last-hour')``.
+        db_path: SQLite 数据库文件路径。
+        vs_name: 虚拟服务名称。
+        trend_data: ``ADClient.get_vs_trend_by_name(name, trend='last-hour')`` 返回的字典。
 
     Returns:
-        Number of rows written (int).
+        写入的行数 (int)。
     """
     items = trend_data.get('items', []) if isinstance(trend_data, dict) else []
     if not items:
@@ -201,15 +201,15 @@ def _inject_trend_into_db(db_path, vs_name, trend_data):
     return total
 
 
-def collect_once(client, db_path):
-    """Run one collection cycle: fetch VS names, get trend data, inject into SQLite.
+def collect_once(client: Any, db_path: str) -> int:
+    """运行一次采集周期: 获取 VS 名称，拉取趋势数据，注入 SQLite。
 
     Args:
-        client: ``ADClient`` instance.
-        db_path: path to SQLite database file.
+        client: ``ADClient`` 实例。
+        db_path: SQLite 数据库文件路径。
 
     Returns:
-        Total number of rows written (int). Returns 0 if no VS or all API calls fail.
+        写入的总行数 (int)。若无 VS 或所有 API 调用均失败则返回 0。
     """
     try:
         data = client.get_virtual_services()
@@ -234,15 +234,15 @@ def collect_once(client, db_path):
     return total
 
 
-def collect_and_analyze(client, db_path):
-    """Collect trend data via ``collect_once``, then run 3σ anomaly detection.
+def collect_and_analyze(client: Any, db_path: str) -> Dict[str, Any]:
+    """通过 ``collect_once`` 采集趋势数据，然后运行 3σ 异常检测。
 
     Args:
-        client: ``ADClient`` instance.
-        db_path: path to SQLite database file.
+        client: ``ADClient`` 实例。
+        db_path: SQLite 数据库文件路径。
 
     Returns:
-        dict with keys: status, anomalies, report, device, rows_injected.
+        包含键 status, anomalies, report, device, rows_injected 的字典。
     """
     rows = collect_once(client, db_path)
 
@@ -293,12 +293,12 @@ def collect_and_analyze(client, db_path):
     }
 
 
-def _check_process_alive(pid):
-    """Check if a process with the given PID is alive (cross-platform).
+def _check_process_alive(pid: int) -> bool:
+    """检查指定 PID 的进程是否存活(跨平台)。
 
-    On Windows, os.kill(pid, 0) may incorrectly trigger CTRL_C_EVENT
-    (Windows maps signal 0 to CTRL_C), so we use OpenProcess directly.
-    On POSIX, os.kill(pid, 0) is the standard null-signal check.
+    在 Windows 上，os.kill(pid, 0) 可能错误触发 CTRL_C_EVENT
+    (Windows 将信号 0 映射到 CTRL_C)，因此直接使用 OpenProcess。
+    在 POSIX 上，os.kill(pid, 0) 是标准的空信号检查方式。
     """
     if sys.platform == 'win32':
         import ctypes
@@ -317,11 +317,10 @@ def _check_process_alive(pid):
             return False
 
 
-def _create_pid_file(pid_path):
-    """Atomically create a PID file. Exits with code 6 if duplicate running.
+def _create_pid_file(pid_path: str) -> None:
+    """原子方式创建 PID 文件。若已有实例在运行则退出(退出码 6)。
 
-    If the PID file exists with a dead PID, the stale file is removed
-    and a fresh one is created.
+    如果 PID 文件存在但对应进程已死亡，则移除过期文件并创建新文件。
     """
     try:
         fd = os.open(pid_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
@@ -341,7 +340,7 @@ def _create_pid_file(pid_path):
 
 
 class VSCollector:
-    """Collects VS statistics from an AD device and stores them in SQLite."""
+    """从 AD 设备采集 VS 统计数据并存入 SQLite。"""
 
     def __init__(
         self,
@@ -373,27 +372,27 @@ class VSCollector:
             self.db_path = db_path
 
     @property
-    def host_slug(self):
-        """Filesystem-safe host identifier for logging."""
+    def host_slug(self) -> str:
+        """文件系统安全的主机标识符，用于日志输出。"""
         import re
         return re.sub(r'[^a-zA-Z0-9._-]', '_', self.host)
 
-    def open_db(self):
-        """Open SQLite connection and create the vs_samples table if needed."""
+    def open_db(self) -> None:
+        """打开 SQLite 连接，必要时创建 vs_samples 表。"""
         self.conn = sqlite3.connect(self.db_path)
         self.conn.executescript(VS_SAMPLES_DDL)
 
-    def close_db(self):
-        """Close the SQLite connection."""
+    def close_db(self) -> None:
+        """关闭 SQLite 连接。"""
         if self.conn:
             self.conn.close()
             self.conn = None
 
-    def cleanup_old_data(self, cutoff=None):
-        """Delete samples older than 30 days in an explicit transaction.
+    def cleanup_old_data(self, cutoff: Optional[int] = None) -> None:
+        """在显式事务中删除超过 30 天的旧采样数据。
 
         Args:
-            cutoff: optional Unix timestamp cutoff (default: now - 30 days).
+            cutoff: 可选的 Unix 时间戳截断点 (默认: 当前时间 - 30 天)。
         """
         if cutoff is None:
             cutoff = int(time.time()) - 7 * 86400
@@ -401,17 +400,17 @@ class VSCollector:
         self.conn.execute("DELETE FROM vs_samples WHERE ts < ?", (cutoff,))
         self.conn.execute("COMMIT")
 
-    def parse_vs_stat(self, data):
-        """Parse VS stat API response into list of (ts, vs_name, metric, value) tuples.
+    def parse_vs_stat(self, data: Dict[str, Any]) -> List[Tuple[int, str, str, float]]:
+        """将 VS 统计 API 响应解析为 (ts, vs_name, metric, value) 元组列表。
 
-        Handles both raw numeric values and nested dicts like
-        ``{"model": "INSTANT", "value": 100, ...}``.
+        同时处理原始数值和嵌套字典格式，
+        如 ``{"model": "INSTANT", "value": 100, ...}``。
 
         Args:
-            data: dict returned by ADClient.get_vs_stat().
+            data: ADClient.get_vs_stat() 返回的字典。
 
         Returns:
-            list of (ts, vs_name, metric, value) tuples.
+            (ts, vs_name, metric, value) 元组列表。
         """
         ts = int(time.time())
         rows = []
@@ -429,15 +428,15 @@ class VSCollector:
                     rows.append((ts, vs_name, key, float(value["value"])))
         return rows
 
-    def run_once(self):
-        """Execute one sampling cycle: fetch, parse, store.
+    def run_once(self) -> Optional[List[Tuple[int, str, str, float]]]:
+        """执行一次采样周期: 获取、解析、存储。
 
         Returns:
-            list of inserted (ts, vs_name, metric, value) rows on success,
-            or None on failure.
+            成功时返回已插入的 (ts, vs_name, metric, value) 行列表，
+            失败时返回 None。
 
         Raises:
-            RuntimeError: on SQLite write failure.
+            RuntimeError: SQLite 写入失败时抛出。
         """
         try:
             data = self.client.get_vs_stat()
@@ -472,17 +471,17 @@ class VSCollector:
         self.consecutive_failures = 0
         return rows
 
-    def start(self, pid_path=None):
-        """Initialize the collector: create PID file, open DB, print DB path.
+    def start(self, pid_path: Optional[str] = None) -> str:
+        """初始化采集器: 创建 PID 文件，打开数据库，打印数据库路径。
 
         Args:
-            pid_path: path to PID file (default: ``<db_path>.pid``).
+            pid_path: PID 文件路径 (默认: ``<db_path>.pid``)。
 
         Returns:
-            The PID file path (str).
+            PID 文件路径 (str)。
 
         Raises:
-            SystemExit: if a live PID file already exists.
+            SystemExit: 如果已有活动的 PID 文件存在。
         """
         if pid_path is None:
             pid_path = self.db_path + ".pid"
@@ -494,8 +493,8 @@ class VSCollector:
         print(f"数据库路径: {self.db_path}")
         return pid_path
 
-    def handle_signal(self, signum, frame):
-        """Handle SIGINT / SIGBREAK: close DB, delete PID file, exit 0."""
+    def handle_signal(self, signum: int, frame: Any) -> None:
+        """处理 SIGINT / SIGBREAK 信号: 关闭数据库，删除 PID 文件，退出(退出码 0)。"""
         self.close_db()
         if hasattr(self, "pid_path") and self.pid_path and os.path.exists(self.pid_path):
             os.unlink(self.pid_path)
@@ -503,8 +502,8 @@ class VSCollector:
         sys.exit(0)
 
 
-def _add_common_args(p):
-    """Add common CLI arguments shared by all subcommands."""
+def _add_common_args(p: argparse.ArgumentParser) -> None:
+    """添加所有子命令共享的 CLI 公共参数。"""
     p.add_argument("--host", default="", help="AD device address (e.g. https://10.74.27.42)")
     p.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
     p.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
@@ -513,15 +512,15 @@ def _add_common_args(p):
     p.add_argument("--db", default="", help="SQLite database path (default: ./vs_samples_<host>.db)")
 
 
-def _derive_db_path(host):
-    """Derive default DB path from host URL."""
+def _derive_db_path(host: str) -> str:
+    """根据主机 URL 推导默认数据库路径。"""
     import re
     safe = re.sub(r'[^a-zA-Z0-9._-]', '_', host)
     return f"vs_samples_{safe}.db"
 
 
-def parse_args(argv=None):
-    """Parse CLI arguments with subcommand routing."""
+def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
+    """解析 CLI 参数并进行子命令路由。"""
     parser = argparse.ArgumentParser(
         description="AD VS traffic collection tool — one-shot collect with trend analysis.",
     )
@@ -536,15 +535,15 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
-def _collect_and_analyze_one(client, db_path):
-    """Single-device collect+analyze for ThreadPoolExecutor (run_multi compatible)."""
+def _collect_and_analyze_one(client: Any, db_path: str) -> Dict[str, Any]:
+    """单设备采集+分析，供 ThreadPoolExecutor 调用 (兼容 run_multi)。"""
     if not db_path:
         db_path = _derive_db_path(client.host)
     return collect_and_analyze(client, db_path)
 
 
-def _run_collect(args):
-    """Run one-shot collect+analyze (single or multi device)."""
+def _run_collect(args: argparse.Namespace) -> None:
+    """运行一次性采集+分析 (单设备或多设备)。"""
     from multi_device import run_multi, parse_hosts_arg, load_devices_json, compute_multi_exit_code
 
     password = args.password or os.environ.get("AD_PASS", "")
@@ -607,8 +606,8 @@ def _run_collect(args):
     sys.exit(0)
 
 
-def main():
-    """CLI entry point."""
+def main() -> None:
+    """CLI 入口。"""
     sys.stdout.reconfigure(encoding='utf-8')
     args = parse_args()
     _run_collect(args)
