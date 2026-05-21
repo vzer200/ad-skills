@@ -69,6 +69,20 @@ python scripts/perception.py logs --host https://x.x.x.x --password xxx [--limit
 python scripts/perception.py logs --hosts "IP1,IP2" --password xxx [--limit 50]
 ```
 
+## 前置步骤：连接测试 【必须】
+
+> **在执行任何感知分析操作之前，必须先通过 ad-connect 验证设备连通性。**
+
+```bash
+python ../ad-connect/scripts/connect.py --hosts "https://IP1,https://IP2" --password xxx
+```
+
+- 全部通过 → 继续后续流程
+- 部分失败 → 告知用户失败设备，自动对连通设备继续
+- 全部失败 → 终止流程，报告用户
+
+---
+
 ## 执行工作流
 
 ```

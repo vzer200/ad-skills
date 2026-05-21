@@ -172,6 +172,20 @@ python scripts/overview.py traffic --host ...
 | AD1 | 192.168.8.30 | admin | $env:AD1_PASS |
 | AD2 | 192.168.8.31 | admin | $env:AD2_PASS |
 
+## 前置步骤：连接测试 【必须】
+
+> **在执行任何运维操作之前，必须先通过 ad-connect 验证设备连通性。**
+
+```bash
+python ../ad-connect/scripts/connect.py --hosts "https://IP1,https://IP2" --password xxx
+```
+
+- 全部通过 → 继续后续流程
+- 部分失败 → 告知用户失败设备，自动对连通设备继续
+- 全部失败 → 终止流程，报告用户
+
+---
+
 ## 行为准则
 
 ### 必须行为
