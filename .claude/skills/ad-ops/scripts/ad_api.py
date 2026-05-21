@@ -450,6 +450,78 @@ class ADClient:
         return save_path
 
 
+def _execute_command(client, args):
+    """Execute a parsed command on a single ADClient. Returns result dict.
+
+    Does NOT print output or call sys.exit — the caller handles presentation.
+    Used by both single-device (direct call) and multi-device (via run_multi) paths.
+    """
+    if args.command == "login":
+        return {"_login_success": True, "data": client.get_users()}
+
+    elif args.command == "users":
+        if args.subcommand == "list":
+            return client.get_users()
+        elif args.subcommand == "get":
+            return client.get_user(args.name)
+
+    elif args.command == "slb":
+        if args.subcommand == "list":
+            return client.get_virtual_services()
+        elif args.subcommand == "get":
+            return client.get_virtual_service(args.name)
+
+    elif args.command == "pool":
+        if args.subcommand == "list":
+            return client.get_pools()
+        elif args.subcommand == "get":
+            return client.get_pool(args.name)
+
+    elif args.command == "stat":
+        if args.subcommand == "device":
+            return client.get_system_status()
+        elif args.subcommand == "sys":
+            return client.get_sys_system()
+        elif args.subcommand == "vs":
+            return client.get_vs_stat()
+        elif args.subcommand == "vs-get":
+            return client.get_vs_stat_by_name(args.name)
+        elif args.subcommand == "trend":
+            items = args.items.split(",") if args.items else None
+            return client.get_vs_summary_trend(items=items, trend=args.trend)
+        elif args.subcommand == "vs-trend":
+            items = args.items.split(",") if args.items else None
+            return client.get_vs_trend_by_name(args.name, items=items, trend=args.trend)
+        elif args.subcommand == "pool":
+            return client.get_pool_node_stat(args.pool)
+        elif args.subcommand == "nodes":
+            return client.get_all_node_stat()
+        elif args.subcommand == "cpu":
+            return client.get_cpu_status()
+        elif args.subcommand == "mem":
+            return client.get_memory_status()
+        elif args.subcommand == "disk":
+            return client.get_disk_status()
+        elif args.subcommand == "net":
+            return client.get_network_status()
+
+    elif args.command == "cert":
+        if args.subcommand == "list":
+            return client.get_ssl_certificates()
+
+    elif args.command == "log":
+        if args.subcommand == "service":
+            return client.get_service_log(limit=args.limit)
+
+    elif args.command == "ha":
+        if args.subcommand == "status":
+            return client.get_ha_status()
+        elif args.subcommand == "cluster":
+            return client.get_ha_cluster()
+
+    return None
+
+
 def main():
     """命令行入口"""
     parser = argparse.ArgumentParser(
