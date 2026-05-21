@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 深信服 AD（应用交付）设备的运维分析工具集，核心是以 `.claude/skills/` 下的 5 个 skill 脚本，覆盖设备巡检、感知分析、黑盒日志、运维操作和连通性测试。
 
+## 开发规范
+
+**每次开发必须在隔离的 git worktree 中进行**，禁止直接在 master/main 分支上修改代码。使用 `superpowers:using-git-worktrees` skill 创建 worktree，开发完成后通过 `superpowers:finishing-a-development-branch` 合并回主分支并清理 worktree。
+
 ## 架构核心
 
 **三层结构**：Skill 定义层 (SKILL.md) → 脚本执行层 (Python) → AD 设备 API 层
