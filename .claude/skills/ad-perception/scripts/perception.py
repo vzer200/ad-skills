@@ -639,12 +639,22 @@ def render_markdown(results):
     if traffic.get('status') == 'ok':
         anomalies = traffic.get('anomalies', [])
         if anomalies:
-            lines.append('| VS | 指标 | 时间 | 当前值 | 基线均值 | Z值 | 方向 |')
-            lines.append('|---|---|---|---|---|---|---|')
+            lines.append('| VS | 指标 | 时间 | 当前值 | 正常范围 | 偏离幅度 | 方向 | 严重程度 |')
+            lines.append('|---|---|---|---|---|---|---|---|')
             for a in anomalies:
                 from datetime import datetime
-                ts_str = datetime.fromtimestamp(a['ts']).strftime('%Y-%m-%d %H:%M') if a.get('ts') else 'N/A'
-                lines.append(f"| {a['vs']} | {a['metric']} | {ts_str} | {a['value']:.1f} | {a['baseline_mean']:.1f} | {a['z']:.2f} | {a['direction']} |")
+                ts_str = datetime.fromtimestamp(a['ts']).strftime('%m-%d %H:%M') if a.get('ts') else 'N/A'
+                baseline = a['baseline_mean']
+                value = a['value']
+                pct = ((value - baseline) / baseline * 100) if baseline != 0 else 0
+                z = a['z']
+                if z > 10:
+                    severity = '🔴 严重'
+                elif z > 5:
+                    severity = '🟡 明显'
+                else:
+                    severity = '🟠 轻微'
+                lines.append(f"| {a['vs']} | {a['metric']} | {ts_str} | {value:.1f} | {baseline:.1f} | {pct:+.1f}% | {a['direction']} | {severity} |")
         else:
             lines.append('✅ 过去 7 天内未检测到流量异常。')
     elif traffic.get('status') == 'insufficient_data':
