@@ -634,6 +634,64 @@ class TestAnalyzeV2(unittest.TestCase):
         self.assertGreater(len(sug), 0)
         self.assertEqual(sug[0]["check"], "fan_state")
 
+    # ── Two-tier threshold / list value integration tests ──────────
+
+    def test_analyze_fan_state_vm(self):
+        """fan_state=-1 (VM, no sensor) → warn."""
+        data = dict(self.sample_data, fan_state=-1)
+        ci = {"rules": [{"id": "fan_state"}]}
+        result = analyze(data, ci)
+        self.assertEqual(result["check_results"]["fan_state"]["status"], "warn")
+
+    def test_analyze_power_state_fault(self):
+        """power_state=0 (fault) → fail."""
+        data = dict(self.sample_data, power_state=0)
+        ci = {"rules": [{"id": "power_state"}]}
+        result = analyze(data, ci)
+        self.assertEqual(result["check_results"]["power_state"]["status"], "fail")
+
+    def test_analyze_cpu_list_handling(self):
+        """base_cpu_usage as a list → takes max()."""
+        data = dict(self.sample_data, base_cpu_usage=[85, 92, 78])
+        ci = {"rules": [{"id": "base_cpu_info"}]}
+        result = analyze(data, ci)
+        self.assertEqual(result["check_results"]["base_cpu_info"]["status"], "fail")
+
+    def test_analyze_cpu_list_warn_tier(self):
+        """base_cpu_usage list max between 80-90 → warn (two-tier)."""
+        data = dict(self.sample_data, base_cpu_usage=[85, 70, 82])
+        ci = {"rules": [{"id": "base_cpu_info"}]}
+        result = analyze(data, ci)
+        self.assertEqual(result["check_results"]["base_cpu_info"]["status"], "warn")
+
+    def test_analyze_memory_warn_tier(self):
+        """snmp_mem_rate 85 → warn (>80, <=90)."""
+        data = dict(self.sample_data, snmp_mem_rate=85)
+        ci = {"rules": [{"id": "base_memory"}]}
+        result = analyze(data, ci)
+        self.assertEqual(result["check_results"]["base_memory"]["status"], "warn")
+
+    def test_analyze_log_error_warn_tier(self):
+        """base_log_error_exist 50 → warn (>0, <=100)."""
+        data = dict(self.sample_data, base_log_error_exist=50)
+        ci = {"rules": [{"id": "base_err_log"}]}
+        result = analyze(data, ci)
+        self.assertEqual(result["check_results"]["base_err_log"]["status"], "warn")
+
+    def test_analyze_log_error_fail(self):
+        """base_log_error_exist 200 → fail (>100)."""
+        data = dict(self.sample_data, base_log_error_exist=200)
+        ci = {"rules": [{"id": "base_err_log"}]}
+        result = analyze(data, ci)
+        self.assertEqual(result["check_results"]["base_err_log"]["status"], "fail")
+
+    def test_analyze_log_error_zero_pass(self):
+        """base_log_error_exist 0 → pass."""
+        data = dict(self.sample_data, base_log_error_exist=0)
+        ci = {"rules": [{"id": "base_err_log"}]}
+        result = analyze(data, ci)
+        self.assertEqual(result["check_results"]["base_err_log"]["status"], "pass")
+
 
 class TestCheckFieldRule(unittest.TestCase):
     """Test _check_field_rule for all 14 rule types."""
@@ -777,6 +835,72 @@ class TestCheckFieldRule(unittest.TestCase):
         is_ab, sev, issue = _check_field_rule("some_value", rule)
         self.assertFalse(is_ab)
         self.assertIn("未知规则类型", issue)
+
+    # ── Two-tier threshold (warn_at) ────────────────────────────────
+
+    def test_threshold_warn_at_pass(self):
+        """value below warn_at → pass."""
+        rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'severity': 'fail',
+                'warn_at': 80, 'warn_compare': '>', 'name': 'Test'}
+        is_ab, sev, issue = _check_field_rule(50, rule)
+        self.assertFalse(is_ab)
+        self.assertEqual(sev, 'pass')
+
+    def test_threshold_warn_at_warn(self):
+        """value between warn_at and abnormal → warn."""
+        rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'severity': 'fail',
+                'warn_at': 80, 'warn_compare': '>', 'name': 'Test'}
+        is_ab, sev, issue = _check_field_rule(85, rule)
+        self.assertTrue(is_ab)
+        self.assertEqual(sev, 'warn')
+
+    def test_threshold_warn_at_fail(self):
+        """value exceeds abnormal → fail."""
+        rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'severity': 'fail',
+                'warn_at': 80, 'warn_compare': '>', 'name': 'Test'}
+        is_ab, sev, issue = _check_field_rule(95, rule)
+        self.assertTrue(is_ab)
+        self.assertEqual(sev, 'fail')
+
+    def test_threshold_list_value(self):
+        """List value → take max() before comparing."""
+        rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'severity': 'fail',
+                'warn_at': 80, 'warn_compare': '>', 'name': 'CPU使用率'}
+        is_ab, sev, issue = _check_field_rule([95, 30, 85], rule)
+        self.assertTrue(is_ab)
+        self.assertEqual(sev, 'fail')
+
+    def test_threshold_list_value_warn(self):
+        """List value max between warn_at and abnormal → warn."""
+        rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'severity': 'fail',
+                'warn_at': 80, 'warn_compare': '>', 'name': 'CPU使用率'}
+        is_ab, sev, issue = _check_field_rule([85, 30, 50], rule)
+        self.assertTrue(is_ab)
+        self.assertEqual(sev, 'warn')
+
+    def test_threshold_empty_list(self):
+        """Empty list → warn with data empty message."""
+        rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'severity': 'fail', 'name': 'Test'}
+        is_ab, sev, issue = _check_field_rule([], rule)
+        self.assertFalse(is_ab)
+        self.assertEqual(sev, 'warn')
+        self.assertIn("数据为空", issue)
+
+    def test_threshold_warn_at_eq(self):
+        """warn_at with == compare."""
+        rule = {'type': 'threshold', 'abnormal': 0, 'compare': '==', 'severity': 'fail',
+                'warn_at': -1, 'warn_compare': '==', 'name': '电源状态'}
+        is_ab, sev, issue = _check_field_rule(-1, rule)
+        self.assertTrue(is_ab)
+        self.assertEqual(sev, 'warn')
+
+    # ── bool_false edge cases ──────────────────────────────────────
+
+    def test_bool_false_empty_string(self):
+        """Empty string → abnormal (treated as falsy)."""
+        rule = {'type': 'bool_false', 'name': 'Test', 'severity': 'warn'}
+        is_ab, sev, issue = _check_field_rule("", rule)
+        self.assertTrue(is_ab)
 
 
 class TestCheckVipPool(unittest.TestCase):

@@ -383,7 +383,7 @@ CHECK_NAMES = {
 CHECK_CATEGORY_MAP = {
     "ssh_or_adapi_authority": "secure",
     "patch_info": "secure",
-    "base_report_stability": "secure",
+    "base_report_stability": "health",
     "weak_password": "secure",
     "ssl_strategy_check": "secure",
     "enable_iplimit": "secure",
@@ -442,7 +442,7 @@ RULE_FIELD_MAP = {
     "acceleration_check": ["acceleration"],
     "base_memory": ["snmp_mem_rate"],
     "base_crash_time": ["base_crash_time"],
-    "base_disk": ["disk_info"],
+    "base_disk": ["disk_info", "base_disk_high_usage"],
     "remote_maintenance": ["remote_mt"],
     "base_kernel_log": ["base_kernel_log"],
     "base_core_process": ["base_core_process_lack"],
@@ -465,16 +465,16 @@ RULE_FIELD_MAP = {
 # ---------------------------------------------------------------------------
 
 CORRECTED_FIELD_RULES = {
-    # === threshold ===
-    'power_state':       {'type': 'threshold', 'abnormal': -1, 'compare': '==', 'severity': 'warn',  'name': '电源状态'},
-    'fan_state':         {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'name': '风扇状态'},
+    # === threshold (支持 warn_at 两级阈值：先检查 abnormal→fail，再检查 warn_at→warn) ===
+    'power_state':       {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'warn_at': -1, 'warn_compare': '==', 'name': '电源状态'},  # 0=故障(fail), -1=无传感器VM(warn), 1=正常
+    'fan_state':         {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'warn_at': -1, 'warn_compare': '==', 'name': '风扇状态'},  # 0=故障(fail), -1=无传感器VM(warn), 1=正常
     'acceleration':      {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'warn',  'name': '加速引擎'},
     'base_file_ds':      {'type': 'threshold', 'abnormal': 0,  'compare': '>',  'severity': 'fail',  'name': '文件描述符泄漏'},
-    'base_log_error_exist':{'type': 'threshold','abnormal': 100,'compare': '>', 'severity': 'fail',  'name': '错误日志数量'},
+    'base_log_error_exist':{'type': 'threshold','abnormal': 100,'compare': '>', 'severity': 'fail',  'warn_at': 0, 'warn_compare': '>', 'name': '错误日志数量'},  # >100=fail, >0=warn
     'conntrack_count':   {'type': 'threshold', 'abnormal': 100000, 'compare': '>', 'severity': 'warn', 'name': '连接跟踪数'},
     'conntrack_new_count':{'type':'threshold', 'abnormal': 10000,  'compare': '>', 'severity': 'warn', 'name': '新建连接数'},
-    'snmp_mem_rate':     {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'name': '内存使用率'},
-    'base_cpu_usage':    {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'name': 'CPU使用率'},
+    'snmp_mem_rate':     {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'warn_at': 80, 'warn_compare': '>', 'name': '内存使用率'},  # >90=fail, >80=warn
+    'base_cpu_usage':    {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'warn_at': 80, 'warn_compare': '>', 'name': 'CPU使用率'},  # >90=fail, >80=warn
     # === bool_false ===
     'ADAPI_authority':   {'type': 'bool_false', 'severity': 'warn',  'name': 'ADAPI授权'},
     'ssh_authority':     {'type': 'bool_false', 'severity': 'warn',  'name': 'SSH授权'},
@@ -1102,18 +1102,39 @@ def _check_field_rule(value, rule):
     severity = rule.get('severity', 'fail')
 
     if rule_type == 'threshold':
-        try:
-            v = float(value)
-        except (ValueError, TypeError):
-            return False, "warn", f"{name}值无法解析: {value}"
+        # Handle list values (e.g., base_cpu_usage is a list of samples)
+        if isinstance(value, list):
+            if not value:
+                return False, "warn", f"{name}数据为空"
+            try:
+                v = float(max(value))
+            except (ValueError, TypeError):
+                return False, "warn", f"{name}值无法解析: {value}"
+        else:
+            try:
+                v = float(value)
+            except (ValueError, TypeError):
+                return False, "warn", f"{name}值无法解析: {value}"
         abnormal = rule['abnormal']
         compare = rule.get('compare', '==')
         if compare == '>': is_ab = v > abnormal
         elif compare == '<': is_ab = v < abnormal
         else: is_ab = v == abnormal
-        issue = f"{name}异常: {value}" if is_ab else ""
+        if is_ab:
+            issue = f"{name}异常: {value}"
+            return True, severity, issue
+        # Check warn_at tier (optional second level)
+        warn_at = rule.get('warn_at')
+        if warn_at is not None:
+            warn_compare = rule.get('warn_compare', '==')
+            if warn_compare == '>': is_warn = v > warn_at
+            elif warn_compare == '<': is_warn = v < warn_at
+            else: is_warn = v == warn_at
+            if is_warn:
+                return True, "warn", f"{name}警告: {value}"
+        issue = ""
     elif rule_type == 'bool_false':
-        is_ab = (value is False or str(value).lower() in ("false", "0", "no"))
+        is_ab = (value is False or str(value).lower() in ("false", "0", "no", ""))
         issue = f"{name}关闭" if is_ab else ""
     elif rule_type == 'bool_true':
         is_ab = (value is True or str(value).lower() == "true")
@@ -1183,22 +1204,46 @@ def _check_vip_pool(data):
 
 
 def _print_compare_diff(v1_result: dict, v2_result: dict):
-    """Print v1 vs v2 difference matrix to stderr."""
+    """Print v1 vs v2 difference summary to stderr.
+
+    Note: v1 and v2 use different key systems (v1: old names like CPU_CHECK,
+    v2: rule_ids like base_cpu_info), so direct key comparison is not possible.
+    This compares aggregate counts instead.
+    """
+    v1_s = v1_result.get("summary", {})
+    v2_s = v2_result.get("summary", {})
+    print(f"[AD_CHECK_ENGINE=compare] v1: total={v1_s.get('total','?')} pass={v1_s.get('pass','?')} fail={v1_s.get('fail','?')} warn={v1_s.get('warn','?')} score={v1_s.get('score','?')}", file=sys.stderr)
+    print(f"[AD_CHECK_ENGINE=compare] v2: total={v2_s.get('total','?')} pass={v2_s.get('pass','?')} fail={v2_s.get('fail','?')} warn={v2_s.get('warn','?')} score={v2_s.get('score','?')}", file=sys.stderr)
+    # Compare per-category scores
+    v1_hs = v1_result.get("health_scores", {})
+    v2_hs = v2_result.get("health_scores", {})
+    for cat in ("feature", "health", "secure"):
+        s1 = v1_hs.get(cat, {}).get("score", "?")
+        s2 = v2_hs.get(cat, {}).get("score", "?")
+        if s1 != s2:
+            print(f"[AD_CHECK_ENGINE=compare] {cat}: v1={s1} v2={s2}", file=sys.stderr)
+    # Also compare v1 and v2 check_result keys where they intersect
     v1_results = v1_result.get("check_results", {})
     v2_results = v2_result.get("check_results", {})
-    all_keys = set(v1_results.keys()) | set(v2_results.keys())
+    v1_only = set(v1_results.keys()) - set(v2_results.keys())
+    v2_only = set(v2_results.keys()) - set(v1_results.keys())
+    common = set(v1_results.keys()) & set(v2_results.keys())
+    if v1_only:
+        print(f"[AD_CHECK_ENGINE=compare] v1-only keys ({len(v1_only)}): {sorted(v1_only)[:10]}...", file=sys.stderr)
+    if v2_only:
+        print(f"[AD_CHECK_ENGINE=compare] v2-only keys ({len(v2_only)}): {sorted(v2_only)[:10]}...", file=sys.stderr)
     diffs = []
-    for k in sorted(all_keys):
+    for k in sorted(common):
         s1 = v1_results.get(k, {}).get("status", "?")
         s2 = v2_results.get(k, {}).get("status", "?")
         if s1 != s2:
             diffs.append(f"  {k}: v1={s1} v2={s2}")
     if diffs:
-        print(f"[AD_CHECK_ENGINE=compare] {len(diffs)} differences:", file=sys.stderr)
-        for d in diffs:
+        print(f"[AD_CHECK_ENGINE=compare] Common key diffs ({len(diffs)}):", file=sys.stderr)
+        for d in diffs[:20]:
             print(d, file=sys.stderr)
-    else:
-        print("[AD_CHECK_ENGINE=compare] No differences between v1 and v2.", file=sys.stderr)
+    elif v1_only or v2_only:
+        print("[AD_CHECK_ENGINE=compare] Key systems differ (v1 old names vs v2 rule_ids) — compare summary scores above.", file=sys.stderr)
 
 
 def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
