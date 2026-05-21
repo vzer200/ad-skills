@@ -1,11 +1,28 @@
 ---
 name: ad-ops
 description: 深信服 AD 设备运维管理技能，支持用户/虚拟服务/Pool/SSL证书/HA状态/SSH配置/系统统计、设备总览快照等操作。当用户提到"运维"、"设备管理"、"查询VS"、"查看证书"、"设备状态"、"系统统计"、"设备总览"、"AD操作"时触发。
+version: "2.0.0"
+updated_at: "2026-05-21"
 ---
 
 # AD 智能运维
 
 深信服 AD (应用交付) 设备 REST API 集成管理。
+
+## 适用场景
+
+- 需要获取设备总览快照（设备信息、VS、证书、硬件、HA、流量）
+- 需要查询虚拟服务/Pool/SSL 证书/硬件状态等特定维度
+- 需要多设备并行查询（同密码或异密码）
+- 需要使用 ad_api.py 进行 API 级别的设备配置和管理
+- 需要查询系统统计、用户管理、SSH 配置等运维操作
+
+## 不适用场景
+
+- 需要巡检报告格式的综合健康检查 → 使用 **ad-check-analysis**
+- 需要流量异常检测或状态告警 → 使用 **ad-perception**
+- 需要导出黑盒审计日志或系统日志 → 使用 **ad-blackbox-analysis**
+- LLM 直调 AD API（必须通过 scripts 调用） → 见下方脚本强制规则
 
 ## 功能概述
 
@@ -136,6 +153,12 @@ python scripts/overview.py all --devices devices.json
 | 部分失败 | 5 |
 | **多设备部分失败** | **7** |
 | ADClient import 失败 | 9 |
+
+## 模板文件
+
+- 示例输入：[examples/input.md](examples/input.md)
+- 期望输出：[examples/output.md](examples/output.md)
+- 回归清单：[checks/checklist.md](checks/checklist.md)
 
 ## 相关技能
 

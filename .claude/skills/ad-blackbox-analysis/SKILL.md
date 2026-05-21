@@ -1,11 +1,28 @@
 ---
 name: ad-blackbox-analysis
 description: 深信服 AD 设备黑盒日志分析技能，支持导出黑盒日志、解析审计日志和系统日志、生成分析报告。当用户提到"黑盒"、"黑盒日志"、"日志导出"、"审计日志"、"blackbox"时触发。
+version: "2.0.0"
+updated_at: "2026-05-21"
 ---
 
 # AD 黑盒日志分析
 
 深信服 AD 设备黑盒日志导出与分析。
+
+## 适用场景
+
+- 需要导出并分析 AD 设备审计日志（audit.csv）
+- 需要进行深度审计回溯调查
+- 需要查看历史操作记录（时间、用户、方法、状态）
+- 需要从黑盒中提取系统日志进行排查
+- 需要进行安全事件取证分析
+
+## 不适用场景
+
+- 需要实时服务日志查询 → 使用 **ad-perception** logs 子命令
+- 需要查看设备概览（VS 列表、证书、硬件） → 使用 **ad-ops** overview
+- 需要系统巡检报告 → 使用 **ad-check-analysis**
+- 需要直接 API 调用或设备配置修改 → 使用 **ad-ops** ad_api.py
 
 ## 功能概述
 
@@ -192,6 +209,12 @@ blackbox.tar.gz (ZIP加密)
 | 部分失败 | 5 |
 | **多设备部分失败** | **7** |
 | ADClient import 失败 | 9 |
+
+## 模板文件
+
+- 示例输入：[examples/input.md](examples/input.md)
+- 期望输出：[examples/output.md](examples/output.md)
+- 回归清单：[checks/checklist.md](checks/checklist.md)
 
 ## 相关技能
 

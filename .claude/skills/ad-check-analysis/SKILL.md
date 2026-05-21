@@ -1,11 +1,28 @@
 ---
 name: ad-check-analysis
 description: 深信服 AD 设备系统巡检技能，支持标准巡检和全量巡检，自动执行巡检任务、下载巡检报告并分析巡检结果，生成健康评估报告。当用户提到"巡检"、"系统巡检"、"AD巡检"、"健康检查"、"巡检分析"、"全量巡检"、"标准巡检"时触发。
+version: "2.0.0"
+updated_at: "2026-05-21"
 ---
 
 # AD 巡检分析
 
 深信服 AD 设备系统巡检技能。
+
+## 适用场景
+
+- 需要对 AD 设备进行系统性健康检查（CPU/内存/磁盘/风扇/电源/网口）
+- 需要在升级前验证设备环境是否满足要求
+- 需要定期执行合规性检查并生成报告
+- 需要排查硬件或软件相关故障
+- 需要生成标准格式的巡检分析报告
+
+## 不适用场景
+
+- 需要实时异常检测和流量趋势分析 → 使用 **ad-perception**
+- 需要导出审计日志和系统日志进行深度回溯 → 使用 **ad-blackbox-analysis**
+- 需要查看设备总览快照（VS 列表、证书、硬件信息） → 使用 **ad-ops** overview
+- 需要 LLM 直接调用 AD API → 必须使用本技能脚本，禁止直调 API
 
 ## 功能概述
 
@@ -257,6 +274,12 @@ SSH_CHECK, WEAK_PASSWORD_CHECK, SSL_POLICY_CHECK, IP_LIMIT_CHECK, OPEN_PORT_CHEC
 | 部分失败 | 5 |
 | **多设备部分失败** | **7** |
 | ADClient import 失败 | 9 |
+
+## 模板文件
+
+- 示例输入：[examples/input.md](examples/input.md)
+- 期望输出：[examples/output.md](examples/output.md)
+- 回归清单：[checks/checklist.md](checks/checklist.md)
 
 ## 相关技能
 
