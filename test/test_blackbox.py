@@ -11,7 +11,7 @@ import tempfile
 import os as _os
 from unittest.mock import patch, MagicMock
 
-from blackbox import BlackboxAnalyzer, _blackbox_progress, _blackbox_progress_one
+from blackbox import BlackboxAnalyzer, _blackbox_progress, _blackbox_progress_one, _blackbox_start, _blackbox_download
 from ad_api import ADError, ADAuthError, ADAPIError, ADConnectionError
 
 
@@ -226,6 +226,143 @@ class TestBlackboxProgress(unittest.TestCase):
         }
         result = _blackbox_progress_one(mock_client, output_dir=self.output_dir)
         self.assertEqual(result["status"], "RUNNING")
+
+
+class TestValidateDateRange(unittest.TestCase):
+    """Test _validate_date_range — max 7-day window."""
+
+    def test_valid_range(self):
+        from blackbox import _validate_date_range
+        self.assertTrue(_validate_date_range("2026-05-01", "2026-05-04"))
+
+    def test_exactly_7_days_invalid(self):
+        from blackbox import _validate_date_range
+        self.assertFalse(_validate_date_range("2026-05-01", "2026-05-08"))
+
+    def test_over_7_days_invalid(self):
+        from blackbox import _validate_date_range
+        self.assertFalse(_validate_date_range("2026-05-01", "2026-05-20"))
+
+    def test_end_before_start_invalid(self):
+        from blackbox import _validate_date_range
+        self.assertFalse(_validate_date_range("2026-05-10", "2026-05-01"))
+
+    def test_invalid_format(self):
+        from blackbox import _validate_date_range
+        self.assertFalse(_validate_date_range("not-a-date", "2026-05-01"))
+
+    def test_empty_dates_valid(self):
+        from blackbox import _validate_date_range
+        self.assertTrue(_validate_date_range("", ""))
+
+
+class TestBlackboxStart(unittest.TestCase):
+    """Test _blackbox_start — export initiation."""
+
+    def setUp(self):
+        self.tmpdir = tempfile.TemporaryDirectory()
+
+    def tearDown(self):
+        self.tmpdir.cleanup()
+
+    def test_missing_dates_returns_error(self):
+        mock_client = MagicMock()
+        mock_client.host = "https://10.0.0.1"
+        result = _blackbox_start(mock_client, from_date="", to_date="")
+        self.assertIn("error", result)
+
+    def test_successful_start(self):
+        from blackbox import _blackbox_start
+        mock_client = MagicMock()
+        mock_client.host = "https://10.0.0.1"
+        mock_client.export_blackbox_log.return_value = {"event_id": "evt-123"}
+        result = _blackbox_start(
+            mock_client, from_date="2026-05-01", to_date="2026-05-03",
+            output_dir=self.tmpdir.name,
+        )
+        self.assertEqual(result["event_id"], "evt-123")
+        self.assertEqual(result["host"], "https://10.0.0.1")
+
+    def test_no_event_id_returns_error(self):
+        from blackbox import _blackbox_start
+        mock_client = MagicMock()
+        mock_client.host = "https://10.0.0.1"
+        mock_client.export_blackbox_log.return_value = {}
+        result = _blackbox_start(
+            mock_client, from_date="2026-05-01", to_date="2026-05-03",
+            output_dir=self.tmpdir.name,
+        )
+        self.assertIn("error", result)
+
+
+class TestBlackboxDownload(unittest.TestCase):
+    """Test _blackbox_download — poll + download + extract + analyze."""
+
+    def setUp(self):
+        self.tmpdir = tempfile.TemporaryDirectory()
+        self.output_dir = self.tmpdir.name
+        # Write meta file
+        meta = {
+            "host": "https://10.0.0.1",
+            "event_id": "evt-001",
+            "archive_password": "root1234+",
+            "output_dir": self.output_dir,
+        }
+        with open(os.path.join(self.output_dir, "_export_meta.json"), "w", encoding="utf-8") as f:
+            json.dump(meta, f)
+
+    def tearDown(self):
+        self.tmpdir.cleanup()
+
+    def test_missing_meta_returns_error(self):
+        from blackbox import _blackbox_download
+        mock_client = MagicMock()
+        result = _blackbox_download(mock_client, "/nonexistent/dir")
+        self.assertIn("error", result)
+
+    def test_failed_state_returns_error(self):
+        from blackbox import _blackbox_download
+        mock_client = MagicMock()
+        mock_client.get_last_event.return_value = {
+            "items": [{"event_id": "evt-001", "state": "FAILED"}]
+        }
+        result = _blackbox_download(mock_client, self.output_dir)
+        self.assertIn("error", result)
+        self.assertIn("失败", result["error"])
+
+    def test_non_terminal_state_returns_status(self):
+        from blackbox import _blackbox_download
+        mock_client = MagicMock()
+        mock_client.get_last_event.return_value = {
+            "items": [{"event_id": "evt-001", "state": "PROCESSING"}]
+        }
+        result = _blackbox_download(mock_client, self.output_dir)
+        self.assertIn("status", result)
+        self.assertEqual(result["status"], "PROCESSING")
+
+    def test_event_not_found_returns_error(self):
+        from blackbox import _blackbox_download
+        mock_client = MagicMock()
+        mock_client.get_last_event.return_value = {"items": [{"event_id": "other", "state": "SUCCESS"}]}
+        result = _blackbox_download(mock_client, self.output_dir)
+        self.assertIn("error", result)
+
+
+class TestBlackboxCLI(unittest.TestCase):
+    """Test blackbox CLI _main_progress and _main_download."""
+
+    def test_progress_missing_hosts_exits_4(self):
+        with patch("sys.argv", ["blackbox.py", "progress"]):
+            with self.assertRaises(SystemExit) as cm:
+                from blackbox import _main_progress
+                _main_progress()
+            self.assertEqual(cm.exception.code, 4)
+
+    def test_download_missing_output(self):
+        with patch("sys.argv", ["blackbox.py", "download"]):
+            with self.assertRaises(SystemExit):
+                from blackbox import _main_download
+                _main_download()
 
 
 if __name__ == "__main__":

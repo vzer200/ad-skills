@@ -15,6 +15,7 @@ from datetime import datetime
 from perception import (
     detect_anomaly_3sigma,
     query_traffic_db,
+    query_device_state_db,
     traffic_analysis,
     state_analysis,
     conflict_analysis,
@@ -24,6 +25,13 @@ from perception import (
     _logs_one,
     render_markdown,
     render_json,
+    _compute_exit_code,
+    analyze_full,
+    _extract_metric_values,
+    _build_metric_tables_from_trend,
+    _fetch_vs_names,
+    _fetch_trend_raw,
+    _run_3sigma_on_vs_group,
     main,
     ADClient,
 )
@@ -817,6 +825,235 @@ class TestState3Sigma(unittest.TestCase):
         self.assertIn('3σ 异常检测', output)
         self.assertIn('cpu', output)
         self.assertIn('🔴 严重', output)
+
+
+class TestComputeExitCode(unittest.TestCase):
+    """Test _compute_exit_code for analysis results."""
+
+    def test_all_success(self):
+        r = {"traffic": {"status": "ok"}, "state": {"status": "ok"}, "conflicts": {"status": "ok"}}
+        self.assertEqual(_compute_exit_code(r), 0)
+
+    def test_all_error(self):
+        r = {"traffic": {"status": "error"}, "state": {"status": "error"}, "conflicts": {"status": "error"}}
+        self.assertEqual(_compute_exit_code(r), 1)
+
+    def test_partial_failure(self):
+        r = {"traffic": {"status": "error"}, "state": {"status": "ok"}, "conflicts": {"status": "ok"}}
+        self.assertEqual(_compute_exit_code(r), 5)
+
+    def test_warning_counts_as_success(self):
+        r = {"traffic": {"status": "ok"}, "state": {"status": "warning"}, "conflicts": {"status": "ok"}}
+        self.assertEqual(_compute_exit_code(r), 0)
+
+    def test_conflict_found_counts_as_success(self):
+        r = {"traffic": {"status": "ok"}, "state": {"status": "ok"}, "conflicts": {"status": "conflict_found"}}
+        self.assertEqual(_compute_exit_code(r), 0)
+
+
+class TestExtractMetricValues(unittest.TestCase):
+    """Test _extract_metric_values."""
+
+    def test_normal_values(self):
+        self.assertEqual(_extract_metric_values({"values": [1340, 1327, 1379]}), [1340.0, 1327.0, 1379.0])
+
+    def test_non_numeric_filtered(self):
+        result = _extract_metric_values({"values": [100, None, 200, "bad"]})
+        self.assertEqual(result, [100.0, 200.0])
+
+    def test_empty_list(self):
+        self.assertEqual(_extract_metric_values({"values": []}), [])
+
+    def test_non_list(self):
+        self.assertEqual(_extract_metric_values({"values": "not_a_list"}), [])
+
+    def test_nan_filtered(self):
+        result = _extract_metric_values({"values": [100.0, float('nan'), 200.0]})
+        self.assertEqual(result, [100.0, 200.0])
+
+    def test_inf_filtered(self):
+        result = _extract_metric_values({"values": [100.0, float('inf'), 200.0]})
+        self.assertEqual(result, [100.0, 200.0])
+
+
+class TestBuildMetricTablesFromTrend(unittest.TestCase):
+    """Test _build_metric_tables_from_trend."""
+
+    def test_above_threshold_shown(self):
+        trends = {"vs1": {"last-hour": {"items": [{"name": "conn", "values": [100, 200, 300]}]}}}
+        result = _build_metric_tables_from_trend(trends)
+        self.assertTrue(any(r["metric"] == "conn" for r in result))
+
+    def test_below_threshold_excluded(self):
+        trends = {"vs1": {"last-hour": {"items": [{"name": "low_metric", "values": [0, 0, 1]}]}}}
+        result = _build_metric_tables_from_trend(trends)
+        self.assertEqual(len(result), 0)
+
+    def test_none_data_skipped(self):
+        trends = {"vs1": {"last-hour": None}}
+        result = _build_metric_tables_from_trend(trends)
+        self.assertEqual(len(result), 0)
+
+    def test_empty_items(self):
+        trends = {"vs1": {"last-hour": {"items": []}}}
+        result = _build_metric_tables_from_trend(trends)
+        self.assertEqual(len(result), 0)
+
+
+class TestFetchHelpers(unittest.TestCase):
+    """Test _fetch_vs_names and _fetch_trend_raw."""
+
+    def test_fetch_vs_names_success(self):
+        client = MagicMock()
+        client.get_virtual_services.return_value = {"items": [{"name": "vs1"}, {"name": "vs2"}]}
+        self.assertEqual(_fetch_vs_names(client), ["vs1", "vs2"])
+
+    def test_fetch_vs_names_api_error(self):
+        client = MagicMock()
+        client.get_virtual_services.side_effect = Exception("API down")
+        self.assertEqual(_fetch_vs_names(client), [])
+
+    def test_fetch_trend_raw_success(self):
+        client = MagicMock()
+        client.get_vs_trend_by_name.return_value = {"items": []}
+        result = _fetch_trend_raw(client, "vs1", "last-hour")
+        self.assertEqual(result, {"items": []})
+
+    def test_fetch_trend_raw_error(self):
+        client = MagicMock()
+        client.get_vs_trend_by_name.side_effect = Exception("API down")
+        self.assertIsNone(_fetch_trend_raw(client, "vs1"))
+
+
+class TestQueryDeviceStateDB(unittest.TestCase):
+    """Test query_device_state_db."""
+
+    def setUp(self):
+        fd, self.db_path = tempfile.mkstemp(suffix='.db')
+        os.close(fd)
+        conn = sqlite3.connect(self.db_path)
+        conn.execute("CREATE TABLE device_state (id INTEGER PRIMARY KEY, ts INTEGER, metric TEXT, value REAL, UNIQUE(ts, metric))")
+        now = int(time.time())
+        conn.execute("INSERT OR IGNORE INTO device_state (ts, metric, value) VALUES (?, ?, ?)", (now - 100, "cpu", 10.0))
+        conn.execute("INSERT OR IGNORE INTO device_state (ts, metric, value) VALUES (?, ?, ?)", (now - 200, "memory", 40.0))
+        conn.commit()
+        conn.close()
+
+    def tearDown(self):
+        try:
+            os.unlink(self.db_path)
+        except PermissionError:
+            pass
+
+    def test_returns_all_metrics(self):
+        rows = query_device_state_db(self.db_path)
+        self.assertIsNotNone(rows)
+        self.assertGreaterEqual(len(rows), 2)
+
+    def test_metric_filter(self):
+        rows = query_device_state_db(self.db_path, metric="cpu")
+        self.assertIsNotNone(rows)
+        self.assertTrue(all(r["metric"] == "cpu" for r in rows))
+
+    def test_nonexistent_db(self):
+        self.assertIsNone(query_device_state_db("/nonexistent/path.db"))
+
+
+class TestRun3SigmaOnVSGroup(unittest.TestCase):
+    """Test _run_3sigma_on_vs_group."""
+
+    def test_adds_vs_and_metric_keys(self):
+        now = int(time.time())
+        groups = {("vs_test", "conn"): [{"ts": now - i * 60, "value": 100.0 + i * 0.5} for i in range(400)]}
+        groups[("vs_test", "conn")].append({"ts": now + 60, "value": 500.0})
+        result = _run_3sigma_on_vs_group(groups)
+        if result:
+            self.assertEqual(result[0]["vs"], "vs_test")
+            self.assertEqual(result[0]["metric"], "conn")
+
+
+class TestAnalyzeFull(unittest.TestCase):
+    """Test analyze_full orchestration."""
+
+    def setUp(self):
+        self.client = MagicMock()
+        self.client.host = "https://10.0.0.1"
+        self.client.get_virtual_services.return_value = {"items": []}
+        self.client.get_pools.return_value = {"items": []}
+        self.client.get_sys_system.return_value = {"cpu_usage": 10.0, "memory_usage": 20.0}
+        self.client.get_service_log.return_value = {"items": []}
+
+    def test_all_dimensions_included(self):
+        result = analyze_full(self.client)
+        self.assertIn("traffic", result)
+        self.assertIn("state", result)
+        self.assertIn("conflicts", result)
+        self.assertIn("logs", result)
+
+    def test_traffic_insufficient_data_doesnt_block_others(self):
+        # When no VS data and no DB, traffic falls to insufficient_data but state/conflicts succeed
+        self.client.get_virtual_services.return_value = {"items": []}
+        self.client.get_vs_trend_by_name.side_effect = Exception("Trend API down")
+        result = analyze_full(self.client)
+        self.assertIn(result["traffic"]["status"], ("insufficient_data", "error"))
+        self.assertEqual(result["state"]["status"], "ok")
+        self.assertEqual(result["conflicts"]["status"], "ok")
+
+
+class TestStateAnalysisEdges(unittest.TestCase):
+    """Test state_analysis edge cases not covered elsewhere."""
+
+    def setUp(self):
+        self.client = MagicMock()
+
+    def test_api_exception_returns_error(self):
+        self.client.get_sys_system.side_effect = Exception("API timeout")
+        result = state_analysis(self.client)
+        self.assertEqual(result["status"], "error")
+        self.assertIn("error", result)
+        self.assertEqual(len(result["items"]), 1)
+
+    def test_fan_list_with_fail_status(self):
+        self.client.get_sys_system.return_value = {
+            "cpu_usage": 10.0, "memory_usage": 20.0,
+            "fan": [{"name": "fan1", "status": "fail"}],
+        }
+        result = state_analysis(self.client)
+        self.assertEqual(result["status"], "critical")
+
+    def test_power_string_fail(self):
+        self.client.get_sys_system.return_value = {
+            "cpu_usage": 10.0, "memory_usage": 20.0,
+            "power_supply": "fail",
+        }
+        result = state_analysis(self.client)
+        self.assertEqual(result["status"], "critical")
+
+    def test_power_list_with_fail(self):
+        self.client.get_sys_system.return_value = {
+            "cpu_usage": 10.0, "memory_usage": 20.0,
+            "power_supply": [{"name": "psu1", "status": "fail"}],
+        }
+        result = state_analysis(self.client)
+        self.assertEqual(result["status"], "critical")
+
+    def test_interface_out_entries(self):
+        self.client.get_sys_system.return_value = {
+            "cpu_usage": 10.0, "memory_usage": 20.0,
+            "interface": {"plug": {"in": [], "out": ["eth1", "eth2"]}},
+        }
+        result = state_analysis(self.client)
+        self.assertEqual(result["status"], "warning")
+
+    def test_nested_dict_values(self):
+        self.client.get_sys_system.return_value = {
+            "cpu_usage": {"value": 85, "unit": "PERCENT"},
+            "memory_usage": {"value": 40, "unit": "PERCENT"},
+        }
+        result = state_analysis(self.client)
+        self.assertEqual(result["status"], "warning")
+        cpu_item = next(i for i in result["items"] if i["metric"] == "cpu")
+        self.assertEqual(cpu_item["level"], "warn")
 
 
 if __name__ == '__main__':

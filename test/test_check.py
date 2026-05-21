@@ -5,6 +5,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".claude", "skills", "ad-ops", "scripts"))
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".claude", "skills", "ad-check-analysis", "scripts"))
 
+import json
 import unittest
 import tempfile
 from unittest.mock import patch, MagicMock
@@ -181,6 +182,222 @@ class TestExitCodes(unittest.TestCase):
                     from check import main
                     main()
                 self.assertEqual(cm.exception.code, 4)
+
+
+class TestNormalizeStartTime(unittest.TestCase):
+    """Test _normalize_start_time."""
+
+    def test_full_timestamp(self):
+        from check import _normalize_start_time
+        self.assertEqual(_normalize_start_time("2026-05-19 19:35:42"), 20260519193542)
+
+    def test_digit_string(self):
+        from check import _normalize_start_time
+        self.assertEqual(_normalize_start_time("20260519193542"), 20260519193542)
+
+    def test_short_string(self):
+        from check import _normalize_start_time
+        self.assertEqual(_normalize_start_time("2026"), 0)
+
+    def test_empty_string(self):
+        from check import _normalize_start_time
+        self.assertEqual(_normalize_start_time(""), 0)
+
+    def test_no_digits(self):
+        from check import _normalize_start_time
+        self.assertEqual(_normalize_start_time("abc"), 0)
+
+
+class TestIsNewReport(unittest.TestCase):
+    """Test _is_new_report logic."""
+
+    def test_new_report_within_window(self):
+        from check import _is_new_report
+        top = {"name": "rpt_002", "start_time": "2026-05-20 12:00:30", "end_time": "2026-05-20 12:02:00"}
+        self.assertTrue(_is_new_report(top, "rpt_001", 20260520120000))
+
+    def test_same_name_as_previous(self):
+        from check import _is_new_report
+        top = {"name": "rpt_001", "start_time": "2026-05-20 12:00:30", "end_time": "2026-05-20 12:02"}
+        self.assertFalse(_is_new_report(top, "rpt_001", 20260520120000))
+
+    def test_no_end_time(self):
+        from check import _is_new_report
+        top = {"name": "rpt_002", "start_time": "2026-05-20 12:00:30", "end_time": ""}
+        self.assertFalse(_is_new_report(top, "rpt_001", 20260520120000))
+
+    def test_outside_window(self):
+        from check import _is_new_report
+        top = {"name": "rpt_002", "start_time": "2026-05-20 12:05:00", "end_time": "2026-05-20 12:07"}
+        self.assertFalse(_is_new_report(top, "rpt_001", 20260520120000))
+
+    def test_zero_start_time(self):
+        from check import _is_new_report
+        top = {"name": "rpt_002", "start_time": "", "end_time": "2026-05-20 12:02"}
+        self.assertFalse(_is_new_report(top, "rpt_001", 0))
+
+
+class TestWaitAndDownload(unittest.TestCase):
+    """Test wait_and_download — poll + download + extract."""
+
+    def setUp(self):
+        self.tmpdir = tempfile.TemporaryDirectory()
+        self.work_dir = self.tmpdir.name
+
+    def tearDown(self):
+        self.tmpdir.cleanup()
+
+    def test_missing_meta_raises(self):
+        from check import wait_and_download
+        client = MagicMock()
+        with self.assertRaises(RuntimeError) as cm:
+            wait_and_download(client, work_dir=self.work_dir)
+        self.assertIn("找不到", str(cm.exception))
+
+    def test_meta_without_identifiers_raises(self):
+        from check import wait_and_download
+        client = MagicMock()
+        meta_path = os.path.join(self.work_dir, "_meta.json")
+        with open(meta_path, "w", encoding="utf-8") as f:
+            json.dump({"scene": "test"}, f)
+        with self.assertRaises(RuntimeError) as cm:
+            wait_and_download(client, work_dir=self.work_dir)
+        self.assertIn("判定", str(cm.exception))
+
+    def test_api_error_during_poll(self):
+        from check import wait_and_download
+        client = MagicMock()
+        client._request.side_effect = ADConnectionError("timeout")
+        meta = {"scene": "标准巡检", "t0_int": 20260520120000, "pre_run_latest_name": "old", "work_dir": self.work_dir}
+        with open(os.path.join(self.work_dir, "_meta.json"), "w", encoding="utf-8") as f:
+            json.dump(meta, f)
+        with self.assertRaises(RuntimeError):
+            wait_and_download(client, work_dir=self.work_dir, max_attempts=1)
+
+    def test_timeout_no_new_report(self):
+        from check import wait_and_download
+        client = MagicMock()
+        client._request.return_value = {"items": []}
+        meta = {"scene": "标准巡检", "t0_int": 20260520120000, "pre_run_latest_name": "old", "work_dir": self.work_dir}
+        with open(os.path.join(self.work_dir, "_meta.json"), "w", encoding="utf-8") as f:
+            json.dump(meta, f)
+        with self.assertRaises(RuntimeError) as cm:
+            wait_and_download(client, work_dir=self.work_dir, max_attempts=3, poll_interval=0.01)
+        self.assertIn("未检测到", str(cm.exception))
+
+    def test_download_missing_file_token(self):
+        from check import wait_and_download
+        client = MagicMock()
+        history_resp = {"items": [{"name": "rpt_new", "start_time": "2026-05-20 12:00:30", "end_time": "2026-05-20 12:02"}]}
+        token_resp = {}
+        client._request.side_effect = [history_resp, token_resp]
+        meta = {"scene": "标准巡检", "t0_int": 20260520120000, "pre_run_latest_name": "old", "work_dir": self.work_dir}
+        with open(os.path.join(self.work_dir, "_meta.json"), "w", encoding="utf-8") as f:
+            json.dump(meta, f)
+        with self.assertRaises(RuntimeError) as cm:
+            wait_and_download(client, work_dir=self.work_dir, max_attempts=1)
+        self.assertIn("file_token", str(cm.exception))
+
+
+class TestProgressOne(unittest.TestCase):
+    """Test _progress_one — single-device progress query."""
+
+    def test_normal_progress(self):
+        from check import _progress_one
+        client = MagicMock()
+        client._request.return_value = {"state": "RUNNING", "progress": 50}
+        result = _progress_one(client)
+        self.assertEqual(result["state"], "RUNNING")
+
+    def test_no_running_with_history(self):
+        from check import _progress_one
+        client = MagicMock()
+        client._request.side_effect = [
+            {"state": "NO_RUNNING"},
+            {"items": [{"name": "r1", "scene": "全量巡检", "start_time": "t1", "end_time": "t2"}]},
+        ]
+        result = _progress_one(client)
+        self.assertIn("history_latest", result)
+        self.assertEqual(result["history_latest"]["name"], "r1")
+
+    def test_no_running_empty_history(self):
+        from check import _progress_one
+        client = MagicMock()
+        client._request.side_effect = [
+            {"state": "NO_RUNNING"},
+            {"items": []},
+        ]
+        result = _progress_one(client)
+        self.assertNotIn("history_latest", result)
+
+
+class TestCheckMainSubcommands(unittest.TestCase):
+    """Test main() subcommand paths not covered elsewhere."""
+
+    def test_scenes_success(self):
+        with patch("sys.argv", ["check.py", "scenes", "--host", "https://10.0.0.1", "--password", "pw"]):
+            with patch("check.ADClient") as mock_cls:
+                mock_client = MagicMock()
+                mock_client._request.return_value = {"items": [{"name": "标准巡检"}]}
+                mock_cls.return_value = mock_client
+                from check import main
+                main()  # no SystemExit — prints JSON and returns
+
+    def test_scenes_api_error_exits_1(self):
+        with patch("sys.argv", ["check.py", "scenes", "--host", "https://10.0.0.1", "--password", "pw"]):
+            with patch("check.ADClient") as mock_cls:
+                mock_client = MagicMock()
+                mock_client._request.side_effect = ADConnectionError("timeout")
+                mock_cls.return_value = mock_client
+                with self.assertRaises(SystemExit) as cm:
+                    from check import main
+                    main()
+                self.assertEqual(cm.exception.code, 1)
+
+    def test_history_success(self):
+        with patch("sys.argv", ["check.py", "history", "--host", "https://10.0.0.1", "--password", "pw"]):
+            with patch("check.ADClient") as mock_cls:
+                mock_client = MagicMock()
+                mock_client._request.return_value = {"items": []}
+                mock_cls.return_value = mock_client
+                from check import main
+                main()  # no SystemExit — prints JSON and returns
+
+    def test_history_missing_host(self):
+        with patch("sys.argv", ["check.py", "history"]):
+            with self.assertRaises(SystemExit) as cm:
+                from check import main
+                main()
+            self.assertEqual(cm.exception.code, 4)
+
+    def test_progress_single_device(self):
+        with patch("sys.argv", ["check.py", "progress", "--host", "https://10.0.0.1", "--password", "pw"]):
+            with patch("check.ADClient") as mock_cls:
+                mock_client = MagicMock()
+                mock_client._request.return_value = {"state": "RUNNING"}
+                mock_cls.return_value = mock_client
+                from check import main
+                main()  # no SystemExit — prints JSON and returns
+
+    def test_analyze_ad_json_not_found(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with patch("sys.argv", ["check.py", "analyze", "--path", tmpdir]):
+                with self.assertRaises(SystemExit) as cm:
+                    from check import main
+                    main()
+                self.assertEqual(cm.exception.code, 4)
+
+    def test_analyze_with_valid_data(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ad_path = os.path.join(tmpdir, "ad.json")
+            with open(ad_path, "w", encoding="utf-8") as f:
+                json.dump({"version": "1.0", "ad_appversion": "test"}, f)
+            meta_path = os.path.join(tmpdir, "_meta.json")
+            with open(meta_path, "w", encoding="utf-8") as f:
+                json.dump({"host": "https://10.0.0.1", "scene": "标准巡检"}, f)
+            with patch("sys.argv", ["check.py", "analyze", "--path", tmpdir]):
+                from check import main
+                main()  # no SystemExit — prints report markdown and returns
 
 
 if __name__ == "__main__":

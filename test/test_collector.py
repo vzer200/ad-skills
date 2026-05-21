@@ -29,7 +29,7 @@ from unittest.mock import MagicMock, patch
 from collector import (
     VSCollector, _inject_trend_into_db, _inject_system_trend_into_db,
     collect_once, collect_system_once, collect_and_analyze,
-    _derive_db_path, _fetch_system_trend,
+    _derive_db_path, _fetch_system_trend, parse_args, _collect_and_analyze_one,
 )
 from db_schema import VS_SAMPLES_DDL, DEVICE_STATE_DDL, COLUMNS
 
@@ -761,6 +761,82 @@ class TestSystemTrend(unittest.TestCase):
         self.assertNotIn(old_ts, timestamps)
         self.assertIn(recent_ts, timestamps)
         self.assertGreaterEqual(len(rows), 2)  # recent + newly injected
+
+
+class TestCollectAndAnalyzeOne(unittest.TestCase):
+    """Test _collect_and_analyze_one — adapter for ThreadPoolExecutor."""
+
+    def setUp(self):
+        self.client = MagicMock()
+        self.client.host = "https://10.0.0.1"
+
+    def test_with_db_path(self):
+        result = _collect_and_analyze_one(self.client, "/tmp/test.db")
+        self.assertIsInstance(result, dict)
+
+    def test_without_db_path_derives(self):
+        result = _collect_and_analyze_one(self.client, "")
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result["device"], "https://10.0.0.1")
+
+
+class TestFetchSystemTrendError(unittest.TestCase):
+    """Test _fetch_system_trend error path."""
+
+    def test_returns_none_on_exception(self):
+        client = MagicMock()
+        client._request.side_effect = Exception("API down")
+        result = _fetch_system_trend(client, "cpu_usage")
+        self.assertIsNone(result)
+
+
+class TestParseArgs(unittest.TestCase):
+    """Test parse_args CLI argument parsing."""
+
+    def test_collect_subcommand(self):
+        args = parse_args(["collect", "--host", "https://10.0.0.1", "--password", "pw"])
+        self.assertEqual(args.command, "collect")
+        self.assertEqual(args.host, "https://10.0.0.1")
+
+    def test_daemon_subcommand(self):
+        args = parse_args(["daemon", "--host", "https://10.0.0.1", "--interval", "60"])
+        self.assertEqual(args.command, "daemon")
+        self.assertEqual(args.interval, 60)
+
+    def test_no_subcommand_defaults_to_none(self):
+        args = parse_args([])
+        self.assertIsNone(args.command)
+
+
+class TestCollectSystemOncePartial(unittest.TestCase):
+    """Test collect_system_once error isolation — one metric failure doesn't block others."""
+
+    def setUp(self):
+        fd, self.db_path = tempfile.mkstemp(suffix='.db')
+        os.close(fd)
+        self.client = MagicMock()
+        self.client.host = "https://10.0.0.1"
+        self.client._request.return_value = {"values": [10.0, 20.0]}
+
+    def tearDown(self):
+        try:
+            os.unlink(self.db_path)
+        except PermissionError:
+            pass
+
+    def test_one_fetch_raises_others_succeed(self):
+        import collector as col_mod
+        orig = col_mod._fetch_system_trend
+
+        def side_effect(client, api_metric):
+            if api_metric == "cpu_usage":
+                raise Exception("CPU API error")
+            return {"values": [10.0, 20.0]}
+
+        with patch.object(col_mod, '_fetch_system_trend', side_effect=side_effect):
+            with patch.object(col_mod, '_inject_system_trend_into_db', return_value=10):
+                total = collect_system_once(self.client, self.db_path)
+                self.assertGreater(total, 0)
 
 
 if __name__ == "__main__":
