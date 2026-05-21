@@ -546,6 +546,16 @@ def main():
         help="密码 (可设置环境变量 AD_PASS)",
     )
     parser.add_argument(
+        "--hosts",
+        default=os.environ.get("AD_HOSTS", ""),
+        help="多设备地址，逗号分隔 (如 https://IP1,https://IP2)",
+    )
+    parser.add_argument(
+        "--devices",
+        default="",
+        help="设备清单 JSON 文件路径 (密码不同时使用)",
+    )
+    parser.add_argument(
         "--json", "-j",
         action="store_true",
         help="输出原始 JSON 格式",
