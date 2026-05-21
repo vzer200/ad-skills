@@ -242,6 +242,26 @@ def wait_and_download(
     with zipfile.ZipFile(zip_path) as zf:
         zf.extractall(work_dir)
 
+        # 查找 acheck_offline_check_info.json（通过文件名包含 check_info 匹配）
+        check_info_path = None
+        for name in zf.namelist():
+            basename = os.path.basename(name)
+            if "check_info" in basename.lower() and basename.endswith(".json"):
+                check_info_path = os.path.join(work_dir, name)
+                break
+
+    if check_info_path and not os.path.exists(check_info_path):
+        # namelist 可能不含目录前缀，尝试直接在 work_dir 下查找
+        for root, _, files in os.walk(work_dir):
+            for f in files:
+                if "check_info" in f.lower() and f.endswith(".json"):
+                    check_info_path = os.path.join(root, f)
+                    break
+            if check_info_path:
+                break
+
+    meta["check_info_path"] = check_info_path if (check_info_path and os.path.exists(check_info_path)) else None
+
     ad_json_path = os.path.join(work_dir, "ad.json")
     if not os.path.exists(ad_json_path):
         for root, _, files in os.walk(work_dir):
@@ -277,26 +297,230 @@ def wait_and_download(
 # ---------------------------------------------------------------------------
 
 _SUGGESTION_MAP = {
-    "CPU_CHECK": "CPU 使用率偏高，建议检查是否存在异常进程或考虑扩容",
-    "MEMORY_CHECK": "内存使用率偏高，建议检查是否存在内存泄漏或考虑扩容",
-    "DISK_CHECK": "磁盘使用率偏高，建议清理日志或扩容磁盘",
-    "FAN_STATE_CHECK": "风扇状态异常，建议检查硬件并及时更换故障风扇",
-    "POWER_STATE_CHECK": "电源状态异常，建议检查电源模块并安排维护",
-    "NIC_STATE_CHECK": "网口状态异常，建议检查物理链路和网卡状态",
-    "CORE_PROCESS_CHECK": "核心进程缺失，建议检查服务状态并重启相关服务",
-    "KERNEL_LOG_CHECK": "内核日志存在异常，建议排查内核错误日志",
-    "WEAK_PASSWORD_CHECK": "存在弱密码账户，建议修改为强密码",
-    "SSH_API_CHECK": "SSH 权限未正确配置，建议检查并加固 SSH 访问控制",
-    "SSL_POLICY_CHECK": "SSL 策略存在不安全算法或协议，建议禁用旧版本",
-    "OPEN_PORT_CHECK": "存在风险端口开放，建议关闭不必要的端口",
-    "DEVICE_CONNECTION_CHECK": "设备网口连接异常，建议检查物理链路",
-    "CONFIG_ID_CONFLICT_CHECK": "配置 ID 存在冲突，建议排查并修正配置",
-    "CRASH_LOG_CHECK": "存在崩溃日志，建议排查系统稳定性问题",
-    "MEMORY_LEAK_CHECK": "共享内存/信号量异常，可能存在内存泄漏",
+    "base_cpu_info": "CPU 使用率偏高，建议检查是否存在异常进程或考虑扩容",
+    "base_memory": "内存使用率偏高，建议检查是否存在内存泄漏或考虑扩容",
+    "base_disk": "磁盘信息缺失，建议检查磁盘状态",
+    "fan_state": "风扇状态异常，建议检查硬件并及时更换故障风扇",
+    "power_state": "电源状态异常，建议检查电源模块并安排维护",
+    "nic_health_check": "网卡健康状态异常，建议检查网卡硬件和驱动",
+    "base_core_process": "核心进程缺失，建议检查服务状态并重启相关服务",
+    "base_kernel_log": "内核日志存在异常，建议排查内核错误日志",
+    "weak_password": "存在弱密码账户，建议修改为强密码",
+    "ssh_or_adapi_authority": "SSH/ADAPI 权限未正确配置，建议检查并加固访问控制",
+    "ssl_strategy_check": "SSL 策略存在不安全算法或协议，建议禁用旧版本",
+    "dangerous_port": "存在风险端口开放，建议关闭不必要的端口",
+    "base_net_state": "设备网口连接异常，建议检查物理链路",
+    "config_id_conflict_check": "配置 ID 存在冲突，建议排查并修正配置",
+    "base_crash_time": "存在崩溃日志，建议排查系统稳定性问题",
+    "shm_sem_check": "共享内存/信号量异常，可能存在内存泄漏",
+    "base_file_leak": "文件描述符泄漏，建议检查进程资源使用",
+    "base_err_log": "错误日志数量偏高，建议排查系统日志",
+    "base_report_stability": "报表稳定性异常，建议检查报表服务",
+    "base_conntrack": "连接跟踪数偏高，建议检查网络连接状况",
+    "security_check": "安全检查未通过，建议排查安全配置",
+    "cluster_brain_split_check": "检测到集群脑裂风险，建议检查集群通信",
+    "check_admin_account": "管理员账户未正确配置，建议检查账户设置",
+    "base_app_version": "AD版本信息缺失，建议检查系统状态",
+    "bios_version_check": "BIOS有可用更新，建议评估后升级",
+    "remote_maintenance": "远程维护已开启，建议评估安全风险后决定是否关闭",
+    "enable_iplimit": "IP限制未启用，建议启用以增强安全性",
+    "check_dev_online": "设备未注册云平台，建议检查网络连接",
+    "patch_info": "补丁信息为空，建议检查补丁管理状态",
+    "base_blackbox_data": "黑盒dmesg数据存在异常记录",
+    "base_blackbox_state": "黑盒状态异常，建议检查黑盒服务",
+    "alarms_enabled": "告警未启用，建议配置告警策略",
+    "base_running_time": "运行时间数据缺失，建议检查系统状态",
+    "acceleration_check": "加速引擎未就绪，建议检查加速卡状态",
+    "snat_sport_exhaustion_check": "SNAT端口耗尽，建议检查NAT配置",
+}
+
+# ---------------------------------------------------------------------------
+# 35 条 rule_id → 中文名称映射
+# ---------------------------------------------------------------------------
+
+CHECK_NAMES = {
+    "ssh_or_adapi_authority": "SSH/ADAPI授权",
+    "patch_info": "补丁信息",
+    "base_report_stability": "报表稳定性",
+    "weak_password": "弱密码",
+    "ssl_strategy_check": "SSL策略",
+    "enable_iplimit": "IP限制",
+    "dangerous_port": "危险端口",
+    "security_check": "安全检查",
+    "cluster_brain_split_check": "集群脑裂检查",
+    "check_admin_account": "管理员账户",
+    "base_app_version": "AD版本",
+    "bios_version_check": "BIOS版本",
+    "shm_sem_check": "共享内存/信号量",
+    "base_conntrack": "连接跟踪",
+    "power_state": "电源状态",
+    "fan_state": "风扇状态",
+    "acceleration_check": "加速引擎",
+    "base_memory": "内存使用率",
+    "base_crash_time": "崩溃日志",
+    "base_disk": "磁盘信息",
+    "remote_maintenance": "远程维护",
+    "base_kernel_log": "内核日志",
+    "base_core_process": "核心进程",
+    "base_net_state": "网络状态",
+    "base_file_leak": "文件描述符泄漏",
+    "base_cpu_info": "CPU使用率",
+    "base_err_log": "错误日志",
+    "base_running_time": "运行时间",
+    "check_dev_online": "设备在线状态",
+    "base_blackbox_data": "黑盒dmesg数据",
+    "base_blackbox_state": "黑盒状态",
+    "alarms_enabled": "告警启用",
+    "config_id_conflict_check": "配置ID冲突",
+    "nic_health_check": "网卡健康检查",
+    "snat_sport_exhaustion_check": "SNAT端口耗尽",
+}
+
+# ---------------------------------------------------------------------------
+# rule_id → category 映射
+# ---------------------------------------------------------------------------
+
+CHECK_CATEGORY_MAP = {
+    "ssh_or_adapi_authority": "secure",
+    "patch_info": "secure",
+    "base_report_stability": "secure",
+    "weak_password": "secure",
+    "ssl_strategy_check": "secure",
+    "enable_iplimit": "secure",
+    "dangerous_port": "secure",
+    "security_check": "secure",
+    "cluster_brain_split_check": "feature",
+    "check_admin_account": "secure",
+    "base_app_version": "feature",
+    "bios_version_check": "health",
+    "shm_sem_check": "health",
+    "base_conntrack": "health",
+    "power_state": "health",
+    "fan_state": "health",
+    "acceleration_check": "health",
+    "base_memory": "health",
+    "base_crash_time": "health",
+    "base_disk": "health",
+    "remote_maintenance": "secure",
+    "base_kernel_log": "health",
+    "base_core_process": "health",
+    "base_net_state": "health",
+    "base_file_leak": "health",
+    "base_cpu_info": "health",
+    "base_err_log": "health",
+    "base_running_time": "feature",
+    "check_dev_online": "feature",
+    "base_blackbox_data": "health",
+    "base_blackbox_state": "health",
+    "alarms_enabled": "health",
+    "config_id_conflict_check": "feature",
+    "nic_health_check": "health",
+    "snat_sport_exhaustion_check": "health",
+}
+
+# ---------------------------------------------------------------------------
+# rule_id → ad.json 实际字段名映射
+# ---------------------------------------------------------------------------
+
+RULE_FIELD_MAP = {
+    "ssh_or_adapi_authority": ["ssh_authority", "ADAPI_authority"],
+    "patch_info": ["patch_info"],
+    "base_report_stability": ["base_report_stab"],
+    "weak_password": ["weak_pwd"],
+    "ssl_strategy_check": ["unsafe_algorithm", "unsafe_protocol"],
+    "enable_iplimit": ["enable_iplimit"],
+    "dangerous_port": ["dangerous_port"],
+    "security_check": ["security_check_state"],
+    "cluster_brain_split_check": ["cluster_brain_split_check"],
+    "check_admin_account": ["admin"],
+    "base_app_version": ["ad_appversion"],
+    "bios_version_check": ["bios_update_state"],
+    "shm_sem_check": ["shm_sem_state"],
+    "base_conntrack": ["conntrack_count", "conntrack_new_count"],
+    "power_state": ["power_state"],
+    "fan_state": ["fan_state"],
+    "acceleration_check": ["acceleration"],
+    "base_memory": ["snmp_mem_rate"],
+    "base_crash_time": ["base_crash_time"],
+    "base_disk": ["disk_info"],
+    "remote_maintenance": ["remote_mt"],
+    "base_kernel_log": ["base_kernel_log"],
+    "base_core_process": ["base_core_process_lack"],
+    "base_net_state": ["base_eth_abnormal", "base_eth_mtu", "base_drop_err_packet_rate", "base_eth_info"],
+    "base_file_leak": ["base_file_ds"],
+    "base_cpu_info": ["base_cpu_usage"],
+    "base_err_log": ["base_log_error_exist"],
+    "base_running_time": ["base_running_time"],
+    "check_dev_online": ["online"],
+    "base_blackbox_data": ["base_blackbox_dmesg"],
+    "base_blackbox_state": ["base_blackbox_state"],
+    "alarms_enabled": ["alarms_enabled"],
+    "config_id_conflict_check": ["id_conflict_list"],
+    "nic_health_check": ["I350_nic_state", "82599_nic_state"],
+    "snat_sport_exhaustion_check": ["snat_sport_exhaustion_log_num"],
+}
+
+# ---------------------------------------------------------------------------
+# 按 ad.json 实际字段名索引的类型化判定规则
+# ---------------------------------------------------------------------------
+
+CORRECTED_FIELD_RULES = {
+    # === threshold ===
+    'power_state':       {'type': 'threshold', 'abnormal': -1, 'compare': '==', 'severity': 'warn',  'name': '电源状态'},
+    'fan_state':         {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'name': '风扇状态'},
+    'acceleration':      {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'warn',  'name': '加速引擎'},
+    'base_file_ds':      {'type': 'threshold', 'abnormal': 0,  'compare': '>',  'severity': 'fail',  'name': '文件描述符泄漏'},
+    'base_log_error_exist':{'type': 'threshold','abnormal': 100,'compare': '>', 'severity': 'fail',  'name': '错误日志数量'},
+    'conntrack_count':   {'type': 'threshold', 'abnormal': 100000, 'compare': '>', 'severity': 'warn', 'name': '连接跟踪数'},
+    'conntrack_new_count':{'type':'threshold', 'abnormal': 10000,  'compare': '>', 'severity': 'warn', 'name': '新建连接数'},
+    'snmp_mem_rate':     {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'name': '内存使用率'},
+    'base_cpu_usage':    {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'name': 'CPU使用率'},
+    # === bool_false ===
+    'ADAPI_authority':   {'type': 'bool_false', 'severity': 'warn',  'name': 'ADAPI授权'},
+    'ssh_authority':     {'type': 'bool_false', 'severity': 'warn',  'name': 'SSH授权'},
+    'security_check_state':{'type':'bool_false', 'severity': 'fail',  'name': '安全检查状态'},
+    'shm_sem_state':     {'type': 'bool_false', 'severity': 'fail',  'name': '共享内存状态'},
+    'base_report_stab':  {'type': 'bool_false', 'severity': 'fail',  'name': '报表稳定性'},
+    # === str_equal ===
+    'enable_iplimit':    {'type': 'str_equal', 'abnormal': 'false', 'severity': 'warn',  'name': 'IP限制'},
+    'remote_mt':         {'type': 'str_equal', 'abnormal': 'true',  'severity': 'fail',  'name': '远程维护'},
+    'online':            {'type': 'str_equal', 'abnormal': 'false', 'severity': 'warn',  'name': '设备在线状态'},
+    # === str_not_equal ===
+    'auto_update':       {'type': 'str_not_equal', 'normal': 'true','severity':'warn',  'name': '自动更新'},
+    # === non_empty ===
+    'weak_pwd':          {'type': 'non_empty', 'severity': 'fail',  'name': '弱密码'},
+    'dangerous_port':    {'type': 'non_empty', 'severity': 'fail',  'name': '危险端口'},
+    'base_core_process_lack':{'type':'non_empty','severity':'fail', 'name': '缺失核心进程'},
+    'base_eth_abnormal': {'type': 'non_empty', 'severity': 'fail',  'name': '网卡异常'},
+    'base_eth_mtu':      {'type': 'non_empty', 'severity': 'warn',  'name': '网卡MTU'},
+    'base_drop_err_packet_rate':{'type':'non_empty','severity':'fail','name': '丢包率'},
+    'id_conflict_list':  {'type': 'non_empty', 'severity': 'fail',  'name': '配置ID冲突'},
+    'cluster_brain_split_check':{'type':'non_empty','severity':'fail','name': '集群脑裂检查'},
+    'base_disk_high_usage':{'type':'non_empty', 'severity':'fail',  'name': '磁盘高使用率'},
+    'base_crash_time':   {'type': 'non_empty', 'severity': 'fail',  'name': '崩溃时间'},
+    'base_blackbox_dmesg':{'type':'non_empty', 'severity':'warn',   'name': '黑盒dmesg数据'},
+    # === bool_true ===
+    'unsafe_algorithm':  {'type': 'bool_true',  'severity': 'fail',  'name': '不安全算法'},
+    'unsafe_protocol':   {'type': 'bool_true',  'severity': 'fail',  'name': '不安全协议'},
+    # === not_zero / zero / has_value / not_normal ===
+    'base_kernel_log':   {'type': 'not_zero',   'severity': 'fail',  'name': '内核日志'},
+    'base_blackbox_state':{'type':'not_zero',   'severity': 'warn',  'name': '黑盒状态'},
+    'alarms_enabled':    {'type': 'zero',        'severity': 'warn',  'name': '告警启用'},
+    'bios_update_state': {'type': 'has_value',   'severity': 'warn',  'name': 'BIOS更新状态'},
+    'I350_nic_state':    {'type': 'not_normal',  'severity': 'fail',  'name': 'I350网卡状态'},
+    '82599_nic_state':   {'type': 'not_normal',  'severity': 'fail',  'name': '82599网卡状态'},
+    # === special ===
+    'base_eth_info':     {'type': 'eth_parse',   'severity': 'fail',  'name': '网卡信息'},
+    'snat_sport_exhaustion_log_num': {'type': 'threshold', 'abnormal': 0, 'compare': '>', 'severity': 'warn', 'name': 'SNAT端口耗尽'},
+    'disk_info':         {'type': 'empty_dict',  'severity': 'warn',  'name': '磁盘信息'},
+    'patch_info':        {'type': 'nested_list', 'key': 'patched_list', 'severity': 'warn', 'name': '补丁信息'},
+    'admin':             {'type': 'str_not_equal','normal': 'true', 'severity': 'warn',  'name': '管理员账户'},
+    'ad_appversion':     {'type': 'missing',      'severity': 'warn',  'name': 'AD版本'},
+    'base_running_time': {'type': 'missing',      'severity': 'warn',  'name': '运行时间'},
 }
 
 
-def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
+def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
     """
     根据 ad.json 内容进行结构化分析。
     严格按 ad.json 中实际存在的字段分析，不依赖场景定义。
@@ -866,6 +1090,346 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# v2 规则驱动分析引擎
+# ---------------------------------------------------------------------------
+
+def _check_field_rule(value, rule):
+    """Type-based field rule evaluation. Returns (is_abnormal: bool, severity: str, issue: str)."""
+    if value is None:
+        return False, "warn", "数据不可用"
+    rule_type = rule['type']
+    name = rule['name']
+    severity = rule.get('severity', 'fail')
+
+    if rule_type == 'threshold':
+        try:
+            v = float(value)
+        except (ValueError, TypeError):
+            return False, "warn", f"{name}值无法解析: {value}"
+        abnormal = rule['abnormal']
+        compare = rule.get('compare', '==')
+        if compare == '>': is_ab = v > abnormal
+        elif compare == '<': is_ab = v < abnormal
+        else: is_ab = v == abnormal
+        issue = f"{name}异常: {value}" if is_ab else ""
+    elif rule_type == 'bool_false':
+        is_ab = (value is False or str(value).lower() in ("false", "0", "no"))
+        issue = f"{name}关闭" if is_ab else ""
+    elif rule_type == 'bool_true':
+        is_ab = (value is True or str(value).lower() == "true")
+        issue = f"存在{name}" if is_ab else ""
+    elif rule_type == 'str_equal':
+        is_ab = (str(value) == str(rule['abnormal']))
+        issue = f"{name}异常: {value}" if is_ab else ""
+    elif rule_type == 'str_not_equal':
+        is_ab = (str(value) != str(rule['normal']))
+        issue = f"{name}异常: {value}" if is_ab else ""
+    elif rule_type == 'non_empty':
+        is_ab = bool(value)
+        issue = f"存在异常: {str(value)[:100]}" if is_ab else ""
+    elif rule_type == 'not_normal':
+        is_ab = (value != 'normal')
+        issue = f"{name}异常: {value}" if is_ab else ""
+    elif rule_type == 'not_zero':
+        try: is_ab = (int(value) != 0)
+        except (ValueError, TypeError): is_ab = False
+        issue = f"{name}异常: {value}" if is_ab else ""
+    elif rule_type == 'zero':
+        try: is_ab = (int(value) == 0)
+        except (ValueError, TypeError): is_ab = False
+        issue = f"{name}关闭" if is_ab else ""
+    elif rule_type == 'has_value':
+        is_ab = bool(value)
+        issue = f"{name}: {value}" if is_ab else ""
+    elif rule_type == 'missing':
+        is_ab = not bool(value)
+        issue = f"{name}数据缺失" if is_ab else ""
+    elif rule_type == 'empty_dict':
+        is_ab = isinstance(value, dict) and len(value) == 0
+        issue = f"{name}无数据" if is_ab else ""
+    elif rule_type == 'nested_list':
+        key = rule.get('key')
+        if key and isinstance(value, dict):
+            inner = value.get(key, [])
+        else:
+            inner = value if isinstance(value, list) else []
+        is_ab = not bool(inner)
+        issue = f"{name}为空" if is_ab else ""
+    elif rule_type == 'eth_parse':
+        value_str = str(value)
+        if 'Link detected: no' in value_str:
+            is_ab, issue = True, '存在网卡链路断开'
+        elif 'Speed: 10Mb/s' in value_str:
+            is_ab, issue = True, '存在网卡速率过低(10Mb/s)'
+        else:
+            is_ab, issue = False, ''
+    else:
+        return False, "warn", f"未知规则类型: {rule_type}"
+
+    return is_ab, severity if is_ab else "pass", issue
+
+
+def _check_vip_pool(data):
+    """Special handler for VIP Pool check — nested dict traversal."""
+    vip = data.get("virtual_ip_pool_check", {})
+    failures = []
+    for region in ("local", "global"):
+        region_data = vip.get(region, {})
+        failures.extend(region_data.get("failure", []))
+        failures.extend(region_data.get("disable", []))
+    if not failures:
+        return "pass", "正常", ""
+    return "fail", f"{len(failures)} 个异常", f"VIP Pool 存在 {len(failures)} 个异常"
+
+
+def _print_compare_diff(v1_result: dict, v2_result: dict):
+    """Print v1 vs v2 difference matrix to stderr."""
+    v1_results = v1_result.get("check_results", {})
+    v2_results = v2_result.get("check_results", {})
+    all_keys = set(v1_results.keys()) | set(v2_results.keys())
+    diffs = []
+    for k in sorted(all_keys):
+        s1 = v1_results.get(k, {}).get("status", "?")
+        s2 = v2_results.get(k, {}).get("status", "?")
+        if s1 != s2:
+            diffs.append(f"  {k}: v1={s1} v2={s2}")
+    if diffs:
+        print(f"[AD_CHECK_ENGINE=compare] {len(diffs)} differences:", file=sys.stderr)
+        for d in diffs:
+            print(d, file=sys.stderr)
+    else:
+        print("[AD_CHECK_ENGINE=compare] No differences between v1 and v2.", file=sys.stderr)
+
+
+def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
+    """Core v2 analysis: rules-driven with check_info defining scope."""
+
+    # Empty result template
+    _empty = {
+        "device_info": {},
+        "check_results": {},
+        "categories": {"feature": [], "health": [], "secure": []},
+        "summary": {"total": 0, "pass": 0, "fail": 0, "warn": 0, "score": 0},
+        "health_scores": {"feature": {"pass": 0, "total": 0, "score": 0}, "health": {"pass": 0, "total": 0, "score": 0}, "secure": {"pass": 0, "total": 0, "score": 0}, "overall": 0},
+        "suggestions": [],
+    }
+
+    if not isinstance(data, dict):
+        return _empty
+
+    # ── Entry guard: extract rules from check_info ─────────────────────
+    rules = None
+    if check_info and isinstance(check_info, dict):
+        rules = check_info.get("rules")
+        if not rules:  # None or empty list
+            rules = None
+
+    check_results = {}
+
+    if rules:
+        # ── Main path: rules-driven ───────────────────────────────────
+        covered_rule_ids = set()
+
+        for rule_entry in rules:
+            rule_id = rule_entry.get("id") or rule_entry.get("rule_id") or rule_entry.get("name", "")
+            if not rule_id:
+                continue
+            covered_rule_ids.add(rule_id)
+
+            # Special handler: VIP_POOL_CHECK
+            if rule_id == "virtual_ip_pool_check":
+                status, value, detail = _check_vip_pool(data)
+                name = CHECK_NAMES.get(rule_id, rule_id)
+                check_results[rule_id] = {"status": status, "name": name, "value": value, "detail": detail}
+                continue
+
+            # Get ad.json fields for this rule_id
+            fields = RULE_FIELD_MAP.get(rule_id, [])
+            if not fields:
+                # rule_id not in RULE_FIELD_MAP → skip with diagnostic
+                print(f"[analyze] 未映射的 rule_id: {rule_id}", file=sys.stderr)
+                continue
+
+            # Evaluate each field against CORRECTED_FIELD_RULES
+            field_statuses = []
+            for field_name in fields:
+                if field_name not in data:
+                    continue
+                value = data[field_name]
+                field_rule = CORRECTED_FIELD_RULES.get(field_name)
+                if not field_rule:
+                    print(f"[analyze] 字段 {field_name} 无对应规则", file=sys.stderr)
+                    continue
+                is_ab, severity, issue = _check_field_rule(value, field_rule)
+                field_statuses.append((is_ab, severity, issue, value))
+
+            if not field_statuses:
+                # No fields found in ad.json — rule executed but no data
+                name = CHECK_NAMES.get(rule_id, rule_id)
+                check_results[rule_id] = {"status": "pass", "name": name, "value": "（无可读取字段）", "detail": ""}
+                print(f"[analyze] rule_id={rule_id} 在 ad.json 中无对应字段", file=sys.stderr)
+                continue
+
+            # Aggregate: worst status wins (fail > warn > pass)
+            worst = "pass"
+            worst_value = ""
+            worst_detail = ""
+            for is_ab, sev, issue, val in field_statuses:
+                if is_ab and sev == "fail":
+                    worst = "fail"
+                    worst_value = str(val)[:100]
+                    worst_detail = issue
+                    break
+                elif is_ab and sev == "warn" and worst != "fail":
+                    worst = "warn"
+                    worst_value = str(val)[:100]
+                    worst_detail = issue
+
+            if worst == "pass":
+                worst_value = str(field_statuses[0][3])[:100] if field_statuses else ""
+
+            name = CHECK_NAMES.get(rule_id, rule_id)
+            check_results[rule_id] = {"status": worst, "name": name, "value": worst_value, "detail": worst_detail}
+
+        # Print uncovered rule_ids diagnostic
+        all_known = set(RULE_FIELD_MAP.keys())
+        uncovered = all_known - covered_rule_ids
+        if uncovered:
+            print(f"[analyze] 未覆盖的 rule_id ({len(uncovered)}): {sorted(uncovered)}", file=sys.stderr)
+    else:
+        # ── Fallback path: iterate by rule_id for correct categorization ──
+        # Build reverse mapping: field_name → rule_id
+        _field_to_rule = {}
+        for _rid, _fields in RULE_FIELD_MAP.items():
+            for _f in _fields:
+                _field_to_rule[_f] = _rid
+
+        for rule_id, fields in RULE_FIELD_MAP.items():
+            # Check if any mapped field exists in ad.json
+            field_statuses = []
+            for field_name in fields:
+                if field_name not in data:
+                    continue
+                value = data[field_name]
+                field_rule = CORRECTED_FIELD_RULES.get(field_name)
+                if not field_rule:
+                    continue
+                is_ab, severity, issue = _check_field_rule(value, field_rule)
+                field_statuses.append((is_ab, severity, issue, value))
+
+            if not field_statuses:
+                continue
+
+            # Aggregate: worst status wins
+            worst = "pass"
+            worst_value = ""
+            worst_detail = ""
+            for is_ab, sev, issue, val in field_statuses:
+                if is_ab and sev == "fail":
+                    worst = "fail"; worst_value = str(val)[:100]; worst_detail = issue
+                    break
+                elif is_ab and sev == "warn" and worst != "fail":
+                    worst = "warn"; worst_value = str(val)[:100]; worst_detail = issue
+
+            if worst == "pass":
+                worst_value = str(field_statuses[0][3])[:100]
+
+            name = CHECK_NAMES.get(rule_id, rule_id)
+            check_results[rule_id] = {"status": worst, "name": name, "value": worst_value, "detail": worst_detail}
+
+        # Also check orphan fields (in CORRECTED_FIELD_RULES but not in RULE_FIELD_MAP)
+        for field_name, field_rule in CORRECTED_FIELD_RULES.items():
+            if field_name in _field_to_rule:
+                continue  # already handled above
+            if field_name not in data:
+                continue
+            value = data[field_name]
+            is_ab, severity, issue = _check_field_rule(value, field_rule)
+            status = severity if is_ab else "pass"
+            name = field_rule.get('name', field_name)
+            check_results[field_name] = {"status": status, "name": name, "value": str(value)[:100], "detail": issue}
+
+    # ── Categorize ────────────────────────────────────────────────────
+    feature_keys, health_keys, secure_keys = [], [], []
+    for rule_id in check_results:
+        cat = CHECK_CATEGORY_MAP.get(rule_id, "feature")
+        if cat == "feature":
+            feature_keys.append(rule_id)
+        elif cat == "health":
+            health_keys.append(rule_id)
+        else:
+            secure_keys.append(rule_id)
+
+    # ── Summary ───────────────────────────────────────────────────────
+    pass_count = sum(1 for v in check_results.values() if v["status"] == "pass")
+    fail_count = sum(1 for v in check_results.values() if v["status"] == "fail")
+    warn_count = sum(1 for v in check_results.values() if v["status"] == "warn")
+    total = len(check_results)
+    score = round((pass_count + warn_count * 0.5) / total * 100) if total else 0
+
+    def _dimension_scores(keys):
+        p = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "pass")
+        t = len(keys)
+        s = round(p / max(t, 1) * 100)
+        return {"pass": p, "total": t, "score": s}
+
+    f_score = _dimension_scores(feature_keys)
+    h_score = _dimension_scores(health_keys)
+    s_score = _dimension_scores(secure_keys)
+    overall = round((f_score["score"] + h_score["score"] + s_score["score"]) / 3)
+
+    # ── Suggestions ───────────────────────────────────────────────────
+    suggestions = []
+    for key, result in check_results.items():
+        if result["status"] in ("fail", "warn"):
+            entry = {
+                "check": key,
+                "priority": "高" if result["status"] == "fail" else "中",
+                "suggestion": _SUGGESTION_MAP.get(key, f"检查项 {result.get('name', key)} 状态为 {result['status']}，建议进一步排查"),
+            }
+            suggestions.append(entry)
+
+    # ── Device info ───────────────────────────────────────────────────
+    device_info = {
+        "version": data.get("version", ""),
+        "app_version": str(data.get("ad_appversion", "")).strip(),
+        "gateway_id": data.get("gateway_id", ""),
+        "runtime": str(data.get("base_running_time", "")),
+        "ip": data.get("dst_ip", ""),
+    }
+
+    return {
+        "device_info": device_info,
+        "check_results": check_results,
+        "categories": {"feature": feature_keys, "health": health_keys, "secure": secure_keys},
+        "summary": {"total": total, "pass": pass_count, "fail": fail_count, "warn": warn_count, "score": score},
+        "health_scores": {"feature": f_score, "health": h_score, "secure": s_score, "overall": overall},
+        "suggestions": suggestions,
+    }
+
+
+def analyze(data: Dict[str, Any], check_info: dict | None = None) -> Dict[str, Any]:
+    """New v2 rule-driven analysis engine.
+
+    Args:
+        data: ad.json content
+        check_info: acheck_offline_check_info.json content (None → fallback mode)
+
+    Engine selection via AD_CHECK_ENGINE env var:
+        v1 → use analyze_v1(), v2 or unset → use this, compare → run both + diff
+    """
+    engine = os.environ.get("AD_CHECK_ENGINE", "v2")
+    if engine == "v1":
+        return analyze_v1(data)
+    if engine == "compare":
+        v1_result = analyze_v1(data)
+        v2_result = _analyze_v2(data, check_info)
+        _print_compare_diff(v1_result, v2_result)
+        return v2_result
+    return _analyze_v2(data, check_info)
+
+
+# ---------------------------------------------------------------------------
 # Markdown 报告渲染
 # ---------------------------------------------------------------------------
 
@@ -912,7 +1476,7 @@ def render_markdown(
             if k in results:
                 r = results[k]
                 detail = r.get('detail') or r['value']
-                rows.append(f"| {k} | {icon(r['status'])} {status_label(r['status'])} | {detail.replace(chr(10), ' ')} |")
+                rows.append(f"| {r.get('name', k)} | {icon(r['status'])} {status_label(r['status'])} | {detail.replace(chr(10), ' ')} |")
         return "\n".join(rows)
 
     # ── 健康评分（优先使用 analyze 返回的 health_scores） ─────────────
@@ -933,10 +1497,12 @@ def render_markdown(
     suggestions = analysis.get("suggestions", [])
     suggestion_rows = []
     for sug in suggestions:
+        check_key = sug.get('check', '')
+        check_name = results.get(check_key, {}).get('name', check_key) if check_key else '-'
         suggestion_rows.append(
-            f"| {sug.get('priority', '')} | {sug.get('suggestion', '')} |"
+            f"| {sug.get('priority', '')} | {check_name} | {sug.get('suggestion', '')} |"
         )
-    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | 暂无优化建议 |"
+    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无优化建议 |"
 
     # 设备中文名（从 devices.json 匹配，降级到 host URL）
     device_label = meta.get("host", "?")
@@ -1010,8 +1576,8 @@ def render_markdown(
 
 ### 💡 优化建议
 
-| 优先级 | 建议 |
-|--------|------|
+| 优先级 | 检查项 | 建议 |
+|--------|--------|------|
 {suggestions_table}
 
 ---
@@ -1027,7 +1593,7 @@ def render_markdown(
 
 ---
 
-**说明**: 以上结果全部来自巡检报告文件 `ad.json`，严格按照巡检返回数据进行分析。
+**说明**: 以上结果来自巡检报告文件 `ad.json` 及离线检查信息，基于 35 条类型化规则判定。
 """
 
 
@@ -1133,7 +1699,15 @@ def _check_one(client, scene="标准巡检", force=False, work_dir=None):
     # Analyze
     with open(meta["ad_json_path"], encoding="utf-8") as f:
         data = json.load(f)
-    analysis = analyze(data)
+    check_info = None
+    check_info_path = meta.get("check_info_path")
+    if check_info_path and os.path.exists(check_info_path):
+        try:
+            with open(check_info_path, encoding="utf-8") as f:
+                check_info = json.load(f)
+        except Exception as e:
+            print(f"[_check_one] 读取 check_info 失败: {e}", file=sys.stderr)
+    analysis = analyze(data, check_info)
     report = render_markdown(analysis, meta)
 
     return {
@@ -1287,7 +1861,15 @@ def main():
             # 下载完成后自动分析并输出 markdown
             with open(meta["ad_json_path"], encoding="utf-8") as f:
                 data = json.load(f)
-            analysis = analyze(data)
+            check_info = None
+            check_info_path = meta.get("check_info_path")
+            if check_info_path and os.path.exists(check_info_path):
+                try:
+                    with open(check_info_path, encoding="utf-8") as f:
+                        check_info = json.load(f)
+                except Exception as e:
+                    print(f"[wait] 读取 check_info 失败: {e}", file=sys.stderr)
+            analysis = analyze(data, check_info)
             report = render_markdown(analysis, meta)
             print("\n" + report)
         except CheckTimeoutError as e:
@@ -1387,7 +1969,22 @@ def main():
         with open(ad_path, encoding="utf-8") as f:
             data = json.load(f)
 
-        analysis = analyze(data)
+        # 查找 check_info 文件
+        check_info = None
+        for root, _, files in os.walk(args.path):
+            for f in files:
+                if "check_info" in f.lower() and f.endswith(".json"):
+                    ci_path = os.path.join(root, f)
+                    try:
+                        with open(ci_path, encoding="utf-8") as cf:
+                            check_info = json.load(cf)
+                        break
+                    except Exception:
+                        pass
+            if check_info is not None:
+                break
+
+        analysis = analyze(data, check_info)
         report = render_markdown(analysis, meta)
         print(report)
 

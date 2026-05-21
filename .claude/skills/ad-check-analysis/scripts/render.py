@@ -125,7 +125,7 @@ def _render_device_detail_block(
         lines.append("| 检查项 | 状态 | 值 |")
         lines.append("|--------|------|-----|")
         for k, cr in abnormal:
-            lines.append("| {} | {} {} | {} |".format(k, _check_icon(cr["status"]), cr["status"], cr.get("detail") or cr["value"]))
+            lines.append("| {} | {} {} | {} |".format(cr.get('name', k), _check_icon(cr["status"]), cr["status"], cr.get("detail") or cr["value"]))
         lines.append("")
 
     # If no anomalies at all, show summary line
@@ -167,8 +167,10 @@ def _render_device_detail_block(
         lines.append("| 优先级 | 检查项 | 建议 |")
         lines.append("|--------|--------|------|")
         for sug in suggestions:
+            check_key = sug.get("check", "")
+            check_name = check_results.get(check_key, {}).get("name", check_key) if check_key else "-"
             lines.append("| {} | {} | {} |".format(
-                sug.get("priority", ""), sug.get("check", ""), sug.get("suggestion", ""),
+                sug.get("priority", ""), check_name, sug.get("suggestion", ""),
             ))
     else:
         lines.append("暂无优化建议。")
@@ -226,7 +228,14 @@ def _render_cross_device_comparison(
         if len(unique_statuses) <= 1 and all(s["status"] == "pass" for s in statuses.values()):
             continue
 
-        row = "| {} |".format(key)
+        # Sample display name from first available host's check_result
+        display_name = key
+        for host in valid_hosts:
+            cr = results[host]["analysis"]["check_results"].get(key)
+            if cr and cr.get("name"):
+                display_name = cr["name"]
+                break
+        row = "| {} |".format(display_name)
         notes = []
         for host in valid_hosts:
             s = statuses.get(host, {})
@@ -397,7 +406,7 @@ def render_multi_device_report(
 
     lines.append("---")
     lines.append("")
-    lines.append("**说明**: 以上结果全部来自各设备巡检报告文件 `ad.json`，严格按照巡检返回数据进行分析。")
+    lines.append("**说明**: 以上结果来自各设备巡检报告文件 `ad.json` 及离线检查信息，基于 35 条类型化规则判定。")
 
     return "\n".join(lines)
 
