@@ -20,7 +20,7 @@ from typing import Any, Dict, Optional
 # Multi-device support (deferred import in multi_device.py avoids circular dependency)
 from multi_device import (
     run_multi, parse_hosts_arg, load_devices_json,
-    compute_multi_exit_code, host_slug,
+    compute_multi_exit_code,
 )
 
 
@@ -646,6 +646,13 @@ def main():
         if args.command is None:
             parser.print_help()
             sys.exit(0)
+
+        # Validate subcommand for commands that require one
+        _commands_needing_subcommand = {"users", "slb", "pool", "stat", "cert", "log", "ha"}
+        if args.command in _commands_needing_subcommand and not args.subcommand:
+            print(f"错误: {args.command} 需要子命令", file=sys.stderr)
+            parser.print_help()
+            sys.exit(4)
 
         # --hosts and --host conflict
         if args.hosts and args.host:
