@@ -1,11 +1,28 @@
 ---
 name: ad-perception
 description: 深信服 AD 设备感知分析技能，支持流量3σ异常检测、设备状态阈值告警、IP:Port地址冲突检测和日志线索关联。当用户提到"感知分析"、"异常检测"、"流量分析"、"状态告警"、"冲突检测"、"日志关联"时触发。
+version: "2.0.0"
+updated_at: "2026-05-21"
 ---
 
 # AD 感知分析
 
 AD 设备感知分析技能，提供 VS 流量趋势异常检测、设备状态阈值判定、地址冲突检测和日志线索关联。
+
+## 适用场景
+
+- 需要检测 AD 设备流量异常（突发流量、异常下降）
+- 需要监控设备 CPU/内存/连接数等状态指标
+- 需要检查 VS IP:Port 地址冲突和 Pool 节点重复
+- 需要关联异常时间点的服务日志进行根因分析
+- 需要定时采集流量数据建立历史基线
+
+## 不适用场景
+
+- 需要巡检报告格式的综合检查 → 使用 **ad-check-analysis**
+- 需要导出审计日志和系统日志 → 使用 **ad-blackbox-analysis**
+- 需要查看设备概览（VS 列表、证书、硬件） → 使用 **ad-ops** overview
+- 需要直接 API 调用或设备配置修改 → 使用 **ad-ops** ad_api.py
 
 ## 功能概述
 
@@ -105,6 +122,7 @@ python scripts/perception.py logs --hosts "IP1,IP2" --password xxx [--limit 50]
 ## 行为准则
 
 ### 必须行为
+- ✅ 必须每次查询都要通过脚本调用获取实时数据，绝对不允许使用历史缓存数据或者捏造数据
 - ✅ 所有分析通过 `scripts/perception.py` / `scripts/collector.py` 脚本
 - ✅ 报告内容由脚本 `render_markdown()` 直接产出，LLM 原样展示
 - ✅ 采集器未启动或数据不足 → 脚本在输出中明确告知，LLM 转述
@@ -177,6 +195,12 @@ python scripts/collector.py collect --devices devices.json
 | 采集器重复启动 | 6 |
 | **多设备部分失败** | **7** |
 | ADClient import 失败 | 9 |
+
+## 模板文件
+
+- 示例输入：[examples/input.md](examples/input.md)
+- 期望输出：[examples/output.md](examples/output.md)
+- 回归清单：[checks/checklist.md](checks/checklist.md)
 
 ## 相关技能
 
