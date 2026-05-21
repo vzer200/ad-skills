@@ -296,6 +296,7 @@ SSH_CHECK, WEAK_PASSWORD_CHECK, SSL_POLICY_CHECK, IP_LIMIT_CHECK, OPEN_PORT_CHEC
 
 - 示例输入：[examples/input.md](examples/input.md)
 - 期望输出：[examples/output.md](examples/output.md)
+- 期望输出（多设备）：[examples/output-multi.md](examples/output-multi.md)
 - 回归清单：[checks/checklist.md](checks/checklist.md)
 
 ## 相关技能

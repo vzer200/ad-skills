@@ -11,16 +11,15 @@ import os
 import ssl
 import sys
 import time
+from pathlib import Path
 
-# Cross-skill import: ad-ops provides ADClient
-_scripts_dir = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "..", "ad-ops", "scripts"
-)
-_scripts_dir = os.path.realpath(_scripts_dir)
-if not os.path.isdir(_scripts_dir):
+# Cross-skill import: ad-ops provides ADClient and multi_device utilities
+_ad_ops_scripts = Path(__file__).resolve().parent.parent.parent / "ad-ops" / "scripts"
+if not _ad_ops_scripts.is_dir():
     print("错误: 无法定位 ad-ops/scripts 目录", file=sys.stderr)
     sys.exit(9)
-sys.path.insert(0, _scripts_dir)
+if str(_ad_ops_scripts) not in sys.path:
+    sys.path.insert(0, str(_ad_ops_scripts))
 try:
     from ad_api import ADClient, ADError, ADAuthError, ADAPIError, ADConnectionError
 except ImportError as e:
@@ -30,6 +29,7 @@ try:
     from multi_device import (
         run_multi, parse_hosts_arg, load_devices_json,
         compute_multi_exit_code, render_multi_summary, host_slug,
+        render_multi_device_report,
     )
 except ImportError as e:
     print(f"错误: 无法导入 multi_device: {e}", file=sys.stderr)
@@ -858,15 +858,11 @@ def render_markdown(
     def icon(s: str) -> str:
         return {"pass": "✅", "fail": "❌", "warn": "⚠️"}.get(s, s)
 
-    def category_table(keys):
-        rows = []
-        for k in keys:
-            if k in results:
-                r = results[k]
-                rows.append(
-                    f"| {k} | {icon(r['status'])} {r['status']} | {r['value']} |"
-                )
-        return "\n".join(rows) if rows else "| - | - | - |"
+    def status_label(s: str) -> str:
+        return {"pass": "正常", "fail": "异常", "warn": "异常"}.get(s, s)
+
+    def score_icon_for(val):
+        return "🟢" if val >= 90 else ("🟡" if val >= 70 else "🔴")
 
     def cat_summary(keys):
         p = sum(1 for k in keys if k in results and results[k]["status"] == "pass")
@@ -880,23 +876,48 @@ def render_markdown(
     h = cat_summary(health_keys)
     s = cat_summary(secure_keys)
 
+    # ── 所有检查项分 pass / fail-warn 两组 ───────────────────────────
+    all_keys = feature_keys + health_keys + secure_keys
+
+    def pass_rows():
+        rows = []
+        for k in all_keys:
+            if k in results and results[k]["status"] == "pass":
+                r = results[k]
+                rows.append(f"| {k} | {icon(r['status'])} {status_label(r['status'])} | {r['value']} |")
+        return "\n".join(rows) if rows else "| - | - | - |"
+
+    def anomaly_rows():
+        rows = []
+        for k in all_keys:
+            if k in results and results[k]["status"] in ("fail", "warn"):
+                r = results[k]
+                detail = r.get('detail') or r['value']
+                rows.append(f"| {k} | {icon(r['status'])} {status_label(r['status'])} | {detail} |")
+        return "\n".join(rows) if rows else "> 无异常项"
+
     # ── 健康评分（优先使用 analyze 返回的 health_scores） ─────────────
     health_scores = analysis.get("health_scores", {})
     if health_scores:
+        stability_score = health_scores.get("feature", {}).get("score", f["rate"])
+        hardware_score = health_scores.get("health", {}).get("score", h["rate"])
+        security_score = health_scores.get("secure", {}).get("score", s["rate"])
         overall = health_scores.get("overall", summary["score"])
-        score_icon = "🟢" if overall >= 90 else ("🟡" if overall >= 70 else "🔴")
     else:
+        stability_score = f["rate"]
+        hardware_score = h["rate"]
+        security_score = s["rate"]
         overall = summary["score"]
-        score_icon = "🟢" if overall >= 90 else ("🟡" if overall >= 70 else "🔴")
+    score_icon = score_icon_for(overall)
 
     # ── 优化建议 ───────────────────────────────────────────────────────
     suggestions = analysis.get("suggestions", [])
     suggestion_rows = []
     for sug in suggestions:
         suggestion_rows.append(
-            f"| {sug.get('priority', '')} | {sug.get('check', '')} | {sug.get('suggestion', '')} |"
+            f"| {sug.get('priority', '')} | {sug.get('suggestion', '')} |"
         )
-    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无优化建议 |"
+    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | 暂无优化建议 |"
 
     # 设备中文名（从已知设备表匹配）
     known_devices = {
@@ -917,7 +938,19 @@ def render_markdown(
     else:
         check_time = raw_time
 
-    return f"""## AD 巡检分析报告
+    # ── 异常项渲染（区分有/无异常两种显示方式） ────────
+    anomaly_rows_text = anomaly_rows()
+    if anomaly_rows_text == "> 无异常项":
+        anomaly_section = "\n#### ⚠️ 异常项\n\n> 无异常项\n"
+    else:
+        anomaly_section = f"""#### ⚠️ 异常项
+
+| 检查项 | 状态 | 详情 |
+|--------|------|------|
+{anomaly_rows_text}
+"""
+
+    return f"""## ✅ AD 巡检分析报告
 
 **设备**: {device_label} ({meta.get("host", "?")})
 **巡检时间**: {check_time}
@@ -931,49 +964,37 @@ def render_markdown(
 | 项目 | 值 |
 |------|-----|
 | AD 版本 | {dev["version"]} |
-| APP 版本 | {dev["app_version"][:50] if dev["app_version"] else "?"} |
 | 网关 ID | {dev["gateway_id"]} |
 | 运行时间 | {dev["runtime"]} |
-| 管理 IP | {dev["ip"]} |
 
 ---
 
 ### 🔍 巡检结果详情
 
-#### 功能巡检 ({f["total"]} 项)
+#### ✅ 正常项
 
-| 检查项 | 状态 | 值 |
-|--------|------|-----|
-{category_table(feature_keys)}
+| 检查项 | 状态 | 说明 |
+|--------|------|------|
+{pass_rows()}
 
-#### 健康巡检 ({h["total"]} 项)
-
-| 检查项 | 状态 | 值 |
-|--------|------|-----|
-{category_table(health_keys)}
-
-#### 安全巡检 ({s["total"]} 项)
-
-| 检查项 | 状态 | 值 |
-|--------|------|-----|
-{category_table(secure_keys)}
+{anomaly_section}
 
 ---
 
 ### 📈 统计汇总
 
-| 类别 | 检查项数 | ✅ 通过 | ❌ 异常 | ⚠️ 警告 | 通过率 |
-|------|----------|---------|---------|---------|--------|
-| 功能巡检 | {f["total"]} | {f["pass"]} | {f["fail"]} | {f["warn"]} | {f["rate"]}% |
-| 健康巡检 | {h["total"]} | {h["pass"]} | {h["fail"]} | {h["warn"]} | {h["rate"]}% |
-| 安全巡检 | {s["total"]} | {s["pass"]} | {s["fail"]} | {s["warn"]} | {s["rate"]}% |
+| 类别 | 检查项数 | 通过 | 异常 | 通过率 |
+|------|----------|------|------|--------|
+| 功能巡检 | {f["total"]} | {f["pass"]} | {f["fail"] + f["warn"]} | {f["rate"]}% |
+| 健康巡检 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {h["rate"]}% |
+| 安全巡检 | {s["total"]} | {s["pass"]} | {s["fail"] + s["warn"]} | {s["rate"]}% |
 
 ---
 
 ### 💡 优化建议
 
-| 优先级 | 检查项 | 建议 |
-|--------|--------|------|
+| 优先级 | 建议 |
+|--------|------|
 {suggestions_table}
 
 ---
@@ -982,6 +1003,9 @@ def render_markdown(
 
 | 项目 | 评分 |
 |------|------|
+| 系统稳定性 | {score_icon_for(stability_score)} {stability_score}/100 |
+| 硬件健康 | {score_icon_for(hardware_score)} {hardware_score}/100 |
+| 安全配置 | {score_icon_for(security_score)} {security_score}/100 |
 | **综合评分** | {score_icon} **{overall}/100** |
 
 ---
@@ -1185,13 +1209,8 @@ def main():
             if args.wait:
                 # 同步模式：等待所有设备完成（需平台超时充足）
                 results = run_multi(devices, _check_one, scene=args.scene, force=args.force)
-                for host, result in results.items():
-                    if "error" in result:
-                        print(f"\n## {host}\n> 错误: {result['error']}\n")
-                    else:
-                        print(f"\n## {host}\n")
-                        print(result.get("markdown", ""))
-                print(f"\n---\n{render_multi_summary(results, 'AD 巡检 — 多设备')}")
+                device_names = {d["host"]: d["name"] for d in devices if d.get("name")}
+                print(render_multi_device_report(results, scene=args.scene, device_names=device_names))
                 sys.exit(compute_multi_exit_code(results))
             else:
                 # 异步模式（默认）：启动后立即退出，返回 work_dir 供 LLM 轮询
