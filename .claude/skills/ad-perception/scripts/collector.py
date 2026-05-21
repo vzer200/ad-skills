@@ -78,47 +78,53 @@ def _inject_system_trend_into_db(db_path, metric_name, trend_data):
     if not isinstance(trend_data, dict):
         return 0
 
-    conn = sqlite3.connect(db_path)
-    conn.executescript(DEVICE_STATE_DDL)
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.executescript(DEVICE_STATE_DDL)
 
-    # Cleanup data older than 7 days to prevent unbounded growth
-    cutoff = int(time.time()) - 7 * 86400
-    conn.execute("DELETE FROM device_state WHERE ts < ?", (cutoff,))
+        # Cleanup data older than 7 days to prevent unbounded growth
+        cutoff = int(time.time()) - 7 * 86400
+        conn.execute("DELETE FROM device_state WHERE ts < ?", (cutoff,))
 
-    start_time = trend_data.get("start_time", 0)
-    step_time = trend_data.get("step_time", 60)
-    values_array = None
+        start_time = trend_data.get("start_time", 0)
+        step_time = trend_data.get("step_time", 60)
+        values_array = None
 
-    if "series" in trend_data:
-        # CPU format: find first matching TotalCpu series
-        target_series = None
-        for s in trend_data["series"]:
-            if s.get("name", "") in TOTAL_CPU_KEYS:
-                target_series = s
-                break
-        if target_series is None:
-            raise ValueError("CPU trend: no TotalCpu key found")
-        values_array = target_series.get("values", [])
-    elif "values" in trend_data:
-        # Memory / connection_rate format: flat values array
-        values_array = trend_data["values"]
-    else:
-        raise ValueError(f"Unknown system trend format for {metric_name}")
+        if "series" in trend_data:
+            # CPU format: find first matching TotalCpu series
+            target_series = None
+            for s in trend_data["series"]:
+                if s.get("name", "") in TOTAL_CPU_KEYS:
+                    target_series = s
+                    break
+            if target_series is None:
+                raise ValueError("CPU trend: no TotalCpu key found")
+            values_array = target_series.get("values", [])
+        elif "values" in trend_data:
+            # Memory / connection_rate format: flat values array
+            values_array = trend_data["values"]
+        else:
+            raise ValueError(f"Unknown system trend format for {metric_name}")
 
-    total = 0
-    for i, v in enumerate(values_array):
-        if not isinstance(v, (int, float)):
-            continue
-        ts = start_time + i * step_time
-        conn.execute(
-            "INSERT OR REPLACE INTO device_state (ts, metric, value) VALUES (?, ?, ?)",
-            (ts, metric_name, float(v)),
-        )
-        total += 1
+        total = 0
+        for i, v in enumerate(values_array):
+            if not isinstance(v, (int, float)):
+                continue
+            ts = start_time + i * step_time
+            conn.execute(
+                "INSERT OR REPLACE INTO device_state (ts, metric, value) VALUES (?, ?, ?)",
+                (ts, metric_name, float(v)),
+            )
+            total += 1
 
-    conn.commit()
-    conn.close()
-    return total
+        conn.commit()
+        conn.close()
+        return total
+    except ValueError:
+        raise
+    except Exception as e:
+        print(f"错误: SQLite 写入失败: {e}", file=sys.stderr)
+        raise RuntimeError(f"SQLite写入失败: {e}")
 
 
 def collect_system_once(client, db_path):
@@ -144,6 +150,10 @@ def collect_system_once(client, db_path):
                 total += _inject_system_trend_into_db(
                     db_path, METRIC_NAME_MAP[api_metric], trend_data
                 )
+            except ValueError:
+                continue
+            except RuntimeError:
+                raise
             except Exception:
                 continue
     return total
@@ -169,36 +179,40 @@ def _inject_trend_into_db(db_path, vs_name, trend_data):
     if not items:
         return 0
 
-    conn = sqlite3.connect(db_path)
-    conn.executescript(VS_SAMPLES_DDL)
+    try:
+        conn = sqlite3.connect(db_path)
+        conn.executescript(VS_SAMPLES_DDL)
 
-    # Cleanup data older than 7 days to prevent unbounded growth
-    cutoff = int(time.time()) - 7 * 86400
-    conn.execute("DELETE FROM vs_samples WHERE ts < ?", (cutoff,))
+        # Cleanup data older than 7 days to prevent unbounded growth
+        cutoff = int(time.time()) - 7 * 86400
+        conn.execute("DELETE FROM vs_samples WHERE ts < ?", (cutoff,))
 
-    start_time = trend_data.get("start_time", 0)
-    step_time = trend_data.get("step_time", 60)
-    total = 0
+        start_time = trend_data.get("start_time", 0)
+        step_time = trend_data.get("step_time", 60)
+        total = 0
 
-    for item in items:
-        metric_name = item.get('name', '')
-        values = item.get('values', [])
-        if not metric_name or not isinstance(values, list):
-            continue
-
-        for i, v in enumerate(values):
-            if not isinstance(v, (int, float)):
+        for item in items:
+            metric_name = item.get('name', '')
+            values = item.get('values', [])
+            if not metric_name or not isinstance(values, list):
                 continue
-            ts = start_time + i * step_time
-            conn.execute(
-                "INSERT OR REPLACE INTO vs_samples (ts, vs_name, metric, value) VALUES (?, ?, ?, ?)",
-                (ts, vs_name, metric_name, float(v)),
-            )
-            total += 1
 
-    conn.commit()
-    conn.close()
-    return total
+            for i, v in enumerate(values):
+                if not isinstance(v, (int, float)):
+                    continue
+                ts = start_time + i * step_time
+                conn.execute(
+                    "INSERT OR REPLACE INTO vs_samples (ts, vs_name, metric, value) VALUES (?, ?, ?, ?)",
+                    (ts, vs_name, metric_name, float(v)),
+                )
+                total += 1
+
+        conn.commit()
+        conn.close()
+        return total
+    except Exception as e:
+        print(f"错误: SQLite 写入失败: {e}", file=sys.stderr)
+        raise RuntimeError(f"SQLite写入失败: {e}")
 
 
 def collect_once(client, db_path):
@@ -540,7 +554,10 @@ def _collect_and_analyze_one(client, db_path):
     """Single-device collect+analyze for ThreadPoolExecutor (run_multi compatible)."""
     if not db_path:
         db_path = _derive_db_path(client.host)
-    return collect_and_analyze(client, db_path)
+    try:
+        return collect_and_analyze(client, db_path)
+    except RuntimeError as e:
+        return {"error": str(e), "rows_injected": 0, "anomalies": []}
 
 
 def _run_collect(args):
@@ -592,6 +609,9 @@ def _run_collect(args):
 
     try:
         result = collect_and_analyze(client, db_path)
+    except RuntimeError as e:
+        print(f"错误: {e}", file=sys.stderr)
+        sys.exit(3)
     except Exception as e:
         print(f"错误: 采集分析失败: {e}", file=sys.stderr)
         sys.exit(1)

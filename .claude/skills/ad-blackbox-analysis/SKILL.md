@@ -46,9 +46,9 @@ python scripts/blackbox.py --hosts "https://192.168.8.30,https://192.168.8.31" \
 # LLM 必须原样保存 output_dir 值，后续 progress/download 直接传入
 
 # 步骤 2: 查询进度（LLM 每 10s 对每台设备调用一次）
-# 单设备
+# 单设备（基路径不含 host_slug，脚本自动拼接）
 python scripts/blackbox.py progress --host https://192.168.8.30 --password xxx \
-  --output /tmp/blackbox_analysis/https___192.168.8.30
+  --output /tmp/blackbox_analysis
 # 多设备（一次查询所有）
 python scripts/blackbox.py progress --hosts "https://192.168.8.30,https://192.168.8.31" \
   --password xxx --output /tmp/blackbox_analysis

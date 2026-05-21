@@ -319,28 +319,62 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 
 ```json
 {
-  "check_time": "2026-05-09 10:26:16",
-  "device_info": { "ad_version": "...", "gateway_id": "...", "run_time": "..." },
-  "feature_scene": { "rule": [...] },
-  "health_scene": { "rule": [...] },
-  "secure_scene": { "rule": [...] },
-  "check_results": { "cpu_check": {"status": "pass", "value": "17%"}, ... }
+  "meta": { "start_time": "20260509102616" },
+  "device_info": { "version": "...", "gateway_id": "...", "runtime": "..." },
+  "check_results": { "base_cpu_usage": {"status": "pass", "name": "CPU使用率", "value": "17%"}, ... },
+  "categories": { "feature": [...], "health": [...], "secure": [...] }
 }
 ```
 
+> **字段说明**：`meta.start_time` 格式为 `YYYYMMDDHHMMSS`，脚本渲染时转为 `YYYY-MM-DD HH:MM:SS`；
+> `device_info.version` 对应 `ad.json` 中的 `version` 字段；
+> `device_info.runtime` 对应 `ad.json` 中的 `base_running_time` 字段；
+> `check_results` 以 v2 引擎的内部 rule_id 为 key（如 `base_cpu_usage`），展示时使用 `name` 字段中的中文显示名。
+
 ## 巡检结果分析
 
-### 功能巡检项
+### 巡检项（v2 默认引擎，中文名称）
 
-APP_VERSION_CHECK, ADMIN_ROLE_CHECK, HEARTBEAT_ERROR_CHECK, DEVICE_SAFE_CHECK
+v2 引擎使用 rule_id 作为内部键并映射为中文显示名。以下列出各分类包含的巡检项及对应的 v1 英文键名（仅供参考）：
 
-### 健康巡检项
-
-CPU_CHECK, MEMORY_CHECK, DISK_CHECK, NIC_STATE_CHECK, FAN_STATE_CHECK, POWER_STATE_CHECK, KERNEL_LOG_CHECK
-
-### 安全巡检项
-
-SSH_CHECK, WEAK_PASSWORD_CHECK, SSL_POLICY_CHECK, IP_LIMIT_CHECK, OPEN_PORT_CHECK
+| 分类 | v2 中文显示名 | v1 英文键名（仅供对照） |
+|------|-------------|----------------------|
+| 功能 | 集群脑裂检查 | — |
+| 功能 | AD版本 | APP_VERSION_CHECK |
+| 功能 | 运行时间 | — |
+| 功能 | 设备在线状态 | — |
+| 功能 | 配置ID冲突 | — |
+| 功能 | 管理员账户 | ADMIN_ROLE_CHECK |
+| 健康 | CPU使用率 | CPU_CHECK |
+| 健康 | 内存使用率 | MEMORY_CHECK |
+| 健康 | 磁盘信息 | DISK_CHECK |
+| 健康 | 磁盘高使用率 | — |
+| 健康 | 网卡异常/MTU/丢包率/信息 | NIC_STATE_CHECK |
+| 健康 | 风扇状态 | FAN_STATE_CHECK |
+| 健康 | 电源状态 | POWER_STATE_CHECK |
+| 健康 | 内核日志 | KERNEL_LOG_CHECK |
+| 健康 | 错误日志 | — |
+| 健康 | 连接跟踪 | — |
+| 健康 | 文件描述符泄漏 | — |
+| 健康 | 共享内存/信号量 | — |
+| 健康 | 报表稳定性 | — |
+| 健康 | 核心进程 | — |
+| 健康 | 崩溃日志 | — |
+| 健康 | 加速引擎 | — |
+| 健康 | 黑盒状态 | — |
+| 健康 | 黑盒dmesg数据 | — |
+| 健康 | 告警启用 | — |
+| 健康 | 网卡健康检查(I350/82599) | — |
+| 健康 | SNAT端口耗尽 | — |
+| 健康 | BIOS版本 | — |
+| 安全 | SSH/ADAPI授权 | SSH_CHECK |
+| 安全 | 弱密码 | WEAK_PASSWORD_CHECK |
+| 安全 | SSL策略 | SSL_POLICY_CHECK |
+| 安全 | IP限制 | IP_LIMIT_CHECK |
+| 安全 | 危险端口 | OPEN_PORT_CHECK |
+| 安全 | 安全检查 | DEVICE_SAFE_CHECK |
+| 安全 | 补丁信息 | — |
+| 安全 | 远程维护 | — |
 
 ---
 

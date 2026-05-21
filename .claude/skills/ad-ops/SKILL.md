@@ -44,6 +44,9 @@ updated_at: "2026-05-21"
 支持 `--host` (单设备) 和 `--hosts` / `--devices` (多设备)。
 
 ```bash
+# 登录测试
+python scripts/ad_api.py --host https://IP --password xxx login               # 测试认证
+
 # 用户
 python scripts/ad_api.py --host https://IP --password xxx users list          # 所有用户
 python scripts/ad_api.py --host https://IP --password xxx users get <name>     # 指定用户
@@ -77,6 +80,7 @@ python scripts/ad_api.py --host https://IP --password xxx cert list            #
 python scripts/ad_api.py --host https://IP --password xxx log service          # 服务日志
 python scripts/ad_api.py --host https://IP --password xxx ha status            # HA 状态
 python scripts/ad_api.py --host https://IP --password xxx ha cluster           # 集群信息
+python scripts/ad_api.py --host https://IP --password xxx ssh get              # SSH 配置查询
 
 # 多设备（所有查询子命令均支持）
 python scripts/ad_api.py --hosts "https://IP1,https://IP2" --password xxx users list
@@ -123,6 +127,7 @@ python scripts/overview.py traffic --host ...
 | 查看 SSL 证书 | `ad_api.py cert list` 或 `overview.py cert` | `--host[s]` |
 | 查看 HA 状态 | `ad_api.py ha status` 或 `overview.py ha` | `--host[s]` |
 | 查看服务日志 | `ad_api.py log service` | `--host` 或 `--hosts` |
+| 查看 SSH 配置 | `ad_api.py ssh get` | `--host` 或 `--hosts` |
 | 测试连接 | `ad_api.py login` | `--host`（不支持 `--hosts`） |
 
 ### 多设备触发
@@ -142,7 +147,8 @@ python scripts/overview.py traffic --host ...
 | SSL Certs | `get_ssl_certificates()` - returns `validity_not_after` for expiry |
 | HA | `get_ha_status()`, `get_ha_cluster()` - may return 409 in non-cluster mode |
 | SSH | `get_ssh_config()`, `enable_ssh()`, `disable_ssh()` |
-| Stats | `get_sys_system()`, `get_vs_stat()`, `get_vs_trend(name, item, trend)`, `get_pool_node_stat(pool)` |
+| Stats | `get_sys_system()`, `get_system_status()`, `get_cpu_status()`, `get_memory_status()`, `get_disk_status()`, `get_network_status()`, `get_vs_stat()`, `get_vs_stat_by_name(name)`, `get_vs_summary_trend(items, trend)`, `get_vs_trend_by_name(name, items, trend)`, `get_pool_node_stat(pool)`, `get_all_node_stat()` |
+| Logs | `get_service_log(limit)` |
 
 ## Stat Items
 
@@ -169,8 +175,8 @@ python scripts/overview.py traffic --host ...
 
 | 设备 | IP | 用户名 | 密码来源 |
 |------|-----|------|----------|
-| AD1 | 192.168.8.30 | admin | $env:AD1_PASS |
-| AD2 | 192.168.8.31 | admin | $env:AD2_PASS |
+| AD1 | 192.168.8.30 | admin | devices.json |
+| AD2 | 192.168.8.31 | admin | devices.json |
 
 ## 前置步骤：连接测试 【必须】
 

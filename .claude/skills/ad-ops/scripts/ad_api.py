@@ -539,6 +539,10 @@ def _execute_command(client, args):
         elif args.subcommand == "cluster":
             return client.get_ha_cluster()
 
+    elif args.command == "ssh":
+        if args.subcommand == "get":
+            return client.get_ssh_config()
+
     return None
 
 
@@ -652,6 +656,11 @@ def main():
     ha_sub.add_parser("status", help="HA 状态")
     ha_sub.add_parser("cluster", help="集群信息")
 
+    # ssh 命令
+    ssh_parser = subparsers.add_parser("ssh", help="SSH 配置")
+    ssh_sub = ssh_parser.add_subparsers(dest="subcommand", help="子命令")
+    ssh_sub.add_parser("get", help="查询 SSH 配置")
+
     args = parser.parse_args()
 
     # --- Multi-device mode ---
@@ -667,7 +676,7 @@ def main():
             sys.exit(0)
 
         # Validate subcommand for commands that require one
-        _commands_needing_subcommand = {"users", "slb", "pool", "stat", "cert", "log", "ha"}
+        _commands_needing_subcommand = {"users", "slb", "pool", "stat", "cert", "log", "ha", "ssh"}
         if args.command in _commands_needing_subcommand and not args.subcommand:
             print(f"错误: {args.command} 需要子命令", file=sys.stderr)
             parser.print_help()
@@ -735,6 +744,12 @@ def main():
                 print(f"错误: '{args.command}' 需要子命令，请使用 -h 查看可用子命令", file=sys.stderr)
                 sys.exit(4)
 
+    except ADAuthError as e:
+        print(f"错误: {e}", file=sys.stderr)
+        sys.exit(2)
+    except ADConnectionError as e:
+        print(f"错误: {e}", file=sys.stderr)
+        sys.exit(1)
     except Exception as e:
         print(f"错误: {e}", file=sys.stderr)
         sys.exit(1)

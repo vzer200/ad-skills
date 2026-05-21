@@ -60,8 +60,7 @@
 API 异常（连接和认证通过，但 API 调用异常）：
 
 ```
-✅ https://192.168.8.30 — 连接正常，认证通过
-   ⚠️ GET /api/get_sys_user returned 500
+⚠️ https://192.168.8.30 — API 异常: GET /api/get_sys_user returned 500
 ```
 
 其他错误：

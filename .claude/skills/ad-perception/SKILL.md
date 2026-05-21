@@ -48,8 +48,8 @@ python scripts/collector.py collect --host https://x.x.x.x --user admin --passwo
 python scripts/collector.py collect --hosts "https://IP1,https://IP2" --password xxx
 python scripts/collector.py collect --devices devices.json
 
-# === 采集器（已废弃：常驻守护进程）===
-python scripts/collector.py daemon --host https://x.x.x.x --password xxx [--interval 30]
+# === 采集器（已废弃：常驻守护进程，collector.py 不含此子命令）===
+# python scripts/collector.py daemon --host https://x.x.x.x --password xxx [--interval 30]
 
 # === 感知分析 ===
 # 全维度（单设备）
@@ -147,7 +147,7 @@ python ../ad-connect/scripts/connect.py --hosts "https://IP1,https://IP2" --pass
 |------|----------|----------|
 | 总览快照 | `python ../ad-ops/scripts/overview.py` | ❌ ad-ops 直调 API |
 | 定时采集 | `python scripts/collector.py collect --host ...` | ❌ 手动 HTTP 请求 |
-| 启动守护进程 | `python scripts/collector.py daemon --host ...` (deprecated) | ❌ 手动 HTTP 请求 |
+| 启动守护进程（已废弃） | `python scripts/collector.py daemon --host ...` (deprecated，子命令不存在) | ❌ 手动 HTTP 请求 |
 | 单设备感知分析 | `python scripts/perception.py analyze --host ...` | ❌ LLM 直调 API |
 | 多设备感知分析 | `python scripts/perception.py analyze --hosts "..."` | ❌ LLM 直调 API |
 | 查询服务日志 | `python scripts/perception.py logs --host ...` | ❌ LLM 直调 API |
@@ -234,7 +234,7 @@ python scripts/collector.py collect --devices devices.json
 | SQLite 写入失败 | 3 |
 | 参数错误 | 4 |
 | 部分失败（其余正常） | 5 |
-| 采集器重复启动 | 6 |
+| 采集器重复启动（已废弃，daemon 模式专用） | 6 |
 | **多设备部分失败** | **7** |
 | ADClient import 失败 | 9 |
 

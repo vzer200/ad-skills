@@ -299,6 +299,10 @@ def traffic_analysis(client, db_path=None, vs_name=None):
                             result['anomalies'] = anomalies
                             result['source'] = 'sqlite_injected'
                             return result
+                except RuntimeError as e:
+                    result['status'] = 'error'
+                    result['error'] = str(e)
+                    return result
                 except Exception:
                     pass
 
@@ -533,6 +537,8 @@ def state_analysis(client, disk_source=None, db_path=None):
                                     if m not in groups:
                                         groups[m] = []
                                     groups[m].append({'ts': row['ts'], 'value': row['value']})
+                    except RuntimeError as e:
+                        print(f"[WARN] SQLite 写入失败，状态数据注入跳过: {e}", file=sys.stderr)
                     except Exception:
                         pass
 
@@ -1227,6 +1233,9 @@ def main():
     except ADAuthError as e:
         print(f"认证失败: {e}", file=sys.stderr)
         sys.exit(2)
+    except RuntimeError as e:
+        print(f"错误: {e}", file=sys.stderr)
+        sys.exit(3) if 'SQLite' in str(e) else sys.exit(1)
     except Exception as e:
         print(f"错误: {e}", file=sys.stderr)
         sys.exit(1)

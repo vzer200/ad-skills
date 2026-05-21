@@ -109,8 +109,8 @@ python scripts/connect.py --hosts "IP1,IP2" --password xxx --format json
 
 | 依赖 | 说明 |
 |------|------|
-| `../ad-ops/scripts/ad_api.py` | 提供 `ADClient`、`ADConnectionError`、`ADAuthError` |
-| `../ad-ops/scripts/multi_device.py` | 提供 `run_multi`、`parse_hosts_arg`、`host_slug` |
+| `../ad-ops/scripts/ad_api.py` | 提供 `ADClient`、`ADConnectionError`、`ADAuthError`、`ADAPIError` |
+| `../ad-ops/scripts/multi_device.py` | 提供 `run_multi`、`parse_hosts_arg`、`load_devices_json`、`compute_multi_exit_code` |
 
 ## 模板文件
 
