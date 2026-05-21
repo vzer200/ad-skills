@@ -20,37 +20,93 @@ description: 深信服 AD 设备黑盒日志分析技能，支持导出黑盒日
 ## CLI 命令参考
 
 ```bash
+# === 异步模式（推荐，需 LLM 每 10s 轮询进度）===
+
+# 步骤 1: 启动导出（多设备，推荐）
+python scripts/blackbox.py --hosts "https://192.168.8.30,https://192.168.8.31" \
+  --password xxx --from-date 2026-05-14 --to-date 2026-05-20
+# 返回: [IP1] event_id=xxx output_dir=/tmp/blackbox_analysis/IP1
+#       [IP2] event_id=yyy output_dir=/tmp/blackbox_analysis/IP2
+# LLM 必须原样保存 output_dir 值，后续 progress/download 直接传入
+
+# 步骤 2: 查询进度（LLM 每 10s 对每台设备调用一次）
+# 单设备
+python scripts/blackbox.py progress --host https://192.168.8.30 --password xxx \
+  --output /tmp/blackbox_analysis/https___192.168.8.30
+# 多设备（一次查询所有）
+python scripts/blackbox.py progress --hosts "https://192.168.8.30,https://192.168.8.31" \
+  --password xxx --output /tmp/blackbox_analysis
+# 返回: {"status": "RUNNING"|"SUCCESS"|"FAILED"|"NOT_FOUND", ...}
+
+# 步骤 3: 下载+分析（仅当 progress 返回 SUCCESS 后）
+python scripts/blackbox.py download --host https://192.168.8.30 --password xxx \
+  --output /tmp/blackbox_analysis/https___192.168.8.30
+
+# === 同步模式（需平台超时 > 5min）===
+
 # 单设备（阻塞等待完成）
 python scripts/blackbox.py --host https://10.146.10.254 --user admin --password admin \
   --from-date 2026-05-03 --to-date 2026-05-09 --archive-password admin
 
-# 多设备（异步启动，推荐）
-python scripts/blackbox.py --hosts "https://192.168.8.30,https://192.168.8.31" \
-  --password xxx --from-date 2026-05-14 --to-date 2026-05-20
-# 返回 event_id + output_dir，LLM 等待 60-90s 后调用 --complete
-
-# 完成异步导出（下载+分析）
-python scripts/blackbox.py --host https://192.168.8.30 --password xxx \
-  --complete /tmp/blackbox_analysis/https___192.168.8.30
-
-# 多设备同步等待（需平台超时充足）
+# 多设备同步等待
 python scripts/blackbox.py --hosts "..." --password xxx --from-date ... --to-date ... --wait
 
 # 多设备（异密码）
 python scripts/blackbox.py --devices devices.json \
   --from-date 2026-05-03 --to-date 2026-05-09
+
+# === 已废弃（向后兼容保留，请迁移到 download 子命令）===
+# 警告: 以下命令仍可用但会输出 deprecation warning
+python scripts/blackbox.py --host https://192.168.8.30 --password xxx \
+  --complete /tmp/blackbox_analysis/https___192.168.8.30
 ```
 
 ## Workflow
 
 ```
-导出黑盒 → 查询任务状态 → 下载文件 → 解压分析
+异步模式（推荐）:
+  export (--hosts) → progress (每10s轮询) → download (仅SUCCESS后)
+
+同步模式（需平台超时 > 5min）:
+  export (--hosts --wait) → 阻塞等待 → 下载+分析
 ```
+
+### 异步轮询流程（LLM 执行指南）
+
+参照 check.py 的 progress + wait 模式：
+
+1. **启动导出**: `python scripts/blackbox.py --hosts "..." --password xxx --from-date ... --to-date ...`
+   - 脚本返回每台设备的 `output_dir` 和 `event_id`，LLM 必须原样保存
+   - 不要修改或自行拼接 output_dir 路径
+
+2. **轮询进度**: 等待 60-90s 后，每 10s 调用一次 `progress`
+   ```bash
+   # 多设备一次性查询
+   python scripts/blackbox.py progress --hosts "..." --password xxx --output /tmp/blackbox_analysis
+   ```
+   - `NOT_FOUND`: 任务尚未来得及进入 `/last-event` 列表，继续等待
+   - `RUNNING`: 仍在处理中，继续等待
+   - `SUCCESS`: 可以进行下一步 download
+   - `FAILED`: 导出失败，输出错误信息给用户
+
+3. **下载分析**: 仅当 progress 返回 `SUCCESS` 后
+   ```bash
+   python scripts/blackbox.py download --host IP --password xxx --output <output_dir>
+   ```
+
+4. **输出展示**: 将 download 的 stdout 内容直接展示在对话消息正文中
+
+### 超时处理指南
+
+- `progress` 命令执行 < 2s，不会超时
+- `download` 命令包含下载+解压+分析，大文件（7天数据）可能 > 60s
+- 如果 `download` 超时：缩小时间范围（`--from-date` / `--to-date` 收紧到 1-3 天）后重新导出
+- `progress` 返回的 `file_size_mb` 字段可供 LLM 预判文件大小
 
 ## Key Rules
 
 ### Time Range Limit
-**最大 7 天**。超过时 LLM 必须调整为最近 7 天并告知用户。脚本本身不执行此校验。
+**最大 7 天**。超过时脚本会拒绝执行（stderr 警告 + 退出码 4）。LLM 检测到退出码 4 且 stderr 包含"超过 7 天"时应建议用户缩小日期范围。
 
 ### Password
 使用 `password` 参数（明文），不用 `pk_password`。

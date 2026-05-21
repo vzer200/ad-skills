@@ -18,6 +18,9 @@ from perception import (
     state_analysis,
     conflict_analysis,
     log_correlation,
+    fetch_service_logs,
+    render_logs_markdown,
+    _logs_one,
     render_markdown,
     render_json,
     main,
@@ -649,6 +652,72 @@ class TestSubcommandStandalone(unittest.TestCase):
         """Conflict subcommand should work standalone without other analyses."""
         result = conflict_analysis(self.client)
         self.assertEqual(result.get('status'), 'ok')
+
+
+class TestServiceLogs(unittest.TestCase):
+    """Tests for the logs subcommand: fetch_service_logs, render_logs_markdown, _logs_one."""
+
+    def setUp(self):
+        self.client = MagicMock()
+        self.client.host = 'https://10.0.0.1'
+        self.client.get_service_log.return_value = {
+            'items': [
+                {'date': '2026-05-20', 'time': '23:50:15', 'level': 'ALERT', 'module': 'APPD',
+                 'detail': '虚拟服务 [test] 恢复', 'log_id': '1'},
+                {'date': '2026-05-20', 'time': '22:10:00', 'level': 'INFO', 'module': 'AUTH',
+                 'detail': '用户 admin 登录成功', 'log_id': '2'},
+            ]
+        }
+
+    def test_fetch_service_logs_returns_sorted(self):
+        """fetch_service_logs should return entries sorted by date+time descending."""
+        entries = fetch_service_logs(self.client, limit=50)
+        self.client.get_service_log.assert_called_once_with(limit=50)
+        self.assertIsInstance(entries, list)
+        self.assertEqual(len(entries), 2)
+        # First entry should be the most recent (23:50:15)
+        self.assertIn('23:50:15', entries[0]['time'])
+
+    def test_render_logs_markdown_output(self):
+        """render_logs_markdown should output the expected markdown table format."""
+        entries = [
+            {'date': '2026-05-20', 'time': '23:50:15', 'level': 'ALERT', 'module': 'APPD',
+             'detail': '虚拟服务 [test] 恢复'},
+        ]
+        output = render_logs_markdown(entries, 'https://10.0.0.1')
+        self.assertIn('## 服务日志 (https://10.0.0.1)', output)
+        self.assertIn('| 时间 | 级别 | 模块 | 详情 |', output)
+        self.assertIn('2026-05-20 23:50:15', output)
+        self.assertIn('ALERT', output)
+        self.assertIn('APPD', output)
+        self.assertIn('虚拟服务 [test] 恢复', output)
+
+    def test_render_logs_markdown_separate_from_render_markdown(self):
+        """render_logs_markdown is independent and does not affect render_markdown output."""
+        entries = [
+            {'date': '2026-05-20', 'time': '23:50:15', 'level': 'ALERT', 'module': 'APPD',
+             'detail': '虚拟服务 [test] 恢复'},
+        ]
+        logs_output = render_logs_markdown(entries, 'https://10.0.0.1')
+        # Existing render_markdown should still work as before
+        full_output = render_markdown({
+            'device': 'https://10.0.0.1',
+            'traffic': {'status': 'ok', 'anomalies': []},
+            'state': {'status': 'ok', 'items': [{'metric': 'cpu', 'value': 45, 'level': 'ok', 'message': 'CPU: 45%'}],
+                      'disk': {'available': False, 'value': None, 'source': 'none'}},
+            'logs': {'status': 'no_anomaly', 'entries': []},
+            'conflicts': {'status': 'ok', 'vs_overlaps': [], 'pool_overlaps': []},
+        })
+        self.assertIn('AD 感知分析报告', full_output)
+        self.assertNotIn('## 服务日志', full_output)  # render_markdown has '## 日志关联' not '## 服务日志'
+
+    def test_logs_one_returns_correct_structure(self):
+        """_logs_one should return dict with host, entries, total."""
+        result = _logs_one(self.client, limit=20)
+        self.assertEqual(result['host'], 'https://10.0.0.1')
+        self.assertEqual(result['total'], 2)
+        self.assertIsInstance(result['entries'], list)
+        self.assertEqual(len(result['entries']), 2)
 
 
 if __name__ == '__main__':

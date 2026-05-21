@@ -5,12 +5,13 @@ import os
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".claude", "skills", "ad-ops", "scripts"))
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".claude", "skills", "ad-blackbox-analysis", "scripts"))
 
+import json
 import unittest
 import tempfile
 import os as _os
 from unittest.mock import patch, MagicMock
 
-from blackbox import BlackboxAnalyzer
+from blackbox import BlackboxAnalyzer, _blackbox_progress, _blackbox_progress_one
 from ad_api import ADError, ADAuthError, ADAPIError, ADConnectionError
 
 
@@ -121,6 +122,122 @@ class TestBlackboxExitCodes(unittest.TestCase):
                 from blackbox import main
                 main()
             self.assertEqual(cm.exception.code, 4)
+
+
+class TestBlackboxProgress(unittest.TestCase):
+    """Test _blackbox_progress and _blackbox_progress_one."""
+
+    def setUp(self):
+        self.tmpdir = tempfile.TemporaryDirectory()
+        self.output_dir = self.tmpdir.name
+
+    def tearDown(self):
+        self.tmpdir.cleanup()
+
+    def _write_meta(self, event_id="evt-001"):
+        meta = {
+            "host": "https://10.0.0.1",
+            "event_id": event_id,
+            "from_date": "2026-05-01",
+            "to_date": "2026-05-03",
+            "archive_password": "root1234+",
+            "output_dir": self.output_dir,
+        }
+        meta_path = os.path.join(self.output_dir, "_export_meta.json")
+        with open(meta_path, "w", encoding="utf-8") as f:
+            json.dump(meta, f, ensure_ascii=False, indent=2)
+
+    def test_progress_not_found_when_event_not_in_list(self):
+        """Returns NOT_FOUND when event_id is not in get_last_event items."""
+        self._write_meta("evt-001")
+        mock_client = MagicMock()
+        mock_client.host = "https://10.0.0.1"
+        mock_client.get_last_event.return_value = {
+            "items": [{"event_id": "evt-other", "state": "SUCCESS"}]
+        }
+        result = _blackbox_progress(mock_client, self.output_dir)
+        self.assertEqual(result["status"], "NOT_FOUND")
+
+    def test_progress_running_state(self):
+        """Returns RUNNING when event is found but not in terminal state."""
+        self._write_meta("evt-001")
+        mock_client = MagicMock()
+        mock_client.host = "https://10.0.0.1"
+        mock_client.get_last_event.return_value = {
+            "items": [{"event_id": "evt-001", "state": "PROCESSING"}]
+        }
+        result = _blackbox_progress(mock_client, self.output_dir)
+        self.assertEqual(result["status"], "RUNNING")
+        self.assertEqual(result["state"], "PROCESSING")
+        self.assertEqual(result["event_id"], "evt-001")
+
+    def test_progress_success_state(self):
+        """Returns SUCCESS with file_size_mb when event is complete."""
+        self._write_meta("evt-001")
+        mock_client = MagicMock()
+        mock_client.host = "https://10.0.0.1"
+        mock_client.get_last_event.return_value = {
+            "items": [{
+                "event_id": "evt-001",
+                "state": "SUCCESS",
+                "data": {"file_token": "tok-123", "file_size": 1048576},
+            }]
+        }
+        result = _blackbox_progress(mock_client, self.output_dir)
+        self.assertEqual(result["status"], "SUCCESS")
+        self.assertEqual(result["file_size_mb"], 1.0)
+
+    def test_progress_failed_state(self):
+        """Returns FAILED with error when task failed."""
+        self._write_meta("evt-001")
+        mock_client = MagicMock()
+        mock_client.host = "https://10.0.0.1"
+        mock_client.get_last_event.return_value = {
+            "items": [{"event_id": "evt-001", "state": "FAILED"}]
+        }
+        result = _blackbox_progress(mock_client, self.output_dir)
+        self.assertEqual(result["status"], "FAILED")
+        self.assertIn("event_id=evt-001", result["error"])
+
+    def test_progress_missing_meta_file(self):
+        """Returns error when _export_meta.json does not exist."""
+        mock_client = MagicMock()
+        result = _blackbox_progress(mock_client, self.output_dir)
+        self.assertIn("error", result)
+
+    def test_progress_corrupt_meta_file(self):
+        """Returns error when _export_meta.json is corrupt (not valid JSON)."""
+        meta_path = os.path.join(self.output_dir, "_export_meta.json")
+        with open(meta_path, "w", encoding="utf-8") as f:
+            f.write("NOT JSON {{{")
+        mock_client = MagicMock()
+        result = _blackbox_progress(mock_client, self.output_dir)
+        self.assertIn("error", result)
+
+    def test_progress_one_derives_output_dir(self):
+        """_blackbox_progress_one derives per-device output_dir from base + host_slug."""
+        self._write_meta("evt-001")
+        # Create a subdir matching host_slug of the mock client
+        slug_dir = os.path.join(self.output_dir, "https___10.0.0.2")
+        os.makedirs(slug_dir, exist_ok=True)
+        meta_path = os.path.join(slug_dir, "_export_meta.json")
+        with open(meta_path, "w", encoding="utf-8") as f:
+            json.dump({
+                "host": "https://10.0.0.2",
+                "event_id": "evt-002",
+                "from_date": "2026-05-01",
+                "to_date": "2026-05-03",
+                "archive_password": "root1234+",
+                "output_dir": slug_dir,
+            }, f, ensure_ascii=False, indent=2)
+
+        mock_client = MagicMock()
+        mock_client.host = "https://10.0.0.2"
+        mock_client.get_last_event.return_value = {
+            "items": [{"event_id": "evt-002", "state": "RUNNING"}]
+        }
+        result = _blackbox_progress_one(mock_client, output_dir=self.output_dir)
+        self.assertEqual(result["status"], "RUNNING")
 
 
 if __name__ == "__main__":

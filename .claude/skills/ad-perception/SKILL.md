@@ -15,7 +15,10 @@ AD 设备感知分析技能，提供 VS 流量趋势异常检测、设备状态�
 | 流量趋势分析 | 3σ 异常检测（注入后立即可用，无冷启动） |
 | 设备状态分析 | CPU/内存/风扇/电源/接口阈值判定 |
 | 地址冲突检测 | VS IP:Port 重叠 + Pool 节点重复 |
-| 日志线索 | 异常事件 ± 5min 服务日志关联 |
+| 服务日志关联 | 异常事件 ± 5min 内关联 `get_service_log` API 日志（级别/模块/详情） |
+| 服务日志查询 | 独立查询服务日志，支持单设备和多设备，输出 Markdown 表格或 JSON |
+
+> **两种日志的区别**：本技能的"服务日志关联"使用 AD 设备实时 API (`get_service_log`) 返回的告警日志（`level`/`module`/`detail` 字段），用于快速关联异常时间点。如需导出完整操作审计日志（audit.csv）或系统日志，请使用 **ad-blackbox-analysis** 技能的黑盒日志导出功能。
 
 ## CLI 命令参考
 
@@ -43,6 +46,10 @@ python scripts/perception.py analyze --devices devices.json [--db ...]
 python scripts/perception.py traffic --host ... --vs <name> [--db ...] [--format json]
 python scripts/perception.py state --host ... [--disk-source check_report_dir] [--format json]
 python scripts/perception.py conflict --host ... [--format json]
+
+# 服务日志查询
+python scripts/perception.py logs --host https://x.x.x.x --password xxx [--limit 50] [--format json]
+python scripts/perception.py logs --hosts "IP1,IP2" --password xxx [--limit 50]
 ```
 
 ## 执行工作流
@@ -79,6 +86,7 @@ python scripts/perception.py conflict --host ... [--format json]
 | 启动守护进程 | `python scripts/collector.py daemon --host ...` (deprecated) | ❌ 手动 HTTP 请求 |
 | 单设备感知分析 | `python scripts/perception.py analyze --host ...` | ❌ LLM 直调 API |
 | 多设备感知分析 | `python scripts/perception.py analyze --hosts "..."` | ❌ LLM 直调 API |
+| 查询服务日志 | `python scripts/perception.py logs --host ...` | ❌ LLM 直调 API |
 | 展示报告 | 脚本 stdout 原样贴入对话 | ❌ LLM 修改/总结/补全 |
 
 ## 已知设备
@@ -174,4 +182,4 @@ python scripts/collector.py collect --devices devices.json
 
 - **ad-ops**: AD 智能运维（API 调用、设备管理），本技能通过 import 复用其 `ADClient`
 - **ad-check-analysis**: AD 系统巡检，本技能 `--disk-source` 可摄入其巡检报告中的磁盘数据
-- **ad-blackbox-analysis**: AD 黑盒日志分析，P0 不使用，P1 可用于深度根因
+- **ad-blackbox-analysis**: AD 黑盒日志分析（导出 audit.csv + 系统日志），与本技能的服务日志关联互补：本技能用实时 API 快速定位异常时间点的告警，黑盒日志用于深度审计回溯

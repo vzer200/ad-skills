@@ -577,6 +577,50 @@ def log_correlation(client, anomalies, limit=20):
         return {'status': 'no_match', 'entries': []}
 
 
+def fetch_service_logs(client, limit=50):
+    """
+    Fetch service logs from the device.
+
+    Args:
+        client: ADClient instance
+        limit: maximum number of log entries to return
+
+    Returns:
+        list of log entry dicts sorted by date+time descending
+    """
+    data = client.get_service_log(limit=limit)
+    if not isinstance(data, dict):
+        return []
+    items = data.get('items', [])
+    return items
+
+
+def render_logs_markdown(entries, host):
+    """
+    Render service log entries as a markdown table.
+
+    This is a NEW independent function — do NOT modify existing render_markdown().
+
+    Args:
+        entries: list of log entry dicts [{date, time, level, module, detail, log_id}, ...]
+        host: device host URL
+
+    Returns:
+        markdown string
+    """
+    lines = [f'## 服务日志 ({host})']
+    lines.append('| 时间 | 级别 | 模块 | 详情 |')
+    lines.append('|---|---|---|---|')
+    for e in entries:
+        date_str = e.get('date', '')
+        time_str = e.get('time', '')
+        time_display = f'{date_str} {time_str}' if date_str and time_str else ''
+        lines.append(
+            f"| {time_display} | {e.get('level', '')} | {e.get('module', '')} | {e.get('detail', '')} |"
+        )
+    return '\n'.join(lines)
+
+
 def render_markdown(results):
     """Render results as markdown string."""
     lines = []
@@ -789,6 +833,16 @@ def _analyze_one(client, db_path=None, disk_source=None):
     return result
 
 
+def _logs_one(client, limit=50):
+    """Single-device log fetcher for ThreadPoolExecutor / run_multi."""
+    entries = fetch_service_logs(client, limit=limit)
+    return {
+        'host': client.host,
+        'entries': entries,
+        'total': len(entries),
+    }
+
+
 def main():
     """CLI entry point."""
     sys.stdout.reconfigure(encoding='utf-8')
@@ -815,6 +869,9 @@ def main():
     _add_common_args(state_p); state_p.add_argument("--disk-source", default="", help="Check report directory with ad.json")
     conflict_p = subparsers.add_parser("conflict", help="Address conflict detection")
     _add_common_args(conflict_p)
+    logs_p = subparsers.add_parser("logs", help="服务日志查询")
+    _add_common_args(logs_p)
+    logs_p.add_argument("--limit", type=int, default=50, help="返回条数 (default: 50)")
 
     args = parser.parse_args()
     cmd = args.command or "analyze"
@@ -839,29 +896,54 @@ def main():
             print("错误: 设备列表为空", file=sys.stderr)
             sys.exit(4)
 
-        disk_src = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
-        results = run_multi(devices, _analyze_one, db_path=db_path, disk_source=disk_src)
+        if cmd == "logs":
+            limit = args.limit if hasattr(args, 'limit') else 50
+            results = run_multi(devices, _logs_one, limit=limit)
 
-        if output_format == "json":
-            output = {
-                "mode": "multi",
-                "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v),
-                           "failed": sum(1 for v in results.values() if "error" in v)},
-                "results": results,
-            }
-            print(render_json(output))
+            if output_format == "json":
+                output = {
+                    "mode": "multi",
+                    "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v),
+                               "failed": sum(1 for v in results.values() if "error" in v)},
+                    "results": results,
+                }
+                print(render_json(output))
+            else:
+                lines = [render_multi_summary(results, "AD 服务日志 — 多设备")]
+                lines.append("---")
+                for host, result in results.items():
+                    if "error" in result:
+                        lines.append(f"## {host}")
+                        lines.append(f"> 错误: {result['error']}")
+                    else:
+                        lines.append(render_logs_markdown(result.get('entries', []), result.get('host', host)))
+                    lines.append("")
+                print("\n".join(lines))
+            sys.exit(compute_multi_exit_code(results))
         else:
-            lines = [render_multi_summary(results, "AD 感知分析报告 — 多设备")]
-            lines.append("---")
-            for host, result in results.items():
-                if "error" in result:
-                    lines.append(f"## {host}")
-                    lines.append(f"> 错误: {result['error']}")
-                else:
-                    lines.append(render_markdown(result))
-                lines.append("")
-            print("\n".join(lines))
-        sys.exit(compute_multi_exit_code(results))
+            disk_src = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
+            results = run_multi(devices, _analyze_one, db_path=db_path, disk_source=disk_src)
+
+            if output_format == "json":
+                output = {
+                    "mode": "multi",
+                    "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v),
+                               "failed": sum(1 for v in results.values() if "error" in v)},
+                    "results": results,
+                }
+                print(render_json(output))
+            else:
+                lines = [render_multi_summary(results, "AD 感知分析报告 — 多设备")]
+                lines.append("---")
+                for host, result in results.items():
+                    if "error" in result:
+                        lines.append(f"## {host}")
+                        lines.append(f"> 错误: {result['error']}")
+                    else:
+                        lines.append(render_markdown(result))
+                    lines.append("")
+                print("\n".join(lines))
+            sys.exit(compute_multi_exit_code(results))
 
     # Single-device mode
     if not host:
@@ -890,6 +972,16 @@ def main():
             result = conflict_analysis(client)
             _print_result(result, output_format)
             sys.exit(0 if result.get('status') != 'error' else 1)
+
+        elif cmd == "logs":
+            limit = args.limit if hasattr(args, 'limit') else 50
+            entries = fetch_service_logs(client, limit=limit)
+            if output_format == "json":
+                result = {'host': host, 'entries': entries, 'total': len(entries)}
+                print(render_json(result))
+            else:
+                print(render_logs_markdown(entries, host))
+            sys.exit(0)
 
         else:
             # analyze (full)
