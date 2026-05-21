@@ -52,7 +52,7 @@ def test_one_device(host, username="admin", password=""):
     except ADAPIError as e:
         # Non-auth API error means we connected and authenticated successfully,
         # but the API call itself failed (unlikely for get_users)
-        return {"host": host, "status": "ok", "warning": str(e)}
+        return {"host": host, "status": "api_error", "warning": str(e)}
     except Exception as e:
         return {"host": host, "status": "error", "error": f"{type(e).__name__}: {e}"}
 
@@ -79,6 +79,7 @@ def _render_table(results):
         "ok": "✅ 正常",
         "connect_fail": "🔌 连接失败",
         "auth_fail": "🔑 认证失败",
+        "api_error": "⚠️ API 异常",
         "error": "❌ 错误",
     }
 
@@ -168,7 +169,7 @@ def main():
     # Multi-device mode
     if args.hosts or args.devices:
         if args.hosts:
-            devices = parse_hosts_arg(args.hosts, args.user, args.password)
+            devices = parse_hosts_arg(args.hosts, args.user, password)
         else:
             devices = load_devices_json(args.devices)
 

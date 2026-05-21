@@ -42,6 +42,31 @@ from typing import Any, Dict, Optional
 
 
 # ---------------------------------------------------------------------------
+# 自定义异常类
+# ---------------------------------------------------------------------------
+
+class CheckError(RuntimeError):
+    """Base exception for check operations."""
+    pass
+
+class CheckSceneNotFoundError(CheckError):
+    """The requested check scene does not exist."""
+    pass
+
+class CheckLimitReachedError(CheckError):
+    """Check history limit reached, need --force."""
+    pass
+
+class CheckTimeoutError(CheckError):
+    """Check report generation timed out."""
+    pass
+
+class CheckDownloadError(CheckError):
+    """Check report download failed."""
+    pass
+
+
+# ---------------------------------------------------------------------------
 # 巡检执行流程
 # ---------------------------------------------------------------------------
 
@@ -66,7 +91,7 @@ def start_check(
     if not scene_names:
         raise RuntimeError("无法获取巡检场景列表")
     if scene not in scene_names:
-        raise RuntimeError(f"场景 '{scene}' 不存在，可用: {scene_names}")
+        raise CheckSceneNotFoundError(f"场景 '{scene}' 不存在，可用: {scene_names}")
 
     # 步骤 2: 检查巡检记录上限
     try:
@@ -79,7 +104,7 @@ def start_check(
     need_force = count >= 5
     print(f"[步骤 2] 巡检记录: {count}/5 {'(已达上限，需 --force)' if need_force else '(未达上限，可直接执行)'}")
     if need_force and not force:
-        raise RuntimeError(
+        raise CheckLimitReachedError(
             "巡检记录已达 5 条上限，需要使用 --force 参数强制巡检（会删除最早一条记录）"
         )
 
@@ -179,7 +204,7 @@ def wait_and_download(
         time.sleep(poll_interval)
 
     if latest is None:
-        raise RuntimeError(
+        raise CheckTimeoutError(
             f"未检测到本次巡检的完成报告 (attempts={attempt})。"
             "请使用 progress 确认完成后再 wait，或增加重试次数。"
         )
@@ -200,13 +225,13 @@ def wait_and_download(
         raise RuntimeError(f"API 调用失败: {e}")
     file_token = token_resp.get("file_token")
     if not file_token:
-        raise RuntimeError(f"获取 file_token 失败: {token_resp}")
+        raise CheckDownloadError(f"获取 file_token 失败: {token_resp}")
 
     zip_path = os.path.join(work_dir, "report.zip")
     try:
         data = client._raw_request(f"/cgi/file-resource?d={file_token}")
     except (ADConnectionError, ADAuthError, ADAPIError) as e:
-        raise RuntimeError(f"文件下载失败: {e}")
+        raise CheckDownloadError(f"文件下载失败: {e}")
     os.makedirs(os.path.dirname(zip_path) or ".", exist_ok=True)
     with open(zip_path, "wb") as f:
         f.write(data)
@@ -1236,15 +1261,15 @@ def main():
             meta = start_check(client, args.scene, force=args.force, work_dir=work_dir)
             print(f"         工作目录: {work_dir}")
             print(f"         后续请用 wait 命令轮询进度，或用 progress 命令单独查询")
+        except CheckSceneNotFoundError as e:
+            print(f"❌ {e}", file=sys.stderr)
+            sys.exit(4)
+        except CheckLimitReachedError as e:
+            print(f"❌ {e}", file=sys.stderr)
+            sys.exit(4)
         except RuntimeError as e:
-            msg = str(e)
-            print(f"❌ {msg}", file=sys.stderr)
-            if "场景" in msg and "不存在" in msg:
-                sys.exit(4)
-            elif "上限" in msg or "记录" in msg:
-                sys.exit(4)
-            else:
-                sys.exit(4)
+            print(f"❌ {e}", file=sys.stderr)
+            sys.exit(4)
 
     elif args.command == "wait":
         password = args.password or os.environ.get("AD_PASS", "")
@@ -1265,17 +1290,15 @@ def main():
             analysis = analyze(data)
             report = render_markdown(analysis, meta)
             print("\n" + report)
+        except CheckTimeoutError as e:
+            print(f"❌ {e}", file=sys.stderr)
+            sys.exit(5)
+        except CheckDownloadError as e:
+            print(f"❌ {e}", file=sys.stderr)
+            sys.exit(4)
         except RuntimeError as e:
-            msg = str(e)
-            print(f"❌ {msg}", file=sys.stderr)
-            if "超时" in msg:
-                sys.exit(5)
-            elif "file_token" in msg or "文件下载" in msg:
-                sys.exit(4)
-            elif "找不到" in msg:
-                sys.exit(4)
-            else:
-                sys.exit(4)
+            print(f"❌ {e}", file=sys.stderr)
+            sys.exit(4)
 
     elif args.command == "history":
         if args.hosts:

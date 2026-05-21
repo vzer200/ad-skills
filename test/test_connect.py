@@ -48,7 +48,7 @@ class TestTestOneDevice(unittest.TestCase):
         mock_client.get_users.side_effect = ADAPIError("HTTP 500", http_code=500)
         mock_cls.return_value = mock_client
         result = test_one_device("https://10.0.0.1", "admin", "p")
-        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["status"], "api_error")
         self.assertIn("warning", result)
 
     @patch("connect.ADClient")
