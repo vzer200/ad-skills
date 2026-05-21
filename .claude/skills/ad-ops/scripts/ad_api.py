@@ -642,6 +642,11 @@ def main():
             print("错误: login 不支持多设备模式，请使用 --host", file=sys.stderr)
             sys.exit(4)
 
+        # No command specified
+        if args.command is None:
+            parser.print_help()
+            sys.exit(0)
+
         # --hosts and --host conflict
         if args.hosts and args.host:
             print("警告: --hosts 和 --host 同时指定，--host 将被忽略", file=sys.stderr)
