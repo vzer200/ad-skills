@@ -127,6 +127,7 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 ## 行为准则
 
 ### 必须行为
+- ✅ 必须每次查询都要通过脚本调用获取实时数据，绝对不允许使用历史缓存数据或者捏造数据
 - ✅ 所有操作通过 `scripts/check.py` 子命令
 - ✅ 巡检分析仅使用巡检报告返回的数据
 - ✅ 报告内容直接展示在对话消息正文中
@@ -137,6 +138,7 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 - ❌ 基于场景定义推断检查项状态
 - ❌ 填充未从巡检报告中获取的数据
 - ❌ 使用 ad-ops 的 `ad_api.py` 来完成巡检操作
+- ❌ 脚本返回异常/报错时，LLM 不得尝试绕过脚本、换用其他方式、或自行补救。必须原样将错误信息报告给用户，由用户决定下一步操作
 
 ---
 

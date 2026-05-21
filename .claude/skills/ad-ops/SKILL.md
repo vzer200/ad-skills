@@ -175,6 +175,7 @@ python scripts/overview.py traffic --host ...
 ## 行为准则
 
 ### 必须行为
+- ✅ 必须每次查询都要通过脚本调用获取实时数据，绝对不允许使用历史缓存数据或者捏造数据
 - ✅ 所有操作通过 `scripts/ad_api.py` 脚本
 - ✅ 输出由脚本直接产出
 
@@ -182,6 +183,7 @@ python scripts/overview.py traffic --host ...
 - ❌ LLM 直调 AD API
 - ❌ LLM 分析、推断、判断结果
 - ❌ LLM 修改脚本输出内容
+- ❌ 脚本返回异常/报错时，LLM 不得尝试绕过脚本、换用其他方式、或自行补救。必须原样将错误信息报告给用户，由用户决定下一步操作
 
 ## 报告展示规则
 

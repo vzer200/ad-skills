@@ -167,6 +167,8 @@ python scripts/perception.py logs --hosts "IP1,IP2" --password xxx [--limit 50]
 - ❌ 混合其他 API 结果补充报告
 - ❌ LLM "善意补救" 部分失败（exit 5 表示部分失败，应如实告知用户）
 - ❌ 在会话中途运行 `ad-check-analysis` 来补充磁盘数据（应提示用户先跑巡检，然后用 `--disk-source` 传入）
+- ❌ LLM 在未查询真实数据的情况下推断根因。禁止看到流量异常就直接断言"后端节点故障"、"服务器宕机"等结论。如需确认后端状态，必须通过 ad-ops 的 `get_pool_node_stat` / `get_all_node_stat` 实际查询，未查询则只能描述"流量偏离基线，原因待排查"
+- ❌ 脚本返回异常/报错时，LLM 不得尝试绕过脚本、换用其他方式、或自行补救。必须原样将错误信息报告给用户，由用户决定下一步操作
 
 ## 报告展示规则
 
