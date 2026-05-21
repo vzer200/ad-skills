@@ -405,8 +405,12 @@ class TestInjectTrendIntoDB(unittest.TestCase):
         conn.close()
 
     def test_inject_synthesizes_timestamps(self):
-        """Timestamps should be in the past (within last hour) and monotonically increasing."""
+        """Timestamps should be computed from start_time + i * step_time."""
+        start_time = int(time.time()) - 180
+        step_time = 60
         trend_data = {
+            'start_time': start_time,
+            'step_time': step_time,
             'items': [
                 {'name': 'connection_rate', 'values': [100.0, 200.0, 300.0]},
             ]
@@ -417,10 +421,10 @@ class TestInjectTrendIntoDB(unittest.TestCase):
         rows = conn.execute("SELECT ts FROM vs_samples ORDER BY ts").fetchall()
         conn.close()
 
-        now = int(time.time())
-        for (ts,) in rows:
-            self.assertGreater(ts, now - 3600)
-            self.assertLess(ts, now + 10)
+        # Timestamps should be within a reasonable range of start_time
+        for i, (ts,) in enumerate(rows):
+            expected = start_time + i * step_time
+            self.assertAlmostEqual(ts, expected, delta=5)
 
         # Timestamps should be strictly increasing
         for i in range(len(rows) - 1):
@@ -493,6 +497,8 @@ class TestCollectOnce(unittest.TestCase):
             'items': [{'name': 'vs_a'}, {'name': 'vs_b'}]
         }
         self.client.get_vs_trend_by_name.return_value = {
+            'start_time': int(time.time()) - 120,
+            'step_time': 60,
             'items': [
                 {'name': 'connection_rate', 'values': [100.0, 200.0]},
                 {'name': 'connection', 'values': [1000.0, 2000.0]},

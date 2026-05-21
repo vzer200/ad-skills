@@ -11,6 +11,7 @@ AD 黑盒日志分析工具
 """
 
 import argparse
+import csv
 import json
 import os
 import sys
@@ -18,11 +19,7 @@ import time
 import tarfile
 import zipfile
 import urllib.request
-import urllib.error
-import ssl
-import base64
 import tempfile
-import shutil
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 
@@ -107,30 +104,23 @@ class BlackboxAnalyzer:
                 continue
             
             with open(audit_file, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-            
-            records = []
-            for line in lines:
-                line = line.strip()
-                if not line:
-                    continue
-                
-                # 解析 CSV 行
-                parts = line.split(",")
-                if len(parts) >= 10:
-                    record = {
-                        "time": parts[0].strip('"'),
-                        "user": parts[1].strip('"'),
-                        "ip": parts[2].strip('"'),
-                        "method": parts[3].strip('"'),
-                        "module": parts[4].strip('"'),
-                        "submodule": parts[5].strip('"'),
-                        "status": parts[6].strip('"'),
-                        "path": parts[7].strip('"'),
-                        "code": parts[8].strip('"'),
-                        "description": parts[9].strip('"') if len(parts) > 9 else ""
-                    }
-                    records.append(record)
+                reader = csv.reader(f)
+                records = []
+                for row in reader:
+                    if len(row) >= 10:
+                        record = {
+                            "time": row[0],
+                            "user": row[1],
+                            "ip": row[2],
+                            "method": row[3],
+                            "module": row[4],
+                            "submodule": row[5],
+                            "status": row[6],
+                            "path": row[7],
+                            "code": row[8],
+                            "description": row[9] if len(row) > 9 else ""
+                        }
+                        records.append(record)
             
             results[date] = {
                 "count": len(records),
@@ -138,31 +128,6 @@ class BlackboxAnalyzer:
                 "methods": self._count_field(records, "method"),
                 "users": self._count_field(records, "user"),
                 "statuses": self._count_field(records, "status")
-            }
-        
-        return results
-    
-    def analyze_system_logs(self, date: str) -> Dict[str, Any]:
-        """分析系统日志"""
-        results = {}
-        log_dir = os.path.join(self.hislog_path, "log", date, "zh_CN", "0")
-        
-        if not os.path.exists(log_dir):
-            return results
-        
-        for filename in os.listdir(log_dir):
-            if not filename.endswith(".csv"):
-                continue
-            
-            filepath = os.path.join(log_dir, filename)
-            log_type = filename.replace(f"-{date}.csv", "").replace(f"-{date}.csv.1", "")
-            
-            with open(filepath, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-            
-            results[log_type] = {
-                "count": len(lines),
-                "file": filename
             }
         
         return results
@@ -175,7 +140,7 @@ class BlackboxAnalyzer:
             counts[value] = counts.get(value, 0) + 1
         return counts
     
-    def generate_report(self, audit_results: Dict, system_results: Dict = None) -> str:
+    def generate_report(self, audit_results: Dict) -> str:
         """生成分析报告"""
         report = []
         report.append("# AD 黑盒日志分析报告")
@@ -301,63 +266,6 @@ def _blackbox_download(client, output_dir, archive_password="root1234+"):
     return {"error": f"未找到事件 event_id={event_id}"}
 
 
-def _blackbox_one(client, from_date="", to_date="", archive_password="root1234+", output_dir=""):
-    """Single-device blackbox export+analyze for ThreadPoolExecutor. No sys.exit."""
-    slug = host_slug(client.host)
-    if not output_dir:
-        output_dir = os.path.join(tempfile.gettempdir(), f"blackbox_{slug}")
-    else:
-        output_dir = os.path.join(output_dir, slug)
-    os.makedirs(output_dir, exist_ok=True)
-
-    if not from_date or not to_date:
-        return {"error": "必须指定 --from-date 和 --to-date"}
-
-    # Export blackbox log
-    result = client.export_blackbox_log(from_date, to_date, archive_password)
-    event_id = result.get("event_id")
-    if not event_id:
-        return {"error": f"导出启动失败: {result}"}
-
-    # Wait for task completion (max 60 cycles = 5 min)
-    for i in range(60):
-        tasks = client.get_last_event()
-        for task in tasks.get("items", []):
-            if task.get("event_id") == event_id:
-                state = task.get("state")
-                if state == "SUCCESS":
-                    file_token = task.get("data", {}).get("file_token")
-                    # Download file
-                    archive_path = os.path.join(output_dir, "blackbox.tar.gz")
-                    data = client._raw_request(f"/cgi/file-resource?d={file_token}")
-                    with open(archive_path, "wb") as f:
-                        f.write(data)
-
-                    # Extract and analyze
-                    analyzer = BlackboxAnalyzer(output_dir)
-                    analyzer.extract(archive_path, archive_password)
-                    audit_results = analyzer.analyze_audit_logs()
-                    report = analyzer.generate_report(audit_results)
-
-                    # Write report
-                    report_path = os.path.join(output_dir, "report.md")
-                    with open(report_path, "w", encoding="utf-8") as f:
-                        f.write(report)
-
-                    return {
-                        "event_id": event_id,
-                        "output_dir": output_dir,
-                        "report_path": report_path,
-                        "report": report,
-                        "audit_dates": list(audit_results.keys()),
-                    }
-                elif state == "FAILED":
-                    return {"error": f"任务失败: event_id={event_id}"}
-        time.sleep(5)
-
-    return {"error": f"轮询超时: event_id={event_id}"}
-
-
 def _blackbox_progress(client, output_dir):
     """Query blackbox export progress without downloading.
 
@@ -435,7 +343,7 @@ def _validate_date_range(from_date, to_date):
         if span < 0:
             print("错误: 结束日期早于开始日期", file=sys.stderr)
             return False
-        if span > 7:
+        if span >= 7:
             print(
                 f"错误: 日期范围 ({from_date} ~ {to_date}) 跨 {span} 天，超过 7 天上限",
                 file=sys.stderr,
@@ -459,7 +367,7 @@ def _main_progress():
     parser.add_argument("--password", help="密码")
     parser.add_argument(
         "--output",
-        default="/tmp/blackbox_analysis",
+        default="blackbox_analysis",
         help="输出目录（与 export 时的 output_dir 一致）",
     )
 
@@ -575,7 +483,7 @@ def main():
     parser.add_argument("--from-date", help="开始日期 (YYYY-MM-DD)")
     parser.add_argument("--to-date", help="结束日期 (YYYY-MM-DD)")
     parser.add_argument("--archive-password", default="root1234+", help="黑盒文件解压密码")
-    parser.add_argument("--output", default="/tmp/blackbox_analysis", help="输出目录")
+    parser.add_argument("--output", default="blackbox_analysis", help="输出目录")
 
     args = parser.parse_args()
 

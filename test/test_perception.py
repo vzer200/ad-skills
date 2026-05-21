@@ -8,6 +8,7 @@ import math
 import statistics
 import json
 import sqlite3
+import time
 import tempfile
 from datetime import datetime
 
@@ -239,6 +240,8 @@ class TestDBFallback(unittest.TestCase):
 
             def _fake_collect_once(client_arg, db_path_arg):
                 trend_data = {
+                    'start_time': int(time.time()) - 3600,
+                    'step_time': 60,
                     'items': [
                         {'name': 'connection_rate', 'values': [float(100 + i % 10) for i in range(60)]},
                         {'name': 'connection', 'values': [float(5000 + i % 5) for i in range(60)]},

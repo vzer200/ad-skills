@@ -39,6 +39,8 @@ def calc_days_left(validity_not_after: str, now: Optional[datetime] = None) -> i
     The AD API returns dates in ``"YYYY/MM/DD HH:MM:SS"`` format (device local
     time).  No time-zone conversion is performed.
     """
+    if not validity_not_after:
+        return -1
     if now is None:
         now = datetime.now()
     expiry = datetime.strptime(validity_not_after, "%Y/%m/%d %H:%M:%S")
@@ -243,8 +245,8 @@ def _process_vs(vs: Dict[str, Any],
                 stat_map: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
     """Transform a single VS entry into the overview representation."""
     name = vs.get("name", "")
-    vips = vs.get("vips", [])
-    vports = vs.get("vports", [])
+    vips = vs.get("vips") or []
+    vports = vs.get("vports") or []
 
     # Cartesian product: every VIP × every VPort
     vip_ports = [f"{vip}:{vport}" for vip in vips for vport in vports]
@@ -292,6 +294,8 @@ def _process_hardware(sys_data: Dict[str, Any]) -> Dict[str, Any]:
     mem_val = _extract_value(sys_data.get("memory_usage"))
 
     def _level_numeric(v, warn=80, crit=90):
+        if v is None:
+            return "unknown"
         return hardware_component_level(float(v), warn, crit)
 
     # fan: list of dicts or empty list

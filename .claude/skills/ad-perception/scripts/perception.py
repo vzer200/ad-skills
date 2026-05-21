@@ -19,7 +19,7 @@ if not os.path.isdir(_scripts_dir):
     sys.exit(9)
 sys.path.insert(0, _scripts_dir)
 try:
-    from ad_api import ADClient
+    from ad_api import ADClient, ADAuthError
 except ImportError as e:
     print(f"错误: 无法导入 ad_api: {e}", file=sys.stderr)
     sys.exit(9)
@@ -355,6 +355,7 @@ def state_analysis(client, disk_source=None, db_path=None):
     except Exception as e:
         return {
             'status': 'error',
+            'error': str(e),
             'items': [{'metric': 'system', 'value': None, 'level': 'error', 'message': str(e)}],
             'disk': disk_info,
         }
@@ -600,7 +601,7 @@ def conflict_analysis(client):
 
         for (ip, port), names in vs_map.items():
             if len(names) > 1:
-                result['vs_overlaps'].append([names[0], names[1], f'{ip}:{port}'])
+                result['vs_overlaps'].append([names, f'{ip}:{port}'])
 
         # 2. Pool node overlap detection
         pool_data = client.get_pools()
@@ -868,10 +869,12 @@ def render_markdown(results):
         vs_overlaps = conflicts.get('vs_overlaps', [])
         if vs_overlaps:
             lines.append('**VS IP:Port 重叠:**')
-            lines.append('| VS A | VS B | 重叠地址 |')
-            lines.append('|---|---|---|')
+            lines.append('| 重叠地址 | 冲突 VS |')
+            lines.append('|---|---|')
             for o in vs_overlaps:
-                lines.append(f"| {o[0]} | {o[1]} | {o[2]} |")
+                names_list = o[0]
+                ip_port = o[1]
+                lines.append(f"| {ip_port} | {', '.join(names_list)} |")
 
         pool_overlaps = conflicts.get('pool_overlaps', [])
         if pool_overlaps:
@@ -919,8 +922,12 @@ def analyze_full(client, db_path=None, disk_source=None):
 
     # Log correlation (only if anomalies in traffic or state)
     all_anomalies = list(traffic_result.get('anomalies', []))
+    # Merge state 3σ anomalies
+    all_anomalies.extend(state_result.get('anomalies', []))
+    # Merge state threshold issues (warn/critical) for log correlation
     state_issues = [i for i in state_result.get('items', []) if i.get('level') in ('warn', 'critical')]
-    if all_anomalies or state_issues:
+    all_anomalies.extend(state_issues)
+    if all_anomalies:
         try:
             log_result = log_correlation(client, all_anomalies)
         except Exception as e:
@@ -1134,6 +1141,9 @@ def main():
             _print_result(result, output_format)
             sys.exit(exit_code)
 
+    except ADAuthError as e:
+        print(f"认证失败: {e}", file=sys.stderr)
+        sys.exit(2)
     except Exception as e:
         print(f"错误: {e}", file=sys.stderr)
         sys.exit(1)

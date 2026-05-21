@@ -178,7 +178,8 @@ def _inject_trend_into_db(db_path, vs_name, trend_data):
     cutoff = int(time.time()) - 7 * 86400
     conn.execute("DELETE FROM vs_samples WHERE ts < ?", (cutoff,))
 
-    now = int(time.time())
+    start_time = trend_data.get("start_time", 0)
+    step_time = trend_data.get("step_time", 60)
     total = 0
 
     for item in items:
@@ -187,11 +188,10 @@ def _inject_trend_into_db(db_path, vs_name, trend_data):
         if not metric_name or not isinstance(values, list):
             continue
 
-        n = len(values)
         for i, v in enumerate(values):
             if not isinstance(v, (int, float)):
                 continue
-            ts = now - (n - i) * 60
+            ts = start_time + i * step_time
             conn.execute(
                 "INSERT OR REPLACE INTO vs_samples (ts, vs_name, metric, value) VALUES (?, ?, ?, ?)",
                 (ts, vs_name, metric_name, float(v)),
@@ -266,7 +266,7 @@ def collect_and_analyze(client, db_path):
             'anomalies': [],
             'report': report,
             'device': client.host,
-            'rows_injected': 0,
+            'rows_injected': rows,
             'note': '设备无虚拟服务或采集无数据',
         }
 

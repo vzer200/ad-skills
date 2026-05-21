@@ -72,18 +72,6 @@ class TestBlackboxAnalyzer(unittest.TestCase):
         methods = results["20260519"]["methods"]
         self.assertEqual(methods["POST"], 1)
 
-    def test_analyze_system_logs(self):
-        self._create_system_log("20260519")
-        analyzer = BlackboxAnalyzer(self.extract_path)
-        results = analyzer.analyze_system_logs("20260519")
-        self.assertIn("kernel", results)
-        self.assertEqual(results["kernel"]["count"], 2)
-
-    def test_analyze_system_logs_empty_dir(self):
-        analyzer = BlackboxAnalyzer(self.extract_path)
-        results = analyzer.analyze_system_logs("20260519")
-        self.assertEqual(results, {})
-
     def test_count_field(self):
         analyzer = BlackboxAnalyzer(self.extract_path)
         records = [

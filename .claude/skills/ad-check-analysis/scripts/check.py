@@ -5,10 +5,8 @@ AD 巡检脚本 — 严格按照 ad-check-analysis SKILL.md 流程实现
 """
 
 import argparse
-import base64
 import json
 import os
-import ssl
 import sys
 import time
 from pathlib import Path
@@ -29,15 +27,16 @@ try:
     from multi_device import (
         run_multi, parse_hosts_arg, load_devices_json,
         compute_multi_exit_code, render_multi_summary, host_slug,
-        render_multi_device_report,
     )
 except ImportError as e:
     print(f"错误: 无法导入 multi_device: {e}", file=sys.stderr)
     sys.exit(9)
+try:
+    from render import render_multi_device_report
+except ImportError as e:
+    print(f"错误: 无法导入 render: {e}", file=sys.stderr)
+    sys.exit(9)
 
-import urllib.error
-import urllib.parse
-import urllib.request
 import zipfile
 from typing import Any, Dict, Optional
 
@@ -303,9 +302,6 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         check("ADMIN_ROLE_CHECK", "pass" if admin == "true" else "fail",
               f"admin={admin}", detail="管理员角色未正确配置" if admin != "true" else "")
 
-    # 3. HEARTBEAT_ERROR_CHECK（无对应字段，默认 pass）
-    check("HEARTBEAT_ERROR_CHECK", "pass", "无异常")
-
     if has("security_check_state"):
         # 4. DEVICE_SAFE_CHECK
         sec_state = data.get("security_check_state", False)
@@ -345,12 +341,6 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         check("CLUSTER_STATE_CHECK",
               "pass" if cluster == "NORMAL" else "warn",
               cluster)
-
-    if has("dns_proxy_enabled"):
-        # 10. DNS_PROXY_CHECK
-        check("DNS_PROXY_CHECK",
-              "warn" if data.get("dns_proxy_enabled") else "pass",
-              f"dns_proxy_enabled={data.get('dns_proxy_enabled')}")
 
     if has("cluster_virtual_mac"):
         # 11. VIRTUAL_MAC_CHECK
@@ -567,7 +557,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         check("CORE_PROCESS_CHECK", "pass" if not cpl else "fail",
               f"{len(cpl)} 个缺失" if cpl else "正常")
 
-    if has("base_log_error_exist"):
+    if has("base_kernel_log"):
         # 43. KERNEL_LOG_CHECK
         kl = data.get("base_kernel_log", -1)
         check("KERNEL_LOG_CHECK",
@@ -599,7 +589,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
               "pass" if disk else "warn",
               "正常" if disk else "无磁盘信息")
 
-    if has("base_log_error_exist"):
+    if has("base_crash_time"):
         # 48. CRASH_LOG_CHECK
         crash = data.get("base_crash_time", [])
         check("CRASH_LOG_CHECK", "pass" if not crash else "fail",
@@ -609,7 +599,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         # 49. MEMORY_CHECK
         mr = data.get("snmp_mem_rate", 0)
         check("MEMORY_CHECK",
-              "pass" if 0 < mr < 95 else ("warn" if mr > 0 else "fail"),
+              "pass" if mr < 95 else "warn",
               f"使用率={mr}%")
 
     if has("acceleration"):
@@ -640,7 +630,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
               "pass" if bios in ("", "normal") else "warn",
               bios or "未更新")
 
-    if has("base_log_error_exist"):
+    if has("alarms_enabled"):
         # 54. WARN_LOG_CHECK
         al = data.get("alarms_enabled", -1)
         check("WARN_LOG_CHECK",
@@ -879,14 +869,6 @@ def render_markdown(
     # ── 所有检查项分 pass / fail-warn 两组 ───────────────────────────
     all_keys = feature_keys + health_keys + secure_keys
 
-    def pass_rows():
-        rows = []
-        for k in all_keys:
-            if k in results and results[k]["status"] == "pass":
-                r = results[k]
-                rows.append(f"| {k} | {icon(r['status'])} {status_label(r['status'])} | {r['value']} |")
-        return "\n".join(rows) if rows else "| - | - | - |"
-
     def anomaly_rows():
         rows = []
         for k in all_keys:
@@ -919,16 +901,21 @@ def render_markdown(
         )
     suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | 暂无优化建议 |"
 
-    # 设备中文名（从已知设备表匹配）
-    known_devices = {
-        "https://192.168.8.30": "AD1",
-        "http://192.168.8.30": "AD1",
-        "192.168.8.30": "AD1",
-        "https://192.168.8.31": "AD2",
-        "http://192.168.8.31": "AD2",
-        "192.168.8.31": "AD2",
-    }
-    device_label = known_devices.get(meta.get("host", ""), meta.get("host", "?"))
+    # 设备中文名（从 devices.json 匹配，降级到 host URL）
+    device_label = meta.get("host", "?")
+    try:
+        import json as _json
+        _devices_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "devices.json")
+        if os.path.isfile(_devices_path):
+            with open(_devices_path, encoding="utf-8") as _f:
+                _devices = _json.load(_f)
+            for _d in _devices:
+                _hosts = [_d.get("host", ""), _d.get("host", "").replace("https://", "http://")]
+                if meta.get("host", "") in _hosts:
+                    device_label = _d.get("name", device_label)
+                    break
+    except Exception:
+        pass
 
     # 巡检时间格式化
     raw_time = meta.get("start_time", "")
@@ -941,7 +928,7 @@ def render_markdown(
     # ── 异常项渲染（区分有/无异常两种显示方式） ────────
     anomaly_rows_text = anomaly_rows()
     if anomaly_rows_text == "> 无异常项":
-        anomaly_section = "\n#### ⚠️ 异常项\n\n> 无异常项\n"
+        anomaly_section = "> 所有检查项通过，无异常。\n"
     else:
         anomaly_section = f"""#### ⚠️ 异常项
 
@@ -970,12 +957,6 @@ def render_markdown(
 ---
 
 ### 🔍 巡检结果详情
-
-#### ✅ 正常项
-
-| 检查项 | 状态 | 说明 |
-|--------|------|------|
-{pass_rows()}
 
 {anomaly_section}
 
@@ -1053,10 +1034,14 @@ def _is_new_report(top_item, pre_run_latest_name, t0_int):
     if top_int == 0:
         return False
 
-    diff = abs(top_int - t0_int)
-    # 跨分钟秒级进位修正 (18:59:55 vs 19:00:05 → diff=4050 → 修正为 50)
-    if 4000 < diff < 10000:
-        diff = diff - 4000
+    # Use datetime for proper time difference (handles midnight crossing)
+    from datetime import datetime as _dt
+    try:
+        _t1 = _dt.strptime(str(top_int), "%Y%m%d%H%M%S")
+        _t0 = _dt.strptime(str(t0_int), "%Y%m%d%H%M%S")
+        diff = abs((_t1 - _t0).total_seconds())
+    except ValueError:
+        return False
     return diff < WINDOW
 
 
@@ -1146,7 +1131,7 @@ def main():
     p_run.add_argument("--password", default="")
     p_run.add_argument("--scene", default="标准巡检", help="巡检场景")
     p_run.add_argument("--force", action="store_true", help="强制巡检（覆盖上限）")
-    p_run.add_argument("--output", help="工作目录（默认 /tmp/ad_check_<timestamp>）")
+    p_run.add_argument("--work-dir", help="工作目录（默认 /tmp/ad_check_<timestamp>）")
 
     # wait — 步骤 4-6：轮询确认新报告生成 → 下载 → 分析
     p_wait = sub.add_parser("wait", help="下载巡检报告并分析（请先用 progress 确认已完成）")
@@ -1227,7 +1212,7 @@ def main():
             sys.exit(4)
 
         client = ADClient(args.host, args.username, args.password)
-        work_dir = args.output or f"/tmp/ad_check_{int(time.time())}"
+        work_dir = args.work_dir or f"/tmp/ad_check_{int(time.time())}"
         try:
             meta = start_check(client, args.scene, force=args.force, work_dir=work_dir)
             print(f"         工作目录: {work_dir}")
@@ -1241,15 +1226,6 @@ def main():
                 sys.exit(4)
             else:
                 sys.exit(4)
-        except ADConnectionError as e:
-            print(f"❌ 连接失败: {e}", file=sys.stderr)
-            sys.exit(1)
-        except ADAuthError as e:
-            print(f"❌ 认证失败: {e}", file=sys.stderr)
-            sys.exit(2)
-        except ADAPIError as e:
-            print(f"❌ API 错误: {e}", file=sys.stderr)
-            sys.exit(1)
 
     elif args.command == "wait":
         client = ADClient(args.host, args.username, args.password)
@@ -1277,15 +1253,6 @@ def main():
                 sys.exit(4)
             else:
                 sys.exit(4)
-        except ADConnectionError as e:
-            print(f"❌ 连接失败: {e}", file=sys.stderr)
-            sys.exit(1)
-        except ADAuthError as e:
-            print(f"❌ 认证失败: {e}", file=sys.stderr)
-            sys.exit(2)
-        except ADAPIError as e:
-            print(f"❌ API 错误: {e}", file=sys.stderr)
-            sys.exit(1)
 
     elif args.command == "history":
         if args.hosts:
