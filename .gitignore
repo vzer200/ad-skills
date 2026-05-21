@@ -8,3 +8,5 @@ __MACOSX/
 *.db-journal
 *.db-wal
 *.pid
+tmp.md
+.claude/settings.local.json
