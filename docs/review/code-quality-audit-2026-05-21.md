@@ -1,11 +1,11 @@
 # AD Skills 代码质量审计报告
 
 **审计日期**: 2026-05-21 | **范围**: `.claude/skills/` (10 个 Python 脚本 + 5 SKILL.md + 4 checklist) + 根目录配置
-**44 条发现 → 22 已修复 / 22 未修复**
+**44 条发现 → 26 已修复 / 18 未修复**
 
 ---
 
-## 未修复 (22 项)
+## 未修复 (18 项)
 
 ### CRITICAL (3) — 全部排除
 
@@ -36,22 +36,18 @@
 | M14 | check.py MEMORY_LEAK_CHECK 逻辑疑似反转 (`"pass" if leak`) | 需确认 AD 字段语义 |
 | M16 | blackbox.py 解压仅 catch `BadZipFile`，漏 `tarfile.ReadError` 等 | 黑盒相关 |
 
-### LOW (8)
+### LOW (4)
 
 | 编号 | 问题 |
 |------|------|
 | L1 | 类型注解不完整 (ad_api.py 有，blackbox.py 无) |
 | L2 | docstring 语言混用 (中文/英文/混合) |
 | L3 | checklist.md 使用 TEST_IP/TEST_PASS 占位符，无自动化 |
-| L4 | ad_bench.py 定位不清，与 skills 无关，无文档 |
-| L5 | devices.json 缺 JSON Schema 验证 |
-| L6 | CHANGELOG.md 仅记录文档变更，无代码变更 |
 | L8 | shebang `python3` 对 Windows 无意义 |
-| L9 | 部分脚本缺 encoding 声明 |
 
 ---
 
-## 已修复 (22 项，已从源文件中修复)
+## 已修复 (26 项，已从源文件中修复)
 
 ### 第一轮
 H4(密码AD_PASS) H7(.gitignore) M3(schema版本) M4(isinstance守卫) M5(__name__) M9(.get防御) M10(import归位) M11(hasattr移除) L7(__MACOSX__)
@@ -61,6 +57,9 @@ H8(ad.json崩溃) H9(密码优先级) M15(progress异常) M17(last-month移除) 
 
 ### 第三轮
 H3(API重试) H10(vport/vports统一) M6(daemon清理145行) M7(异常类替代字符串匹配)
+
+### 第四轮
+L4(ad_bench文档) L5(JSON Schema) L6(CHANGELOG) L9(encoding声明)
 
 ---
 
@@ -88,5 +87,5 @@ H3(API重试) H10(vport/vports统一) M6(daemon清理145行) M7(异常类替代�
 | R2 | 产出 30 条发现 |
 | R3 | 逐条复验 + 补充 3 条 |
 | R4 | 深度审查 + 补充 14 条 |
-| R5-7 | 三轮并行修复 22 项 + 多 agent 交叉验证 |
-| **合计** | **44 发现 → 22 已修复 + 22 未修复** |
+| R5-8 | 四轮并行修复 26 项 + 多 agent 交叉验证 |
+| **合计** | **44 发现 → 26 已修复 + 18 未修复** |
