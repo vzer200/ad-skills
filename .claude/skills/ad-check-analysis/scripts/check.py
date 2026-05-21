@@ -82,15 +82,10 @@ def start_check(
     """
     if work_dir is None:
         work_dir = os.path.join(tempfile.gettempdir(), "ad_check")
-    启动后立即返回，不轮询。
-    """
     os.makedirs(work_dir, exist_ok=True)
 
     # 步骤 1: 确认巡检场景
-    try:
-        scenes = client._request("GET", "/sys/offline-check/")
-    except (ADConnectionError, ADAuthError, ADAPIError) as e:
-        raise RuntimeError(f"API 调用失败: {e}")
+    scenes = client._request("GET", "/sys/offline-check/")
     scene_names = [s["name"] for s in scenes.get("items", [])]
     if not scene_names:
         raise RuntimeError("无法获取巡检场景列表")
@@ -98,10 +93,7 @@ def start_check(
         raise CheckSceneNotFoundError(f"场景 '{scene}' 不存在，可用: {scene_names}")
 
     # 步骤 2: 检查巡检记录上限
-    try:
-        history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
-    except (ADConnectionError, ADAuthError, ADAPIError) as e:
-        raise RuntimeError(f"API 调用失败: {e}")
+    history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
     pre_run_items = history.get("items", [])
     count = len(pre_run_items)
     pre_run_latest_name = pre_run_items[0].get("name", "") if pre_run_items else ""
@@ -114,14 +106,11 @@ def start_check(
 
     # 步骤 3: 后台启动巡检（立即返回）
     print(f"[步骤 3] 启动巡检: scene='{scene}' force={force}")
-    try:
-        result = client._request(
-            "POST", "/debug/sys/offline-check",
-            data={"scene": scene},
-            params={"force": "true"} if (force and need_force) else None,
-        )
-    except (ADConnectionError, ADAuthError, ADAPIError) as e:
-        raise RuntimeError(f"API 调用失败: {e}")
+    result = client._request(
+        "POST", "/debug/sys/offline-check",
+        data={"scene": scene},
+        params={"force": "true"} if (force and need_force) else None,
+    )
     event_id = result.get("event_id")
     if not event_id:
         raise RuntimeError(f"巡检启动失败: {result}")
@@ -1797,7 +1786,7 @@ def main():
     p_wait.add_argument("--host", required=True)
     p_wait.add_argument("--user", default="admin")
     p_wait.add_argument("--password", default="")
-    p_wait.add_argument("--work-dir", default="/tmp/ad_check",
+    p_wait.add_argument("--work-dir", default=os.path.join(tempfile.gettempdir(), "ad_check"),
                         help="与 run 的 --work-dir 保持一致")
     p_wait.add_argument("--poll-interval", type=int, default=10,
                         help="轮询间隔秒数，默认 10")
@@ -1839,8 +1828,11 @@ def main():
         client = ADClient(args.host, args.user, password)
         try:
             result = client._request("GET", "/sys/offline-check/")
-        except (ADConnectionError, ADAuthError, ADAPIError) as e:
-            print(f"❌ API 调用失败: {e}", file=sys.stderr)
+        except ADAuthError as e:
+            print(f"认证失败: {e}", file=sys.stderr)
+            sys.exit(2)
+        except (ADConnectionError, ADAPIError) as e:
+            print(f"通信错误: {e}", file=sys.stderr)
             sys.exit(1)
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
@@ -1879,7 +1871,7 @@ def main():
             print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
             sys.exit(4)
         client = ADClient(args.host, args.user, password)
-        work_dir = args.work_dir or f"/tmp/ad_check_{int(time.time())}"
+        work_dir = args.work_dir or os.path.join(tempfile.gettempdir(), f"ad_check_{int(time.time())}")
         try:
             meta = start_check(client, args.scene, force=args.force, work_dir=work_dir)
             print(f"         工作目录: {work_dir}")
@@ -1890,6 +1882,12 @@ def main():
         except CheckLimitReachedError as e:
             print(f"❌ {e}", file=sys.stderr)
             sys.exit(4)
+        except ADAuthError as e:
+            print(f"认证失败: {e}", file=sys.stderr)
+            sys.exit(2)
+        except (ADConnectionError, ADAPIError) as e:
+            print(f"通信错误: {e}", file=sys.stderr)
+            sys.exit(1)
         except RuntimeError as e:
             print(f"❌ {e}", file=sys.stderr)
             sys.exit(4)
@@ -1950,8 +1948,11 @@ def main():
         client = ADClient(args.host, args.user, password)
         try:
             result = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
-        except (ADConnectionError, ADAuthError, ADAPIError) as e:
-            print(f"❌ API 调用失败: {e}", file=sys.stderr)
+        except ADAuthError as e:
+            print(f"认证失败: {e}", file=sys.stderr)
+            sys.exit(2)
+        except (ADConnectionError, ADAPIError) as e:
+            print(f"通信错误: {e}", file=sys.stderr)
             sys.exit(1)
         print(json.dumps(result, indent=2, ensure_ascii=False))
 

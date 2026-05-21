@@ -44,7 +44,7 @@ Python 3.14.5 via uv，路径：`%USERPROFILE%\.local\bin\python3.14.exe`。包�
 
 ## 设备配置
 
-`devices.json` 是设备信息的权威来源。密码通过 `password_from` 字段引用环境变量，禁止明文存储密码。
+`devices.json` 是设备信息的权威来源，直接明文存储账号密码。
 
 ## Skill 概览
 

@@ -26,7 +26,7 @@ except ImportError as e:
 
 from multi_device import (
     run_multi, parse_hosts_arg, load_devices_json,
-    compute_multi_exit_code, host_slug,
+    compute_multi_exit_code,
 )
 
 import argparse
@@ -118,38 +118,6 @@ def _render_table(results):
     return "\n".join(lines)
 
 
-def _compute_exit_code(results):
-    """Compute exit code for connect results.
-
-    0 = all OK
-    1 = all connection failed
-    2 = all auth failed
-    7 = partial failure
-    9 = import error (handled earlier)
-    """
-    total = len(results)
-    if total == 0:
-        return 4
-
-    ok = sum(1 for v in results.values() if v.get("status") == "ok")
-    failed = total - ok
-
-    if failed == 0:
-        return 0
-
-    if ok == 0:
-        auth_failures = sum(
-            1 for v in results.values()
-            if v.get("status") == "auth_fail"
-            or ("error" in v and any(kw in v["error"] for kw in ("Auth", "401", "认证")))
-        )
-        if auth_failures == total:
-            return 2
-        return 1
-
-    return 7
-
-
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
 
@@ -185,14 +153,16 @@ def main():
                 "summary": {
                     "total": len(results),
                     "ok": sum(1 for v in results.values() if v.get("status") == "ok"),
-                    "failed": sum(1 for v in results.values() if v.get("status") != "ok"),
+                    "reachable": sum(1 for v in results.values() if v.get("status") in ("ok", "api_error")),
+                    "api_error": sum(1 for v in results.values() if v.get("status") == "api_error"),
+                    "failed": sum(1 for v in results.values() if v.get("status") not in ("ok", "api_error")),
                 }
             }
             print(json.dumps(output, ensure_ascii=False, indent=2, default=str))
         else:
             print(_render_table(results))
 
-        sys.exit(_compute_exit_code(results))
+        sys.exit(compute_multi_exit_code(results))
 
     # Single-device mode
     if not args.host:
@@ -200,11 +170,7 @@ def main():
         sys.exit(4)
 
     host = args.host
-    try:
-        result = test_one_device(host, args.user, password)
-    except Exception as e:
-        print(f"错误: {e}", file=sys.stderr)
-        sys.exit(1)
+    result = test_one_device(host, args.user, password)
 
     if args.format == "json":
         print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
@@ -217,10 +183,17 @@ def main():
             print(f"🔌 {host} — 连接失败: {result['error']}")
         elif result["status"] == "auth_fail":
             print(f"🔑 {host} — 认证失败: {result['error']}")
+        elif result["status"] == "api_error":
+            print(f"⚠️ {host} — API 异常: {result.get('warning', '未知')}")
         else:
             print(f"❌ {host} — 错误: {result.get('error', '未知')}")
 
-    sys.exit(0 if result["status"] == "ok" else 1)
+    if result["status"] == "ok":
+        sys.exit(0)
+    elif result["status"] == "auth_fail":
+        sys.exit(2)
+    else:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

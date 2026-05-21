@@ -86,6 +86,7 @@ class ADClient:
         endpoint: str,
         data: Optional[Dict] = None,
         params: Optional[Dict] = None,
+        all_properties: bool = False,
     ) -> Dict[str, Any]:
         """
         发送 API 请求
@@ -94,6 +95,8 @@ class ADClient:
             method: HTTP 方法 (GET/POST/PUT/PATCH/DELETE)
             endpoint: API 端点 (如: /sys/user/)
             data: 请求数据
+            params: URL 查询参数
+            all_properties: 是否追加 all_properties=true (默认 False，仅列表类端点需要)
 
         Returns:
             响应 JSON 数据
@@ -105,8 +108,8 @@ class ADClient:
         if params:
             qs = urllib.parse.urlencode(params)
             url = f"{url}?{qs}" if '?' not in url else f"{url}&{qs}"
-        # 所有请求强制带 all_properties=true（已含则跳过）
-        if 'all_properties' not in url:
+        # 可选：列表类端点追加 all_properties=true（避免对 /last-event 等不支持端点追加）
+        if all_properties and 'all_properties' not in url:
             url = f"{url}&all_properties=true" if '?' in url else f"{url}?all_properties=true"
 
         # 编码认证信息
@@ -163,23 +166,30 @@ class ADClient:
         req = urllib.request.Request(url, method="GET")
         auth = base64.b64encode(f"{self.username}:{self.password}".encode()).decode()
         req.add_header("Authorization", f"Basic {auth}")
-        try:
-            with urllib.request.urlopen(req, context=self.ssl_context, timeout=self.timeout) as resp:
-                return resp.read()
-        except urllib.error.HTTPError as e:
-            body = e.read().decode("utf-8", errors="replace") if e.fp else ""
-            if e.code in (401, 403):
-                raise ADAuthError(f"HTTP {e.code}: {body}", http_code=e.code, original=e)
-            raise ADAPIError(f"HTTP {e.code}: {body}", http_code=e.code, response_body=body, original=e)
-        except urllib.error.URLError as e:
-            raise ADConnectionError(f"连接失败: {e.reason}", original=e)
+        max_retries = 3
+        last_error = None
+        for attempt in range(max_retries):
+            try:
+                with urllib.request.urlopen(req, context=self.ssl_context, timeout=self.timeout) as resp:
+                    return resp.read()
+            except urllib.error.HTTPError as e:
+                body = e.read().decode("utf-8", errors="replace") if e.fp else ""
+                if e.code in (401, 403):
+                    raise ADAuthError(f"HTTP {e.code}: {body}", http_code=e.code, original=e)
+                raise ADAPIError(f"HTTP {e.code}: {body}", http_code=e.code, response_body=body, original=e)
+            except urllib.error.URLError as e:
+                last_error = e
+                if attempt < max_retries - 1:
+                    time.sleep(2 ** attempt)
+                else:
+                    raise ADConnectionError(f"连接失败(已重试{max_retries}次): {e.reason}", original=e)
 
     # -------------------------------------------------------------------------
     # 用户管理
     # -------------------------------------------------------------------------
     def get_users(self) -> Dict[str, Any]:
         """获取所有用户"""
-        return self._request("GET", "/sys/user/")
+        return self._request("GET", "/sys/user/", all_properties=True)
 
     def get_user(self, name: str) -> Dict[str, Any]:
         """获取指定用户"""
@@ -202,7 +212,7 @@ class ADClient:
     # -------------------------------------------------------------------------
     def get_virtual_services(self) -> Dict[str, Any]:
         """获取所有虚拟服务"""
-        return self._request("GET", "/slb/virtual-service/")
+        return self._request("GET", "/slb/virtual-service/", all_properties=True)
 
     def get_virtual_service(self, name: str) -> Dict[str, Any]:
         """获取指定虚拟服务"""
@@ -225,7 +235,7 @@ class ADClient:
     # -------------------------------------------------------------------------
     def get_pools(self) -> Dict[str, Any]:
         """获取所有节点池"""
-        return self._request("GET", "/slb/pool/")
+        return self._request("GET", "/slb/pool/", all_properties=True)
 
     def get_pool(self, name: str) -> Dict[str, Any]:
         """获取指定节点池"""
@@ -275,7 +285,7 @@ class ADClient:
     # -------------------------------------------------------------------------
     def get_vs_stat(self) -> Dict[str, Any]:
         """获取所有 VS 瞬时状态"""
-        return self._request("GET", "/stat/slb/virtual-service/")
+        return self._request("GET", "/stat/slb/virtual-service/", all_properties=True)
 
     def get_vs_stat_by_name(self, name: str) -> Dict[str, Any]:
         """获取指定 VS 瞬时状态"""
@@ -302,7 +312,8 @@ class ADClient:
         items_encoded = urllib.parse.quote(items_json)
         return self._request(
             "GET",
-            f"/stat/slb/virtual-service-summary/combine-items?trend={trend}&items={items_encoded}&netns=default&all_properties=true"
+            f"/stat/slb/virtual-service-summary/combine-items?trend={trend}&items={items_encoded}&netns=default",
+            all_properties=True,
         )
 
     def get_vs_trend_by_name(
@@ -325,16 +336,17 @@ class ADClient:
         items_encoded = urllib.parse.quote(items_json)
         return self._request(
             "GET",
-            f"/stat/slb/virtual-service/{name}/combine-items?trend={trend}&items={items_encoded}&netns=default&all_properties=true"
+            f"/stat/slb/virtual-service/{name}/combine-items?trend={trend}&items={items_encoded}&netns=default",
+            all_properties=True,
         )
 
     def get_pool_node_stat(self, pool: str) -> Dict[str, Any]:
         """获取节点池内节点状态"""
-        return self._request("GET", f"/stat/slb/pool/{pool}/nodes/")
+        return self._request("GET", f"/stat/slb/pool/{pool}/nodes/", all_properties=True)
 
     def get_all_node_stat(self) -> Dict[str, Any]:
         """获取全部节点状态"""
-        return self._request("GET", "/stat/slb/nodes/")
+        return self._request("GET", "/stat/slb/nodes/", all_properties=True)
 
     # -------------------------------------------------------------------------
     # 服务日志
@@ -346,7 +358,7 @@ class ADClient:
         Args:
             limit: 返回条数，默认10条（获取最新的）
         """
-        result = self._request("GET", "/log/service-log")
+        result = self._request("GET", "/log/service-log", all_properties=True)
         items = result.get("items", [])
         # 按时间倒序，取最新 limit 条
         items.sort(key=lambda x: f"{x.get('date', '')} {x.get('time', '')}", reverse=True)
@@ -367,7 +379,7 @@ class ADClient:
             - issuer: 颁发者
             - subject: 使用者
         """
-        return self._request("GET", "/rc/ssl-certificate/all")
+        return self._request("GET", "/rc/ssl-certificate/all", all_properties=True)
 
     # -------------------------------------------------------------------------
     # 高可用性
@@ -532,6 +544,10 @@ def _execute_command(client, args):
 
 def main():
     """命令行入口"""
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
     parser = argparse.ArgumentParser(
         description="Sangfor AD API Client",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -564,14 +580,9 @@ def main():
         help="设备清单 JSON 文件路径 (密码不同时使用)",
     )
     parser.add_argument(
-        "--json", "-j",
-        action="store_true",
-        help="输出原始 JSON 格式",
-    )
-    parser.add_argument(
         "--pretty", "-pp",
         action="store_true",
-        help="美化输出 JSON",
+        help="美化输出 JSON (缩进 + Unicode)",
     )
 
     # 子命令
@@ -677,7 +688,7 @@ def main():
             sys.exit(4)
 
         # Parallel execution
-        results = run_multi(devices, _execute_command, args=args)
+        results = run_multi(devices, _execute_command, args=args, password=args.password)
         print(json.dumps(results, indent=2, ensure_ascii=False))
         sys.exit(compute_multi_exit_code(results))
 
@@ -699,17 +710,12 @@ def main():
         password=args.password,
     )
 
-    # 输出选项
-    output_options = {"indent": 2 if args.pretty else None}
+    # 输出选项：--pretty 控制缩进和 Unicode 输出
+    output_options: dict = {"indent": 2, "ensure_ascii": False} if args.pretty else {}
 
     def output(data: Dict) -> None:
         """输出数据"""
-        if args.json:
-            print(json.dumps(data, **output_options))
-        elif args.pretty:
-            print(json.dumps(data, **output_options, ensure_ascii=False))
-        else:
-            print(json.dumps(data, **output_options))
+        print(json.dumps(data, **output_options))
 
     # 执行命令
     try:

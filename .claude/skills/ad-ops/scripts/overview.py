@@ -552,7 +552,10 @@ def _overview_one(client, subcommand="all"):
 
 def main() -> None:
     """CLI entry point."""
-    sys.stdout.reconfigure(encoding='utf-8')
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
     parser = build_parser()
     args = parser.parse_args()
 
@@ -570,7 +573,7 @@ def main() -> None:
             print("错误: 设备列表为空", file=sys.stderr)
             sys.exit(4)
 
-        results = run_multi(devices, _overview_one, subcommand=args.subcommand)
+        results = run_multi(devices, _overview_one, subcommand=args.subcommand, password=args.password)
 
         if args.format == "json":
             output = {
@@ -594,8 +597,6 @@ def main() -> None:
                     lines.append(f"## {host}")
                     lines.append(result.get("markdown", ""))
                 lines.append("")
-            lines.append("---")
-            lines.append(render_multi_summary(results, "", {}))
             print("\n".join(lines))
 
         sys.exit(compute_multi_exit_code(results))

@@ -65,12 +65,12 @@ class TestStartCheck(unittest.TestCase):
 
     def test_scenes_api_auth_error(self):
         self.client._request.side_effect = ADAuthError("HTTP 401", http_code=401)
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ADAuthError):
             start_check(self.client, "标准巡检", work_dir=self.work_dir)
 
     def test_scenes_api_connection_error(self):
         self.client._request.side_effect = ADConnectionError("timeout")
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ADConnectionError):
             start_check(self.client, "标准巡检", work_dir=self.work_dir)
 
 
@@ -178,11 +178,11 @@ class TestExitCodes(unittest.TestCase):
                 mock_client = MagicMock()
                 mock_client._request.side_effect = ADAuthError("HTTP 401", http_code=401)
                 mock_client_class.return_value = mock_client
-                # ADAuthError in start_check → wrapped as RuntimeError → exit 4
+                # ADAuthError in start_check → exit 2
                 with self.assertRaises(SystemExit) as cm:
                     from check import main
                     main()
-                self.assertEqual(cm.exception.code, 4)
+                self.assertEqual(cm.exception.code, 2)
 
 
 class TestNormalizeStartTime(unittest.TestCase):

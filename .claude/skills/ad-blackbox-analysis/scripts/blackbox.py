@@ -48,6 +48,22 @@ except ImportError as e:
     sys.exit(9)
 
 
+def _handle_ad_error(e):
+    """统一处理 AD 错误，打印错误信息并退出。"""
+    if isinstance(e, ADAuthError):
+        print(f"认证失败: {e}", file=sys.stderr)
+        sys.exit(2)
+    elif isinstance(e, (ADConnectionError, ADAPIError)):
+        print(f"通信错误: {e}", file=sys.stderr)
+        sys.exit(1)
+    else:
+        print(f"错误: {e}", file=sys.stderr)
+        sys.exit(5)
+
+
+_DEFAULT_ARCHIVE_PASSWORD = "root1234+"
+
+
 class BlackboxAnalyzer:
     """黑盒日志分析器"""
     
@@ -129,7 +145,10 @@ class BlackboxAnalyzer:
                 "users": self._count_field(records, "user"),
                 "statuses": self._count_field(records, "status")
             }
-        
+
+        if not results:
+            print("警告: 未找到可分析的审计日志文件", file=sys.stderr)
+
         return results
     
     def _count_field(self, records: List[Dict], field: str) -> Dict[str, int]:
@@ -187,7 +206,7 @@ class BlackboxAnalyzer:
         return "\n".join(report)
 
 
-def _blackbox_start(client, from_date="", to_date="", archive_password="root1234+", output_dir=""):
+def _blackbox_start(client, from_date="", to_date="", archive_password=_DEFAULT_ARCHIVE_PASSWORD, output_dir=""):
     """Start blackbox export only — returns immediately with event_id and output_dir."""
     slug = host_slug(client.host)
     if not output_dir:
@@ -215,7 +234,7 @@ def _blackbox_start(client, from_date="", to_date="", archive_password="root1234
     return {"host": client.host, "event_id": event_id, "output_dir": output_dir}
 
 
-def _blackbox_download(client, output_dir, archive_password="root1234+"):
+def _blackbox_download(client, output_dir, archive_password=_DEFAULT_ARCHIVE_PASSWORD):
     """Complete an async export: check event, download, extract, analyze. No sys.exit."""
     meta_path = os.path.join(output_dir, "_export_meta.json")
     if not os.path.exists(meta_path):
@@ -226,7 +245,10 @@ def _blackbox_download(client, output_dir, archive_password="root1234+"):
 
     event_id = meta.get("event_id", "")
     # Check event status
-    tasks = client.get_last_event()
+    try:
+        tasks = client.get_last_event()
+    except Exception as e:
+        return {"error": f"查询事件失败: {e}"}
     for task in tasks.get("items", []):
         if task.get("event_id") == event_id:
             state = task.get("state")
@@ -403,15 +425,8 @@ def _main_progress():
         print(json.dumps(result, indent=2, ensure_ascii=False))
         sys.exit(5 if is_error else 0)
 
-    except ADAuthError as e:
-        print(f"认证失败: {e}", file=sys.stderr)
-        sys.exit(2)
-    except (ADConnectionError, ADAPIError) as e:
-        print(f"通信错误: {e}", file=sys.stderr)
-        sys.exit(1)
     except Exception as e:
-        print(f"错误: {e}", file=sys.stderr)
-        sys.exit(5)
+        _handle_ad_error(e)
 
 
 def _main_download():
@@ -429,7 +444,7 @@ def _main_download():
     )
     parser.add_argument(
         "--archive-password",
-        default="root1234+",
+        default=_DEFAULT_ARCHIVE_PASSWORD,
         help="黑盒文件解压密码",
     )
 
@@ -451,15 +466,8 @@ def _main_download():
             print(result.get("report", ""))
             sys.exit(0)
 
-    except ADAuthError as e:
-        print(f"认证失败: {e}", file=sys.stderr)
-        sys.exit(2)
-    except (ADConnectionError, ADAPIError) as e:
-        print(f"通信错误: {e}", file=sys.stderr)
-        sys.exit(1)
     except Exception as e:
-        print(f"错误: {e}", file=sys.stderr)
-        sys.exit(5)
+        _handle_ad_error(e)
 
 
 def main():
@@ -482,7 +490,7 @@ def main():
     parser.add_argument("--password", help="密码")
     parser.add_argument("--from-date", help="开始日期 (YYYY-MM-DD)")
     parser.add_argument("--to-date", help="结束日期 (YYYY-MM-DD)")
-    parser.add_argument("--archive-password", default="root1234+", help="黑盒文件解压密码")
+    parser.add_argument("--archive-password", default=_DEFAULT_ARCHIVE_PASSWORD, help="黑盒文件解压密码")
     parser.add_argument("--output", default="blackbox_analysis", help="输出目录")
 
     args = parser.parse_args()
@@ -493,25 +501,21 @@ def main():
             if not _validate_date_range(args.from_date, args.to_date):
                 sys.exit(4)
 
-        # --complete: deprecated, route to download logic
+        # --complete: deprecated, delegate to _main_download
         if args.complete:
             print("警告: --complete 已废弃，请使用 download 子命令", file=sys.stderr)
             if not args.host:
                 print("错误: --complete 需要指定 --host", file=sys.stderr)
                 sys.exit(4)
-            client = ADClient(args.host, args.user, args.password)
-            result = _blackbox_download(client, args.complete, args.archive_password)
-            if "error" in result:
-                print(f"错误: {result['error']}", file=sys.stderr)
-                sys.exit(5)
-            elif "status" in result:
-                print(json.dumps(result, ensure_ascii=False))
-                sys.exit(0)
-            else:
-                print(f"输出目录: {result.get('output_dir', '')}")
-                print(f"报告路径: {result.get('report_path', '')}")
-                print(result.get("report", ""))
-                sys.exit(0)
+            sys.argv = [sys.argv[0], "download",
+                        "--host", args.host,
+                        "--output", args.complete,
+                        "--archive-password", args.archive_password]
+            if args.user != "admin":
+                sys.argv.extend(["--user", args.user])
+            if args.password:
+                sys.argv.extend(["--password", args.password])
+            return _main_download()
 
         # Multi-device mode
         if args.hosts or args.devices:
@@ -556,21 +560,12 @@ def main():
             print(f"event_id={result['event_id']} output_dir={result['output_dir']}")
             sys.exit(0)
         else:
-            analyzer = BlackboxAnalyzer(args.output)
-            audit_results = analyzer.analyze_audit_logs()
-            report = analyzer.generate_report(audit_results)
-            print(report)
-            sys.exit(0)
+            print("错误: 指定 --host 时必须同时指定 --from-date 和 --to-date 以启动远程导出",
+                  file=sys.stderr)
+            sys.exit(4)
 
-    except ADAuthError as e:
-        print(f"认证失败: {e}", file=sys.stderr)
-        sys.exit(2)
-    except (ADConnectionError, ADAPIError) as e:
-        print(f"通信错误: {e}", file=sys.stderr)
-        sys.exit(1)
     except Exception as e:
-        print(f"错误: {e}", file=sys.stderr)
-        sys.exit(5)
+        _handle_ad_error(e)
 
 
 if __name__ == "__main__":

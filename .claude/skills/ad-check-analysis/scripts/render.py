@@ -105,11 +105,7 @@ def _render_device_detail_block(
     lines.append("| 管理 IP | {} |".format(dev.get("ip", ip)))
     lines.append("")
 
-    for cat_key, cat_label in [
-        ("feature", "功能巡检"),
-        ("health", "健康巡检"),
-        ("secure", "安全巡检"),
-    ]:
+    for cat_key, cat_label in _CATEGORY_LABELS.items():
         keys = categories.get(cat_key, [])
         if not keys:
             continue
@@ -132,9 +128,8 @@ def _render_device_detail_block(
     # If no anomalies at all, show summary line
     all_pass = all(
         check_results.get(k, {}).get("status") == "pass"
-        for cat_key in ["feature", "health", "secure"]
+        for cat_key in _CATEGORY_LABELS
         for k in categories.get(cat_key, [])
-        if k in check_results
     )
     if all_pass:
         lines.append("> 所有检查项通过，无异常。")
@@ -145,11 +140,7 @@ def _render_device_detail_block(
     lines.append("| 类别 | 检查项数 | ✅ 通过 | ❌ 异常 | ⚠️ 警告 | 通过率 |")
     lines.append("|------|----------|---------|---------|---------|--------|")
 
-    for cat_key, cat_label in [
-        ("feature", "功能巡检"),
-        ("health", "健康巡检"),
-        ("secure", "安全巡检"),
-    ]:
+    for cat_key, cat_label in _CATEGORY_LABELS.items():
         keys = categories.get(cat_key, [])
         if not keys:
             continue

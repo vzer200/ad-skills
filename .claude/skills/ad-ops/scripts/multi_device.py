@@ -23,11 +23,9 @@ MAX_WORKERS = 10
 
 
 def resolve_device_pw(device: Dict[str, Any], fallback: str = "") -> str:
-    """Resolve device password: password field > password_from env var > fallback."""
+    """从设备配置解析密码：password 字段 > 回退密码。"""
     if device.get("password"):
         return device["password"]
-    if device.get("password_from"):
-        return os.environ.get(device["password_from"], "")
     return fallback
 
 
@@ -49,7 +47,7 @@ def load_devices_json(path: str) -> List[Dict[str, Any]]:
     """Load device list from a JSON file.
 
     Expected format:
-        {"devices": [{"name": "AD1", "host": "https://...", "user": "admin", "password_from": "AD1_PASS"}]}
+        {"devices": [{"name": "AD1", "host": "https://...", "user": "admin", "password": "xxx"}]}
     """
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -77,6 +75,10 @@ def run_multi(
 
     from ad_api import ADClient
 
+    # 已知限制：Ctrl+C 触发 KeyboardInterrupt 时，with 块的 __exit__ 调用
+    # executor.shutdown(wait=True)，会阻塞直到所有在途 future 完成。
+    # 如使用 Python 3.9+ 可改为 shutdown(wait=False, cancel_futures=True)
+    # 来立即取消所有未完成的 future。
     with ThreadPoolExecutor(max_workers=min(len(devices), MAX_WORKERS)) as ex:
         futures = {}
         for d in devices:

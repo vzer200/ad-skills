@@ -165,7 +165,7 @@ python scripts/overview.py traffic --host ...
 
 ## 已知设备
 
-> 权威来源: 项目根目录 `devices.json`。密码通过 `password_from` 引用环境变量，禁止明文存储。
+> 权威来源: 项目根目录 `devices.json`。密码通过 `password` 字段直接明文存储。
 
 | 设备 | IP | 用户名 | 密码来源 |
 |------|-----|------|----------|

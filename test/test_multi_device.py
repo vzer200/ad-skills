@@ -39,23 +39,16 @@ class TestResolveDevicePw(unittest.TestCase):
 
     def test_password_field_priority(self):
         """password field takes highest priority."""
-        result = self.resolve({"password": "direct", "password_from": "ENV_VAR"}, "fallback")
+        result = self.resolve({"password": "direct"}, "fallback")
         self.assertEqual(result, "direct")
 
-    def test_password_from_env_var(self):
-        """password_from reads from environment variable."""
-        with patch.dict(os.environ, {"MY_PW": "from_env"}):
-            result = self.resolve({"password_from": "MY_PW"}, "fallback")
-            self.assertEqual(result, "from_env")
+    def test_password_field_empty_string(self):
+        """Empty string password is treated as falsy, falls back."""
+        result = self.resolve({"password": ""}, "fallback_pw")
+        self.assertEqual(result, "fallback_pw")
 
-    def test_password_from_missing_env_var(self):
-        """password_from with missing env var returns empty string (no fallback)."""
-        with patch.dict(os.environ, {}, clear=True):
-            result = self.resolve({"password_from": "MISSING_VAR"}, "fallback")
-            self.assertEqual(result, "")
-
-    def test_fallback_when_no_password_fields(self):
-        """Neither password nor password_from present → fallback."""
+    def test_fallback_when_no_password_field(self):
+        """No password field → fallback."""
         result = self.resolve({"host": "https://x.x.x.x"}, "fallback_pw")
         self.assertEqual(result, "fallback_pw")
 
@@ -109,8 +102,8 @@ class TestLoadDevicesJson(unittest.TestCase):
 
     def test_loads_device_list(self):
         data = {"devices": [
-            {"name": "AD1", "host": "https://192.168.8.30", "password_from": "AD1_PASS"},
-            {"name": "AD2", "host": "https://192.168.8.31", "password_from": "AD2_PASS"},
+            {"name": "AD1", "host": "https://192.168.8.30", "password": "test123"},
+            {"name": "AD2", "host": "https://192.168.8.31", "password": "test456"},
         ]}
         with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as f:
             json.dump(data, f)
@@ -595,9 +588,8 @@ class TestCrossScriptMultiDevice(unittest.TestCase):
         for d in data["devices"]:
             self.assertIn("host", d)
             self.assertIn("name", d)
-            # password should NOT be in plaintext (use password_from)
-            if "password" in d:
-                self.fail(f"Device {d['name']} has plaintext password — use password_from")
+            # password should be present in device config
+            self.assertIn("password", d, f"Device {d['name']} missing password field")
 
 
 if __name__ == "__main__":

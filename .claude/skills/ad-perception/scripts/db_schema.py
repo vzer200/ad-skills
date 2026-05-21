@@ -4,6 +4,8 @@
 Shared SQL schema for collector.py and perception.py.
 """
 
+import sys
+
 SCHEMA_VERSION = 1
 
 SCHEMA_VERSION_DDL = """
