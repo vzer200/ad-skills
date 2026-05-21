@@ -166,7 +166,11 @@ def build_overview(client: ADClient, subcommand: str = "all") -> Dict[str, Any]:
     }
 
     for api_type in api_types:
-        method = api_method_map[api_type]
+        method = api_method_map.get(api_type)
+        if method is None:
+            overview["api_errors"][api_type] = f"未知的 API 类型: {api_type}"
+            raw[api_type] = None
+            continue
         try:
             raw[api_type] = _try_call(client, method)
             overview["api_errors"][api_type] = None

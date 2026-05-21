@@ -276,6 +276,15 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     分类规则：根据字段名自动归入功能/健康/安全三类。
     """
 
+    if not isinstance(data, dict):
+        return {
+            "device_info": {},
+            "check_results": {},
+            "categories": {"feature": [], "health": [], "secure": []},
+            "summary": {"total": 0, "pass": 0, "fail": 0, "warn": 0, "score": 0},
+            "health_scores": {"feature": {"pass": 0, "total": 0, "score": 0}, "health": {"pass": 0, "total": 0, "score": 0}, "secure": {"pass": 0, "total": 0, "score": 0}, "overall": 0},
+            "suggestions": [],
+        }
     check_results = {}
     data_keys = set(data.keys())  # ad.json 中实际存在的字段集合
 
@@ -1173,7 +1182,11 @@ def main():
     args = parser.parse_args()
 
     if args.command == "scenes":
-        client = ADClient(args.host, args.username, args.password)
+        password = args.password or os.environ.get("AD_PASS", "")
+        if not password:
+            print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
+            sys.exit(4)
+        client = ADClient(args.host, args.username, password)
         try:
             result = client._request("GET", "/sys/offline-check/")
         except (ADConnectionError, ADAuthError, ADAPIError) as e:
@@ -1211,7 +1224,11 @@ def main():
             print("错误: 必须指定 --host 或 --hosts", file=sys.stderr)
             sys.exit(4)
 
-        client = ADClient(args.host, args.username, args.password)
+        password = args.password or os.environ.get("AD_PASS", "")
+        if not password:
+            print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
+            sys.exit(4)
+        client = ADClient(args.host, args.username, password)
         work_dir = args.work_dir or f"/tmp/ad_check_{int(time.time())}"
         try:
             meta = start_check(client, args.scene, force=args.force, work_dir=work_dir)
@@ -1228,7 +1245,11 @@ def main():
                 sys.exit(4)
 
     elif args.command == "wait":
-        client = ADClient(args.host, args.username, args.password)
+        password = args.password or os.environ.get("AD_PASS", "")
+        if not password:
+            print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
+            sys.exit(4)
+        client = ADClient(args.host, args.username, password)
         try:
             meta = wait_and_download(
                 client,
@@ -1266,7 +1287,11 @@ def main():
             print("错误: 必须指定 --host 或 --hosts", file=sys.stderr)
             sys.exit(4)
 
-        client = ADClient(args.host, args.username, args.password)
+        password = args.password or os.environ.get("AD_PASS", "")
+        if not password:
+            print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
+            sys.exit(4)
+        client = ADClient(args.host, args.username, password)
         try:
             result = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
         except (ADConnectionError, ADAuthError, ADAPIError) as e:
@@ -1275,7 +1300,7 @@ def main():
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     elif args.command == "progress":
-        if hasattr(args, 'hosts') and args.hosts:
+        if args.hosts:
             devices = parse_hosts_arg(args.hosts, args.username, args.password)
             results = run_multi(devices, _progress_one)
             output = {"mode": "multi", "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v), "failed": sum(1 for v in results.values() if "error" in v)}, "results": results}
@@ -1286,7 +1311,11 @@ def main():
             print("错误: 必须指定 --host 或 --hosts", file=sys.stderr)
             sys.exit(4)
 
-        client = ADClient(args.host, args.username, args.password)
+        password = args.password or os.environ.get("AD_PASS", "")
+        if not password:
+            print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
+            sys.exit(4)
+        client = ADClient(args.host, args.username, password)
         result = _progress_one(client)
         print(json.dumps(result, indent=2, ensure_ascii=False))
 

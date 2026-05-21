@@ -30,6 +30,7 @@ from multi_device import (
 )
 
 import argparse
+import json
 
 
 def test_one_device(host, username="admin", password=""):
@@ -178,7 +179,6 @@ def main():
         results = run_multi(devices, _test_one)
 
         if args.format == "json":
-            import json
             output = {
                 "results": results,
                 "summary": {
@@ -206,7 +206,6 @@ def main():
         sys.exit(1)
 
     if args.format == "json":
-        import json
         print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
     else:
         if result["status"] == "ok":

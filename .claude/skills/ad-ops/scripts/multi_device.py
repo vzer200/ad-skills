@@ -191,3 +191,6 @@ def host_slug(host: str) -> str:
 def _print_error(msg: str) -> None:
     """Print to stderr with a consistent prefix."""
     print(msg, file=sys.stderr)
+
+if __name__ == "__main__":
+    print("This module is not meant to be run directly.", file=sys.stderr)

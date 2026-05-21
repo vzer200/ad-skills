@@ -401,3 +401,6 @@ def render_multi_device_report(
     lines.append("**说明**: 以上结果全部来自各设备巡检报告文件 `ad.json`，严格按照巡检返回数据进行分析。")
 
     return "\n".join(lines)
+
+if __name__ == "__main__":
+    print("This module is not meant to be run directly.", file=sys.stderr)

@@ -4,6 +4,15 @@
 Shared SQL schema for collector.py and perception.py.
 """
 
+SCHEMA_VERSION = 1
+
+SCHEMA_VERSION_DDL = """
+CREATE TABLE IF NOT EXISTS schema_version (
+    version INTEGER PRIMARY KEY
+);
+INSERT OR IGNORE INTO schema_version (version) VALUES (1);
+"""
+
 VS_SAMPLES_DDL = """
 CREATE TABLE IF NOT EXISTS vs_samples (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,4 +34,9 @@ CREATE TABLE IF NOT EXISTS device_state (
 );
 """
 
+INIT_DDL = SCHEMA_VERSION_DDL + VS_SAMPLES_DDL + DEVICE_STATE_DDL
+
 COLUMNS = ["ts", "vs_name", "metric", "value"]
+
+if __name__ == "__main__":
+    print("This module is not meant to be run directly.", file=sys.stderr)
