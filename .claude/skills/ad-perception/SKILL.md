@@ -94,6 +94,39 @@ python scripts/perception.py logs --hosts "IP1,IP2" --password xxx [--limit 50]
 └──────────────────────────────────────────────────┘
 ```
 
+## 子命令选择决策
+
+### 任务 → 命令映射
+
+| 用户意图 | 命令 | 关键参数 |
+|----------|------|----------|
+| 全维度分析（单设备） | `perception.py analyze --host ...` | `--db`, `--disk-source`（可选） |
+| 全维度分析（多设备） | `perception.py analyze --hosts "..."` | `--db` |
+| 单 VS 流量异常检测 | `perception.py traffic --host ... --vs <name>` | `--db` |
+| 设备状态阈值检查 | `perception.py state --host ...` | `--disk-source`（可选） |
+| IP:Port 冲突检测 | `perception.py conflict --host ...` | — |
+| 服务日志查询（单设备） | `perception.py logs --host ...` | `--limit` |
+| 服务日志查询（多设备） | `perception.py logs --hosts "..."` | `--limit` |
+| 定时采集+分析（单设备） | `collector.py collect --host ...` | `--db` |
+| 定时采集+分析（多设备） | `collector.py collect --hosts "..."` | `--db` |
+
+### 维度选择
+
+| 用户说 | 使用命令 |
+|--------|----------|
+| "分析" / "检测" / "诊断" / "感知" / "全面检查" | `analyze`（全维度） |
+| "流量" / "吞吐" / "连接数" / "带宽" | `traffic` |
+| "CPU" / "内存" / "风扇" / "电源" / "状态" / "硬件" | `state` |
+| "冲突" / "重叠" / "重复" / "IP冲突" | `conflict` |
+| "日志" / "告警" / "错误日志" | `logs` |
+
+### 多设备触发
+
+1. 用户提到多个 IP/设备名 → `--hosts`
+2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
+3. 不确定时 → 默认用 `--hosts`
+4. 密码不同时 → 必须用 `--devices` JSON 文件
+
 ## 脚本强制规则
 
 | 操作 | 必须使用 | 禁止使用 |
@@ -164,13 +197,6 @@ python scripts/collector.py collect --devices devices.json
 ```
 
 **调度间隔说明：** trend API `last-hour` 返回最近 60 分钟数据，调度间隔 ≤ 60 分钟即可保证数据连续性。建议 55 分钟（留 5 分钟余量）。
-
-## 多设备触发决策
-
-1. 用户提到多个 IP/设备名 → `--hosts`
-2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
-3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
-4. 密码不同时 → 必须用 `--devices` JSON 文件
 
 ## 外部依赖
 

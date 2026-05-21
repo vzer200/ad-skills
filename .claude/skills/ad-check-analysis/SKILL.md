@@ -90,13 +90,6 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 | AD1 | 192.168.8.30 | admin |
 | AD2 | 192.168.8.31 | admin |
 
-## 多设备触发决策
-
-1. 用户提到多个 IP/设备名 → `--hosts`
-2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
-3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
-4. 密码不同时 → 必须用 `--devices` JSON 文件
-
 ### 多设备子命令支持
 
 | 子命令 | 多设备 | 说明 |
@@ -106,6 +99,30 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 | `progress` | ✅ | `--hosts` 并行查询多台进度 |
 | `history` | ✅ | 并行查询多台历史 |
 | `analyze` | ❌ | 用 `--path` 不连设备 |
+
+## 子命令选择决策
+
+### 任务 → 命令映射
+
+| 任务 | 命令 | 关键参数 |
+|------|------|----------|
+| 查看可用巡检场景 | `check.py scenes` | `--host`（不支持 `--hosts`） |
+| 启动巡检（单设备） | `check.py run --host ...` | `--scene`, `--force` |
+| 启动巡检（多设备异步） | `check.py run --hosts "..."` | `--scene`, `--force` |
+| 启动巡检（多设备同步等待） | `check.py run --hosts "..." --wait` | `--scene`, `--force` |
+| 查询巡检进度（单设备） | `check.py progress --host ...` | — |
+| 查询巡检进度（多设备） | `check.py progress --hosts "..."` | `--password` |
+| 下载分析巡检报告 | `check.py wait --host ...` | `--work-dir` |
+| 查看历史记录（单设备） | `check.py history --host ...` | — |
+| 查看历史记录（多设备） | `check.py history --hosts "..."` | `--password` |
+| 分析本地巡检报告 | `check.py analyze --path ...` | `--host`, `--scene`（可选覆盖） |
+
+### 多设备触发
+
+1. 用户提到多个 IP/设备名 → `--hosts`
+2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
+3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
+4. 密码不同时 → 必须用 `--devices` JSON 文件
 
 ## 行为准则
 
