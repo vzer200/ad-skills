@@ -121,7 +121,7 @@ def wait_and_download(
     work_dir: str = "/tmp/ad_check",
     poll_interval: int = 10,
     timeout: int = 600,
-    max_attempts: int = 1,
+    max_attempts: int = 60,
 ) -> Dict[str, Any]:
     """
     步骤 4-6：轮询历史记录确认新报告生成 → 下载报告 → 解压保存元数据
@@ -147,7 +147,7 @@ def wait_and_download(
         )
 
     # ── 步骤 4: 轮询历史记录，等待新报告生成 ─────────────────────────
-    print(f"[步骤 4] 轮询历史等待新报告 (interval={poll_interval}s, timeout={timeout}s)")
+    print(f"[步骤 4] 轮询历史等待新报告 (interval={poll_interval}s, timeout={timeout}s)", file=sys.stderr)
     deadline = time.time() + timeout
     latest = None
     attempt = 0
@@ -170,12 +170,12 @@ def wait_and_download(
             is_finished = bool(top_end)
             state = "FINISHED" if is_finished else "RUNNING"
             tag = "✓ 新报告" if is_new else "× 旧报告"
-            print(f"         [{attempt}] {tag} {state} name={top_name} start={top_start}")
+            print(f"         [{attempt}] {tag} {state} name={top_name} start={top_start}", file=sys.stderr)
             if is_new and is_finished:
                 latest = top
                 break
         else:
-            print(f"         [{attempt}] 历史为空")
+            print(f"         [{attempt}] 历史为空", file=sys.stderr)
         time.sleep(poll_interval)
 
     if latest is None:
@@ -185,11 +185,11 @@ def wait_and_download(
         )
 
     # ── 步骤 5: 下载报告 ─────────────────────────────────────────────
-    print("[步骤 5] 下载巡检报告…")
+    print("[步骤 5] 下载巡检报告…", file=sys.stderr)
     report_name = latest["name"]
     report_scene = latest.get("scene", scene)
     start_time = latest.get("start_time", "")
-    print(f"         报告: {report_name}")
+    print(f"         报告: {report_name}", file=sys.stderr)
 
     try:
         token_resp = client._request(
@@ -210,10 +210,10 @@ def wait_and_download(
     os.makedirs(os.path.dirname(zip_path) or ".", exist_ok=True)
     with open(zip_path, "wb") as f:
         f.write(data)
-    print(f"         下载: {zip_path} ({os.path.getsize(zip_path)} bytes)")
+    print(f"         下载: {zip_path} ({os.path.getsize(zip_path)} bytes)", file=sys.stderr)
 
     # ── 步骤 6: 解压并更新元数据 ────────────────────────────────────
-    print("[步骤 6] 解压并保存元数据…")
+    print("[步骤 6] 解压并保存元数据…", file=sys.stderr)
     with zipfile.ZipFile(zip_path) as zf:
         zf.extractall(work_dir)
 
@@ -223,6 +223,9 @@ def wait_and_download(
             if "ad.json" in files:
                 ad_json_path = os.path.join(root, "ad.json")
                 break
+
+    if not os.path.exists(ad_json_path):
+        raise RuntimeError(f"解压后未找到 ad.json 文件在 {work_dir}")
 
     # 更新 meta
     meta.update({
@@ -234,8 +237,8 @@ def wait_and_download(
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
 
-    print(f"         ad.json: {ad_json_path} ({os.path.getsize(ad_json_path)} bytes)")
-    print("✅ 下载完成")
+    print(f"         ad.json: {ad_json_path} ({os.path.getsize(ad_json_path)} bytes)", file=sys.stderr)
+    print("✅ 下载完成", file=sys.stderr)
 
     return meta
 
@@ -878,14 +881,14 @@ def render_markdown(
     # ── 所有检查项分 pass / fail-warn 两组 ───────────────────────────
     all_keys = feature_keys + health_keys + secure_keys
 
-    def anomaly_rows():
+    def all_check_rows():
         rows = []
         for k in all_keys:
-            if k in results and results[k]["status"] in ("fail", "warn"):
+            if k in results:
                 r = results[k]
                 detail = r.get('detail') or r['value']
                 rows.append(f"| {k} | {icon(r['status'])} {status_label(r['status'])} | {detail} |")
-        return "\n".join(rows) if rows else "> 无异常项"
+        return "\n".join(rows)
 
     # ── 健康评分（优先使用 analyze 返回的 health_scores） ─────────────
     health_scores = analysis.get("health_scores", {})
@@ -934,16 +937,15 @@ def render_markdown(
     else:
         check_time = raw_time
 
-    # ── 异常项渲染（区分有/无异常两种显示方式） ────────
-    anomaly_rows_text = anomaly_rows()
-    if anomaly_rows_text == "> 无异常项":
-        anomaly_section = "> 所有检查项通过，无异常。\n"
+    # ── 检查项详情渲染（全量展示正常+异常） ────────
+    has_anomaly = any(k in results and results[k]["status"] in ("fail", "warn") for k in all_keys)
+    if not has_anomaly:
+        check_detail_section = "> 所有检查项通过，无异常。\n"
     else:
-        anomaly_section = f"""#### ⚠️ 异常项
-
-| 检查项 | 状态 | 详情 |
+        all_rows_text = all_check_rows()
+        check_detail_section = f"""| 检查项 | 状态 | 详情 |
 |--------|------|------|
-{anomaly_rows_text}
+{all_rows_text}
 """
 
     return f"""## ✅ AD 巡检分析报告
@@ -967,7 +969,7 @@ def render_markdown(
 
 ### 🔍 巡检结果详情
 
-{anomaly_section}
+{check_detail_section}
 
 ---
 
@@ -1148,7 +1150,7 @@ def main():
     p_wait.add_argument("--username", default="admin")
     p_wait.add_argument("--password", default="")
     p_wait.add_argument("--work-dir", default="/tmp/ad_check",
-                        help="与 run 的 --output 保持一致")
+                        help="与 run 的 --work-dir 保持一致")
     p_wait.add_argument("--poll-interval", type=int, default=10,
                         help="轮询间隔秒数，默认 10")
     p_wait.add_argument("--timeout", type=int, default=600,
@@ -1315,8 +1317,18 @@ def main():
         if not password:
             print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
             sys.exit(4)
-        client = ADClient(args.host, args.username, password)
-        result = _progress_one(client)
+        try:
+            client = ADClient(args.host, args.username, password)
+            result = _progress_one(client)
+        except ADAuthError as e:
+            print(f"认证失败: {e}", file=sys.stderr)
+            sys.exit(2)
+        except (ADConnectionError, ADAPIError) as e:
+            print(f"通信错误: {e}", file=sys.stderr)
+            sys.exit(1)
+        except Exception as e:
+            print(f"错误: {e}", file=sys.stderr)
+            sys.exit(5)
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     elif args.command == "analyze":

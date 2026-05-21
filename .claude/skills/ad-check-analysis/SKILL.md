@@ -85,15 +85,15 @@ python scripts/check.py run --host https://IP --password xxx --scene "场景名"
 python scripts/check.py progress --host https://IP --password xxx
 ```
 
-#### A6. 下载分析 【必须】
+#### A6. 下载分析并展示报告 【必须】
+
+`wait` 命令自动完成下载 → 分析 → 渲染，直接输出最终 Markdown 报告：
 
 ```bash
-python scripts/check.py wait --host https://IP --work-dir <A4返回的路径>
+python scripts/check.py wait --host https://IP --password xxx --work-dir <A4返回的路径>
 ```
 
-#### A7. 展示报告 【必须】
-
-脚本输出的 Markdown **全文展示**在对话中，不截断、不折叠。
+**LLM 必须将脚本输出的 Markdown 全文展示在对话消息正文中**，不截断、不折叠、不重新格式化。脚本输出即最终报告，禁止 LLM 自行二次渲染。
 
 ---
 
@@ -131,18 +131,16 @@ python scripts/check.py progress --hosts "https://IP1,https://IP2" --password xx
 
 轮询直到每台设备 `state` 变为 `FINISHED`。
 
-#### B5. 下载分析 【必须】
+#### B5. 下载分析并展示报告 【必须】
 
-每台设备分别调用：
+每台设备分别调用 `wait`（自动完成下载 → 分析 → 渲染，直接输出最终 Markdown 报告）：
 
 ```bash
-python scripts/check.py wait --host https://IP1 --work-dir <B3返回的work_dir1>
-python scripts/check.py wait --host https://IP2 --work-dir <B3返回的work_dir2>
+python scripts/check.py wait --host https://IP1 --password xxx --work-dir <B3返回的work_dir1>
+python scripts/check.py wait --host https://IP2 --password xxx --work-dir <B3返回的work_dir2>
 ```
 
-#### B6. 展示报告 【必须】
-
-多设备报告含汇总表 + 每设备详细报告，**全文展示**在对话中，不截断、不折叠。
+多设备报告含汇总表 + 每设备详细报告。**LLM 必须将脚本输出的 Markdown 全文展示在对话消息正文中**，不截断、不折叠、不重新格式化。脚本输出即最终报告，禁止 LLM 自行二次渲染。
 
 ---
 
@@ -177,10 +175,10 @@ python scripts/check.py wait --host https://IP2 --work-dir <B3返回的work_dir2
 
 ```bash
 # 查看巡检场景
-python scripts/check.py scenes --host https://192.168.8.30
+python scripts/check.py scenes --host https://192.168.8.30 --password xxx
 
 # 启动巡检（单设备）
-python scripts/check.py run --host https://192.168.8.30 --scene "标准巡检" --force
+python scripts/check.py run --host https://192.168.8.30 --password xxx --scene "标准巡检" --force
 
 # 多设备巡检（并行启动）
 python scripts/check.py run --hosts "https://192.168.8.30,https://192.168.8.31" --scene "标准巡检" --password xxx --force
@@ -189,16 +187,16 @@ python scripts/check.py run --hosts "https://192.168.8.30,https://192.168.8.31" 
 python scripts/check.py run --hosts "https://192.168.8.30,https://192.168.8.31" --scene "标准巡检" --password xxx --force --wait
 
 # 轮询进度（单设备）
-python scripts/check.py progress --host https://192.168.8.30
+python scripts/check.py progress --host https://192.168.8.30 --password xxx
 
 # 轮询进度（多设备并行查询）
 python scripts/check.py progress --hosts "https://192.168.8.30,https://192.168.8.31" --password xxx
 
-# 下载分析
-python scripts/check.py wait --host https://192.168.8.30 --work-dir /tmp/ad_check_xxx
+# 下载分析（自动完成下载→分析→渲染，输出最终 Markdown 报告）
+python scripts/check.py wait --host https://192.168.8.30 --password xxx --work-dir /tmp/ad_check_xxx
 
 # 查看历史（单设备）
-python scripts/check.py history --host https://192.168.8.30
+python scripts/check.py history --host https://192.168.8.30 --password xxx
 
 # 查看历史（多设备）
 python scripts/check.py history --hosts "https://192.168.8.30,https://192.168.8.31" --password xxx
@@ -271,6 +269,7 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 - ❌ 填充未从巡检报告中获取的数据
 - ❌ 使用 ad-ops 的 `ad_api.py` 来完成巡检操作
 - ❌ 脚本返回异常/报错时，LLM 不得尝试绕过脚本、换用其他方式、或自行补救。必须原样将错误信息报告给用户，由用户决定下一步操作
+- ❌ 对脚本输出的 Markdown 报告做重新格式化、截断、改写或二次渲染。脚本输出即最终格式
 
 ---
 
@@ -332,10 +331,11 @@ SSH_CHECK, WEAK_PASSWORD_CHECK, SSL_POLICY_CHECK, IP_LIMIT_CHECK, OPEN_PORT_CHEC
 
 ## 报告展示规则
 
-**巡检完成后，必须将 Markdown 报告内容直接展示在对话消息正文中**，不要放在 shell 执行结果的折叠区域中。
+`check.py wait` 和 `check.py analyze` 已通过 `render_markdown()` 输出最终格式的 Markdown 报告。**LLM 禁止对脚本输出做任何重新格式化、截断、改写或补充。**
 
+- 脚本输出的 Markdown 内容必须**原样展示**在对话消息正文中
+- 不截断、不折叠、不选择性展示、不二次渲染
 - 多设备输出含汇总表 + 每设备分块，可能较长
-- LLM 全文展示，不截断、不折叠、不选择性展示
 - 超过单条消息限制时分多条展示（保持设备分块完整）
 
 ## 外部依赖

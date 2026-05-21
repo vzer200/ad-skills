@@ -234,7 +234,6 @@ def _render_cross_device_comparison(
             value = s.get("value", "?")
             row += " {} {} |".format(_check_icon(status), value)
             if status in ("fail", "warn"):
-                name = device_names.get(host, _extract_ip(host))
                 notes.append(_extract_ip(host))
         row += " {} |".format(", ".join(notes) if notes else "-")
         comparison_rows.append(row)
