@@ -130,6 +130,31 @@ blackbox.tar.gz (ZIP加密)
 | 9 | 错误码 |
 | 10 | 描述 |
 
+## 子命令选择决策
+
+### 任务 → 命令映射
+
+| 任务 | 命令 | 关键参数 |
+|------|------|----------|
+| 启动导出（单设备） | `blackbox.py --host ...` | `--from-date`, `--to-date` |
+| 启动导出（多设备） | `blackbox.py --hosts "..."` | `--from-date`, `--to-date` |
+| 查询导出进度（单设备） | `blackbox.py progress --host ...` | `--output` |
+| 查询导出进度（多设备） | `blackbox.py progress --hosts "..."` | `--output` |
+| 下载分析结果 | `blackbox.py download --host ...` | `--output`, `--archive-password` |
+
+### 异步轮询流程
+
+```
+export (--hosts) → 等待 60-90s → progress (每10s轮询) → download (仅SUCCESS后)
+```
+
+### 多设备触发
+
+1. 用户提到多个 IP/设备名 → `--hosts`
+2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
+3. 不确定时 → 默认用 `--hosts`
+4. 密码不同时 → 必须用 `--devices` JSON 文件
+
 ## 脚本强制规则
 
 | 操作 | 必须使用 | 禁止使用 |
@@ -167,13 +192,6 @@ blackbox.tar.gz (ZIP加密)
 - 多设备输出含汇总表 + 每设备分块，可能较长
 - LLM 全文展示，不截断、不折叠、不选择性展示
 - 超过单条消息限制时分多条展示（保持设备分块完整）
-
-## 多设备触发决策
-
-1. 用户提到多个 IP/设备名 → `--hosts`
-2. 用户用"所有"、"全部"、"批量"、"同时"、"都" → `--hosts`
-3. 不确定时 → 默认用 `--hosts`（单台设备行为与 `--host` 等价）
-4. 密码不同时 → 必须用 `--devices` JSON 文件
 
 ## 外部依赖
 
