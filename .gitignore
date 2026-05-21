@@ -1,2 +1,6 @@
 __pycache__/
 *.bak
+AD-agent/
+__MACOSX/
+.claude/success/
+.claude/worktrees/
