@@ -36,7 +36,7 @@
 
 - [ ] 6. 认证失败
   运行: `python scripts/perception.py analyze --host TEST_IP --password wrong_pass`
-  验证: exit code 1（注：SKILL.md 错误码表记录为 exit code 2，当前实现返回 1，这是预存文档偏差）
+  验证: exit code 2
         stderr 包含 `认证失败` 或 `401`
 
 - [ ] 7. 缺少参数

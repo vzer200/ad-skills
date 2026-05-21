@@ -74,7 +74,7 @@ def detect_anomaly_3sigma(points, window_seconds=21600, z_threshold=3, min_windo
 
         z = abs(value - mean) / std
         if z > z_threshold and abs(value - mean) / max(mean, 1e-6) > 0.05:
-            direction = "上升" if value > mean else "下降"
+            direction = "up" if value > mean else "down"
             anomalies.append({
                 'ts': ts,
                 'value': value,
@@ -102,22 +102,21 @@ def query_traffic_db(db_path, vs_name=None, days=7):
     if not db_path or not os.path.isfile(db_path):
         return None
     try:
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cutoff = int(datetime.now().timestamp()) - days * 86400
-        if vs_name:
-            cursor.execute(
-                "SELECT ts, vs_name, metric, value FROM vs_samples WHERE ts > ? AND vs_name = ? ORDER BY ts",
-                (cutoff, vs_name)
-            )
-        else:
-            cursor.execute(
-                "SELECT ts, vs_name, metric, value FROM vs_samples WHERE ts > ? ORDER BY ts",
-                (cutoff,)
-            )
-        rows = [dict(r) for r in cursor.fetchall()]
-        conn.close()
+        with sqlite3.connect(db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cutoff = int(datetime.now().timestamp()) - days * 86400
+            if vs_name:
+                cursor.execute(
+                    "SELECT ts, vs_name, metric, value FROM vs_samples WHERE ts > ? AND vs_name = ? ORDER BY ts",
+                    (cutoff, vs_name)
+                )
+            else:
+                cursor.execute(
+                    "SELECT ts, vs_name, metric, value FROM vs_samples WHERE ts > ? ORDER BY ts",
+                    (cutoff,)
+                )
+            rows = [dict(r) for r in cursor.fetchall()]
         return rows
     except Exception:
         return None
@@ -139,22 +138,21 @@ def query_device_state_db(db_path, metric=None, days=7):
     if not db_path or not os.path.isfile(db_path):
         return None
     try:
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cutoff = int(datetime.now().timestamp()) - days * 86400
-        if metric:
-            cursor.execute(
-                "SELECT ts, metric, value FROM device_state WHERE ts > ? AND metric = ? ORDER BY ts",
-                (cutoff, metric)
-            )
-        else:
-            cursor.execute(
-                "SELECT ts, metric, value FROM device_state WHERE ts > ? ORDER BY ts",
-                (cutoff,)
-            )
-        rows = [dict(r) for r in cursor.fetchall()]
-        conn.close()
+        with sqlite3.connect(db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cutoff = int(datetime.now().timestamp()) - days * 86400
+            if metric:
+                cursor.execute(
+                    "SELECT ts, metric, value FROM device_state WHERE ts > ? AND metric = ? ORDER BY ts",
+                    (cutoff, metric)
+                )
+            else:
+                cursor.execute(
+                    "SELECT ts, metric, value FROM device_state WHERE ts > ? ORDER BY ts",
+                    (cutoff,)
+                )
+            rows = [dict(r) for r in cursor.fetchall()]
         return rows
     except Exception:
         return None
@@ -284,20 +282,23 @@ def traffic_analysis(client, db_path=None, vs_name=None):
             except ImportError:
                 pass
             else:
-                injected = collect_once(client, db_path)
-                if injected > 0:
-                    rows = query_traffic_db(db_path, vs_name)
-                    if rows is not None and len(rows) >= 100:
-                        groups = {}
-                        for row in rows:
-                            key = (row['vs_name'], row['metric'])
-                            if key not in groups:
-                                groups[key] = []
-                            groups[key].append(row)
-                        anomalies = _run_3sigma_on_vs_group(groups)
-                        result['anomalies'] = anomalies
-                        result['source'] = 'sqlite_injected'
-                        return result
+                try:
+                    injected = collect_once(client, db_path)
+                    if injected > 0:
+                        rows = query_traffic_db(db_path, vs_name)
+                        if rows is not None and len(rows) >= 100:
+                            groups = {}
+                            for row in rows:
+                                key = (row['vs_name'], row['metric'])
+                                if key not in groups:
+                                    groups[key] = []
+                                groups[key].append(row)
+                            anomalies = _run_3sigma_on_vs_group(groups)
+                            result['anomalies'] = anomalies
+                            result['source'] = 'sqlite_injected'
+                            return result
+                except Exception:
+                    pass
 
         # API fallback - insufficient data
         result['status'] = 'insufficient_data'
@@ -486,6 +487,15 @@ def state_analysis(client, disk_source=None, db_path=None):
 
     # 3σ anomaly detection on historical data
     anomalies = []
+
+    # Auto-derive DB path from client host if not explicitly provided
+    if not db_path and client is not None and hasattr(client, 'host'):
+        host = client.host
+        if isinstance(host, str):
+            import re
+            safe = re.sub(r'[^a-zA-Z0-9._-]', '_', host)
+            db_path = f"device_state_{safe}.db"
+
     if db_path and os.path.isfile(db_path):
         rows = query_device_state_db(db_path)
         if rows is not None and len(rows) > 0:
@@ -506,16 +516,19 @@ def state_analysis(client, disk_source=None, db_path=None):
                 except ImportError:
                     pass
                 else:
-                    injected = collect_system_once(client, db_path)
-                    if injected > 0:
-                        rows = query_device_state_db(db_path)
-                        if rows is not None:
-                            groups = {}
-                            for row in rows:
-                                m = row['metric']
-                                if m not in groups:
-                                    groups[m] = []
-                                groups[m].append({'ts': row['ts'], 'value': row['value']})
+                    try:
+                        injected = collect_system_once(client, db_path)
+                        if injected > 0:
+                            rows = query_device_state_db(db_path)
+                            if rows is not None:
+                                groups = {}
+                                for row in rows:
+                                    m = row['metric']
+                                    if m not in groups:
+                                        groups[m] = []
+                                    groups[m].append({'ts': row['ts'], 'value': row['value']})
+                    except Exception:
+                        pass
 
             # Run 3σ per metric
             for metric, points in groups.items():
@@ -877,12 +890,15 @@ def render_markdown(results):
         vs_overlaps = conflicts.get('vs_overlaps', [])
         if vs_overlaps:
             lines.append('**VS IP:Port 重叠:**')
-            lines.append('| 重叠地址 | 冲突 VS |')
-            lines.append('|---|---|')
+            lines.append('| VS A | VS B | 重叠地址 |')
+            lines.append('|---|---|---|')
             for o in vs_overlaps:
                 names_list = o[0]
                 ip_port = o[1]
-                lines.append(f"| {ip_port} | {', '.join(names_list)} |")
+                # Show up to 2 VS names in separate columns
+                vs_a = names_list[0] if len(names_list) > 0 else ''
+                vs_b = names_list[1] if len(names_list) > 1 else ''
+                lines.append(f"| {vs_a} | {vs_b} | {ip_port} |")
 
         pool_overlaps = conflicts.get('pool_overlaps', [])
         if pool_overlaps:
@@ -933,7 +949,11 @@ def analyze_full(client, db_path=None, disk_source=None):
     # Merge state 3σ anomalies
     all_anomalies.extend(state_result.get('anomalies', []))
     # Merge state threshold issues (warn/critical) for log correlation
-    state_issues = [i for i in state_result.get('items', []) if i.get('level') in ('warn', 'critical')]
+    state_issues = [dict(i) for i in state_result.get('items', []) if i.get('level') in ('warn', 'critical')]
+    # State threshold items lack timestamps; tag with current time for log correlation
+    now_ts = int(datetime.now().timestamp())
+    for item in state_issues:
+        item['ts'] = now_ts
     all_anomalies.extend(state_issues)
     if all_anomalies:
         try:
@@ -1117,18 +1137,18 @@ def main():
         if cmd == "traffic":
             vs_name = args.vs if hasattr(args, 'vs') and args.vs else None
             result = traffic_analysis(client, db_path=db_path, vs_name=vs_name)
-            _print_result(result, output_format)
+            _print_result(result, output_format, 'traffic')
             sys.exit(0 if result.get('status') != 'error' else 1)
 
         elif cmd == "state":
             disk_source = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
             result = state_analysis(client, disk_source=disk_source, db_path=db_path)
-            _print_result(result, output_format)
+            _print_result(result, output_format, 'state')
             sys.exit(0 if result.get('status') != 'error' else 1)
 
         elif cmd == "conflict":
             result = conflict_analysis(client)
-            _print_result(result, output_format)
+            _print_result(result, output_format, 'conflict')
             sys.exit(0 if result.get('status') != 'error' else 1)
 
         elif cmd == "logs":
@@ -1157,10 +1177,20 @@ def main():
         sys.exit(1)
 
 
-def _print_result(result, output_format):
+def _print_result(result, output_format, subcommand=None):
     """Print analysis result in requested format."""
     if output_format == "json":
         print(render_json(result))
+    elif subcommand in ('traffic', 'state', 'conflict'):
+        # Wrap single-dimension result so render_markdown can process it
+        wrapped = {
+            'device': result.get('device', result.get('host', 'Unknown')),
+            'traffic': result if subcommand == 'traffic' else {},
+            'state': result if subcommand == 'state' else {},
+            'logs': {},
+            'conflicts': result if subcommand == 'conflict' else {},
+        }
+        print(render_markdown(wrapped))
     else:
         # For full analysis results, use markdown
         print(render_markdown(result))

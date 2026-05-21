@@ -2,7 +2,7 @@
 
 ## 概述
 
-`.claude/skills/` 包含 4 个深信服 AD 设备的运维分析技能，版本统一为 `v2.0.0`。所有技能共享统一的模板结构（SKILL.md + examples/ + checks/ + scripts/），通过 `ad-ops` 提供的 `ADClient` 作为公共 API 客户端。
+`.claude/skills/` 包含 5 个深信服 AD 设备的运维分析技能，版本统一为 `v2.0.0`（ad-connect 为 `v1.0.0`，ad-check-analysis 为 `v2.1.0`）。所有技能共享统一的模板结构（SKILL.md + examples/ + checks/ + scripts/），通过 `ad-ops` 提供的 `ADClient` 作为公共 API 客户端。
 
 ## 统一三层模板结构
 
@@ -37,7 +37,7 @@
 | 典型命令 | `overview.py all --hosts "..."`, `ad_api.py --host ... users list` |
 | 回归清单 | 11 项 |
 
-**提供 `ADClient`**，被其他三个 skill 通过 import 复用。
+**提供 `ADClient`**，被其他四个 skill 通过 import 复用。
 
 ### ad-check-analysis — 系统巡检
 
@@ -75,6 +75,16 @@
 
 异步模式：export → progress（每 10s 轮询）→ download（SUCCESS 后）。audit.csv 含时间/用户/来源IP/方法/模块/状态等 10 个字段。
 
+### ad-connect — 连接测试
+
+| 项目 | 内容 |
+|------|------|
+| 路径 | `.claude/skills/ad-connect/` |
+| 脚本 | `connect.py` |
+| 职责 | 设备连通性和认证预检，作为其他 AD 操作的前置步骤 |
+| 典型命令 | `connect.py --hosts "..." --password xxx` |
+| 回归清单 | 待补充 |
+
 ## 技能依赖关系
 
 ```
@@ -82,7 +92,8 @@ ad-ops (ADClient)
   ↑ import
   ├── ad-check-analysis/scripts/check.py
   ├── ad-perception/scripts/perception.py, collector.py
-  └── ad-blackbox-analysis/scripts/blackbox.py
+  ├── ad-blackbox-analysis/scripts/blackbox.py
+  └── ad-connect/scripts/connect.py
 ```
 
 ## 技能互斥边界

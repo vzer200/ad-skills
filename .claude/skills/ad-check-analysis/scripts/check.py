@@ -8,6 +8,7 @@ import argparse
 import json
 import os
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -74,10 +75,13 @@ def start_check(
     client: ADClient,
     scene: str,
     force: bool = False,
-    work_dir: str = "/tmp/ad_check",
+    work_dir: str = None,
 ) -> Dict[str, Any]:
     """
     步骤 1-3：场景确认 + 记录上限检查 + 后台启动巡检
+    """
+    if work_dir is None:
+        work_dir = os.path.join(tempfile.gettempdir(), "ad_check")
     启动后立即返回，不轮询。
     """
     os.makedirs(work_dir, exist_ok=True)
@@ -786,14 +790,14 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         cpu = data.get("base_cpu_usage", [])
         cpu_max = max(cpu) if cpu else 0
         check("CPU_CHECK",
-              "pass" if cpu_max < 90 else ("warn" if cpu_max < 95 else "fail"),
+              "pass" if cpu_max <= 80 else ("warn" if cpu_max <= 90 else "fail"),
               f"max={cpu_max}%")
 
     if has("base_log_error_exist"):
         # 38. LOG_CHECK
         le = data.get("base_log_error_exist", -1)
         check("LOG_CHECK",
-              "pass" if le == 0 else ("warn" if le < 5 else "fail"),
+              "pass" if le == 0 else ("warn" if le <= 100 else "fail"),
               f"{le} 条错误日志")
 
     if has("base_running_time"):
@@ -829,7 +833,7 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         # 44. REMOTE_MAINTAIN_CHECK
         rm = data.get("remote_mt", "")
         check("REMOTE_MAINTAIN_CHECK",
-              "pass" if rm == "true" else "warn",
+              "warn" if rm == "true" else "pass",
               f"remote_mt={rm}")
 
     if has("base_blackbox_state"):
@@ -860,7 +864,7 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         # 49. MEMORY_CHECK
         mr = data.get("snmp_mem_rate", 0)
         check("MEMORY_CHECK",
-              "pass" if mr < 95 else "warn",
+              "pass" if mr <= 80 else ("warn" if mr <= 90 else "fail"),
               f"使用率={mr}%")
 
     if has("acceleration"):
@@ -1638,7 +1642,7 @@ def render_markdown(
 
 ---
 
-**说明**: 以上结果来自巡检报告文件 `ad.json` 及离线检查信息，基于 35 条类型化规则判定。
+**说明**: 以上结果全部来自巡检报告文件 `ad.json`。
 """
 
 
@@ -1770,7 +1774,7 @@ def main():
     # scenes
     p_scenes = sub.add_parser("scenes", help="获取巡检场景列表")
     p_scenes.add_argument("--host", required=True)
-    p_scenes.add_argument("--username", default="admin")
+    p_scenes.add_argument("--user", default="admin")
     p_scenes.add_argument("--password", default="")
 
     # run — 步骤 1-3：场景确认 + 上限检查 + 启动
@@ -1782,7 +1786,7 @@ def main():
     p_run.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
     p_run.add_argument("--wait", action="store_true", help="多设备模式：等待巡检完成并输出报告")
     p_run.add_argument("--no-wait", action="store_true", help="多设备模式：仅启动，不等待完成（默认）")
-    p_run.add_argument("--username", default="admin")
+    p_run.add_argument("--user", default="admin")
     p_run.add_argument("--password", default="")
     p_run.add_argument("--scene", default="标准巡检", help="巡检场景")
     p_run.add_argument("--force", action="store_true", help="强制巡检（覆盖上限）")
@@ -1791,7 +1795,7 @@ def main():
     # wait — 步骤 4-6：轮询确认新报告生成 → 下载 → 分析
     p_wait = sub.add_parser("wait", help="下载巡检报告并分析（请先用 progress 确认已完成）")
     p_wait.add_argument("--host", required=True)
-    p_wait.add_argument("--username", default="admin")
+    p_wait.add_argument("--user", default="admin")
     p_wait.add_argument("--password", default="")
     p_wait.add_argument("--work-dir", default="/tmp/ad_check",
                         help="与 run 的 --work-dir 保持一致")
@@ -1804,14 +1808,14 @@ def main():
     p_hist = sub.add_parser("history", help="查看历史巡检记录")
     p_hist.add_argument("--host", default="", help="设备地址 https://IP")
     p_hist.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
-    p_hist.add_argument("--username", default="admin")
+    p_hist.add_argument("--user", default="admin")
     p_hist.add_argument("--password", default="")
 
     # progress
     p_prog = sub.add_parser("progress", help="查询巡检进度（单次）")
     p_prog.add_argument("--host", default="", help="设备地址 https://IP")
     p_prog.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
-    p_prog.add_argument("--username", default="admin")
+    p_prog.add_argument("--user", default="admin")
     p_prog.add_argument("--password", default="")
 
     # analyze
@@ -1832,7 +1836,7 @@ def main():
         if not password:
             print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
             sys.exit(4)
-        client = ADClient(args.host, args.username, password)
+        client = ADClient(args.host, args.user, password)
         try:
             result = client._request("GET", "/sys/offline-check/")
         except (ADConnectionError, ADAuthError, ADAPIError) as e:
@@ -1845,7 +1849,7 @@ def main():
             if args.devices:
                 devices = load_devices_json(args.devices)
             else:
-                devices = parse_hosts_arg(args.hosts, args.username, args.password)
+                devices = parse_hosts_arg(args.hosts, args.user, args.password)
             if not devices:
                 print("错误: 设备列表为空", file=sys.stderr)
                 sys.exit(4)
@@ -1874,7 +1878,7 @@ def main():
         if not password:
             print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
             sys.exit(4)
-        client = ADClient(args.host, args.username, password)
+        client = ADClient(args.host, args.user, password)
         work_dir = args.work_dir or f"/tmp/ad_check_{int(time.time())}"
         try:
             meta = start_check(client, args.scene, force=args.force, work_dir=work_dir)
@@ -1895,7 +1899,7 @@ def main():
         if not password:
             print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
             sys.exit(4)
-        client = ADClient(args.host, args.username, password)
+        client = ADClient(args.host, args.user, password)
         try:
             meta = wait_and_download(
                 client,
@@ -1929,7 +1933,7 @@ def main():
 
     elif args.command == "history":
         if args.hosts:
-            devices = parse_hosts_arg(args.hosts, args.username, args.password)
+            devices = parse_hosts_arg(args.hosts, args.user, args.password)
             results = run_multi(devices, lambda client, **kw: client._request("GET", "/debug/sys/offline-check", params={"type": "history"}))
             output = {"mode": "multi", "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v), "failed": sum(1 for v in results.values() if "error" in v)}, "results": results}
             print(json.dumps(output, indent=2, ensure_ascii=False))
@@ -1943,7 +1947,7 @@ def main():
         if not password:
             print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
             sys.exit(4)
-        client = ADClient(args.host, args.username, password)
+        client = ADClient(args.host, args.user, password)
         try:
             result = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
         except (ADConnectionError, ADAuthError, ADAPIError) as e:
@@ -1953,7 +1957,7 @@ def main():
 
     elif args.command == "progress":
         if args.hosts:
-            devices = parse_hosts_arg(args.hosts, args.username, args.password)
+            devices = parse_hosts_arg(args.hosts, args.user, args.password)
             results = run_multi(devices, _progress_one)
             output = {"mode": "multi", "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v), "failed": sum(1 for v in results.values() if "error" in v)}, "results": results}
             print(json.dumps(output, indent=2, ensure_ascii=False))
@@ -1968,7 +1972,7 @@ def main():
             print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
             sys.exit(4)
         try:
-            client = ADClient(args.host, args.username, password)
+            client = ADClient(args.host, args.user, password)
             result = _progress_one(client)
         except ADAuthError as e:
             print(f"认证失败: {e}", file=sys.stderr)

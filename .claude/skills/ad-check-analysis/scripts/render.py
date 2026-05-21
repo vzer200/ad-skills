@@ -9,6 +9,7 @@ per-device detail blocks, cross-device comparison, and summary tables.
 All functions in this module are specific to ad-check-analysis.
 """
 
+import sys
 from typing import Any, Dict, Optional
 
 
@@ -406,7 +407,7 @@ def render_multi_device_report(
 
     lines.append("---")
     lines.append("")
-    lines.append("**说明**: 以上结果来自各设备巡检报告文件 `ad.json` 及离线检查信息，基于 35 条类型化规则判定。")
+    lines.append("**说明**: 以上结果全部来自各设备巡检报告文件 `ad.json`。")
 
     return "\n".join(lines)
 

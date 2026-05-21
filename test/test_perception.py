@@ -59,7 +59,7 @@ class TestAnomalyDetection(unittest.TestCase):
         anomalies = detect_anomaly_3sigma(points)
         self.assertEqual(len(anomalies), 1)
         self.assertGreater(anomalies[0]['z'], 3)
-        self.assertEqual(anomalies[0]['direction'], "上升")
+        self.assertEqual(anomalies[0]['direction'], "up")
         self.assertAlmostEqual(anomalies[0]['value'], 500.0)
 
 
@@ -76,7 +76,7 @@ class TestAnomalyDetection(unittest.TestCase):
         self.assertEqual(len(anomalies), 0, "Normal data should have no anomalies")
 
     def test_detect_anomaly_sudden_drop(self):
-        """A sudden drop below threshold should be flagged as 下降."""
+        """A sudden drop below threshold should be flagged as down."""
         base_ts = 1700000000
         # 400 normal points around 200
         points = self._make_points(
@@ -89,7 +89,7 @@ class TestAnomalyDetection(unittest.TestCase):
 
         anomalies = detect_anomaly_3sigma(points)
         self.assertEqual(len(anomalies), 1)
-        self.assertEqual(anomalies[0]['direction'], "下降")
+        self.assertEqual(anomalies[0]['direction'], "down")
         self.assertAlmostEqual(anomalies[0]['value'], 10.0)
         self.assertGreater(anomalies[0]['z'], 3)
 
@@ -484,7 +484,7 @@ class TestLogCorrelation(unittest.TestCase):
         }
 
     def _make_anomaly(self, ts):
-        return {'ts': ts, 'value': 500.0, 'baseline_mean': 100.0, 'z': 4.0, 'direction': '上升', 'vs': 'vs_test', 'metric': 'connection-rate'}
+        return {'ts': ts, 'value': 500.0, 'baseline_mean': 100.0, 'z': 4.0, 'direction': 'up', 'vs': 'vs_test', 'metric': 'connection-rate'}
 
     def test_log_time_window_match(self):
         """Log entries within ±5min of anomaly time should be matched."""
@@ -804,7 +804,7 @@ class TestState3Sigma(unittest.TestCase):
         anomaly = {
             'ts': int(datetime.now().timestamp()) - 120,
             'metric': 'cpu', 'value': 45.0, 'baseline_mean': 12.0,
-            'z': 15.0, 'direction': '上升',
+            'z': 15.0, 'direction': 'up',
         }
         results = {
             'device': 'https://10.0.0.1',
