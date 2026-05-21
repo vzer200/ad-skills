@@ -17,6 +17,12 @@ import urllib.error
 import urllib.parse
 from typing import Any, Dict, Optional
 
+# Multi-device support (deferred import in multi_device.py avoids circular dependency)
+from multi_device import (
+    run_multi, parse_hosts_arg, load_devices_json,
+    compute_multi_exit_code, host_slug,
+)
+
 
 class ADError(Exception):
     """AD API error base class."""
