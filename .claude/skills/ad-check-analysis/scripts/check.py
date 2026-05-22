@@ -118,7 +118,7 @@ def start_check(
     result = client._request(
         "POST", "/debug/sys/offline-check",
         data={"scene": scene},
-        params={"force": "true"} if (force and need_force) else None,
+        params={"force": "true"} if force else None,
     )
     event_id = result.get("event_id")
     if not event_id:
@@ -1559,8 +1559,9 @@ def render_markdown(
         )
     suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无优化建议 |"
 
-    # 设备中文名（从 devices.json 匹配，降级到 host URL）
-    device_label = meta.get("host", "?")
+    # 设备显示名：name（ip），降级到纯 IP
+    device_ip = _strip_proto(meta.get("host", "?"))
+    device_label = device_ip
     try:
         import json as _json
         _devices_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "devices.json")
@@ -1570,7 +1571,7 @@ def render_markdown(
             for _d in _data.get("devices", []):
                 _hosts = [_d.get("host", ""), _d.get("host", "").replace("https://", "http://")]
                 if meta.get("host", "") in _hosts:
-                    device_label = _d.get("name", device_label)
+                    device_label = f"{_d.get('name', device_ip)}（{device_ip}）"
                     break
     except Exception:
         pass
@@ -1596,7 +1597,7 @@ def render_markdown(
 
     return f"""## ✅ AD 巡检分析报告
 
-**设备**: {device_label} ({_strip_proto(meta.get("host", "?"))})
+**设备**: {device_label}
 **巡检时间**: {check_time}
 **巡检场景**: {meta.get("scene", "?")}
 **检查项**: {summary["total"]} 项
