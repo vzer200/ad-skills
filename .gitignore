@@ -15,3 +15,4 @@ adops_smoke/
 ad_ops_workdir/
 dist/
 workbot-results/
+workbot-acceptance.*.log

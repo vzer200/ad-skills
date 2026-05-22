@@ -102,6 +102,10 @@ async function loginIfNeeded(page) {
   if (count < 2) throw new Error("login form not found");
   await inputs.nth(0).fill(WORKBOT_USER);
   await inputs.nth(1).fill(WORKBOT_PASSWORD);
+  const agreement = page.locator('input[type="checkbox"]').first();
+  if ((await agreement.count()) && !(await agreement.isChecked().catch(() => false))) {
+    await agreement.check({ force: true });
+  }
   const loginButton = page.locator("button").filter({ hasText: /登录|Login|Sign in/i });
   if (await loginButton.count()) await loginButton.first().click();
   else await inputs.nth(1).press("Enter");
