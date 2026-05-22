@@ -31,7 +31,7 @@ description: 深信服 AD 设备系统巡检技能，支持标准巡检、安全
 - ❌ 使用其他 skill 的脚本完成巡检（如 ad-ops 的 `ad_api.py`）
 - ❌ 推断检查项状态，填充非巡检报告来源的数据
 - ❌ 步骤 1：用户未指定场景时自行默认为"标准巡检"
-- ❌ 步骤 4：用单次 `sleep N` 代替每 10s 轮询，或跳过轮询直接调 `wait`
+- ❌ 步骤 4：用单次 `sleep N` 代替每 10s 循环轮询，或调一次 `progress` 就继续下一步，或跳过轮询直接调 `wait`
 
 ---
 
@@ -107,16 +107,32 @@ python scripts/check.py run --hosts "https://IP1,https://IP2" --password xxx --s
 
 ### 步骤 4：轮询进度 【必须】
 
-> ⛔ **禁止跳过此步骤直接调 `wait`**。工具执行平台有 60s 默认超时，`wait` 需阻塞等待巡检完成（脚本内部超时 600s），可能被平台提前终止。必须先通过 `progress` 轮询确认巡检 `FINISHED`，再调 `wait` 下载报告（此时几乎瞬间返回）。
+> ⛔ **禁止跳过此步骤直接调 `wait`**。工具执行平台有 60s 默认超时，`wait` 需阻塞等待巡检完成（脚本内部超时 600s），可能被平台提前终止。必须先通过 `progress` 循环轮询确认巡检 `FINISHED`，再调 `wait` 下载报告（此时几乎瞬间返回）。
 
-每 10s 轮询，直到所有设备 `state` 变为 `FINISHED`：
+**必须循环调用 `progress`**，每次间隔 10s，直到所有设备 `state` 变为 `FINISHED`。禁止只调一次就继续下一步，禁止用单次 `sleep N` 代替轮询循环。
+
+轮询模式：调 progress → 检查 state → FINISHED 则继续步骤 5，否则 sleep 10s → 再调 progress → 重复。
 
 ```bash
-# 单设备
-python scripts/check.py progress --host https://IP --password xxx
+# 单设备：循环直到 FINISHED
+while true; do
+  result=$(python scripts/check.py progress --host https://IP --password xxx 2>&1)
+  echo "$result"
+  if echo "$result" | grep -q "FINISHED"; then
+    break
+  fi
+  sleep 10
+done
 
-# 多设备（并行查询）
-python scripts/check.py progress --hosts "https://IP1,https://IP2" --password xxx
+# 多设备：循环直到全部 FINISHED（progress --hosts 自动并行查询）
+while true; do
+  result=$(python scripts/check.py progress --hosts "https://IP1,https://IP2" --password xxx 2>&1)
+  echo "$result"
+  if echo "$result" | grep -q '"state": "NO_RUNNING"'; then
+    break
+  fi
+  sleep 10
+done
 ```
 
 ---
