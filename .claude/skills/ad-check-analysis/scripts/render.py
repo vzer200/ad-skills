@@ -386,23 +386,6 @@ def render_multi_device_report(
     lines.append("")
     lines.append(suggestions)
 
-    # ── Per-device full reports ────────────────────────────────────────
-    for host, result in results.items():
-        label = device_labels[host]
-        lines.append("---")
-        lines.append("")
-        if "error" in result:
-            lines.append(f"### \U0001f50d {label} 完整报告")
-            lines.append("")
-            lines.append(f"❌ {result['error']}")
-        else:
-            # Insert per-device heading before the single-device report content
-            md = result.get("markdown", "")
-            # Replace the top-level heading with a subheading
-            md = md.replace("## ✅ AD 巡检分析报告", f"### \U0001f50d {label} 完整报告", 1)
-            lines.append(md)
-        lines.append("")
-
     lines.append("---")
     lines.append("")
     lines.append("**说明**: 以上结果全部来自各设备巡检报告文件 `ad.json`。")

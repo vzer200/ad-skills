@@ -876,7 +876,9 @@ def analyze(data: Dict[str, Any], check_info: dict | None = None) -> Dict[str, A
     f_score = _dimension_scores(feature_keys)
     h_score = _dimension_scores(health_keys)
     s_score = _dimension_scores(secure_keys)
-    overall = round((f_score["score"] + h_score["score"] + s_score["score"]) / 3)
+    # 综合评分：跳过 0 项的分类
+    _score_parts = [s["score"] for s in [f_score, h_score, s_score] if s["total"] > 0]
+    overall = round(sum(_score_parts) / len(_score_parts)) if _score_parts else 0
 
     # ── Phase 5: Suggestions ────────────────────────────────────────────
     _CATEGORY_ORDER = {"secure": 0, "health": 1, "feature": 2}
