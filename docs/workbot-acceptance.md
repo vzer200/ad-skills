@@ -156,57 +156,57 @@ Pass criteria:
 
 Requirement 4 is a general configuration-generation workflow. The minimum supported SLB matrix is VS + existing Pool, VS + Pool + nodes, VS + existing/new HTTP Profile, VS + existing/new HTTP Pre Rule, and combinations of those dependencies. XFF is only one example, not the only workflow.
 
-Common matrix cases should be generated from parameters with `render_slb_bundle.py`. The YAML template path must remain available as a fallback: if the user's prompt is ambiguous, fields are missing after one follow-up, or the resource combination is outside the supported matrix, WorkBot should generate a YAML/edit template, ask the user to complete it, and only then continue to plan/apply.
+Requirement 4 is always staged. Prompt-to-YAML is a mandatory first flow and must not be replaced by parameter follow-up questions. If the prompt is incomplete or ambiguous, WorkBot generates a YAML template with blanks and stops for manual completion. A completed YAML then enters the second flow: plan/script generation, same-name resource GET preflight, and a user choice between script-only output or delivery verification.
 
-Short prompt A, basic VS + Pool + nodes:
-
-```text
-请在 AD1 创建一个 HTTP 虚拟服务，带新 Pool 和两个节点。
-```
-
-Parameter follow-up if WorkBot asks:
+Stage A prompt, basic VS + Pool + nodes:
 
 ```text
-参数：VS 名称 wb_vs_basic_01，VIP 10.250.250.10，端口 8080，Pool wb_pool_basic_01，后端节点 192.0.2.10:80 和 192.0.2.11:80。账号 admin，密码从环境变量读取。需要下发，并输出下发脚本、回滚脚本和设备验证结果。
+请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_basic_01，VIP 10.250.250.10:8080，Pool wb_pool_basic_01，节点 192.0.2.10:80、192.0.2.11:80。
 ```
 
-Short prompt B, VS + HTTP Pre Rule:
+Stage A prompt, VS + HTTP Pre Rule:
 
 ```text
-请在 AD1 创建一个 HTTP 虚拟服务，带新 Pool、节点和 HTTP Pre Rule。
+请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_prerule_01，VIP 10.250.250.20:8081，Pool wb_pool_prerule_01，节点 192.0.2.20:80，HTTP Pre Rule wb_pre_rule_01 匹配 URI 包含 /api 后调度到 Pool。
 ```
 
-Parameter follow-up if WorkBot asks:
+Stage A prompt, VS + XFF HTTP Profile:
 
 ```text
-参数：VS 名称 wb_vs_prerule_01，VIP 10.250.250.20，端口 8081，Pool wb_pool_prerule_01，后端节点 192.0.2.20:80，HTTP Pre Rule 名称 wb_pre_rule_01，URI 匹配包含 /api，动作调度到 Pool。账号 admin，密码从环境变量读取。需要下发，并输出下发脚本、回滚脚本和设备验证结果。
+请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_xff_01，VIP 10.250.250.30:8082，Pool wb_pool_xff_01，节点 192.0.2.30:80，新 HTTP Profile wb_xff_profile_01 插入 X-Forwarded-For。
 ```
 
-Short prompt C, VS + XFF HTTP Profile:
+Stage A ambiguous prompt:
 
 ```text
-请在 AD1 创建一个 HTTP 虚拟服务，带新 Pool、节点和插入 XFF 的 HTTP Profile。
+请把这个 SLB 创建需求转成 YAML，我还没想好具体字段。
 ```
 
-Parameter follow-up if WorkBot asks:
+Stage B script-only prompt after YAML exists:
 
 ```text
-参数：VS 名称 wb_vs_xff_01，VIP 10.250.250.30，端口 8082，Pool wb_pool_xff_01，后端节点 192.0.2.30:80，HTTP Profile wb_xff_profile_01，Header X-Forwarded-For。账号 admin，密码从环境变量读取。需要下发，并输出下发脚本、回滚脚本和设备验证结果。
+使用刚才的 YAML 生成计划，先查 AD1 同名资源；我只要正向脚本和回滚脚本，不下发。
 ```
 
-YAML fallback prompt for ambiguous or unsupported combinations:
+Stage C delivery prompt after YAML exists:
 
 ```text
-这个 SLB 配置我描述不清楚，请给我一个 YAML 模板，我补完后你再下发。
+使用刚才的 YAML 下发到 AD1 并验证结果；下发后暂停，等我检查完成再回滚。
 ```
 
-YAML fallback pass criteria:
+Stage D rollback prompt after the operator confirms manual device inspection:
+
+```text
+我已经检查完成，请执行回滚并确认回滚后的 GET 结果和下发前一致。
+```
+
+YAML pass criteria:
 
 - WorkBot does not invent missing fields.
-- WorkBot calls `lookup_api.py` and `render_bundle_template.py` when the combination is outside the supported shortcut matrix.
-- WorkBot asks the user to complete the YAML template, then runs `plan-and-render`, `summarize-plan`, and `apply-slb-plan` only after the completed YAML is available.
-- If the completed YAML is still invalid, WorkBot reports script validation errors and stops before any mutating call.
-```
+- For common matrix cases, WorkBot calls `render_slb_bundle.py` and stops after producing `adops-bundle.yml`.
+- For ambiguous or unsupported cases, WorkBot calls `lookup_api.py`/`render_bundle_template.py`, outputs a YAML template, and stops for manual completion.
+- WorkBot must not ask parameter questions in chat for R4; manual completion happens in YAML.
+- If completed YAML is invalid, WorkBot reports script validation errors and stops before any mutating call.
 
 Expected tool calls:
 
@@ -216,8 +216,9 @@ ad_ops_flow.py status
 render_slb_bundle.py
 ad_ops_flow.py plan-and-render
 ad_ops_flow.py summarize-plan
+ad_ops_flow.py preflight-slb-plan
 ad_ops_flow.py apply-slb-plan
-verify_slb_resource.py
+ad_ops_flow.py rollback-and-verify
 ```
 
 Expected plan summaries by case:
@@ -241,11 +242,15 @@ POST /api/ad/v3/slb/virtual-service/
 Pass criteria:
 
 - Tool calls include the expected generation and plan scripts; generated payloads and summaries come from tool stdout/artifacts.
-- Default R4 cases are delivery runs: `apply-slb-plan` executes the plan, writes `adops-execute-result.json`, writes `adops-rollback.json`, and verifies the created resources with `--expect present`.
-- The final answer lists `apply.py`, `rollback_apply.py`, `adops-rollback.json`, `adops-execute-result.json`, and the device verification summary.
-- Rollback is generated but not executed unless the user explicitly asks for rollback.
-- If the user explicitly says "只生成/不下发/预览", WorkBot must stay in offline mode, skip `apply-slb-plan`, and use `verify_slb_resource.py --expect absent` when device credentials are available.
-- If WorkBot claims it checked existing AD resources, verify a corresponding tool-call panel and AD 外网设备资源 evidence.
+- Stage A ends with YAML only; no plan/apply happens before the user confirms YAML is complete.
+- Stage B always runs `preflight-slb-plan` before script output or delivery. Same-name create targets found by GET are reused and omitted from the effective plan.
+- Stage B treats non-404 GET failures as blockers. WorkBot must stop before any mutating call if preflight cannot prove whether a same-name resource exists.
+- Same-name reuse is a name-based reuse policy, not an overwrite. If `reuse_compatibility_warning_count` is greater than zero, WorkBot must report the warning and include it in the manual inspection checklist.
+- Script-only mode lists `apply.py`, `rollback_apply.py`, `adops-effective-plan.json`, and `adops-preflight.json`, then ends with no mutating call.
+- Delivery mode runs `apply-slb-plan`, writes `adops-execute-result.json`, `adops-rollback.json`, `adops-post-apply.json`, and then pauses for manual inspection.
+- Rollback runs only after explicit user confirmation. `rollback-and-verify` must write `adops-post-rollback.json` and `adops-rollback-compare.json`.
+- Rollback must use the baseline and rollback manifest from the same AD host and plan. A mismatch is a hard failure.
+- The run passes only if post-rollback GET state matches the preflight baseline. If not, WorkBot must report the diff and must not claim rollback success.
 
 ## Tool-Call Verification Checklist
 
@@ -257,8 +262,7 @@ For every acceptance run:
 - Verify the command actually ran and has an exit code/stdout/stderr.
 - Verify stdout contains the expected script JSON/Markdown, not a model-only answer.
 - For real-device cases, verify AD 外网设备资源 validation: `connect.py` uses `devices.json` AD1, reaches the target, authenticates, and the follow-on script output is real device data.
-- For config-generation cases, verify post-run resource state with `verify_slb_resource.py`; use `--expect present` for default delivery runs and `--expect absent` only for explicitly requested offline runs.
-- For Requirement 4, verify `render_slb_bundle.py`, `plan-and-render`, `summarize-plan`, and `apply-slb-plan` ran for default delivery cases.
+- For Requirement 4, verify the staged sequence: YAML generation, `plan-and-render`, `summarize-plan`, `preflight-slb-plan`, optional `apply-slb-plan`, and optional `rollback-and-verify`.
 
 Stability target:
 

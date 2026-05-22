@@ -98,28 +98,37 @@ const cases = {
     requireDevice: true,
   },
   "r4-basic": {
-    prompt: "请在 AD1 创建一个 HTTP 虚拟服务，带新 Pool 和两个节点。",
-    params:
-      "参数：VS 名称 wb_vs_basic_01，VIP 10.250.250.10，端口 8080，Pool wb_pool_basic_01，后端节点 192.0.2.10:80 和 192.0.2.11:80。账号 admin，密码从环境变量读取。需要下发，并输出下发脚本、回滚脚本和设备验证结果。",
-    expected: ["init_env.py", "render_slb_bundle.py", "plan-and-render", "apply-slb-plan", "verify_slb_resource.py"],
+    steps: [
+      "请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_basic_01，VIP 10.250.250.10:8080，Pool wb_pool_basic_01，节点 192.0.2.10:80、192.0.2.11:80。",
+      "使用刚才的 YAML 生成计划，先查 AD1 同名资源；我只要正向脚本和回滚脚本，不下发。",
+    ],
+    expected: ["init_env.py", "render_slb_bundle.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
     requireTools: true,
-    verifyPresent: { vsName: "wb_vs_basic_01", poolName: "wb_pool_basic_01", nodeIp: "192.0.2.10" },
   },
   "r4-prerule": {
-    prompt: "请在 AD1 创建一个 HTTP 虚拟服务，带新 Pool、节点和 HTTP Pre Rule。",
-    params:
-      "参数：VS 名称 wb_vs_prerule_01，VIP 10.250.250.20，端口 8081，Pool wb_pool_prerule_01，后端节点 192.0.2.20:80，HTTP Pre Rule 名称 wb_pre_rule_01，URI 匹配包含 /api，动作调度到 Pool。账号 admin，密码从环境变量读取。需要下发，并输出下发脚本、回滚脚本和设备验证结果。",
-    expected: ["init_env.py", "render_slb_bundle.py", "pre-rule", "plan-and-render", "apply-slb-plan", "verify_slb_resource.py"],
+    steps: [
+      "请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_prerule_01，VIP 10.250.250.20:8081，Pool wb_pool_prerule_01，节点 192.0.2.20:80，HTTP Pre Rule wb_pre_rule_01 匹配 URI 包含 /api 后调度到 Pool。",
+      "使用刚才的 YAML 生成计划，先查 AD1 同名资源；我只要正向脚本和回滚脚本，不下发。",
+    ],
+    expected: ["init_env.py", "render_slb_bundle.py", "pre-rule", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
     requireTools: true,
-    verifyPresent: { vsName: "wb_vs_prerule_01", poolName: "wb_pool_prerule_01", nodeIp: "192.0.2.20", preRule: "wb_pre_rule_01" },
   },
   "r4-xff": {
-    prompt: "请在 AD1 创建一个 HTTP 虚拟服务，带新 Pool、节点和插入 XFF 的 HTTP Profile。",
-    params:
-      "参数：VS 名称 wb_vs_xff_01，VIP 10.250.250.30，端口 8082，Pool wb_pool_xff_01，后端节点 192.0.2.30:80，HTTP Profile wb_xff_profile_01，Header X-Forwarded-For。账号 admin，密码从环境变量读取。需要下发，并输出下发脚本、回滚脚本和设备验证结果。",
-    expected: ["init_env.py", "render_slb_bundle.py", "http-profile", "plan-and-render", "apply-slb-plan", "verify_slb_resource.py"],
+    steps: [
+      "请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_xff_01，VIP 10.250.250.30:8082，Pool wb_pool_xff_01，节点 192.0.2.30:80，新 HTTP Profile wb_xff_profile_01 插入 X-Forwarded-For。",
+      "使用刚才的 YAML 生成计划，先查 AD1 同名资源；我只要正向脚本和回滚脚本，不下发。",
+    ],
+    expected: ["init_env.py", "render_slb_bundle.py", "http-profile", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
     requireTools: true,
-    verifyPresent: { vsName: "wb_vs_xff_01", poolName: "wb_pool_xff_01", nodeIp: "192.0.2.30", httpProfile: "wb_xff_profile_01" },
+  },
+  "r4-basic-delivery": {
+    steps: [
+      "请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_basic_01，VIP 10.250.250.10:8080，Pool wb_pool_basic_01，节点 192.0.2.10:80、192.0.2.11:80。",
+      "使用刚才的 YAML 下发到 AD1 并验证结果；下发后暂停，等我检查完成再回滚。",
+    ],
+    expected: ["init_env.py", "render_slb_bundle.py", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback_apply.py"],
+    requireTools: true,
+    verifyPresent: { vsName: "wb_vs_basic_01", poolName: "wb_pool_basic_01", nodeIp: "192.0.2.10" },
   },
 };
 
@@ -266,10 +275,11 @@ async function collectToolEvidence(page) {
     }
   }
   const commandLike = /(stdout|stderr|exit\s*code|退出码|命令|工具调用|connect\.py|check\.py|overview\.py|perception\.py|render_slb_bundle\.py|ad_ops_flow\.py|init_env\.py|python|bash|powershell|cmd\.exe)/i;
+  const stagedWorkflowLike = /(plan-and-render|summarize-plan|preflight-slb-plan|apply-slb-plan|rollback-and-verify|rollback_apply\.py|adops-)/i;
   const hasEvidence = candidates.some((item) => {
     const marker = `${item.selector} ${item.className || ""} ${item.utid || ""} ${item.text || ""}`;
     const looksLikeToolNode = /tool|command|terminal/i.test(`${item.selector} ${item.className || ""} ${item.utid || ""}`);
-    return looksLikeToolNode || commandLike.test(marker);
+    return looksLikeToolNode || commandLike.test(marker) || stagedWorkflowLike.test(marker);
   });
   return { hasEvidence, candidates };
 }
@@ -433,10 +443,14 @@ async function runCase(page, name) {
   const cfg = cases[name];
   if (!cfg) throw new Error(`unknown case: ${name}`);
   const responses = [];
-  responses.push(await sendPrompt(page, name, cfg.prompt));
+  const prompts = cfg.steps || [cfg.prompt];
+  for (let index = 0; index < prompts.length; index += 1) {
+    const label = prompts.length > 1 ? `${name}-step${index + 1}` : name;
+    responses.push(await sendPrompt(page, label, prompts[index]));
+  }
   let combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
 
-  if (cfg.params && asksForParameters(combinedText)) {
+  if (!cfg.steps && cfg.params && asksForParameters(combinedText)) {
     responses.push(await sendPrompt(page, `${name}-params`, cfg.params));
     combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
   }
@@ -454,7 +468,7 @@ async function runCase(page, name) {
 
   return verify({
     name,
-    prompt: cfg.prompt,
+    prompt: prompts.join("\n\n"),
     text: responses.map((item) => item.text).join("\n\n").slice(-20000),
     agentText: responses.map((item) => item.agentText).join("\n\n").slice(-20000),
     responses,

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import copy
+import hashlib
+import json
 import os
 import sys
 from pathlib import Path
@@ -13,9 +16,15 @@ if str(SCRIPT_DIR) not in sys.path:
 from ad_ops_common import (
     DEFAULT_APPLY_SCRIPT_NAME,
     DEFAULT_BATCH_NAME,
+    DEFAULT_EFFECTIVE_PLAN_NAME,
     DEFAULT_EXECUTE_RESULT_NAME,
     DEFAULT_PLAN_NAME,
+    DEFAULT_POST_APPLY_NAME,
+    DEFAULT_POST_ROLLBACK_NAME,
+    DEFAULT_PREFLIGHT_NAME,
     DEFAULT_ROLLBACK_NAME,
+    DEFAULT_ROLLBACK_COMPARE_NAME,
+    DEFAULT_ROLLBACK_RESULT_NAME,
     DEFAULT_ROLLBACK_SCRIPT_NAME,
     artifacts_path,
     default_workdir_path,
@@ -27,15 +36,26 @@ from ad_ops_common import (
     skill_paths,
     tmp_file_path,
     update_artifacts,
+    utc_now_iso,
     workdir_path,
     write_json,
 )
 from ad_http import normalize_base_url, requests
+from compare_state import compare_expected
 from dependency_order import load_resource_order
-from execute_plan import execute_plan, summarize_result
+from execute_plan import (
+    ALL_PROPERTIES_PARAMS,
+    DEFAULT_REQUEST_TIMEOUT,
+    configure_session,
+    execute_plan,
+    request,
+    resource_path,
+    summarize_result,
+)
 from plan_operations import build_bundle_plan
 from render_outputs import render_batch, render_rollback_script, render_script
 from resolve_schema import definition_map
+from rollback import rollback_manifest, summarize_rollback
 from verify_slb_resource import parse_args as parse_verify_args
 from verify_slb_resource import verify_resources
 
@@ -77,6 +97,20 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Artifact work directory. Defaults to AD_OPS_WORKDIR, then ./ad_ops_workdir.",
     )
 
+    preflight_slb = subparsers.add_parser(
+        "preflight-slb-plan",
+        help="GET target resources from a rendered SLB plan, reuse same-name existing resources, and render effective scripts.",
+    )
+    preflight_slb.add_argument("--plan", type=Path, help="Operation plan JSON path. Defaults to workdir/artifacts plan.")
+    preflight_slb.add_argument("--host", required=True, help="AD device host or base URL.")
+    preflight_slb.add_argument("--username", required=True, help="AD API username.")
+    preflight_slb.add_argument("--password", default=os.environ.get("AD_PASSWORD"), help="AD API password. Defaults to AD_PASSWORD.")
+    preflight_slb.add_argument(
+        "--workdir",
+        type=Path,
+        help="Artifact work directory. Defaults to AD_OPS_WORKDIR, then ./ad_ops_workdir.",
+    )
+
     apply_slb = subparsers.add_parser(
         "apply-slb-plan",
         help="Apply a rendered SLB plan, write execution/rollback artifacts, and verify resources on the AD device.",
@@ -92,6 +126,21 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     apply_slb.add_argument("--http-profile", help="HTTP profile name to verify after apply.")
     apply_slb.add_argument("--pre-rule", help="HTTP pre-rule name to verify after apply.")
     apply_slb.add_argument(
+        "--workdir",
+        type=Path,
+        help="Artifact work directory. Defaults to AD_OPS_WORKDIR, then ./ad_ops_workdir.",
+    )
+
+    rollback_verify = subparsers.add_parser(
+        "rollback-and-verify",
+        help="Execute rollback, GET target resources again, and compare with the pre-apply baseline.",
+    )
+    rollback_verify.add_argument("--manifest", type=Path, help="Rollback manifest JSON path. Defaults to workdir/artifacts rollback.")
+    rollback_verify.add_argument("--baseline", type=Path, help="Preflight baseline JSON path. Defaults to workdir/artifacts preflight.")
+    rollback_verify.add_argument("--host", required=True, help="AD device host or base URL.")
+    rollback_verify.add_argument("--username", required=True, help="AD API username.")
+    rollback_verify.add_argument("--password", default=os.environ.get("AD_PASSWORD"), help="AD API password. Defaults to AD_PASSWORD.")
+    rollback_verify.add_argument(
         "--workdir",
         type=Path,
         help="Artifact work directory. Defaults to AD_OPS_WORKDIR, then ./ad_ops_workdir.",
@@ -157,9 +206,14 @@ def status_summary(args: argparse.Namespace) -> dict[str, object]:
         "bundle",
         "edit_template",
         "plan",
+        "effective_plan",
         "batch",
         "apply_script",
         "rollback_script",
+        "preflight",
+        "post_apply",
+        "post_rollback",
+        "rollback_compare",
         "execution_result",
         "rollback",
         "rollback_result",
@@ -195,6 +249,28 @@ def plan_path_from_args(args: argparse.Namespace) -> Path:
     if isinstance(plan, str):
         return Path(plan).expanduser()
     return workdir / DEFAULT_PLAN_NAME
+
+
+def manifest_path_from_args(args: argparse.Namespace) -> Path:
+    if args.manifest is not None:
+        return args.manifest.expanduser()
+    workdir = selected_workdir(args.workdir)
+    artifacts = load_artifacts(workdir)
+    rollback = artifacts.get("rollback")
+    if isinstance(rollback, str):
+        return Path(rollback).expanduser()
+    return workdir / DEFAULT_ROLLBACK_NAME
+
+
+def baseline_path_from_args(args: argparse.Namespace) -> Path:
+    if args.baseline is not None:
+        return args.baseline.expanduser()
+    workdir = selected_workdir(args.workdir)
+    artifacts = load_artifacts(workdir)
+    preflight = artifacts.get("preflight")
+    if isinstance(preflight, str):
+        return Path(preflight).expanduser()
+    return workdir / DEFAULT_PREFLIGHT_NAME
 
 
 def summarize_operation(operation: dict[str, Any]) -> dict[str, object]:
@@ -238,6 +314,348 @@ def summarize_plan(args: argparse.Namespace) -> dict[str, object]:
     }
 
 
+def response_payload(response: Any) -> Any:
+    try:
+        return response.json()
+    except Exception:
+        return None
+
+
+def json_digest(value: Any) -> str:
+    encoded = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def workflow_source(
+    *,
+    base_url: str,
+    username: str | None,
+    plan: dict[str, Any] | None = None,
+    effective_plan: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    source: dict[str, Any] = {
+        "base_url": normalize_base_url(base_url),
+        "username": username,
+        "created_at": utc_now_iso(),
+    }
+    if plan is not None:
+        source["plan_sha256"] = json_digest(plan)
+    if effective_plan is not None:
+        source["effective_plan_sha256"] = json_digest(effective_plan)
+    return source
+
+
+def validate_workflow_source(name: str, source: Any, *, base_url: str, plan_sha256: str | None = None) -> None:
+    if not isinstance(source, dict):
+        return
+    source_base_url = source.get("base_url")
+    if source_base_url and normalize_base_url(str(source_base_url)) != normalize_base_url(base_url):
+        raise ValueError(f"{name} belongs to {source_base_url}, not {base_url}")
+    source_plan_sha256 = source.get("plan_sha256")
+    if plan_sha256 and source_plan_sha256 and source_plan_sha256 != plan_sha256:
+        raise ValueError(f"{name} does not match the preflight baseline plan")
+
+
+def annotate_rollback_manifest(path: Path, *, source: dict[str, Any], baseline_path: Path, effective_plan_path: Path) -> None:
+    if not path.exists():
+        return
+    manifest = read_json(path)
+    if not isinstance(manifest, dict):
+        return
+    manifest["source"] = {
+        **source,
+        "baseline": str(baseline_path),
+        "effective_plan": str(effective_plan_path),
+    }
+    write_json(path, manifest)
+
+
+def auth_from_args(args: argparse.Namespace) -> dict[str, Any]:
+    password = getattr(args, "password", None)
+    if password is None:
+        raise ValueError("--password or AD_PASSWORD is required")
+    return {"host": args.host, "username": args.username, "password": password, "token": None}
+
+
+def unique_operations(plan: dict[str, Any]) -> list[dict[str, Any]]:
+    seen: set[str] = set()
+    unique: list[dict[str, Any]] = []
+    for operation in plan.get("operations", []) or []:
+        if not isinstance(operation, dict):
+            continue
+        target_path = resource_path(operation)
+        if target_path in seen:
+            continue
+        seen.add(target_path)
+        unique.append(operation)
+    return unique
+
+
+def capture_target_state(
+    plan: dict[str, Any],
+    session: Any,
+    base_url: str,
+    *,
+    timeout: tuple[float, float] = DEFAULT_REQUEST_TIMEOUT,
+) -> dict[str, Any]:
+    checks: list[dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
+    for operation in unique_operations(plan):
+        target_path = resource_path(operation)
+        response = request(
+            session,
+            base_url,
+            "GET",
+            target_path,
+            params=ALL_PROPERTIES_PARAMS,
+            timeout=timeout,
+        )
+        found = bool(getattr(response, "ok", False))
+        check: dict[str, Any] = {
+            "operation_id": operation.get("id"),
+            "action": operation.get("action"),
+            "method": "GET",
+            "target_path": target_path,
+            "status": getattr(response, "status_code", None),
+            "found": found,
+        }
+        if found:
+            check["payload"] = response_payload(response)
+        elif getattr(response, "text", ""):
+            check["error"] = response.text
+        if not found and getattr(response, "status_code", None) != 404:
+            errors.append(
+                {
+                    "operation_id": operation.get("id"),
+                    "target_path": target_path,
+                    "status": getattr(response, "status_code", None),
+                    "error": check.get("error"),
+                }
+            )
+        if str(operation.get("action", "")).lower() == "create" and found:
+            check["reuse_existing"] = True
+            check["reuse_policy"] = "same-name"
+            diffs = compare_expected(operation.get("payload") or {}, check.get("payload"))
+            check["compatibility_ok"] = not diffs
+            check["compatibility_diff_count"] = len(diffs)
+            if diffs:
+                check["compatibility_diffs"] = diffs[:20]
+        checks.append(check)
+    return {
+        "ok": not errors,
+        "check_count": len(checks),
+        "reused_count": sum(1 for item in checks if item.get("reuse_existing")),
+        "error_count": len(errors),
+        "errors": errors,
+        "checks": checks,
+    }
+
+
+def capture_paths_state(
+    baseline: dict[str, Any],
+    session: Any,
+    base_url: str,
+    *,
+    timeout: tuple[float, float] = DEFAULT_REQUEST_TIMEOUT,
+) -> dict[str, Any]:
+    checks: list[dict[str, Any]] = []
+    errors: list[dict[str, Any]] = []
+    for item in baseline.get("checks", []) or []:
+        if not isinstance(item, dict) or not isinstance(item.get("target_path"), str):
+            continue
+        target_path = item["target_path"]
+        response = request(
+            session,
+            base_url,
+            "GET",
+            target_path,
+            params=ALL_PROPERTIES_PARAMS,
+            timeout=timeout,
+        )
+        found = bool(getattr(response, "ok", False))
+        check: dict[str, Any] = {
+            "operation_id": item.get("operation_id"),
+            "target_path": target_path,
+            "method": "GET",
+            "status": getattr(response, "status_code", None),
+            "found": found,
+        }
+        if found:
+            check["payload"] = response_payload(response)
+        elif getattr(response, "text", ""):
+            check["error"] = response.text
+        if not found and getattr(response, "status_code", None) != 404:
+            errors.append(
+                {
+                    "operation_id": item.get("operation_id"),
+                    "target_path": target_path,
+                    "status": getattr(response, "status_code", None),
+                    "error": check.get("error"),
+                }
+            )
+        checks.append(check)
+    return {"ok": not errors, "check_count": len(checks), "error_count": len(errors), "errors": errors, "checks": checks}
+
+
+def compare_get_states(baseline: dict[str, Any], after: dict[str, Any]) -> dict[str, Any]:
+    baseline_by_path = {
+        item.get("target_path"): item
+        for item in baseline.get("checks", []) or []
+        if isinstance(item, dict) and isinstance(item.get("target_path"), str)
+    }
+    after_by_path = {
+        item.get("target_path"): item
+        for item in after.get("checks", []) or []
+        if isinstance(item, dict) and isinstance(item.get("target_path"), str)
+    }
+    diffs: list[dict[str, Any]] = []
+    for target_path, before in baseline_by_path.items():
+        current = after_by_path.get(target_path)
+        if current is None:
+            diffs.append({"target_path": target_path, "diff": "missing-post-rollback-check"})
+            continue
+        if before.get("found") != current.get("found"):
+            diffs.append(
+                {
+                    "target_path": target_path,
+                    "diff": "found-state",
+                    "baseline_found": before.get("found"),
+                    "post_rollback_found": current.get("found"),
+                    "baseline_status": before.get("status"),
+                    "post_rollback_status": current.get("status"),
+                }
+            )
+            continue
+        if before.get("status") != current.get("status"):
+            diffs.append(
+                {
+                    "target_path": target_path,
+                    "diff": "status",
+                    "baseline_status": before.get("status"),
+                    "post_rollback_status": current.get("status"),
+                }
+            )
+            continue
+        if before.get("found") and before.get("payload") != current.get("payload"):
+            diffs.append({"target_path": target_path, "diff": "payload"})
+    return {
+        "ok": not diffs,
+        "checked_count": len(baseline_by_path),
+        "diff_count": len(diffs),
+        "diffs": diffs,
+    }
+
+
+def effective_plan_from_preflight(plan: dict[str, Any], preflight: dict[str, Any]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    reuse_checks = {
+        item.get("target_path"): item
+        for item in preflight.get("checks", []) or []
+        if item.get("reuse_existing") and isinstance(item.get("target_path"), str)
+    }
+    effective = copy.deepcopy(plan)
+    operations: list[dict[str, Any]] = []
+    reused: list[dict[str, Any]] = []
+    for operation in plan.get("operations", []) or []:
+        if not isinstance(operation, dict):
+            continue
+        target_path = resource_path(operation)
+        if target_path in reuse_checks and str(operation.get("action", "")).lower() == "create":
+            reuse_check = reuse_checks[target_path]
+            reused.append(
+                {
+                    "operation_id": operation.get("id"),
+                    "action": operation.get("action"),
+                    "target_path": target_path,
+                    "reuse_policy": "same-name",
+                    "compatibility_ok": reuse_check.get("compatibility_ok"),
+                    "compatibility_diff_count": reuse_check.get("compatibility_diff_count", 0),
+                }
+            )
+            continue
+        operations.append(copy.deepcopy(operation))
+    effective["operations"] = operations
+    if isinstance(effective.get("verify"), list):
+        skipped_ids = {item.get("operation_id") for item in reused}
+        effective["verify"] = [
+            item
+            for item in effective["verify"]
+            if not isinstance(item, dict) or item.get("operation_id") not in skipped_ids
+        ]
+    effective["reused_existing"] = reused
+    return effective, reused
+
+
+def render_effective_artifacts(workdir: Path, plan: dict[str, Any]) -> dict[str, Path]:
+    plan_path = workdir / DEFAULT_EFFECTIVE_PLAN_NAME
+    batch_path = workdir / DEFAULT_BATCH_NAME
+    script_path = workdir / DEFAULT_APPLY_SCRIPT_NAME
+    rollback_script_path = workdir / DEFAULT_ROLLBACK_SCRIPT_NAME
+    write_json(plan_path, plan)
+    write_json(batch_path, render_batch(plan))
+    script_path.write_text(render_script(plan), encoding="utf-8")
+    rollback_script_path.write_text(render_rollback_script(), encoding="utf-8")
+    return {
+        "effective_plan": plan_path,
+        "batch": batch_path,
+        "apply_script": script_path,
+        "rollback_script": rollback_script_path,
+    }
+
+
+def run_preflight(
+    *,
+    plan: dict[str, Any],
+    session: Any,
+    base_url: str,
+    auth: dict[str, Any],
+    workdir: Path,
+) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]], dict[str, Path]]:
+    configure_session(session, auth)
+    preflight = capture_target_state(plan, session, base_url)
+    preflight["source"] = workflow_source(base_url=base_url, username=auth.get("username"), plan=plan)
+    preflight_path = workdir / DEFAULT_PREFLIGHT_NAME
+    write_json(preflight_path, preflight)
+    if not preflight.get("ok"):
+        update_artifacts(workdir, preflight=preflight_path)
+        raise ValueError(f"preflight GET failed for {preflight.get('error_count', 0)} target(s); see {preflight_path}")
+    effective, reused = effective_plan_from_preflight(plan, preflight)
+    artifact_paths = render_effective_artifacts(workdir, effective)
+    artifact_paths["preflight"] = preflight_path
+    update_artifacts(workdir, **artifact_paths)
+    return preflight, effective, reused, artifact_paths
+
+
+def preflight_slb_plan(args: argparse.Namespace) -> dict[str, object]:
+    plan_path = plan_path_from_args(args)
+    plan = read_json(plan_path)
+    workdir = require_workdir(args.workdir)
+    auth = auth_from_args(args)
+    preflight, effective, reused, artifact_paths = run_preflight(
+        plan=plan,
+        session=requests.Session(),
+        base_url=normalize_base_url(args.host),
+        auth=auth,
+        workdir=workdir,
+    )
+    return {
+        "ok": True,
+        "plan": str(plan_path),
+        "preflight": str(artifact_paths["preflight"]),
+        "effective_plan": str(artifact_paths["effective_plan"]),
+        "batch": str(artifact_paths["batch"]),
+        "apply_script": str(artifact_paths["apply_script"]),
+        "rollback_script": str(artifact_paths["rollback_script"]),
+            "original_operation_count": operation_count(plan),
+            "effective_operation_count": operation_count(effective),
+            "reused_existing": reused,
+            "reused_count": len(reused),
+            "reuse_compatibility_warning_count": sum(1 for item in reused if item.get("compatibility_ok") is False),
+            "reuse_policy": "same-name resource is reused and not overwritten; review compatibility warnings manually",
+            "workflow_contract": "scripts_only",
+            "next_user_prompt": "请选择：仅产出脚本结束，或下发到设备并在验证后暂停等待人工检查。",
+        }
+
+
 def verify_args_for_apply(args: argparse.Namespace) -> list[str]:
     values = [
         "--base-url",
@@ -266,21 +684,41 @@ def apply_slb_plan(args: argparse.Namespace) -> dict[str, object]:
     plan_path = plan_path_from_args(args)
     plan = read_json(plan_path)
     workdir = require_workdir(args.workdir)
-    if args.password is None:
-        raise ValueError("--password or AD_PASSWORD is required")
+    auth = auth_from_args(args)
     result_path = workdir / DEFAULT_EXECUTE_RESULT_NAME
     rollback_path = workdir / DEFAULT_ROLLBACK_NAME
-    auth = {"host": args.host, "username": args.username, "password": args.password, "token": None}
-    result = execute_plan(
+    post_apply_path = workdir / DEFAULT_POST_APPLY_NAME
+    session = requests.Session()
+    preflight, effective_plan, reused, artifact_paths = run_preflight(
         plan=plan,
-        session=requests.Session(),
+        session=session,
+        base_url=normalize_base_url(args.host),
+        auth=auth,
+        workdir=workdir,
+    )
+    result = execute_plan(
+        plan=effective_plan,
+        session=session,
         base_url=normalize_base_url(args.host),
         auth=auth,
         execute=True,
         rollback_out=rollback_path,
         allow_existing=args.allow_existing,
     )
+    annotate_rollback_manifest(
+        rollback_path,
+        source=workflow_source(
+            base_url=normalize_base_url(args.host),
+            username=args.username,
+            plan=plan,
+            effective_plan=effective_plan,
+        ),
+        baseline_path=artifact_paths["preflight"],
+        effective_plan_path=artifact_paths["effective_plan"],
+    )
     write_json(result_path, result)
+    post_apply = capture_target_state(plan, session, normalize_base_url(args.host))
+    write_json(post_apply_path, post_apply)
     verify_result: dict[str, Any] | None = None
     verify_error: str | None = None
     if args.vs_name or args.pool_name or args.node_ip or args.http_profile or args.pre_rule:
@@ -291,28 +729,101 @@ def apply_slb_plan(args: argparse.Namespace) -> dict[str, object]:
     artifacts = update_artifacts(
         workdir,
         plan=plan_path,
-        apply_script=workdir / DEFAULT_APPLY_SCRIPT_NAME,
-        rollback_script=workdir / DEFAULT_ROLLBACK_SCRIPT_NAME,
+        effective_plan=artifact_paths["effective_plan"],
+        batch=artifact_paths["batch"],
+        apply_script=artifact_paths["apply_script"],
+        rollback_script=artifact_paths["rollback_script"],
+        preflight=artifact_paths["preflight"],
+        post_apply=post_apply_path,
         execution_result=result_path,
         rollback=rollback_path,
     )
-    summary = summarize_result(result, plan, result_path, rollback_path)
+    summary = summarize_result(result, effective_plan, result_path, rollback_path)
     summary.update(
         {
+            "preflight": str(artifact_paths["preflight"]),
+            "post_apply": str(post_apply_path),
+            "effective_plan": str(artifact_paths["effective_plan"]),
+            "original_operation_count": operation_count(plan),
+            "effective_operation_count": operation_count(effective_plan),
+            "reused_existing": reused,
+            "reuse_compatibility_warning_count": sum(1 for item in reused if item.get("compatibility_ok") is False),
+            "reuse_policy": "same-name resource is reused and not overwritten; review compatibility warnings manually",
             "verify_result": verify_result,
             "verify_error": verify_error,
             "verify_script": "verify_slb_resource.py" if verify_result is not None else None,
-            "apply_script": str(workdir / DEFAULT_APPLY_SCRIPT_NAME),
-            "rollback_script": str(workdir / DEFAULT_ROLLBACK_SCRIPT_NAME),
+            "apply_script": str(artifact_paths["apply_script"]),
+            "rollback_script": str(artifact_paths["rollback_script"]),
             "artifacts": str(artifacts),
-            "workflow_contract": "scripts_only",
+            "workflow_contract": "deliver_then_pause",
             "rollback_generated": rollback_path.exists(),
+            "hold_for_manual_check": True,
+            "next_user_prompt": "请人工检查设备配置；检查完成并确认要回滚后，再运行 rollback-and-verify。",
         }
     )
     if verify_result is not None and not verify_result.get("ok"):
         summary["ok"] = False
     if verify_error:
         summary["ok"] = False
+    return summary
+
+
+def rollback_and_verify(args: argparse.Namespace) -> dict[str, object]:
+    workdir = require_workdir(args.workdir)
+    auth = auth_from_args(args)
+    manifest_path = manifest_path_from_args(args)
+    baseline_path = baseline_path_from_args(args)
+    manifest = read_json(manifest_path)
+    baseline = read_json(baseline_path)
+    if int(baseline.get("check_count") or 0) <= 0:
+        raise ValueError("baseline contains no GET checks; refusing rollback-and-verify")
+    result_path = workdir / DEFAULT_ROLLBACK_RESULT_NAME
+    post_rollback_path = workdir / DEFAULT_POST_ROLLBACK_NAME
+    compare_path = workdir / DEFAULT_ROLLBACK_COMPARE_NAME
+    session = requests.Session()
+    base_url = normalize_base_url(args.host)
+    baseline_source = baseline.get("source")
+    validate_workflow_source("baseline", baseline_source, base_url=base_url)
+    baseline_plan_sha256 = baseline_source.get("plan_sha256") if isinstance(baseline_source, dict) else None
+    validate_workflow_source("rollback manifest", manifest.get("source"), base_url=base_url, plan_sha256=baseline_plan_sha256)
+    result = rollback_manifest(
+        manifest=manifest,
+        session=session,
+        base_url=base_url,
+        auth=auth,
+        execute=True,
+    )
+    write_json(result_path, result)
+    configure_session(session, auth)
+    post_rollback = capture_paths_state(baseline, session, base_url)
+    compare = compare_get_states(baseline, post_rollback)
+    write_json(post_rollback_path, post_rollback)
+    write_json(compare_path, compare)
+    artifacts = update_artifacts(
+        workdir,
+        rollback=manifest_path,
+        rollback_result=result_path,
+        post_rollback=post_rollback_path,
+        rollback_compare=compare_path,
+    )
+    summary = summarize_rollback(result, manifest, result_path)
+    summary.update(
+        {
+            "baseline": str(baseline_path),
+            "post_rollback": str(post_rollback_path),
+            "rollback_compare": str(compare_path),
+            "rollback_gets_match_preflight": compare.get("ok"),
+            "rollback_compare_diff_count": compare.get("diff_count"),
+            "artifacts": str(artifacts),
+            "workflow_contract": "rollback_verify",
+        }
+    )
+    if not post_rollback.get("ok"):
+        summary["ok"] = False
+        summary["error"] = "post-rollback GET verification had non-404 failures"
+    if not compare.get("ok"):
+        summary["ok"] = False
+        summary["error"] = "post-rollback GET state does not match pre-apply baseline"
     return summary
 
 
@@ -325,8 +836,12 @@ def main(argv: list[str] | None = None) -> int:
             summary = status_summary(args)
         elif args.command == "summarize-plan":
             summary = summarize_plan(args)
+        elif args.command == "preflight-slb-plan":
+            summary = preflight_slb_plan(args)
         elif args.command == "apply-slb-plan":
             summary = apply_slb_plan(args)
+        elif args.command == "rollback-and-verify":
+            summary = rollback_and_verify(args)
         else:
             raise ValueError(f"unsupported command: {args.command}")
     except Exception as exc:

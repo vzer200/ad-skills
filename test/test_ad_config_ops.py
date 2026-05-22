@@ -6,6 +6,7 @@ import contextlib
 import io
 import json
 import os
+import argparse
 import sys
 import tempfile
 import unittest
@@ -24,6 +25,7 @@ from plan_operations import build_bundle_plan  # noqa: E402
 from render_slb_bundle import build_bundle, parse_args  # noqa: E402
 from render_outputs import render_script  # noqa: E402
 from resolve_schema import definition_map  # noqa: E402
+import ad_ops_flow  # noqa: E402
 import verify_slb_resource  # noqa: E402
 
 
@@ -54,6 +56,13 @@ class FakeSession:
         self.calls.append({"method": "GET", "url": url, **kwargs})
         if not self.responses:
             raise AssertionError(f"unexpected GET {url}")
+        return self.responses.pop(0)
+
+    def request(self, method: str, url: str, **kwargs: object) -> FakeResponse:
+        method = method.upper()
+        self.calls.append({"method": method, "url": url, **kwargs})
+        if not self.responses:
+            raise AssertionError(f"unexpected {method} {url}")
         return self.responses.pop(0)
 
 
@@ -311,6 +320,216 @@ class TestVerifySlbResource(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(result["found"], ["virtual_service:vs-env"])
         self.assertEqual(result["missing"], [])
+
+
+class TestAdOpsFlowPreflight(unittest.TestCase):
+    def test_preflight_reuses_same_name_create_targets_and_rerenders_effective_plan(self):
+        plan = {
+            "operations": [
+                {
+                    "id": "create-pool",
+                    "action": "create",
+                    "method": "POST",
+                    "path": "/api/ad/v3/slb/pool/",
+                    "resource_path": "/api/ad/v3/slb/pool/{name}",
+                    "path_parameters": {"name": "pool1"},
+                    "payload": {"name": "pool1"},
+                },
+                {
+                    "id": "create-virtual-service",
+                    "action": "create",
+                    "method": "POST",
+                    "path": "/api/ad/v3/slb/virtual-service/",
+                    "resource_path": "/api/ad/v3/slb/virtual-service/{name}",
+                    "path_parameters": {"name": "vs1"},
+                    "payload": {"name": "vs1", "pool": "pool1"},
+                },
+            ],
+            "verify": [
+                {"operation_id": "create-pool", "path": "/api/ad/v3/slb/pool/pool1", "expected": {"name": "pool1"}},
+                {"operation_id": "create-virtual-service", "path": "/api/ad/v3/slb/virtual-service/vs1", "expected": {"name": "vs1"}},
+            ],
+        }
+        session = FakeSession(
+            [
+                FakeResponse(200, {"name": "pool1"}),
+                FakeResponse(404, text="not found"),
+            ]
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp)
+            preflight, effective, reused, artifacts = ad_ops_flow.run_preflight(
+                plan=plan,
+                session=session,
+                base_url="https://ad.example",
+                auth={"host": "https://ad.example", "username": "admin", "password": "secret", "token": None},
+                workdir=workdir,
+            )
+            effective_plan = read_json(artifacts["effective_plan"])
+
+        self.assertEqual(preflight["reused_count"], 1)
+        self.assertEqual(reused[0]["target_path"], "/api/ad/v3/slb/pool/pool1")
+        self.assertTrue(reused[0]["compatibility_ok"])
+        self.assertEqual([item["id"] for item in effective["operations"]], ["create-virtual-service"])
+        self.assertEqual([item["id"] for item in effective_plan["operations"]], ["create-virtual-service"])
+        self.assertEqual([item["method"] for item in session.calls], ["GET", "GET"])
+
+    def test_preflight_records_same_name_payload_mismatch_without_blocking_reuse(self):
+        plan = {
+            "operations": [
+                {
+                    "id": "create-pool",
+                    "action": "create",
+                    "method": "POST",
+                    "path": "/api/ad/v3/slb/pool/",
+                    "resource_path": "/api/ad/v3/slb/pool/{name}",
+                    "path_parameters": {"name": "pool1"},
+                    "payload": {"name": "pool1", "description": "expected"},
+                }
+            ]
+        }
+        session = FakeSession([FakeResponse(200, {"name": "pool1", "description": "actual"})])
+        with tempfile.TemporaryDirectory() as tmp:
+            preflight, effective, reused, _artifacts = ad_ops_flow.run_preflight(
+                plan=plan,
+                session=session,
+                base_url="https://ad.example",
+                auth={"host": "https://ad.example", "username": "admin", "password": "secret", "token": None},
+                workdir=Path(tmp),
+            )
+
+        self.assertEqual(preflight["reused_count"], 1)
+        self.assertFalse(preflight["checks"][0]["compatibility_ok"])
+        self.assertEqual(reused[0]["compatibility_diff_count"], 1)
+        self.assertEqual(effective["operations"], [])
+
+    def test_preflight_stops_on_non_404_get_failure(self):
+        plan = {
+            "operations": [
+                {
+                    "id": "create-pool",
+                    "action": "create",
+                    "method": "POST",
+                    "path": "/api/ad/v3/slb/pool/",
+                    "resource_path": "/api/ad/v3/slb/pool/{name}",
+                    "path_parameters": {"name": "pool1"},
+                    "payload": {"name": "pool1"},
+                }
+            ]
+        }
+        session = FakeSession([FakeResponse(500, text="device error")])
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp)
+            with self.assertRaisesRegex(ValueError, "preflight GET failed"):
+                ad_ops_flow.run_preflight(
+                    plan=plan,
+                    session=session,
+                    base_url="https://ad.example",
+                    auth={"host": "https://ad.example", "username": "admin", "password": "secret", "token": None},
+                    workdir=workdir,
+                )
+            preflight = read_json(workdir / "adops-preflight.json")
+
+        self.assertFalse(preflight["ok"])
+        self.assertEqual(preflight["error_count"], 1)
+        self.assertEqual(preflight["errors"][0]["status"], 500)
+
+    def test_apply_slb_plan_honors_allow_existing_flag(self):
+        plan = {
+            "operations": [
+                {
+                    "id": "create-pool",
+                    "action": "create",
+                    "method": "POST",
+                    "path": "/api/ad/v3/slb/pool/",
+                    "resource_path": "/api/ad/v3/slb/pool/{name}",
+                    "path_parameters": {"name": "pool1"},
+                    "payload": {"name": "pool1"},
+                }
+            ]
+        }
+        session = FakeSession([FakeResponse(404, text="not found"), FakeResponse(200, {"name": "pool1"})])
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp)
+            plan_path = workdir / "plan.json"
+            write_json(plan_path, plan)
+            args = argparse.Namespace(
+                plan=plan_path,
+                host="https://ad.example",
+                username="admin",
+                password="secret",
+                allow_existing=True,
+                vs_name=None,
+                pool_name=None,
+                node_ip=[],
+                http_profile=None,
+                pre_rule=None,
+                workdir=workdir,
+            )
+            with mock.patch.object(ad_ops_flow.requests, "Session", return_value=session):
+                with mock.patch.object(ad_ops_flow, "execute_plan", return_value={"ok": True, "mode": "execute", "executed": [], "verify": []}) as execute_mock:
+                    result = ad_ops_flow.apply_slb_plan(args)
+
+        self.assertTrue(result["ok"])
+        self.assertTrue(execute_mock.call_args.kwargs["allow_existing"])
+
+    def test_compare_get_states_detects_rollback_mismatch(self):
+        baseline = {
+            "checks": [
+                {"target_path": "/api/ad/v3/slb/pool/pool1", "found": True, "status": 200, "payload": {"name": "pool1"}},
+                {"target_path": "/api/ad/v3/slb/virtual-service/vs1", "found": False, "status": 404},
+            ]
+        }
+        same = {
+            "checks": [
+                {"target_path": "/api/ad/v3/slb/pool/pool1", "found": True, "status": 200, "payload": {"name": "pool1"}},
+                {"target_path": "/api/ad/v3/slb/virtual-service/vs1", "found": False, "status": 404},
+            ]
+        }
+        changed = {
+            "checks": [
+                {"target_path": "/api/ad/v3/slb/pool/pool1", "found": True, "status": 200, "payload": {"name": "pool1", "method": "LC"}},
+                {"target_path": "/api/ad/v3/slb/virtual-service/vs1", "found": True, "status": 200, "payload": {"name": "vs1"}},
+            ]
+        }
+
+        self.assertTrue(ad_ops_flow.compare_get_states(baseline, same)["ok"])
+        result = ad_ops_flow.compare_get_states(baseline, changed)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["diff_count"], 2)
+
+    def test_rollback_and_verify_rejects_host_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp)
+            manifest_path = workdir / "adops-rollback.json"
+            baseline_path = workdir / "adops-preflight.json"
+            write_json(
+                manifest_path,
+                {
+                    "version": 1,
+                    "source": {"base_url": "https://ad-a.example", "plan_sha256": "abc"},
+                    "actions": [],
+                },
+            )
+            write_json(
+                baseline_path,
+                {
+                    "ok": True,
+                    "check_count": 1,
+                    "source": {"base_url": "https://ad-a.example", "plan_sha256": "abc"},
+                    "checks": [{"target_path": "/api/ad/v3/slb/pool/pool1", "found": False, "status": 404}],
+                },
+            )
+            args = argparse.Namespace(
+                manifest=manifest_path,
+                baseline=baseline_path,
+                host="https://ad-b.example",
+                username="admin",
+                password="secret",
+                workdir=workdir,
+            )
+            with self.assertRaisesRegex(ValueError, "baseline belongs to"):
+                ad_ops_flow.rollback_and_verify(args)
 
 
 if __name__ == "__main__":

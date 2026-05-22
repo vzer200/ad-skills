@@ -20,6 +20,7 @@ GENERATED_FILE_PREFIX = "adops-"
 ARTIFACTS_NAME = f"{GENERATED_FILE_PREFIX}artifacts.json"
 DEFAULT_BUNDLE_NAME = f"{GENERATED_FILE_PREFIX}bundle.yml"
 DEFAULT_PLAN_NAME = f"{GENERATED_FILE_PREFIX}plan.json"
+DEFAULT_EFFECTIVE_PLAN_NAME = f"{GENERATED_FILE_PREFIX}effective-plan.json"
 DEFAULT_BATCH_NAME = f"{GENERATED_FILE_PREFIX}batch.json"
 DEFAULT_APPLY_SCRIPT_NAME = "apply.py"
 DEFAULT_EXECUTE_RESULT_NAME = f"{GENERATED_FILE_PREFIX}execute-result.json"
@@ -27,12 +28,17 @@ DEFAULT_EXECUTE_PREVIEW_NAME = f"{GENERATED_FILE_PREFIX}execute-preview.json"
 DEFAULT_ROLLBACK_NAME = f"{GENERATED_FILE_PREFIX}rollback.json"
 DEFAULT_ROLLBACK_RESULT_NAME = f"{GENERATED_FILE_PREFIX}rollback-result.json"
 DEFAULT_ROLLBACK_SCRIPT_NAME = "rollback_apply.py"
+DEFAULT_PREFLIGHT_NAME = f"{GENERATED_FILE_PREFIX}preflight.json"
+DEFAULT_POST_APPLY_NAME = f"{GENERATED_FILE_PREFIX}post-apply.json"
+DEFAULT_POST_ROLLBACK_NAME = f"{GENERATED_FILE_PREFIX}post-rollback.json"
+DEFAULT_ROLLBACK_COMPARE_NAME = f"{GENERATED_FILE_PREFIX}rollback-compare.json"
 LEGACY_GENERATED_FILE_NAMES = {
     "ad-ops-env.json",
     "ad-ops-env.sh",
     "artifacts.json",
     "bundle.yml",
     "plan.json",
+    "effective-plan.json",
     "batch.json",
     "apply.py",
     "execute-result.json",
@@ -40,6 +46,10 @@ LEGACY_GENERATED_FILE_NAMES = {
     "rollback.json",
     "rollback-result.json",
     "rollback_apply.py",
+    "preflight.json",
+    "post-apply.json",
+    "post-rollback.json",
+    "rollback-compare.json",
 }
 
 

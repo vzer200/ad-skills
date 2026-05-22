@@ -8,8 +8,11 @@ description: 深信服 AD/ADC/SLB 配置 skill。用于根据用户参数生成�
 ## 强制规则
 
 - 只使用本 skill 内脚本作为事实来源：`skills/ad-config-ops/scripts/`。
-- R4 验收默认是下发模式：用户要求“创建/新增/配置 SLB 资源”时，必须生成计划、下发到 AD 设备、验证资源存在，并产出回滚脚本。
-- 只有用户明确说“只生成、不下发、预览”时，才禁止运行 `--execute`。
+- R4 必须分阶段执行：提示词先落成 YAML；YAML 再生成计划/脚本；用户明确选择后才进入下发验证。
+- 禁止用追问补参数。提示词不完整时，直接产出带空字段/注释的 YAML 模板让人工补齐，不能猜。
+- 用户选择“仅产出脚本”时，只输出正向脚本和回滚脚本，不下发。
+- 用户选择“下发验证”时，下发前必须 GET 设备保存 baseline；下发后必须 GET 验证资源；然后停止，等待用户人工检查完成后再回滚。
+- 回滚后必须再次 GET，并和下发前 baseline 比较；两次 GET 不一致时，禁止宣称兜底成功。
 - 不要手写 API payload、batch JSON、apply.py 或回滚文件；必须由脚本生成。
 - 不要打开、粘贴、改写或解析生成的 `adops-bundle.yml`、`adops-plan.json`、`adops-batch.json`、`apply.py`。这些文件是机器产物。
 - 面向用户输出时，只使用脚本 stdout 的短 JSON 摘要和 `summarize-plan` 的结果。
@@ -21,13 +24,15 @@ python3 skills/ad-config-ops/scripts/init_env.py --workdir "$AD_OPS_WORKDIR" --c
 python3 skills/ad-config-ops/scripts/ad_ops_flow.py status --workdir "$AD_OPS_WORKDIR"
 ```
 
-## 通用 SLB 组合生成与下发
+## R4 固定阶段
 
-当用户要求新建或生成 SLB/VS 配置，例如“新增 VS”“VS + XFF”“VS + PRE_RULE”“VS + Pool + 节点”“VS 引用已有策略”等，优先使用通用组合入口：
+### 阶段 A：提示词到 YAML
 
-- 如果用户没有给完整参数，先追问缺失参数。
-- 常见组合参数齐全时，优先使用 `render_slb_bundle.py` 直接生成 bundle，减少人工填写。
-- 如果提示词无法识别、参数仍不完整、资源组合超出 `render_slb_bundle.py` 支持范围，必须保留 YAML 模板兜底：走“通用模板流程”，让用户补全模板后再继续规划和下发。
+当用户要求新建或生成 SLB/VS 配置，例如“新增 VS”“VS + XFF”“VS + PRE_RULE”“VS + Pool + 节点”“VS 引用已有策略”等，第一步只做 YAML，不追问。
+
+- 常见组合参数能从提示词识别时，使用 `render_slb_bundle.py` 生成 `adops-bundle.yml`。
+- 提示词缺字段或组合超出快捷矩阵时，使用“通用模板流程”生成 `adops-bundle.yml` 模板，让用户人工补齐。
+- 阶段 A 结束时停止，要求用户检查/补齐 YAML 并确认进入阶段 B。
 
 ```bash
 python3 skills/ad-config-ops/scripts/render_slb_bundle.py \
@@ -43,7 +48,13 @@ python3 skills/ad-config-ops/scripts/render_slb_bundle.py \
   [--create-pre-rule-http <NEW_PRE_RULE>] \
   [--pre-rule-uri-pattern <URI_PATTERN>] \
   --workdir "$AD_OPS_WORKDIR"
+```
 
+### 阶段 B：YAML 到脚本/下发选择
+
+用户确认 YAML 后，生成计划和脚本，并先用 YAML 对设备做同名资源 GET 预检。有同名 create 目标存在时，直接复用该资源，重新渲染有效计划和脚本；不要再 POST 创建同名资源。
+
+```bash
 python3 skills/ad-config-ops/scripts/ad_ops_flow.py plan-and-render \
   --skill-root skills/ad-config-ops \
   --bundle "$AD_OPS_WORKDIR/adops-bundle.yml" \
@@ -52,9 +63,25 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py plan-and-render \
 python3 skills/ad-config-ops/scripts/ad_ops_flow.py summarize-plan \
   --plan "$AD_OPS_WORKDIR/adops-plan.json" \
   --workdir "$AD_OPS_WORKDIR"
+
+python3 skills/ad-config-ops/scripts/ad_ops_flow.py preflight-slb-plan \
+  --plan "$AD_OPS_WORKDIR/adops-plan.json" \
+  --host "$AD_HOST" \
+  --username "$AD_USERNAME" \
+  --workdir "$AD_OPS_WORKDIR"
 ```
 
-参数完整后的默认下发命令使用固定编排 `apply-slb-plan`，不要让模型自行拼接多个下发/验证命令：
+Preflight safety: HTTP 404 means absent; any other GET failure blocks the workflow before script output or device mutation.
+Same-name reuse safety: an existing resource is reused by name and is not overwritten. If stdout reports `reuse_compatibility_warning_count > 0`, surface it to the user and require manual review during the device inspection step.
+
+预检后必须让用户二选一：
+
+- 仅产出脚本：输出 `apply.py` 和 `rollback_apply.py` 后结束。
+- 下发验证：进入阶段 C。
+
+### 阶段 C：下发、人工检查、回滚兜底
+
+用户选择下发验证时，使用固定编排 `apply-slb-plan`，不要让模型自行拼接多个下发/验证命令。该命令会自动执行 preflight GET、复用同名资源、下发有效计划、保存 post-apply GET，并生成回滚清单。
 
 ```bash
 export AD_HOST="<AD_HOST>"
@@ -73,26 +100,32 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py apply-slb-plan \
   --workdir "$AD_OPS_WORKDIR"
 ```
 
-成功后必须告诉用户：
+`apply-slb-plan` 完成后必须停止，明确让用户到设备侧人工检查。用户回复“检查完成，执行回滚”后，才运行：
+
+```bash
+python3 skills/ad-config-ops/scripts/ad_ops_flow.py rollback-and-verify \
+  --manifest "$AD_OPS_WORKDIR/adops-rollback.json" \
+  --baseline "$AD_OPS_WORKDIR/adops-preflight.json" \
+  --host "$AD_HOST" \
+  --username "$AD_USERNAME" \
+  --workdir "$AD_OPS_WORKDIR"
+```
+
+阶段 B/C 成功后必须告诉用户：
 
 - 下发脚本：`$AD_OPS_WORKDIR/apply.py`
 - batch：`$AD_OPS_WORKDIR/adops-batch.json`
+- 预检 baseline：`$AD_OPS_WORKDIR/adops-preflight.json`
+- 有效计划：`$AD_OPS_WORKDIR/adops-effective-plan.json`
 - 执行结果：`$AD_OPS_WORKDIR/adops-execute-result.json`
+- 下发后 GET：`$AD_OPS_WORKDIR/adops-post-apply.json`
 - 回滚脚本：`$AD_OPS_WORKDIR/rollback_apply.py`
 - 回滚清单：`$AD_OPS_WORKDIR/adops-rollback.json`
+- 回滚后 GET：`$AD_OPS_WORKDIR/adops-post-rollback.json`
+- 回滚前后比较：`$AD_OPS_WORKDIR/adops-rollback-compare.json`
 - 设备验证结果：`apply-slb-plan` stdout 中的 `verify_result`
 
-如果用户要求回滚，才执行：
-
-```bash
-python3 skills/ad-config-ops/scripts/rollback.py \
-  --manifest "$AD_OPS_WORKDIR/adops-rollback.json" \
-  --host "$AD_HOST" \
-  --username "$AD_USERNAME" \
-  --password "$AD_PASSWORD" \
-  --execute \
-  --workdir "$AD_OPS_WORKDIR"
-```
+Rollback safety: `rollback-and-verify` must use the rollback manifest and baseline created by the same `apply-slb-plan` run and the same AD host. A host/plan mismatch is a hard stop.
 
 Supported composition examples:
 
@@ -143,19 +176,24 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 - rollback_script: <路径>
 - rollback: <路径>
 - execute_result: <路径>
+- preflight: <路径>
+- post_apply: <路径>
+- post_rollback: <路径>
+- rollback_compare: <路径>
 
 ## 操作计划
 - <method> <path> (<operation id>)
 
 ## 下发状态
 已下发/未下发：<状态>
-设备验证：<verify_slb_resource.py stdout 摘要>
-回滚：已生成回滚清单，未执行回滚；如需回滚请明确要求。
+设备验证：<apply-slb-plan/verify_slb_resource.py stdout 摘要>
+人工检查：<等待用户检查/已检查>
+回滚：<未执行/已执行>；回滚后 GET 与下发前 baseline 是否一致：<是/否/未执行>
 ```
 
 ## 通用模板流程
 
-如果用户的资源组合超出 `render_slb_bundle.py` 支持范围，先查 API，再生成模板，用户填好后再规划：
+如果用户的资源组合超出 `render_slb_bundle.py` 支持范围，先查 API，再生成模板，用户填好后再规划。不要追问字段；用 YAML 模板承接人工补齐：
 
 ```bash
 python3 skills/ad-config-ops/scripts/lookup_api.py --skill-root skills/ad-config-ops --query "<intent>" --module <module> --out "$AD_OPS_WORKDIR/adops-lookup.json" --summary
