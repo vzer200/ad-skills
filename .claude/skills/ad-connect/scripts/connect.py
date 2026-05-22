@@ -158,6 +158,7 @@ def main() -> None:
     parser.add_argument("--host", default="", help="单设备地址")
     parser.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
     parser.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
+    parser.add_argument("--device", default="", help="从 --devices 中选择单台设备名称，如 AD1")
     parser.add_argument("--user", default="admin", help="用户名 (default: admin)")
     parser.add_argument("--password", default="", help="密码 (或环境变量 AD_PASS)")
     parser.add_argument("--format", choices=["table", "json"], default="table",
@@ -172,7 +173,7 @@ def main() -> None:
         if args.hosts:
             devices = parse_hosts_arg(args.hosts, args.user, password)
         else:
-            devices = load_devices_json(args.devices)
+            devices = load_devices_json(args.devices, args.device)
 
         if not devices:
             print("错误: 设备列表为空", file=sys.stderr)

@@ -20,7 +20,7 @@ cd ~/manager-workspace/workspace/skills/ad-check-analysis
 python scripts/check.py scenes \
   --host https://10.74.27.42 \
   --user admin \
-  --password root1234+
+  --password "$AD_PASS"
 ```
 
 ### 执行标准巡检
@@ -29,7 +29,7 @@ python scripts/check.py scenes \
 python scripts/check.py run \
   --host https://10.74.27.42 \
   --user admin \
-  --password root1234+ \
+  --password "$AD_PASS" \
   --scene "标准巡检"
 ```
 
@@ -39,7 +39,7 @@ python scripts/check.py run \
 python scripts/check.py run \
   --host https://10.74.27.42 \
   --user admin \
-  --password root1234+ \
+  --password "$AD_PASS" \
   --scene "安全巡检"
 ```
 
@@ -49,7 +49,7 @@ python scripts/check.py run \
 python scripts/check.py run \
   --host https://10.74.27.42 \
   --user admin \
-  --password root1234+ \
+  --password "$AD_PASS" \
   --scene "全量巡检"
 ```
 
@@ -59,7 +59,7 @@ python scripts/check.py run \
 python scripts/check.py progress \
   --host https://10.74.27.42 \
   --user admin \
-  --password root1234+
+  --password "$AD_PASS"
 ```
 
 ### 查看历史巡检记录
@@ -68,15 +68,15 @@ python scripts/check.py progress \
 python scripts/check.py history \
   --host https://10.74.27.42 \
   --user admin \
-  --password root1234+
+  --password "$AD_PASS"
 ```
 
 ## 已知设备
 
-| 设备名 | IP 地址 | 用户名 | 密码 |
-|--------|---------|--------|------|
-| AD1 | 192.168.8.30 | admin | root1234+ |
-| AD2 | 192.168.8.31 | admin | root1234++ |
+| 设备名 | 管理地址来源 | 用户名 | 密码来源 |
+|--------|--------------|--------|----------|
+| AD1 | devices.json / AD1_HOST | admin | AD1_PASS |
+| AD2 | devices.json / AD2_HOST | admin | AD2_PASS |
 
 ## 巡检场景
 

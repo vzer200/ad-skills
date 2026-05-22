@@ -26,6 +26,7 @@ DEFAULT_EXECUTE_RESULT_NAME = f"{GENERATED_FILE_PREFIX}execute-result.json"
 DEFAULT_EXECUTE_PREVIEW_NAME = f"{GENERATED_FILE_PREFIX}execute-preview.json"
 DEFAULT_ROLLBACK_NAME = f"{GENERATED_FILE_PREFIX}rollback.json"
 DEFAULT_ROLLBACK_RESULT_NAME = f"{GENERATED_FILE_PREFIX}rollback-result.json"
+DEFAULT_ROLLBACK_SCRIPT_NAME = "rollback_apply.py"
 LEGACY_GENERATED_FILE_NAMES = {
     "ad-ops-env.json",
     "ad-ops-env.sh",
@@ -38,6 +39,7 @@ LEGACY_GENERATED_FILE_NAMES = {
     "execute-preview.json",
     "rollback.json",
     "rollback-result.json",
+    "rollback_apply.py",
 }
 
 

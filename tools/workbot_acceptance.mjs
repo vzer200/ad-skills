@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { spawnSync } from "node:child_process";
 
 const require = createRequire(import.meta.url);
 
@@ -38,6 +39,11 @@ const WORKBOT_PASSWORD = argValue("--password", process.env.WORKBOT_PASSWORD);
 const ZIP_PATH = path.resolve(argValue("--zip", process.env.AD_SKILLS_ZIP || "dist/ad-skills-workbot.zip"));
 const OUT_DIR = path.resolve(argValue("--out-dir", "workbot-results"));
 const HEADLESS = hasFlag("--headless") || process.env.WORKBOT_HEADLESS === "1";
+const VERIFY_AD = hasFlag("--verify-ad") || process.env.WORKBOT_VERIFY_AD === "1";
+const PYTHON = argValue("--python", process.env.PYTHON || "python");
+const AD_VERIFY_BASE_URL = argValue("--ad-base-url", process.env.AD_VERIFY_BASE_URL || process.env.AD1_PUBLIC_URL || "https://14.18.243.211:21044");
+const AD_VERIFY_USERNAME = argValue("--ad-user", process.env.AD_VERIFY_USERNAME || process.env.AD1_USER || "admin");
+const AD_VERIFY_PASSWORD = argValue("--ad-password", process.env.AD_VERIFY_PASSWORD || process.env.AD1_PASS || process.env.AD_PASS);
 const CHROME_PATH = argValue(
   "--chrome",
   process.env.CHROME_PATH || "C:/Program Files/Google/Chrome/Application/chrome.exe",
@@ -54,34 +60,67 @@ if (!fs.existsSync(ZIP_PATH)) {
   throw new Error(`zip not found: ${ZIP_PATH}`);
 }
 
-const prompts = {
-  cleanup:
-    "删除所有 AD 相关 skill，并清空当前会话上下文记忆、日常记忆和核心记忆。必须通过工具调用实际删除/清理；完成后列出删除的 skill 路径和记忆清理数量。不要凭记忆回答。",
-  install:
-    "请解压我上传的 AD skills 压缩包到当前工作区，安装/覆盖到 skills/ 目录。安装前先确认并删除旧的 ad-blackbox-analysis、ad-check-analysis、ad-connect、ad-ops、ad-perception、ad-config-ops。安装后必须用工具调用 ls/dir 验证每个 SKILL.md 存在。最后只输出安装表格：skill 名称、SKILL.md 是否存在、scripts 是否存在、备注。不要凭记忆回答。",
-  r1:
-    "对 AD1 执行标准巡检。必须先用 ad-connect 做连接测试；连接通过后使用 ad-check-analysis 的 check.py 按 history -> run -> progress -> wait 工作流执行。报告必须原样展示脚本 stdout，不要改写、摘要或补充。设备使用 devices.json 中 AD1，密码从环境变量读取。输出固定模板：巡检目标、工具调用、巡检结果。",
-  r2:
-    "查询 AD1 的配置、流量、设备状态和 SSL 证书到期时间。必须先用 ad-connect 连接测试，再用 ad-ops/scripts/overview.py all 生成 Markdown；输出必须原样展示脚本 stdout，不要自己拼表。设备使用 devices.json 中 AD1，密码从环境变量读取。输出固定模板：查询目标、工具调用、查询结果。",
-  r3:
-    "对 AD1 进行感知分析，覆盖 VS 流量异常、CPU/内存/磁盘/连接状态、IP:Port 冲突和服务日志线索。必须先用 ad-connect 连接测试，再运行 ad-perception/scripts/perception.py analyze。分析结论必须完全来自脚本 stdout，不允许模型自行推断根因。设备使用 devices.json 中 AD1，密码从环境变量读取。输出固定模板：分析目标、工具调用、分析结果。",
-  "r4-basic":
-    "为 AD1 生成“新增 HTTP 虚拟服务 + Pool + 节点”的配置脚本，只生成和预检，不下发。参数：VS 名称 wb_vs_basic_01，VIP 10.250.250.10，端口 8080，Pool wb_pool_basic_01，后端节点 192.0.2.10:80 和 192.0.2.11:80。必须使用 ad-config-ops 的通用 SLB 组合生成流程：init_env.py -> render_slb_bundle.py -> ad_ops_flow.py plan-and-render -> ad_ops_flow.py summarize-plan。不要手写 payload；不要执行 --execute。输出固定模板：目标、工具调用、生成产物、操作计划、下发状态。",
-  "r4-prerule":
-    "为 AD1 生成“新增 HTTP 虚拟服务 + Pool + 节点 + HTTP Pre Rule”的配置脚本，只生成和预检，不下发。参数：VS 名称 wb_vs_prerule_01，VIP 10.250.250.20，端口 8081，Pool wb_pool_prerule_01，后端节点 192.0.2.20:80，HTTP Pre Rule 名称 wb_pre_rule_01，URI 匹配包含 /api，动作调度到 Pool。必须使用 ad-config-ops 的通用 SLB 组合生成流程和 render_slb_bundle.py；不要手写 payload；不要执行 --execute。输出固定模板：目标、工具调用、生成产物、操作计划、下发状态。",
-  "r4-xff":
-    "为 AD1 生成“新增 HTTP 虚拟服务 + Pool + 节点 + 插入 XFF”的配置脚本，只生成和预检，不下发。参数：VS 名称 wb_vs_xff_01，VIP 10.250.250.30，端口 8082，Pool wb_pool_xff_01，后端节点 192.0.2.30:80，HTTP Profile wb_xff_profile_01，Header X-Forwarded-For。必须使用 ad-config-ops 的通用 SLB 组合生成流程和 render_slb_bundle.py；不要手写 payload；不要执行 --execute。输出固定模板：目标、工具调用、生成产物、操作计划、下发状态。",
-};
+const NO_TOOL_FOLLOWUP =
+  "我没有看到工具调用记录。请不要凭记忆回答；请实际调用工具完成刚才的任务，并在结果里列出调用过的工具、命令、退出码和 stdout/stderr 摘要。";
+const DEVICE_FOLLOWUP =
+  "我没有看到 AD1 外网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本，并展示连接目标、退出码和脚本 stdout。";
 
-const expected = {
-  cleanup: ["skill", "清空"],
-  install: ["ad-config-ops", "SKILL.md"],
-  r1: ["connect.py", "check.py", "history", "run", "progress", "wait"],
-  r2: ["connect.py", "overview.py", "all"],
-  r3: ["connect.py", "perception.py", "analyze"],
-  "r4-basic": ["init_env.py", "render_slb_bundle.py", "plan-and-render", "summarize-plan"],
-  "r4-prerule": ["init_env.py", "render_slb_bundle.py", "pre-rule", "plan-and-render", "summarize-plan"],
-  "r4-xff": ["init_env.py", "render_slb_bundle.py", "http-profile", "plan-and-render", "summarize-plan"],
+const cases = {
+  cleanup: {
+    prompt: "请清理旧的 AD skills 和相关记忆。",
+    expected: ["skill", "记忆"],
+    requireTools: true,
+  },
+  install: {
+    prompt: "请安装我刚上传的 AD skills 包，并确认 6 个 skill 都可用。",
+    expected: ["ad-config-ops", "SKILL.md"],
+    requireTools: true,
+  },
+  r1: {
+    prompt: "请对 AD1 做一次标准巡检。",
+    params: "使用 devices.json 里的 AD1，必须带 --device AD1，密码从环境变量读取。请先 history，再用 check.py run --wait 完成巡检，结果以工具 stdout 为准。",
+    expected: ["connect.py", "--device", "AD1", "check.py", "history", "run", "--wait"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  r2: {
+    prompt: "帮我查一下 AD1 的配置、流量、设备状态和 SSL 证书到期时间。",
+    params: "使用 devices.json 里的 AD1，必须带 --device AD1，密码从环境变量读取。请实际调用查询 skill，最终结果展示脚本 stdout。",
+    expected: ["connect.py", "--device", "AD1", "overview.py", "all"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  r3: {
+    prompt: "请对 AD1 做一次感知分析，重点看流量、资源、冲突和日志线索。",
+    params: "使用 devices.json 里的 AD1，必须带 --device AD1 做连接预检，密码从环境变量读取。请实际调用感知分析 skill，分析结论以脚本 stdout 为准。",
+    expected: ["connect.py", "--device", "AD1", "perception.py", "analyze"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r4-basic": {
+    prompt: "请在 AD1 创建一个 HTTP 虚拟服务，带新 Pool 和两个节点。",
+    params:
+      "参数：VS 名称 wb_vs_basic_01，VIP 10.250.250.10，端口 8080，Pool wb_pool_basic_01，后端节点 192.0.2.10:80 和 192.0.2.11:80。账号 admin，密码从环境变量读取。需要下发，并输出下发脚本、回滚脚本和设备验证结果。",
+    expected: ["init_env.py", "render_slb_bundle.py", "plan-and-render", "apply-slb-plan", "verify_slb_resource.py"],
+    requireTools: true,
+    verifyPresent: { vsName: "wb_vs_basic_01", poolName: "wb_pool_basic_01", nodeIp: "192.0.2.10" },
+  },
+  "r4-prerule": {
+    prompt: "请在 AD1 创建一个 HTTP 虚拟服务，带新 Pool、节点和 HTTP Pre Rule。",
+    params:
+      "参数：VS 名称 wb_vs_prerule_01，VIP 10.250.250.20，端口 8081，Pool wb_pool_prerule_01，后端节点 192.0.2.20:80，HTTP Pre Rule 名称 wb_pre_rule_01，URI 匹配包含 /api，动作调度到 Pool。账号 admin，密码从环境变量读取。需要下发，并输出下发脚本、回滚脚本和设备验证结果。",
+    expected: ["init_env.py", "render_slb_bundle.py", "pre-rule", "plan-and-render", "apply-slb-plan", "verify_slb_resource.py"],
+    requireTools: true,
+    verifyPresent: { vsName: "wb_vs_prerule_01", poolName: "wb_pool_prerule_01", nodeIp: "192.0.2.20", preRule: "wb_pre_rule_01" },
+  },
+  "r4-xff": {
+    prompt: "请在 AD1 创建一个 HTTP 虚拟服务，带新 Pool、节点和插入 XFF 的 HTTP Profile。",
+    params:
+      "参数：VS 名称 wb_vs_xff_01，VIP 10.250.250.30，端口 8082，Pool wb_pool_xff_01，后端节点 192.0.2.30:80，HTTP Profile wb_xff_profile_01，Header X-Forwarded-For。账号 admin，密码从环境变量读取。需要下发，并输出下发脚本、回滚脚本和设备验证结果。",
+    expected: ["init_env.py", "render_slb_bundle.py", "http-profile", "plan-and-render", "apply-slb-plan", "verify_slb_resource.py"],
+    requireTools: true,
+    verifyPresent: { vsName: "wb_vs_xff_01", poolName: "wb_pool_xff_01", nodeIp: "192.0.2.30", httpProfile: "wb_xff_profile_01" },
+  },
 };
 
 function log(event, data = {}) {
@@ -92,6 +131,18 @@ async function text(page) {
   return page.locator("body").innerText({ timeout: 5000 }).catch(() => "");
 }
 
+async function lastAgent(page) {
+  const locator = page.locator(".chat-messages__item.chat-messages__item--agent");
+  const count = await locator.count().catch(() => 0);
+  return count ? locator.nth(count - 1) : null;
+}
+
+async function lastAgentText(page) {
+  const agent = await lastAgent(page);
+  if (!agent) return "";
+  return agent.innerText({ timeout: 5000 }).catch(() => "");
+}
+
 async function savePageArtifacts(page, label) {
   const safeLabel = label.replace(/[^a-zA-Z0-9_.-]+/g, "-");
   const base = path.join(OUT_DIR, `${Date.now()}-${safeLabel}`);
@@ -99,8 +150,13 @@ async function savePageArtifacts(page, label) {
   artifacts.text = `${base}.txt`;
   artifacts.html = `${base}.html`;
   artifacts.screenshot = `${base}.png`;
+  artifacts.lastAgentText = `${base}.agent.txt`;
+  artifacts.lastAgentHtml = `${base}.agent.html`;
   await fs.promises.writeFile(artifacts.text, await text(page), "utf8").catch(() => {});
   await fs.promises.writeFile(artifacts.html, await page.content(), "utf8").catch(() => {});
+  await fs.promises.writeFile(artifacts.lastAgentText, await lastAgentText(page), "utf8").catch(() => {});
+  const agent = await lastAgent(page);
+  if (agent) await fs.promises.writeFile(artifacts.lastAgentHtml, await agent.evaluate((node) => node.outerHTML), "utf8").catch(() => {});
   await page.screenshot({ path: artifacts.screenshot, fullPage: true }).catch(() => {});
   return artifacts;
 }
@@ -159,6 +215,8 @@ async function waitForIdleText(page, beforeText, label, maxMs = 300000) {
 
 async function expandToolCalls(page) {
   const selectors = [
+    '[utid="thinking-toggle"]',
+    ".agent-bubble__thinking-header",
     'button:has-text("工具")',
     'button:has-text("调用")',
     '[role="button"]:has-text("工具")',
@@ -177,19 +235,166 @@ async function expandToolCalls(page) {
   await page.waitForTimeout(1000);
 }
 
+async function collectToolEvidence(page) {
+  const agent = await lastAgent(page);
+  if (!agent) return { hasEvidence: false, candidates: [] };
+  const selectors = [
+    '[class*="tool" i]',
+    '[utid*="tool" i]',
+    '[class*="command" i]',
+    '[class*="terminal" i]',
+    '[aria-expanded]',
+    "pre",
+    "code",
+  ];
+  const candidates = [];
+  for (const selector of selectors) {
+    const locator = agent.locator(selector);
+    const count = Math.min(await locator.count().catch(() => 0), 30);
+    for (let i = 0; i < count; i += 1) {
+      const item = locator.nth(i);
+      const value = await item.innerText({ timeout: 1000 }).catch(() => "");
+      const attrs = await item.evaluate((node) => ({
+        className: node.getAttribute("class") || "",
+        utid: node.getAttribute("utid") || "",
+        role: node.getAttribute("role") || "",
+        ariaExpanded: node.getAttribute("aria-expanded") || "",
+      })).catch(() => ({}));
+      if (value.trim() || attrs.className || attrs.utid || attrs.ariaExpanded) {
+        candidates.push({ selector, text: value.trim().slice(0, 2000), ...attrs });
+      }
+    }
+  }
+  const commandLike = /(stdout|stderr|exit\s*code|退出码|命令|工具调用|connect\.py|check\.py|overview\.py|perception\.py|render_slb_bundle\.py|ad_ops_flow\.py|init_env\.py|python|bash|powershell|cmd\.exe)/i;
+  const hasEvidence = candidates.some((item) => {
+    const marker = `${item.selector} ${item.className || ""} ${item.utid || ""} ${item.text || ""}`;
+    const looksLikeToolNode = /tool|command|terminal/i.test(`${item.selector} ${item.className || ""} ${item.utid || ""}`);
+    return looksLikeToolNode || commandLike.test(marker);
+  });
+  return { hasEvidence, candidates };
+}
+
+function asksForParameters(value) {
+  return /请.*(提供|补充|确认|指定)|需要.*(参数|信息|名称|地址|密码)|缺少|参数|VIP|Pool|节点|端口/i.test(value || "");
+}
+
+function hasDeviceEvidence(value) {
+  return /(devices\.json|AD1|connect\.py|14\.18\.243\.211|192\.168\.8\.3[01]|认证|auth|reach|连接测试|连接正常)/i.test(value || "");
+}
+
+function runLocalAdVerification(name, cfg) {
+  if (!VERIFY_AD) return { status: "disabled" };
+  if (!AD_VERIFY_PASSWORD) {
+    return {
+      status: "skipped",
+      reason: "missing AD_VERIFY_PASSWORD, AD1_PASS, or AD_PASS",
+      baseUrl: AD_VERIFY_BASE_URL,
+      username: AD_VERIFY_USERNAME,
+    };
+  }
+
+  const env = {
+    ...process.env,
+    PYTHONUTF8: "1",
+    AD_BASE_URL: AD_VERIFY_BASE_URL,
+    AD_USERNAME: AD_VERIFY_USERNAME,
+    AD_PASSWORD: AD_VERIFY_PASSWORD,
+    AD_PASS: AD_VERIFY_PASSWORD,
+  };
+  const target = cfg && (cfg.verifyPresent || cfg.verifyAbsent);
+  const expect = cfg && cfg.verifyPresent ? "present" : "absent";
+  const command =
+    target
+      ? {
+          kind: `verify_${expect}`,
+          args: [
+            ".claude/skills/ad-config-ops/scripts/verify_slb_resource.py",
+            "--expect",
+            expect,
+            "--base-url",
+            AD_VERIFY_BASE_URL,
+            "--username",
+            AD_VERIFY_USERNAME,
+            "--vs-name",
+            target.vsName,
+            "--pool-name",
+            target.poolName,
+            "--node-ip",
+            target.nodeIp,
+            ...(target.httpProfile ? ["--http-profile", target.httpProfile] : []),
+            ...(target.preRule ? ["--pre-rule", target.preRule] : []),
+          ],
+        }
+      : {
+          kind: "connect",
+          args: [
+            ".claude/skills/ad-connect/scripts/connect.py",
+            "--host",
+            AD_VERIFY_BASE_URL,
+            "--user",
+            AD_VERIFY_USERNAME,
+            "--format",
+            "json",
+          ],
+        };
+
+  const displayArgs = command.args.map((item) => (item === AD_VERIFY_PASSWORD ? "<redacted>" : item));
+  log("ad-verify-start", { name, kind: command.kind, args: displayArgs });
+  const result = spawnSync(PYTHON, command.args, {
+    cwd: process.cwd(),
+    env,
+    encoding: "utf8",
+    timeout: 120000,
+    windowsHide: true,
+  });
+  const stdout = result.stdout || "";
+  const stderr = result.stderr || "";
+  let parsed = null;
+  try {
+    parsed = JSON.parse(stdout);
+  } catch {
+    // Keep raw stdout for troubleshooting.
+  }
+  const ok = result.status === 0;
+  log("ad-verify-done", { name, kind: command.kind, status: result.status, ok });
+  return {
+    status: ok ? "ok" : "fail",
+    kind: command.kind,
+    command: [PYTHON, ...displayArgs].join(" "),
+    exitCode: result.status,
+    stdout: stdout.slice(-8000),
+    stderr: stderr.slice(-4000),
+    parsed,
+    baseUrl: AD_VERIFY_BASE_URL,
+    username: AD_VERIFY_USERNAME,
+  };
+}
+
 async function sendPrompt(page, name, prompt) {
   log("prompt-start", { name, promptLength: prompt.length });
   const before = await text(page);
+  const beforeAgentCount = await page.locator(".chat-messages__item.chat-messages__item--agent").count().catch(() => 0);
   await page.locator("textarea.chat-input__textarea").fill(prompt);
   await page.locator('button[utid="send-btn"]').click();
-  log("prompt-sent", { name, beforeLength: before.length });
+  log("prompt-sent", { name, beforeLength: before.length, beforeAgentCount });
   const after = await waitForIdleText(page, before, name);
   await expandToolCalls(page);
   const expanded = await text(page);
   const delta = expanded.startsWith(before) ? expanded.slice(before.length) : expanded;
+  const agentText = await lastAgentText(page);
+  const toolEvidence = await collectToolEvidence(page);
   const artifacts = await savePageArtifacts(page, name);
-  log("prompt-done", { name, afterLength: after.length, expandedLength: expanded.length, deltaLength: delta.length, artifacts });
-  return { name, prompt, text: delta.slice(-12000), artifacts };
+  log("prompt-done", {
+    name,
+    afterLength: after.length,
+    expandedLength: expanded.length,
+    deltaLength: delta.length,
+    agentLength: agentText.length,
+    toolEvidence: toolEvidence.hasEvidence,
+    toolCandidateCount: toolEvidence.candidates.length,
+    artifacts,
+  });
+  return { name, prompt, text: delta.slice(-12000), agentText: agentText.slice(-12000), toolEvidence, artifacts };
 }
 
 async function uploadZip(page) {
@@ -202,11 +407,59 @@ async function uploadZip(page) {
 }
 
 function verify(run) {
-  const tokens = expected[run.name] || [];
-  const found = tokens.filter((token) => run.text.includes(token));
-  const missing = tokens.filter((token) => !run.text.includes(token));
-  const forbidden = run.name.startsWith("r4") && run.text.includes("--execute");
-  return { ...run, expected: tokens, found, missing, ok: missing.length === 0 && !forbidden, forbidden_execute: forbidden };
+  const cfg = cases[run.name] || {};
+  const tokens = cfg.expected || [];
+  const searchable = `${run.text || ""}\n${run.agentText || ""}`;
+  const found = tokens.filter((token) => searchable.includes(token));
+  const missing = tokens.filter((token) => !searchable.includes(token));
+  const forbidden = cfg.forbidExecute && /(^|\s)--execute(\s|$)/.test(searchable);
+  const toolEvidenceOk = !cfg.requireTools || run.responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence);
+  const deviceEvidenceOk = !cfg.requireDevice || hasDeviceEvidence(searchable);
+  const localVerificationOk = !run.localVerification || run.localVerification.status !== "fail";
+  return {
+    ...run,
+    expected: tokens,
+    found,
+    missing,
+    toolEvidenceOk,
+    deviceEvidenceOk,
+    localVerificationOk,
+    ok: missing.length === 0 && !forbidden && toolEvidenceOk && deviceEvidenceOk && localVerificationOk,
+    forbidden_execute: forbidden,
+  };
+}
+
+async function runCase(page, name) {
+  const cfg = cases[name];
+  if (!cfg) throw new Error(`unknown case: ${name}`);
+  const responses = [];
+  responses.push(await sendPrompt(page, name, cfg.prompt));
+  let combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
+
+  if (cfg.params && asksForParameters(combinedText)) {
+    responses.push(await sendPrompt(page, `${name}-params`, cfg.params));
+    combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
+  }
+
+  if (cfg.requireTools && !responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence)) {
+    responses.push(await sendPrompt(page, `${name}-tool-followup`, NO_TOOL_FOLLOWUP));
+    combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
+  }
+
+  if (cfg.requireDevice && !hasDeviceEvidence(combinedText)) {
+    responses.push(await sendPrompt(page, `${name}-device-followup`, DEVICE_FOLLOWUP));
+    combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
+  }
+  const localVerification = VERIFY_AD && (cfg.requireDevice || cfg.verifyPresent || cfg.verifyAbsent) ? runLocalAdVerification(name, cfg) : { status: "disabled" };
+
+  return verify({
+    name,
+    prompt: cfg.prompt,
+    text: responses.map((item) => item.text).join("\n\n").slice(-20000),
+    agentText: responses.map((item) => item.agentText).join("\n\n").slice(-20000),
+    responses,
+    localVerification,
+  });
 }
 
 async function main() {
@@ -233,14 +486,13 @@ async function main() {
     log("login-start", { url: WORKBOT_URL, headless: HEADLESS });
     await loginIfNeeded(page);
     log("login-done", { currentUrl: page.url() });
-    results.push(verify(await sendPrompt(page, "cleanup", prompts.cleanup)));
+    results.push(await runCase(page, "cleanup"));
     if (CASES.includes("install")) {
       await uploadZip(page);
-      results.push(verify(await sendPrompt(page, "install", prompts.install)));
+      results.push(await runCase(page, "install"));
     }
     for (const name of CASES.filter((name) => name !== "install")) {
-      if (!prompts[name]) throw new Error(`unknown case: ${name}`);
-      results.push(verify(await sendPrompt(page, name, prompts[name])));
+      results.push(await runCase(page, name));
     }
   } catch (error) {
     failure = error;

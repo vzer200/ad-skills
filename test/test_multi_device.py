@@ -137,6 +137,26 @@ class TestLoadDevicesJson(unittest.TestCase):
         finally:
             os.unlink(tmp_path)
 
+    def test_filters_named_device_and_applies_env_overrides(self):
+        data = {"devices": [
+            {"name": "AD1", "host": "https://192.0.2.1", "user": "admin", "password_from": "AD1_PASS"},
+            {"name": "AD2", "host": "https://192.0.2.2", "user": "admin", "password_from": "AD2_PASS"},
+        ]}
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as f:
+            json.dump(data, f)
+            tmp_path = f.name
+        try:
+            from multi_device import load_devices_json
+            with patch.dict(os.environ, {"AD1_HOST": "https://203.0.113.10:8443", "AD1_USER": "ops"}, clear=False):
+                devices = load_devices_json(tmp_path, "AD1")
+            self.assertEqual(len(devices), 1)
+            self.assertEqual(devices[0]["name"], "AD1")
+            self.assertEqual(devices[0]["host"], "https://203.0.113.10:8443")
+            self.assertEqual(devices[0]["user"], "ops")
+            self.assertEqual(devices[0]["password_from"], "AD1_PASS")
+        finally:
+            os.unlink(tmp_path)
+
 
 class TestHostSlug(unittest.TestCase):
     """Tests for host_slug()."""

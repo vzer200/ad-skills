@@ -564,6 +564,11 @@ def main():
         help="设备清单 JSON 文件路径 (密码不同时使用)",
     )
     parser.add_argument(
+        "--device",
+        default="",
+        help="从 --devices 中选择单台设备名称，如 AD1",
+    )
+    parser.add_argument(
         "--json", "-j",
         action="store_true",
         help="输出原始 JSON 格式",
@@ -670,7 +675,7 @@ def main():
         if args.hosts:
             devices = parse_hosts_arg(args.hosts, args.user, args.password)
         else:
-            devices = load_devices_json(args.devices)
+            devices = load_devices_json(args.devices, args.device)
 
         if not devices:
             print("错误: 设备列表为空", file=sys.stderr)

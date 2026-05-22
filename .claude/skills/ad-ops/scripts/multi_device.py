@@ -12,8 +12,10 @@ Provides:
     load_devices_json()  — load devices.json file
 """
 
+import copy
 import json
 import os
+import re
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as FutureTimeout
@@ -45,7 +47,54 @@ def parse_hosts_arg(hosts_str: str, user: str = "admin", password: str = "") -> 
     return devices
 
 
-def load_devices_json(path: str) -> List[Dict[str, Any]]:
+def _device_env_prefix(name: str) -> str:
+    """Return the environment prefix used for a device name such as AD1."""
+    return re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_").upper()
+
+
+def _first_env(names: List[str]) -> str:
+    for name in names:
+        value = os.environ.get(name)
+        if value:
+            return value
+    return ""
+
+
+def apply_device_env_overrides(device: Dict[str, Any]) -> Dict[str, Any]:
+    """Apply non-secret host/user overrides for named devices.
+
+    This keeps devices.json portable: AD1 can default to the documented host,
+    while WorkBot or local operators can select public/private reachability with
+    AD1_HOST, AD1_PUBLIC_URL, or AD1_BASE_URL.
+    """
+    item = copy.deepcopy(device)
+    name = str(item.get("name") or "").strip()
+    if not name:
+        return item
+    prefix = _device_env_prefix(name)
+    host = _first_env([f"{prefix}_HOST", f"{prefix}_PUBLIC_URL", f"{prefix}_BASE_URL"])
+    user = _first_env([f"{prefix}_USER", f"{prefix}_USERNAME"])
+    if host:
+        item["host"] = host
+    if user:
+        item["user"] = user
+    return item
+
+
+def filter_devices(devices: List[Dict[str, Any]], selector: str = "") -> List[Dict[str, Any]]:
+    """Filter devices by name or host. Empty selector returns all devices."""
+    needle = selector.strip().lower()
+    if not needle:
+        return devices
+    return [
+        device
+        for device in devices
+        if str(device.get("name", "")).strip().lower() == needle
+        or str(device.get("host", "")).strip().lower() == needle
+    ]
+
+
+def load_devices_json(path: str, device: str = "") -> List[Dict[str, Any]]:
     """Load device list from a JSON file.
 
     Expected format:
@@ -53,7 +102,8 @@ def load_devices_json(path: str) -> List[Dict[str, Any]]:
     """
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
-    return data.get("devices", [])
+    devices = [apply_device_env_overrides(item) for item in data.get("devices", [])]
+    return filter_devices(devices, device)
 
 
 def run_multi(

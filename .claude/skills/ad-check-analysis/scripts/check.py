@@ -1194,8 +1194,9 @@ def main() -> None:
     p_run.add_argument("--host", default="", help="设备地址 https://IP")
     p_run.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
     p_run.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
-    p_run.add_argument("--wait", action="store_true", help="多设备模式：等待巡检完成并输出报告")
-    p_run.add_argument("--no-wait", action="store_true", help="多设备模式：仅启动，不等待完成（默认）")
+    p_run.add_argument("--device", default="", help="从 --devices 中选择单台设备名称，如 AD1")
+    p_run.add_argument("--wait", action="store_true", help="等待巡检完成并输出报告")
+    p_run.add_argument("--no-wait", action="store_true", help="仅启动，不等待完成（默认）")
     p_run.add_argument("--username", default="admin")
     p_run.add_argument("--password", default="")
     p_run.add_argument("--scene", default="标准巡检", help="巡检场景")
@@ -1218,6 +1219,8 @@ def main() -> None:
     p_hist = sub.add_parser("history", help="查看历史巡检记录")
     p_hist.add_argument("--host", default="", help="设备地址 https://IP")
     p_hist.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
+    p_hist.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
+    p_hist.add_argument("--device", default="", help="从 --devices 中选择单台设备名称，如 AD1")
     p_hist.add_argument("--username", default="admin")
     p_hist.add_argument("--password", default="")
 
@@ -1225,6 +1228,8 @@ def main() -> None:
     p_prog = sub.add_parser("progress", help="查询巡检进度（单次）")
     p_prog.add_argument("--host", default="", help="设备地址 https://IP")
     p_prog.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
+    p_prog.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
+    p_prog.add_argument("--device", default="", help="从 --devices 中选择单台设备名称，如 AD1")
     p_prog.add_argument("--username", default="admin")
     p_prog.add_argument("--password", default="")
 
@@ -1255,9 +1260,9 @@ def main() -> None:
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     elif args.command == "run":
-        if args.hosts:
+        if args.hosts or args.devices:
             if args.devices:
-                devices = load_devices_json(args.devices)
+                devices = load_devices_json(args.devices, args.device)
             else:
                 devices = parse_hosts_arg(args.hosts, args.username, args.password)
             if not devices:
@@ -1291,9 +1296,13 @@ def main() -> None:
         client = ADClient(args.host, args.username, password)
         work_dir = args.work_dir or f"/tmp/ad_check_{int(time.time())}"
         try:
-            meta = start_check(client, args.scene, force=args.force, work_dir=work_dir)
-            print(f"         工作目录: {work_dir}")
-            print(f"         后续请用 wait 命令轮询进度，或用 progress 命令单独查询")
+            if args.wait:
+                result = _check_one(client, scene=args.scene, force=args.force, work_dir=work_dir)
+                print(result["markdown"])
+            else:
+                meta = start_check(client, args.scene, force=args.force, work_dir=work_dir)
+                print(f"         工作目录: {work_dir}")
+                print(f"         后续请用 wait 命令轮询进度，或用 progress 命令单独查询")
         except CheckSceneNotFoundError as e:
             print(f"❌ {e}", file=sys.stderr)
             sys.exit(4)
@@ -1334,8 +1343,11 @@ def main() -> None:
             sys.exit(4)
 
     elif args.command == "history":
-        if args.hosts:
-            devices = parse_hosts_arg(args.hosts, args.username, args.password)
+        if args.hosts or args.devices:
+            if args.devices:
+                devices = load_devices_json(args.devices, args.device)
+            else:
+                devices = parse_hosts_arg(args.hosts, args.username, args.password)
             results = run_multi(devices, lambda client, **kw: client._request("GET", "/debug/sys/offline-check", params={"type": "history"}))
             output = {"mode": "multi", "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v), "failed": sum(1 for v in results.values() if "error" in v)}, "results": results}
             print(json.dumps(output, indent=2, ensure_ascii=False))
@@ -1358,8 +1370,11 @@ def main() -> None:
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
     elif args.command == "progress":
-        if args.hosts:
-            devices = parse_hosts_arg(args.hosts, args.username, args.password)
+        if args.hosts or args.devices:
+            if args.devices:
+                devices = load_devices_json(args.devices, args.device)
+            else:
+                devices = parse_hosts_arg(args.hosts, args.username, args.password)
             results = run_multi(devices, _progress_one)
             output = {"mode": "multi", "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v), "failed": sum(1 for v in results.values() if "error" in v)}, "results": results}
             print(json.dumps(output, indent=2, ensure_ascii=False))

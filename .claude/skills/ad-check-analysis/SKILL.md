@@ -9,21 +9,19 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 
 - 巡检前必须先调用 `ad-connect` 做连接预检。
 - 所有业务逻辑必须由 `skills/ad-check-analysis/scripts/check.py` 执行。
-- 必须按 `history -> run -> progress -> wait` 顺序执行标准巡检。
+- 必须先查 `history`，再用 `run --wait` 原子入口完成启动、等待、下载和分析；只有用户明确要求分步观察进度时才拆成 `run -> progress -> wait`。
 - 脚本 stdout 是唯一事实来源。禁止模型自行生成巡检结论、风险项、分数或报告内容。
 - 如果用户指定 AD1/AD2，优先使用 `devices.json` 中的主机和环境变量密码。
 
 ## 标准巡检工作流
 
 ```bash
-python3 skills/ad-connect/scripts/connect.py --devices devices.json --format json
-python3 skills/ad-check-analysis/scripts/check.py history --host https://192.168.8.30 --username admin --password "$AD1_PASS"
-python3 skills/ad-check-analysis/scripts/check.py run --host https://192.168.8.30 --username admin --password "$AD1_PASS" --scene "标准巡检" --work-dir "$AD_CHECK_WORKDIR"
-python3 skills/ad-check-analysis/scripts/check.py progress --host https://192.168.8.30 --username admin --password "$AD1_PASS"
-python3 skills/ad-check-analysis/scripts/check.py wait --host https://192.168.8.30 --username admin --password "$AD1_PASS" --work-dir "$AD_CHECK_WORKDIR"
+python3 skills/ad-connect/scripts/connect.py --devices devices.json --device AD1 --format json
+python3 skills/ad-check-analysis/scripts/check.py history --devices devices.json --device AD1
+python3 skills/ad-check-analysis/scripts/check.py run --devices devices.json --device AD1 --scene "标准巡检" --wait --work-dir "$AD_CHECK_WORKDIR"
 ```
 
-如果 `run` 返回了工作目录或任务 ID，后续命令必须使用脚本返回值，不要凭记忆拼接。
+如果用户要求分步进度，`run` 返回了工作目录或任务 ID 后，后续 `progress/wait` 命令必须使用脚本返回值，不要凭记忆拼接。
 
 ## 批量巡检
 
@@ -41,10 +39,8 @@ python3 skills/ad-check-analysis/scripts/check.py run --devices devices.json --s
 ## 工具调用
 - connect.py: <exit code/摘要>
 - check.py history: <摘要>
-- check.py run: <摘要>
-- check.py progress: <摘要>
-- check.py wait: <摘要>
+- check.py run --wait: <摘要>
 
 ## 巡检结果
-<原样展示 check.py wait 或 analyze 的 stdout；不要自行补充>
+<原样展示 check.py run --wait 或 analyze 的 stdout；不要自行补充>
 ```

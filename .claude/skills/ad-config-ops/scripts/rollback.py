@@ -8,12 +8,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
-import requests
-
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
+from ad_http import normalize_base_url, requests
 from ad_ops_common import (
     DEFAULT_ROLLBACK_RESULT_NAME,
     resolve_file_path,
@@ -224,7 +223,7 @@ def main(argv: list[str] | None = None) -> int:
     result = rollback_manifest(
         manifest=manifest,
         session=session,
-        base_url=f"https://{auth.get('host')}" if auth.get("host") else "https://preview.invalid",
+        base_url=normalize_base_url(auth.get("host") or "preview.invalid"),
         auth=auth,
         execute=args.execute,
         timeout=(args.connect_timeout, args.read_timeout),

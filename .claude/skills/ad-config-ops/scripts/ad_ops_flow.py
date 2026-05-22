@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -12,7 +13,10 @@ if str(SCRIPT_DIR) not in sys.path:
 from ad_ops_common import (
     DEFAULT_APPLY_SCRIPT_NAME,
     DEFAULT_BATCH_NAME,
+    DEFAULT_EXECUTE_RESULT_NAME,
     DEFAULT_PLAN_NAME,
+    DEFAULT_ROLLBACK_NAME,
+    DEFAULT_ROLLBACK_SCRIPT_NAME,
     artifacts_path,
     default_workdir_path,
     operation_count,
@@ -26,10 +30,14 @@ from ad_ops_common import (
     workdir_path,
     write_json,
 )
+from ad_http import normalize_base_url, requests
 from dependency_order import load_resource_order
+from execute_plan import execute_plan, summarize_result
 from plan_operations import build_bundle_plan
-from render_outputs import render_batch, render_script
+from render_outputs import render_batch, render_rollback_script, render_script
 from resolve_schema import definition_map
+from verify_slb_resource import parse_args as parse_verify_args
+from verify_slb_resource import verify_resources
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -68,6 +76,26 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         type=Path,
         help="Artifact work directory. Defaults to AD_OPS_WORKDIR, then ./ad_ops_workdir.",
     )
+
+    apply_slb = subparsers.add_parser(
+        "apply-slb-plan",
+        help="Apply a rendered SLB plan, write execution/rollback artifacts, and verify resources on the AD device.",
+    )
+    apply_slb.add_argument("--plan", type=Path, help="Operation plan JSON path. Defaults to workdir/artifacts plan.")
+    apply_slb.add_argument("--host", required=True, help="AD device host or base URL.")
+    apply_slb.add_argument("--username", required=True, help="AD API username.")
+    apply_slb.add_argument("--password", default=os.environ.get("AD_PASSWORD"), help="AD API password. Defaults to AD_PASSWORD.")
+    apply_slb.add_argument("--allow-existing", action="store_true", help="Allow create operations when target exists.")
+    apply_slb.add_argument("--vs-name", help="Virtual service name to verify after apply.")
+    apply_slb.add_argument("--pool-name", help="Pool name to verify after apply.")
+    apply_slb.add_argument("--node-ip", action="append", default=[], help="Backend node IP to verify after apply.")
+    apply_slb.add_argument("--http-profile", help="HTTP profile name to verify after apply.")
+    apply_slb.add_argument("--pre-rule", help="HTTP pre-rule name to verify after apply.")
+    apply_slb.add_argument(
+        "--workdir",
+        type=Path,
+        help="Artifact work directory. Defaults to AD_OPS_WORKDIR, then ./ad_ops_workdir.",
+    )
     return parser.parse_args(argv)
 
 
@@ -81,15 +109,18 @@ def plan_and_render(args: argparse.Namespace) -> dict[str, object]:
     plan_path = workdir / DEFAULT_PLAN_NAME
     batch_path = workdir / DEFAULT_BATCH_NAME
     script_path = workdir / DEFAULT_APPLY_SCRIPT_NAME
+    rollback_script_path = workdir / DEFAULT_ROLLBACK_SCRIPT_NAME
     write_json(plan_path, plan)
     write_json(batch_path, render_batch(plan))
     script_path.write_text(render_script(plan), encoding="utf-8")
+    rollback_script_path.write_text(render_rollback_script(), encoding="utf-8")
     artifacts = update_artifacts(
         workdir,
         bundle=bundle_path,
         plan=plan_path,
         batch=batch_path,
         apply_script=script_path,
+        rollback_script=rollback_script_path,
     )
     return {
         "ok": True,
@@ -98,6 +129,7 @@ def plan_and_render(args: argparse.Namespace) -> dict[str, object]:
         "plan": str(plan_path),
         "batch": str(batch_path),
         "apply_script": str(script_path),
+        "rollback_script": str(rollback_script_path),
         "artifacts": str(artifacts),
         "workflow_contract": "scripts_only",
         "must_not_parse_artifacts": True,
@@ -127,6 +159,7 @@ def status_summary(args: argparse.Namespace) -> dict[str, object]:
         "plan",
         "batch",
         "apply_script",
+        "rollback_script",
         "execution_result",
         "rollback",
         "rollback_result",
@@ -205,6 +238,84 @@ def summarize_plan(args: argparse.Namespace) -> dict[str, object]:
     }
 
 
+def verify_args_for_apply(args: argparse.Namespace) -> list[str]:
+    values = [
+        "--base-url",
+        args.host,
+        "--username",
+        args.username,
+        "--password",
+        args.password,
+        "--expect",
+        "present",
+    ]
+    if args.vs_name:
+        values += ["--vs-name", args.vs_name]
+    if args.pool_name:
+        values += ["--pool-name", args.pool_name]
+    for node_ip in args.node_ip or []:
+        values += ["--node-ip", node_ip]
+    if args.http_profile:
+        values += ["--http-profile", args.http_profile]
+    if args.pre_rule:
+        values += ["--pre-rule", args.pre_rule]
+    return values
+
+
+def apply_slb_plan(args: argparse.Namespace) -> dict[str, object]:
+    plan_path = plan_path_from_args(args)
+    plan = read_json(plan_path)
+    workdir = require_workdir(args.workdir)
+    if args.password is None:
+        raise ValueError("--password or AD_PASSWORD is required")
+    result_path = workdir / DEFAULT_EXECUTE_RESULT_NAME
+    rollback_path = workdir / DEFAULT_ROLLBACK_NAME
+    auth = {"host": args.host, "username": args.username, "password": args.password, "token": None}
+    result = execute_plan(
+        plan=plan,
+        session=requests.Session(),
+        base_url=normalize_base_url(args.host),
+        auth=auth,
+        execute=True,
+        rollback_out=rollback_path,
+        allow_existing=args.allow_existing,
+    )
+    write_json(result_path, result)
+    verify_result: dict[str, Any] | None = None
+    verify_error: str | None = None
+    if args.vs_name or args.pool_name or args.node_ip or args.http_profile or args.pre_rule:
+        try:
+            verify_result = verify_resources(parse_verify_args(verify_args_for_apply(args)))
+        except Exception as exc:
+            verify_error = str(exc)
+    artifacts = update_artifacts(
+        workdir,
+        plan=plan_path,
+        apply_script=workdir / DEFAULT_APPLY_SCRIPT_NAME,
+        rollback_script=workdir / DEFAULT_ROLLBACK_SCRIPT_NAME,
+        execution_result=result_path,
+        rollback=rollback_path,
+    )
+    summary = summarize_result(result, plan, result_path, rollback_path)
+    summary.update(
+        {
+            "verify_result": verify_result,
+            "verify_error": verify_error,
+            "verify_script": "verify_slb_resource.py" if verify_result is not None else None,
+            "apply_script": str(workdir / DEFAULT_APPLY_SCRIPT_NAME),
+            "rollback_script": str(workdir / DEFAULT_ROLLBACK_SCRIPT_NAME),
+            "artifacts": str(artifacts),
+            "workflow_contract": "scripts_only",
+            "rollback_generated": rollback_path.exists(),
+        }
+    )
+    if verify_result is not None and not verify_result.get("ok"):
+        summary["ok"] = False
+    if verify_error:
+        summary["ok"] = False
+    return summary
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
     try:
@@ -214,6 +325,8 @@ def main(argv: list[str] | None = None) -> int:
             summary = status_summary(args)
         elif args.command == "summarize-plan":
             summary = summarize_plan(args)
+        elif args.command == "apply-slb-plan":
+            summary = apply_slb_plan(args)
         else:
             raise ValueError(f"unsupported command: {args.command}")
     except Exception as exc:

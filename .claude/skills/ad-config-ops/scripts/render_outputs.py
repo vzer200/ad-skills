@@ -13,6 +13,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from ad_ops_common import (
     DEFAULT_APPLY_SCRIPT_NAME,
     DEFAULT_BATCH_NAME,
+    DEFAULT_ROLLBACK_SCRIPT_NAME,
     operation_count,
     require_workdir,
     resolve_file_path,
@@ -70,13 +71,13 @@ import os
 import sys
 from pathlib import Path
 
-import requests
-
 
 EMBEDDED_PLAN_JSON = {embedded_plan_literal}
 AD_OPS_SCRIPT_DIR = Path(os.environ.get("AD_OPS_SCRIPT_DIR", {helper_dir_literal}))
 if str(AD_OPS_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(AD_OPS_SCRIPT_DIR))
+
+from ad_http import normalize_base_url, requests
 
 
 def parse_args():
@@ -85,6 +86,7 @@ def parse_args():
     parser.add_argument("--username", default=os.environ.get("AD_USERNAME"), help="AD API username.")
     parser.add_argument("--token", default=os.environ.get("AD_TOKEN"), help="Existing AD API token.")
     parser.add_argument("--result-out", type=Path, help="Full execution result JSON path.")
+    parser.add_argument("--rollback-out", type=Path, help="Rollback manifest JSON path.")
     parser.add_argument("--execute", action="store_true", help="Apply the plan. Without this flag, only preview.")
     return parser.parse_args()
 
@@ -101,7 +103,7 @@ def credentials(args):
     }}
 
 
-def execute_plan_operations(plan, auth):
+def execute_plan_operations(plan, auth, rollback_out=None):
     try:
         from execute_plan import execute_plan
     except ImportError as exc:
@@ -109,7 +111,7 @@ def execute_plan_operations(plan, auth):
 
     session = requests.Session()
     session.verify = False
-    return execute_plan(plan=plan, session=session, base_url=f"https://{{auth['host']}}", auth=auth)
+    return execute_plan(plan=plan, session=session, base_url=normalize_base_url(auth["host"]), auth=auth, rollback_out=rollback_out)
 
 
 def summarize_result(result, plan, result_out=None):
@@ -143,12 +145,65 @@ def main():
         raise SystemExit("--host or AD_HOST is required")
     if not auth["token"] and not auth["username"]:
         raise SystemExit("--username/AD_USERNAME or --token/AD_TOKEN is required")
-    result = execute_plan_operations(plan, auth)
+    result = execute_plan_operations(plan, auth, args.rollback_out)
     if args.result_out:
         args.result_out.parent.mkdir(parents=True, exist_ok=True)
         args.result_out.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
     print(json.dumps(summarize_result(result, plan, args.result_out), ensure_ascii=False))
     return 0 if result.get("ok") else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+'''
+
+
+def render_rollback_script() -> str:
+    helper_dir_literal = repr(str(SCRIPT_DIR))
+    return f'''from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+
+
+AD_OPS_SCRIPT_DIR = Path(os.environ.get("AD_OPS_SCRIPT_DIR", {helper_dir_literal}))
+if str(AD_OPS_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(AD_OPS_SCRIPT_DIR))
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Rollback an AD API operation manifest.")
+    parser.add_argument("--manifest", type=Path, default=Path(os.environ.get("AD_ROLLBACK_MANIFEST", "adops-rollback.json")))
+    parser.add_argument("--host", default=os.environ.get("AD_HOST"), help="AD device host or address.")
+    parser.add_argument("--username", default=os.environ.get("AD_USERNAME"), help="AD API username.")
+    parser.add_argument("--password", default=os.environ.get("AD_PASSWORD"), help="AD API password.")
+    parser.add_argument("--token", default=os.environ.get("AD_TOKEN"), help="Existing AD API token.")
+    parser.add_argument("--result-out", type=Path, help="Full rollback result JSON path.")
+    parser.add_argument("--execute", action="store_true", help="Execute rollback. Without this flag, only preview.")
+    return parser.parse_args()
+
+
+def main():
+    from rollback import main as rollback_main
+
+    args = parse_args()
+    forwarded = ["--manifest", str(args.manifest)]
+    if args.host:
+        forwarded += ["--host", args.host]
+    if args.username:
+        forwarded += ["--username", args.username]
+    if args.password is not None:
+        forwarded += ["--password", args.password]
+    if args.token:
+        forwarded += ["--token", args.token]
+    if args.result_out:
+        forwarded += ["--result-out", str(args.result_out)]
+    if args.execute:
+        forwarded.append("--execute")
+    return rollback_main(forwarded)
 
 
 if __name__ == "__main__":
@@ -165,16 +220,25 @@ def main(argv: list[str] | None = None) -> int:
         active_workdir = require_workdir(args.workdir)
     batch_out = args.batch_out or active_workdir / DEFAULT_BATCH_NAME
     script_out = args.script_out or active_workdir / DEFAULT_APPLY_SCRIPT_NAME
+    rollback_script_out = active_workdir / DEFAULT_ROLLBACK_SCRIPT_NAME
     write_json(batch_out, render_batch(plan))
     script_out.parent.mkdir(parents=True, exist_ok=True)
     script_out.write_text(render_script(plan), encoding="utf-8")
-    artifacts = update_artifacts(active_workdir, plan=plan_path, batch=batch_out, apply_script=script_out)
+    rollback_script_out.write_text(render_rollback_script(), encoding="utf-8")
+    artifacts = update_artifacts(
+        active_workdir,
+        plan=plan_path,
+        batch=batch_out,
+        apply_script=script_out,
+        rollback_script=rollback_script_out,
+    )
     print(
         short_summary(
             ok=True,
             operation_count=operation_count(plan),
             batch=str(batch_out),
             apply_script=str(script_out),
+            rollback_script=str(rollback_script_out),
             **({"artifacts": str(artifacts)} if artifacts else {}),
         ),
         end="",

@@ -1,10 +1,15 @@
 param(
     [string]$Python = "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe",
     [string]$Node = "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe",
+    [string]$Git = "C:\Program Files\Git\cmd\git.exe",
+    [string]$Gh = "C:\Program Files\GitHub CLI\gh.exe",
     [string]$Package = "dist\ad-skills-workbot.zip",
     [string]$CommitMessage = "feat(ad-config-ops): add SLB bundle workflow and WorkBot automation",
     [switch]$CommitAndPush,
     [switch]$SkipWorkBot,
+    [switch]$VerifyAD,
+    [string]$ADBaseUrl = "https://14.18.243.211:21044",
+    [string]$ADUser = "admin",
     [string]$Cases = "install,r1,r2,r3,r4-basic,r4-prerule"
 )
 
@@ -17,6 +22,9 @@ if (!(Test-Path $Python)) {
 }
 if (!(Test-Path $Node)) {
     $Node = "node"
+}
+if (!(Test-Path $Git)) {
+    $Git = "git"
 }
 
 $env:PYTHONUTF8 = "1"
@@ -38,15 +46,29 @@ Write-Host "[3/7] Running ad-config-ops smoke"
 
 if ($CommitAndPush) {
     Write-Host "[4/7] Committing and pushing"
-    & git add .gitignore CLAUDE.md docs tools test .claude/skills
-    $staged = & git diff --cached --name-only
+    & $Git add .gitignore CLAUDE.md docs tools test .claude/skills
+    $staged = & $Git diff --cached --name-only
     if ($staged) {
-        & git commit -m $CommitMessage
+        & $Git commit -m $CommitMessage
     } else {
         Write-Host "No staged changes to commit"
     }
-    $branch = (& git branch --show-current).Trim()
-    & git push origin $branch
+    $branch = (& $Git branch --show-current).Trim()
+    $pushed = $false
+    if (Test-Path $Gh) {
+        $token = (& $Gh auth token 2>$null)
+        if ($LASTEXITCODE -eq 0 -and $token) {
+            $pair = "x-access-token:" + $token.Trim()
+            $basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
+            & $Git -c "http.https://github.com/.extraheader=AUTHORIZATION: Basic $basic" push origin $branch
+            $pushExit = $LASTEXITCODE
+            Remove-Variable token,pair,basic -ErrorAction SilentlyContinue
+            $pushed = ($pushExit -eq 0)
+        }
+    }
+    if (!$pushed) {
+        & $Git push origin $branch
+    }
 } else {
     Write-Host "[4/7] Skipping commit/push; pass -CommitAndPush before upload in release runs"
 }
@@ -65,6 +87,10 @@ if (!$env:WORKBOT_PASSWORD) {
 }
 
 Write-Host "[6/7] Running WorkBot acceptance"
-& $Node "tools\workbot_acceptance.mjs" --zip $Package --cases $Cases
+$workbotArgs = @("tools\workbot_acceptance.mjs", "--zip", $Package, "--cases", $Cases, "--python", $Python)
+if ($VerifyAD) {
+    $workbotArgs += @("--verify-ad", "--ad-base-url", $ADBaseUrl, "--ad-user", $ADUser)
+}
+& $Node @workbotArgs
 
 Write-Host "[7/7] Done"
