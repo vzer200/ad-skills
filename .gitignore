@@ -11,3 +11,7 @@ __MACOSX/
 tmp.md
 .claude/settings.local.json
 .claude/skills/devices.json
+adops_smoke/
+ad_ops_workdir/
+dist/
+workbot-results/

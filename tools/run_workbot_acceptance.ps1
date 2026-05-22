@@ -1,0 +1,70 @@
+param(
+    [string]$Python = "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe",
+    [string]$Node = "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe",
+    [string]$Package = "dist\ad-skills-workbot.zip",
+    [string]$CommitMessage = "feat(ad-config-ops): add SLB bundle workflow and WorkBot automation",
+    [switch]$CommitAndPush,
+    [switch]$SkipWorkBot,
+    [string]$Cases = "install,r1,r2,r3,r4-basic,r4-prerule"
+)
+
+$ErrorActionPreference = "Stop"
+$Repo = Resolve-Path (Join-Path $PSScriptRoot "..")
+Set-Location $Repo
+
+if (!(Test-Path $Python)) {
+    $Python = "python"
+}
+if (!(Test-Path $Node)) {
+    $Node = "node"
+}
+
+$env:PYTHONUTF8 = "1"
+$env:PYTHONPATH = ".claude\skills\ad-config-ops\scripts\_vendor"
+
+Write-Host "[1/7] Running unit tests"
+& $Python -m unittest discover -s test -p "test_*.py" -v
+
+Write-Host "[2/7] Validating skills"
+$skills = @("ad-connect", "ad-ops", "ad-check-analysis", "ad-perception", "ad-blackbox-analysis", "ad-config-ops")
+foreach ($skill in $skills) {
+    & $Python "C:\Users\Administrator\.codex\skills\.system\skill-creator\scripts\quick_validate.py" ".claude\skills\$skill"
+}
+
+Write-Host "[3/7] Running ad-config-ops smoke"
+& $Python ".claude\skills\ad-config-ops\scripts\render_slb_bundle.py" --vs-name wb_vs_combo_test_01 --vip 10.250.250.30 --vport 8082 --pool wb_pool_combo_test_01 --node 192.0.2.30:80 --create-http-profile-xff wb_xff_profile_02 --create-pre-rule-http wb_pre_rule_02 --pre-rule-uri-pattern "/" --pre-rule-uri-mode WILDCARD --workdir "adops_smoke\automation"
+& $Python ".claude\skills\ad-config-ops\scripts\ad_ops_flow.py" plan-and-render --skill-root ".claude\skills\ad-config-ops" --bundle "adops_smoke\automation\adops-bundle.yml" --workdir "adops_smoke\automation"
+& $Python ".claude\skills\ad-config-ops\scripts\ad_ops_flow.py" summarize-plan --plan "adops_smoke\automation\adops-plan.json" --workdir "adops_smoke\automation"
+
+if ($CommitAndPush) {
+    Write-Host "[4/7] Committing and pushing"
+    & git add .gitignore CLAUDE.md docs tools test .claude/skills
+    $staged = & git diff --cached --name-only
+    if ($staged) {
+        & git commit -m $CommitMessage
+    } else {
+        Write-Host "No staged changes to commit"
+    }
+    $branch = (& git branch --show-current).Trim()
+    & git push origin $branch
+} else {
+    Write-Host "[4/7] Skipping commit/push; pass -CommitAndPush before upload in release runs"
+}
+
+Write-Host "[5/7] Packaging AD skills"
+& $Python "tools\package_ad_skills.py" --out $Package
+
+if ($SkipWorkBot) {
+    Write-Host "[6/7] Skipping WorkBot"
+    Write-Host "[7/7] Done"
+    exit 0
+}
+
+if (!$env:WORKBOT_PASSWORD) {
+    throw "WORKBOT_PASSWORD is required for WorkBot automation"
+}
+
+Write-Host "[6/7] Running WorkBot acceptance"
+& $Node "tools\workbot_acceptance.mjs" --zip $Package --cases $Cases
+
+Write-Host "[7/7] Done"

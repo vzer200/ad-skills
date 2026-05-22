@@ -6,8 +6,10 @@ VS 流量采集工具 —— 获取 AD 设备 VS 统计趋势数据并存入 SQL
 
 import argparse
 import os
+import signal
 import sqlite3
 import sys
+import threading
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -33,6 +35,8 @@ SYSTEM_METRICS = ["cpu_usage", "memory_usage", "connection_rate"]
 METRIC_NAME_MAP = {"cpu_usage": "cpu", "memory_usage": "memory", "connection_rate": "connection_rate"}
 
 TOTAL_CPU_KEYS = {"TotalCpu", "total_cpu", "totalcpu"}
+
+MAX_CONSECUTIVE_FAILURES = 30
 
 
 def _fetch_system_trend(client: Any, api_metric: str) -> Optional[Dict[str, Any]]:
@@ -358,6 +362,8 @@ class VSCollector:
         self.consecutive_failures = 0
         self.conn = None
         self.running = False
+        self.stop_event = None
+        self.fatal_error = None
 
         # Derive default DB name from host if not explicitly provided
         if not db_path:
@@ -495,11 +501,38 @@ class VSCollector:
 
     def handle_signal(self, signum: int, frame: Any) -> None:
         """处理 SIGINT / SIGBREAK 信号: 关闭数据库，删除 PID 文件，退出(退出码 0)。"""
+        if self.stop_event is not None:
+            self.stop_event.set()
         self.close_db()
         if hasattr(self, "pid_path") and self.pid_path and os.path.exists(self.pid_path):
             os.unlink(self.pid_path)
         print("采集器已停止")
         sys.exit(0)
+
+
+def _collect_loop(collector: VSCollector) -> None:
+    """Run the legacy daemon collection loop until stopped or fatally stalled."""
+    if collector.stop_event is None:
+        collector.stop_event = threading.Event()
+
+    collector.open_db()
+    try:
+        collector.cleanup_old_data()
+        while not collector.stop_event.is_set():
+            try:
+                collector.run_once()
+            except Exception as exc:
+                collector.consecutive_failures += 1
+                collector.fatal_error = str(exc)
+                print(f"[{collector.host_slug}] WARN: 采集循环异常: {exc}", file=sys.stderr)
+                if collector.consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
+                    collector.stop_event.set()
+                    break
+
+            if collector.stop_event.wait(float(collector.interval)):
+                break
+    finally:
+        collector.close_db()
 
 
 def _add_common_args(p: argparse.ArgumentParser) -> None:
@@ -531,6 +564,12 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         "collect", help="One-shot: fetch trend API last-hour data, inject into SQLite, run 3σ analysis"
     )
     _add_common_args(collect_p)
+
+    daemon_p = subparsers.add_parser(
+        "daemon", help="Deprecated compatibility mode: collect VS stat samples in a loop"
+    )
+    _add_common_args(daemon_p)
+    daemon_p.add_argument("--interval", type=int, default=30, help="采样间隔秒数 (默认: 30)")
 
     return parser.parse_args(argv)
 
@@ -606,11 +645,62 @@ def _run_collect(args: argparse.Namespace) -> None:
     sys.exit(0)
 
 
+def _run_daemon(args: argparse.Namespace) -> None:
+    """运行旧版常驻采集器，保留给历史提示词和外部调度兼容。"""
+    password = args.password or os.environ.get("AD_PASS", "")
+    if not args.host:
+        print("错误: 未指定设备地址，请使用 --host 指定 AD 设备 URL", file=sys.stderr)
+        sys.exit(4)
+    if not password:
+        print("错误: 未指定密码，请使用 --password 或设置环境变量 AD_PASS", file=sys.stderr)
+        sys.exit(4)
+
+    collector = VSCollector(
+        args.host,
+        password,
+        username=args.user,
+        db_path=args.db or _derive_db_path(args.host),
+        interval=args.interval,
+    )
+    collector.stop_event = threading.Event()
+    collector.pid_path = collector.db_path + ".pid"
+
+    try:
+        _create_pid_file(collector.pid_path)
+    except SystemExit:
+        raise
+    except Exception as exc:
+        print(f"错误: 无法创建 PID 文件: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    signal.signal(signal.SIGINT, collector.handle_signal)
+    if hasattr(signal, "SIGBREAK"):
+        signal.signal(signal.SIGBREAK, collector.handle_signal)
+
+    print(f"数据库路径: {collector.db_path}")
+    try:
+        _collect_loop(collector)
+    finally:
+        if os.path.exists(collector.pid_path):
+            os.unlink(collector.pid_path)
+
+    if collector.fatal_error:
+        print(f"错误: 采集器连续失败，已停止: {collector.fatal_error}", file=sys.stderr)
+        sys.exit(1)
+    sys.exit(0)
+
+
 def main() -> None:
     """CLI 入口。"""
     sys.stdout.reconfigure(encoding='utf-8')
     args = parse_args()
-    _run_collect(args)
+    if args.command == "collect":
+        _run_collect(args)
+    elif args.command == "daemon":
+        _run_daemon(args)
+    else:
+        print("错误: 未指定子命令，请使用 collect 或 daemon", file=sys.stderr)
+        sys.exit(4)
 
 
 if __name__ == "__main__":

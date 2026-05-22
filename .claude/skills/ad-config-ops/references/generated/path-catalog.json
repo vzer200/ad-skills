@@ -1,0 +1,5283 @@
+[
+  {
+    "path": "/api/ad/v3/batch",
+    "methods": [
+      "post"
+    ],
+    "document": "batch.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/dns/config-synchronization/sync-at-once",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/dns/config-synchronization.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/dns/dns-map/simulator",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "debug/dns/dns-map.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/dns/local-dns/block/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "debug/dns/local-dns/block.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/dns/local-dns/block/{source_address}",
+    "methods": [
+      "get",
+      "delete"
+    ],
+    "document": "debug/dns/local-dns/block.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/dns/local-dns/defect/",
+    "methods": [
+      "get"
+    ],
+    "document": "debug/dns/local-dns/defect.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/dns/local-dns/defect/clear",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/dns/local-dns/defect.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/ha/active-standby/reset_failsafe_status/{device}",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/ha/active-standby.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/ha/active-standby/reset_failure_status",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/ha/active-standby.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/ha/active-standby/switch",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/ha/active-standby.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/ha/application-group/{name}/switch",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/ha/application-group.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/ha/cluster/master-controller",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/ha/cluster/master-controller.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/ha/virtual-mac/generator",
+    "methods": [
+      "get"
+    ],
+    "document": "debug/ha/virtual-mac.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/lc/persist/",
+    "methods": [
+      "get"
+    ],
+    "document": "debug/lc/persist.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/lc/persist/clear",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/lc/persist.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/lc/policy-route/reset",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/lc/policy-route.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/lc/policy-route/simulator",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "debug/lc/policy-route.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/log/service-log/clear",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/log/service-log.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/acl/reset",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/net/acl.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/arp-broadcast",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/net/arp-broadcast.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/arp/discover",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/net/arp.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/dnat/reset",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/net/dnat.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/interface/reset",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/net/interface-reset.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/link/pppoe/{name}/{operation}",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/net/link/pppoe.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/netns-alarm",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/net/netns-alarm.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/netns-check",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/net/netns-check.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/session/",
+    "methods": [
+      "get"
+    ],
+    "document": "debug/net/session.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/session/clear",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/net/session.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/snat/reset",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/net/snat.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/tcpdump/capture-controller/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "debug/net/tcpdump.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/tcpdump/capture-controller/{task_id}",
+    "methods": [
+      "get",
+      "delete"
+    ],
+    "document": "debug/net/tcpdump.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/tcpdump/record/",
+    "methods": [
+      "get"
+    ],
+    "document": "debug/net/tcpdump.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/tcpdump/record/{name}",
+    "methods": [
+      "get",
+      "delete"
+    ],
+    "document": "debug/net/tcpdump.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/net/tcpdump/record/{name}/pcap",
+    "methods": [
+      "get"
+    ],
+    "document": "debug/net/tcpdump.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/rc/crl/{name}/update",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/rc/crl.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/http-rewrite/reset",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/slb/http-rewrite.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/persist/",
+    "methods": [
+      "get"
+    ],
+    "document": "debug/slb/persist.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/persist/clear",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/slb/persist.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/pool/{pool_name}/resume",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/slb/node.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/service-monitor",
+    "methods": [
+      "get",
+      "post",
+      "delete"
+    ],
+    "document": "debug/slb/monitor-test.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/url-analysis",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/slb/url-analysis.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/virtual-service/{name}/http-cache/defect-analysis",
+    "methods": [
+      "get",
+      "post",
+      "delete"
+    ],
+    "document": "debug/slb/http-cache-analysis.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/virtual-service/{name}/ipv6-report-export",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/slb/ipv6-report-export.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/ddos/clear",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/slb/ddos.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/ddos/export",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/slb/ddos.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/http-cache/",
+    "methods": [
+      "get"
+    ],
+    "document": "debug/slb/http-cache.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/http-cache/clear",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/slb/http-cache.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/http-cache/{cache_id}",
+    "methods": [
+      "get"
+    ],
+    "document": "debug/slb/http-cache.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/pool/{pool_name}/persist",
+    "methods": [
+      "get"
+    ],
+    "document": "debug/slb/persist.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/alert-mail/verify",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/sys/alert-mail.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/alert-sms/verify",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/sys/alert-sms.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/alert-trap/verify",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/sys/alert-trap.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/maintenance-passwd",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "debug/sys/maintenance-passwd.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/maintenance/{operation}",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/sys/maintenance.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/ntp",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/sys/ntp.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/offline-check",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/sys/offline-check.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/partition/{name}/activate",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/sys/partition.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/report-task/{name}/generator",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/sys/report-task.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/rollback",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/sys/rollback.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/smtp/verify",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/sys/smtp.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/update/{module}",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/sys/update.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/upgrade/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "debug/sys/upgrade.js"
+  },
+  {
+    "path": "/api/ad/v3/debug/sys/upgrade/extract-package-info",
+    "methods": [
+      "post"
+    ],
+    "document": "debug/sys/upgrade.js"
+  },
+  {
+    "path": "/api/ad/v3/dns/config-synchronization",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "dns/config-synchronization.js"
+  },
+  {
+    "path": "/api/ad/v3/dns/data-center/all/",
+    "methods": [
+      "get"
+    ],
+    "document": "dns/data-center.js"
+  },
+  {
+    "path": "/api/ad/v3/dns/data-center/all/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "dns/data-center.js"
+  },
+  {
+    "path": "/api/ad/v3/dns/data-center/local",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "dns/data-center.js"
+  },
+  {
+    "path": "/api/ad/v3/dns/data-center/remote/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "dns/data-center.js"
+  },
+  {
+    "path": "/api/ad/v3/dns/data-center/remote/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/data-center.js"
+  },
+  {
+    "path": "/api/ad/v3/dns/dns-server",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "dns/dns-server.js"
+  },
+  {
+    "path": "/api/ad/v3/dns/local-device/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "dns/local-device.js"
+  },
+  {
+    "path": "/api/ad/v3/dns/local-device/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/local-device.js"
+  },
+  {
+    "path": "/api/ad/v3/dns/recovery-point/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "dns/recovery-point.js"
+  },
+  {
+    "path": "/api/ad/v3/dns/recovery-point/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/recovery-point.js"
+  },
+  {
+    "path": "/api/ad/v3/dns/recovery-point/{name}/recovery",
+    "methods": [
+      "post"
+    ],
+    "document": "dns/recovery-point.js"
+  },
+  {
+    "path": "/api/ad/v3/export",
+    "methods": [
+      "post"
+    ],
+    "document": "export.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/active-standby",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "ha/active-standby.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/active-standby-join",
+    "methods": [
+      "post"
+    ],
+    "document": "ha/active-standby-join.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/application-group/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "ha/application-group.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/application-group/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "ha/application-group.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/cluster",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "ha/cluster.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/cluster-join",
+    "methods": [
+      "post"
+    ],
+    "document": "ha/cluster-join.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/member-group/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "ha/member-group.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/member-group/{name}",
+    "methods": [
+      "get",
+      "post",
+      "patch",
+      "delete"
+    ],
+    "document": "ha/member-group.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/member/",
+    "methods": [
+      "get",
+      "patch"
+    ],
+    "document": "ha/member.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/member/{name}",
+    "methods": [
+      "get",
+      "patch",
+      "delete"
+    ],
+    "document": "ha/member.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/mode",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "ha/mode.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/snat-combination/",
+    "methods": [
+      "get",
+      "patch"
+    ],
+    "document": "ha/snat-combination.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/snat-combination/{name}",
+    "methods": [
+      "get",
+      "patch"
+    ],
+    "document": "ha/snat-combination.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/virtual-service-combination/",
+    "methods": [
+      "get",
+      "patch"
+    ],
+    "document": "ha/virtual-service-combination.js"
+  },
+  {
+    "path": "/api/ad/v3/ha/virtual-service-combination/{name}",
+    "methods": [
+      "get",
+      "patch"
+    ],
+    "document": "ha/virtual-service-combination.js"
+  },
+  {
+    "path": "/api/ad/v3/import",
+    "methods": [
+      "post"
+    ],
+    "document": "import.js"
+  },
+  {
+    "path": "/api/ad/v3/last-event(?:/(\\d+))?",
+    "methods": [
+      "get"
+    ],
+    "document": "last-event.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-intranet-record/a/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "lc/dns-intranet-record/a.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-intranet-record/a/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "lc/dns-intranet-record/a.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-intranet-record/aaaa/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "lc/dns-intranet-record/aaaa.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-intranet-record/aaaa/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "lc/dns-intranet-record/aaaa.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-intranet-record/all/",
+    "methods": [
+      "get"
+    ],
+    "document": "lc/dns-intranet-record/all.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-intranet-record/all/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "lc/dns-intranet-record/all.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-intranet-record/cname/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "lc/dns-intranet-record/cname.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-intranet-record/cname/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "lc/dns-intranet-record/cname.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-intranet-record/mx/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "lc/dns-intranet-record/mx.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-intranet-record/mx/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "lc/dns-intranet-record/mx.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-intranet-record/txt/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "lc/dns-intranet-record/txt.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-intranet-record/txt/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "lc/dns-intranet-record/txt.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-pre-rule/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "lc/dns-pre-rule.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-pre-rule/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "lc/dns-pre-rule.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/dns-proxy",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "lc/dns-proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/policy-route-advanced",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "lc/policy-route-advanced.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/policy-route/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "lc/policy-route.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/policy-route/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "lc/policy-route.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/time-plan/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "lc/time-plan.js"
+  },
+  {
+    "path": "/api/ad/v3/lc/time-plan/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "lc/time-plan.js"
+  },
+  {
+    "path": "/api/ad/v3/log/blackbox-log/export",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "log/blackbox-log.js"
+  },
+  {
+    "path": "/api/ad/v3/log/operation-log/",
+    "methods": [
+      "get"
+    ],
+    "document": "log/operation-log.js"
+  },
+  {
+    "path": "/api/ad/v3/log/operation-log/package",
+    "methods": [
+      "get"
+    ],
+    "document": "log/operation-log.js"
+  },
+  {
+    "path": "/api/ad/v3/log/service-log/",
+    "methods": [
+      "get"
+    ],
+    "document": "log/service-log.js"
+  },
+  {
+    "path": "/api/ad/v3/log/ssl-log/",
+    "methods": [
+      "get"
+    ],
+    "document": "log/ssl-log.js"
+  },
+  {
+    "path": "/api/ad/v3/login",
+    "methods": [
+      "post"
+    ],
+    "document": "login.js"
+  },
+  {
+    "path": "/api/ad/v3/logout",
+    "methods": [
+      "post"
+    ],
+    "document": "logout.js"
+  },
+  {
+    "path": "/api/ad/v3/net/acl/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/acl.js"
+  },
+  {
+    "path": "/api/ad/v3/net/acl/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/acl.js"
+  },
+  {
+    "path": "/api/ad/v3/net/arp-batch/",
+    "methods": [
+      "post"
+    ],
+    "document": "net/arp.js"
+  },
+  {
+    "path": "/api/ad/v3/net/arp-broadcast",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "net/arp-broadcast.js"
+  },
+  {
+    "path": "/api/ad/v3/net/arp-proxy/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/arp-proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/net/arp-proxy/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/arp-proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/net/arp/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/arp.js"
+  },
+  {
+    "path": "/api/ad/v3/net/arp/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/arp.js"
+  },
+  {
+    "path": "/api/ad/v3/net/bgp",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "net/bgp.js"
+  },
+  {
+    "path": "/api/ad/v3/net/bond/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/bond.js"
+  },
+  {
+    "path": "/api/ad/v3/net/bond/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/bond.js"
+  },
+  {
+    "path": "/api/ad/v3/net/bridge/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/bridge.js"
+  },
+  {
+    "path": "/api/ad/v3/net/bridge/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/bridge.js"
+  },
+  {
+    "path": "/api/ad/v3/net/ddos-defend-lan",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "net/ddos-defend-lan.js"
+  },
+  {
+    "path": "/api/ad/v3/net/ddos-defend-wan",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "net/ddos-defend-wan.js"
+  },
+  {
+    "path": "/api/ad/v3/net/dnat/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/dnat.js"
+  },
+  {
+    "path": "/api/ad/v3/net/dnat/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/dnat.js"
+  },
+  {
+    "path": "/api/ad/v3/net/interface-adapter/{module}/",
+    "methods": [
+      "get"
+    ],
+    "document": "net/interface-adapter.js"
+  },
+  {
+    "path": "/api/ad/v3/net/interface-adapter/{module}/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "net/interface-adapter.js"
+  },
+  {
+    "path": "/api/ad/v3/net/interface-mode",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "net/interface-mode.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link-monitor/all/",
+    "methods": [
+      "get"
+    ],
+    "document": "net/link-monitor/all.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link-monitor/all/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "net/link-monitor/all.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link-monitor/connect-tcp/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/link-monitor/connect-tcp.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link-monitor/connect-tcp/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/link-monitor/connect-tcp.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link-monitor/icmp/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/link-monitor/icmp.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link-monitor/icmp/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/link-monitor/icmp.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link-monitor/icmpv6/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/link-monitor/icmpv6.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link-monitor/icmpv6/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/link-monitor/icmpv6.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link/all/",
+    "methods": [
+      "get"
+    ],
+    "document": "net/link/all.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link/all/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "net/link/all.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link/lan/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/link/lan.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link/lan/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/link/lan.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link/pppoe/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/link/pppoe.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link/pppoe/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/link/pppoe.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link/virtual-wire/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/link/virtual-wire.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link/virtual-wire/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/link/virtual-wire.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link/wan/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/link/wan.js"
+  },
+  {
+    "path": "/api/ad/v3/net/link/wan/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/link/wan.js"
+  },
+  {
+    "path": "/api/ad/v3/net/lldp",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "net/lldp.js"
+  },
+  {
+    "path": "/api/ad/v3/net/macvlan/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/macvlan.js"
+  },
+  {
+    "path": "/api/ad/v3/net/macvlan/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/macvlan.js"
+  },
+  {
+    "path": "/api/ad/v3/net/netns/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/netns.js"
+  },
+  {
+    "path": "/api/ad/v3/net/netns/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/netns.js"
+  },
+  {
+    "path": "/api/ad/v3/net/ospf",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "net/ospf.js"
+  },
+  {
+    "path": "/api/ad/v3/net/ospf-interface/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/ospf-interface.js"
+  },
+  {
+    "path": "/api/ad/v3/net/ospf-interface/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/ospf-interface.js"
+  },
+  {
+    "path": "/api/ad/v3/net/ospfv3",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "net/ospfv3.js"
+  },
+  {
+    "path": "/api/ad/v3/net/ospfv3-interface/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/ospfv3-interface.js"
+  },
+  {
+    "path": "/api/ad/v3/net/ospfv3-interface/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/ospfv3-interface.js"
+  },
+  {
+    "path": "/api/ad/v3/net/rip",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "net/rip.js"
+  },
+  {
+    "path": "/api/ad/v3/net/rip-interface/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/rip-interface.js"
+  },
+  {
+    "path": "/api/ad/v3/net/rip-interface/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/rip-interface.js"
+  },
+  {
+    "path": "/api/ad/v3/net/snat/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/snat.js"
+  },
+  {
+    "path": "/api/ad/v3/net/snat/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/snat.js"
+  },
+  {
+    "path": "/api/ad/v3/net/static-route-monitor",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "net/static-route-monitor.js"
+  },
+  {
+    "path": "/api/ad/v3/net/static-route/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/static-route.js"
+  },
+  {
+    "path": "/api/ad/v3/net/static-route/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/static-route.js"
+  },
+  {
+    "path": "/api/ad/v3/net/virtual-wire/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/virtual-wire.js"
+  },
+  {
+    "path": "/api/ad/v3/net/virtual-wire/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/virtual-wire.js"
+  },
+  {
+    "path": "/api/ad/v3/net/vlan/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/vlan.js"
+  },
+  {
+    "path": "/api/ad/v3/net/vlan/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/vlan.js"
+  },
+  {
+    "path": "/api/ad/v3/net/vxnet/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "net/vxnet.js"
+  },
+  {
+    "path": "/api/ad/v3/net/vxnet/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "net/vxnet.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/application-identification/",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/application-identification.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ca/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "rc/ca.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ca/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "rc/ca.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ca/{name}/certificate",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/ca.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/certificate-utility/certificate-file-processing",
+    "methods": [
+      "post"
+    ],
+    "document": "rc/certificate-utility.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/crl/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "rc/crl.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/crl/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "rc/crl.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/custom-address-group/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "rc/custom-address-group.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/custom-address-group/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "rc/custom-address-group.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/data-group/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "rc/data-group.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/data-group/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "rc/data-group.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/domain-group/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "rc/domain-group.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/domain-group/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "rc/domain-group.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/global-address-library/",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/global-address-library.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/global-address-library/{region}",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/global-address-library.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/global-address-library/{region}/countries/",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/global-address-library.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/global-address-library/{region}/countries/{country}",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/global-address-library.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/global-address-library/{region}/countries/{country}/cities/",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/global-address-library.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/global-address-library/{region}/countries/{country}/cities/{city}",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/global-address-library.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/http-content/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "rc/http-content.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/http-content/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "rc/http-content.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/isp-address-group/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "rc/isp-address-group.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/isp-address-group/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "rc/isp-address-group.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/software-image/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "rc/software-image.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/software-image/{name}",
+    "methods": [
+      "get",
+      "delete"
+    ],
+    "document": "rc/software-image.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/all/",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/ssl-certificate/all.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/all/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/ssl-certificate/all.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/all/{name}/certificate/",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/ssl-certificate/all.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/all/{name}/request",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/ssl-certificate/all.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/certificate-request/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "rc/ssl-certificate/certificate-request.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/certificate-request/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "rc/ssl-certificate/certificate-request.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/certificate-request/{name}/certificate",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "rc/ssl-certificate/certificate-request.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/certificate-request/{name}/request",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/ssl-certificate/certificate-request.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/imported-certificate/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "rc/ssl-certificate/imported-certificate.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/imported-certificate/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "rc/ssl-certificate/imported-certificate.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/imported-certificate/{name}/certificate",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/ssl-certificate/imported-certificate.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/self-signed/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "rc/ssl-certificate/self-signed.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/self-signed/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "rc/ssl-certificate/self-signed.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/ssl-certificate/self-signed/{name}/certificate/",
+    "methods": [
+      "get"
+    ],
+    "document": "rc/ssl-certificate/self-signed.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/zone-address-group/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "rc/zone-address-group.js"
+  },
+  {
+    "path": "/api/ad/v3/rc/zone-address-group/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "rc/zone-address-group.js"
+  },
+  {
+    "path": "/api/ad/v3/refresh-token",
+    "methods": [
+      "post"
+    ],
+    "document": "token.js"
+  },
+  {
+    "path": "/api/ad/v3/report-logout",
+    "methods": [
+      "post"
+    ],
+    "document": "report-logout.js"
+  },
+  {
+    "path": "/api/ad/v3/search",
+    "methods": [
+      "post"
+    ],
+    "document": "search.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/access-control-profile/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/access-control-profile.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/access-control-profile/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/access-control-profile.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/http-defence/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/http-defence.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/http-defence/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/http-defence.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/http-profile/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/http-profile.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/http-profile/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/http-profile.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/http-rewrite/all/",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/http-rewrite/all.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/http-rewrite/all/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/http-rewrite/all.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/http-rewrite/request/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/http-rewrite/request.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/http-rewrite/request/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/http-rewrite/request.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/http-rewrite/response/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/http-rewrite/response.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/http-rewrite/response/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/http-rewrite/response.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/http2-profile/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/http2-profile.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/http2-profile/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/http2-profile.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/ipro/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/ipro.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/ipro/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/ipro.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/all/",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/persist/all.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/all/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/persist/all.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/cookie-insert/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/persist/cookie-insert.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/cookie-insert/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/persist/cookie-insert.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/cookie-rewrite/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/persist/cookie-rewrite.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/cookie-rewrite/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/persist/cookie-rewrite.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/cookie-study/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/persist/cookie-study.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/cookie-study/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/persist/cookie-study.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/http-request-study/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/persist/http-request-study.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/http-request-study/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/persist/http-request-study.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/http-response-study/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/persist/http-response-study.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/http-response-study/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/persist/http-response-study.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/radius/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/persist/radius.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/radius/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/persist/radius.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/sip/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/persist/sip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/sip/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/persist/sip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/source-ip-port/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/persist/source-ip-port.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/source-ip-port/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/persist/source-ip-port.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/source-ip/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/persist/source-ip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/source-ip/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/persist/source-ip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/ssl-sessionid/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/persist/ssl-sessionid.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/persist/ssl-sessionid/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/persist/ssl-sessionid.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pool/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pool.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pool/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pool.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pool/{pool_name}/nodes",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/node.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pool/{pool_name}/nodes/{node_name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/node.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/8583/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/8583.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/8583/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/8583.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/all/",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/pre-rule/all.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/all/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/pre-rule/all.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/any/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/any.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/any/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/any.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/dns/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/dns.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/dns/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/dns.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/ftp/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/ftp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/ftp/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/ftp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/http/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/http.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/http/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/http.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/ip/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/ip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/ip/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/ip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/radius/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/radius.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/radius/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/radius.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/sip/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/sip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/sip/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/sip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/ssl-offload-https/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/ssl-offload-https.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/ssl-offload-https/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/ssl-offload-https.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/ssl-offload/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/ssl-offload.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/ssl-offload/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/ssl-offload.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/tcp-forward/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/tcp-forward.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/tcp-forward/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/tcp-forward.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/tcp-proxy/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/tcp-proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/tcp-proxy/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/tcp-proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/udp-forward/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/udp-forward.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/udp-forward/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/udp-forward.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/udp-proxy/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/pre-rule/udp-proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/pre-rule/udp-proxy/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/pre-rule/udp-proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/qos-profile/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/qos-profile.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/qos-profile/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/qos-profile.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/security-node",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/security-node.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/security-node/{name}",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/security-node.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/security-pool/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/security-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/security-pool/{name}",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/security-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-chain/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-chain.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-chain/all/associated-pre-rule",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/service-chain.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-chain/all/associated-vs",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/service-chain.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-chain/{name}",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-chain.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-chain/{name}/associated-pre-rule",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/service-chain.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-chain/{name}/associated-vs",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/service-chain.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-host",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-host.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-host/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-host.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/all/",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/service-monitor/all.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/all/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/service-monitor/all.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/connect-ssl/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/connect-ssl.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/connect-ssl/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/connect-ssl.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/connect-tcp/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/connect-tcp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/connect-udp/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/connect-udp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/connect-udp/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/connect-udp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/dns/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/dns.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/dns/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/dns.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/external-monitor/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/external-monitor.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/external-monitor/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/external-monitor.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/ftp/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/ftp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/ftp/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/ftp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/http/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/http.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/http/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/http.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/https/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/https.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/https/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/https.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/icmp/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/icmp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/icmp/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/icmp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/icmpv6/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/icmpv6.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/icmpv6/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/icmpv6.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/ldap/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/ldap.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/ldap/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/ldap.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/monitor-expression/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/monitor-expression.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/monitor-expression/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/monitor-expression.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/mssql-database/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/mssql-database.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/mssql-database/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/mssql-database.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/mysql-database/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/mysql-database.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/mysql-database/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/mysql-database.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/oracle-database/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/oracle-database.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/oracle-database/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/oracle-database.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/passive-http/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/passive-http.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/passive-http/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/passive-http.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/passive-tcp/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/passive-tcp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/passive-tcp/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/passive-tcp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/radius/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/radius.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/radius/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/radius.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/sip/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/sip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/sip/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/sip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/snmp/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/snmp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/snmp/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/snmp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/tcp-half-open/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/service-monitor/tcp-half-open.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/service-monitor/tcp-half-open/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/service-monitor/tcp-half-open.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/sip-profile/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/sip-profile.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/sip-profile/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/sip-profile.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/snat-pool/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/snat-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/snat-pool/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/snat-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/ssl-client/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/ssl-client.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/ssl-client/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/ssl-client.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/ssl-server/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/ssl-server.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/ssl-server/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/ssl-server.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/tcp-profile/all/",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/tcp-profile/all.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/tcp-profile/all/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/tcp-profile/all.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/tcp-profile/l3-forward/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/tcp-profile/l3-forward.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/tcp-profile/l3-forward/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/tcp-profile/l3-forward.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/tcp-profile/l4-forward/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/tcp-profile/l4-forward.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/tcp-profile/l4-forward/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/tcp-profile/l4-forward.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/tcp-profile/l7-proxy/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/tcp-profile/l7-proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/tcp-profile/l7-proxy/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/tcp-profile/l7-proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/udp-profile/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/udp-profile.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/udp-profile/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/udp-profile.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/user/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/user.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/user/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/user.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-ip/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-ip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-ip/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-ip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{virtual_service_name}/pre-rule/",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/pre-rule/all.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{virtual_service_name}/pre-rule/{pre_rule_name}",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/pre-rule/all.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{virtual_service_name}/tcp-profile",
+    "methods": [
+      "get"
+    ],
+    "document": "slb/tcp-profile/all.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/data-center/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/data-center.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/local-device.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/local-device.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/virtual-service/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/local-device.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/virtual-service/{virtual_service_name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/local-device.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/virtual-service/{virtual_service_name}/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/local-device.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/local-device.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/data-center/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/data-center.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/data-center/{name}/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/data-center.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/domain-each/query",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/domain.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/domain-each/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/domain.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/domain-map/{dns_config_area}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/domain-map.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/domain-map/{dns_config_area}/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/domain-map.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/domain-summary",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/domain.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/domain/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/domain.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/domain/{domain}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/domain.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/domain/{domain}/ldns/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/domain.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/domain/{domain}/query",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/domain.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/local-dns-summary",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/local-dns.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/local-dns/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/local-dns.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/local-dns/{local_dns}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/local-dns.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/query/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/query.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/query/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/query.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/vip-pool/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/vip-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/vip-pool/global",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/vip-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/vip-pool/local",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/vip-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/vip-pool/single/{dns_config_area}/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/vip-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/vip-pool/{dns_config_area}/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/vip-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/dns/vip-pool/{dns_config_area}/{name}/vips/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/dns/vip-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/ha/active-standby",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/ha/active-standby.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/ha/application-group/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/ha/application-group.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/ha/application-group/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/ha/application-group.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/ha/member/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/ha/member.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/ha/member/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/ha/member.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/lc/dns-proxy",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/lc/dns-proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/lc/policy-route/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/lc/policy-route.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/lc/policy-route/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/lc/policy-route.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/acl/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/acl.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/acl/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/acl.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/bgp-neighbors",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/bgp-neighbors.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/bond",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/bond.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/bridge",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/bridge.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/dnat/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/dnat.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/dnat/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/dnat.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/dynamic-route",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/dynamic-route.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/interface",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/interface.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/interface-mode",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/interface-mode.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/link/lan-summary",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/link/lan.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/link/lan/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/link/lan.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/link/lan/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/link/lan.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/link/pppoe/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/link/pppoe.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/link/pppoe/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/link/pppoe.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/link/wan-application-throughput",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/link/wan.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/link/wan-each/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/link/wan.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/link/wan-summary",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/link/wan.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/link/wan-summary/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/link/wan.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/link/wan/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/link/wan.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/link/wan/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/link/wan.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/link/wan/{name}/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/link/wan.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/lldp-neighbors",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/lldp-neighbors.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/ospf-neighbors",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/ospf-neighbors.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/ospfv3-neighbors",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/ospfv3-neighbors.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/snat/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/snat.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/snat/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/snat.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/static-route/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/static-route.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/static-route/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/static-route.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/net/vxnet",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/net/vxnet.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/rc/crl/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/rc/crl.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/rc/crl/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/rc/crl.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/http-rewrite/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/http-rewrite.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/http-rewrite/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/http-rewrite.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/nodes/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/all-nodes-health.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/pool-summary/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/pool-summary/combine-items",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/pool-summary/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/pool/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/pool/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/pool/{name}/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/pool/{pool_name}/nodes/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/node.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/pool/{pool_name}/nodes/{node_name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/node.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/pool/{pool_name}/nodes/{node_name}/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/node.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/pre-rule/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/pre-rule.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/pre-rule/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/pre-rule.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/security-node",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/security-node.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/security-node/{security_node_name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/security-node.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/security-node/{security_node_name}/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/security-node.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/security-pool",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/security-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/security-pool-each/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/security-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/security-pool-summary",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/security-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/security-pool-summary/combine-items",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/security-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/security-pool-summary/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/security-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/security-pool/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/security-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/security-pool/{name}/combine-items",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/security-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/security-pool/{name}/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/security-pool.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/service-chain",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/service-chain.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/service-chain-summary",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/service-chain.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/service-chain/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/service-chain.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/service-host/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/service-host.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/service-host/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/service-host.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-ip/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-ip.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service-names/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service-summary",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service-summary/combine-items",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service-summary/ddos",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service-summary/ddos-log",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service-summary/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service/",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service/{name}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service/{name}/combine-items",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service/{name}/ddos",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service/{name}/ddos-log",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service/{name}/rtt",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/rtt.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/slb/virtual-service/{name}/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/slb/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/sys/system",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/sys/system.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/sys/system/combine-items",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/sys/system.js"
+  },
+  {
+    "path": "/api/ad/v3/stat/sys/system/{item}",
+    "methods": [
+      "get"
+    ],
+    "document": "stat/sys/system.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/alert-mail",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/alert-mail.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/alert-ras",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/alert-ras.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/alert-trap",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/alert-trap.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/backup-config-package",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/backup-config.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/backup-config-recovery",
+    "methods": [
+      "post"
+    ],
+    "document": "sys/backup-config.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/backup-config-setting",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/backup-config-setting.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/backup-config/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/backup-config.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/backup-config/default/recovery",
+    "methods": [
+      "post"
+    ],
+    "document": "sys/backup-config.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/backup-config/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/backup-config.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/backup-config/{name}/package",
+    "methods": [
+      "get"
+    ],
+    "document": "sys/backup-config.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/backup-config/{name}/recovery",
+    "methods": [
+      "post"
+    ],
+    "document": "sys/backup-config.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/banner/",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/banner.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/current-user",
+    "methods": [
+      "get"
+    ],
+    "document": "sys/current-user.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/current-user/reset-password",
+    "methods": [
+      "post"
+    ],
+    "document": "sys/current-user.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/external-authentication",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/external-authentication.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/host/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/host.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/host/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/host.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/http-log/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/http-log.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/http-log/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/http-log.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/licence",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/licence.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/licence/verify",
+    "methods": [
+      "post"
+    ],
+    "document": "sys/licence.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/log-template/",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/log-template.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/maintenance-mode",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/maintenance-mode.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/management",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/management.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/network-setting",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/network-setting.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/ntp",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/ntp.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/offline-check/{name}",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/offline-check.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/partition/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/partition.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/partition/{name}",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/partition.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/partition/{name}/export-log",
+    "methods": [
+      "post"
+    ],
+    "document": "sys/partition.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/partition/{name}/reinstall",
+    "methods": [
+      "post"
+    ],
+    "document": "sys/partition.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/passwd-policy",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/passwd-policy.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/permission/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/permission.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/permission/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/permission.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/privacy",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/privacy.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/project/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/project.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/project/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/project.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/proxy",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/report-mail",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/report-mail.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/report-setting",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/report-setting.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/report-task/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/report-task.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/report-task/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/report-task.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/role/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/role.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/role/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/role.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/smtp/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/smtp.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/smtp/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/smtp.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/snmp/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/snmp.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/snmp/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/snmp.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/snmpv3/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/snmpv3.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/snmpv3/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/snmpv3.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/ssh-setting",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/ssh-setting.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/syslog",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/syslog.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/time",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/time.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/trap/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/trap.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/trap/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/trap.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/update",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/update.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/user/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "sys/user.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/user/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/user.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/web-service",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/web-service.js"
+  },
+  {
+    "path": "/api/ad/v3/token/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "token.js"
+  },
+  {
+    "path": "/api/ad/v3/token/{name}",
+    "methods": [
+      "get",
+      "post",
+      "delete"
+    ],
+    "document": "token.js"
+  },
+  {
+    "path": "/api/ad/v3/version",
+    "methods": [
+      "get"
+    ],
+    "document": "version.js"
+  },
+  {
+    "path": "/api/ad/v4/debug/dns/zone/{dns_config_area}/synchronize",
+    "methods": [
+      "post"
+    ],
+    "document": "dns/zone/zone.js"
+  },
+  {
+    "path": "/api/ad/v4/debug/dns/zone/{dns_config_area}/tsig-key/generate",
+    "methods": [
+      "post"
+    ],
+    "document": "dns/zone/tsig-key.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/dns-virtual-service/dns-profile/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/dns-virtual-service/dns-profile.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/dns-virtual-service/dns-profile/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/dns-virtual-service/dns-profile.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/dns-virtual-service/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/dns-virtual-service/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/dns-virtual-service/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/dns-virtual-service/virtual-service.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/gslb/{dns_config_area}/domain-map/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "dns/gslb/domain-map.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/gslb/domain-map.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "dns/gslb/ldns-address-group.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/gslb/ldns-address-group.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "dns/gslb/vip-pool.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/gslb/vip-pool.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "dns/gslb/vip-pool.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/gslb/vip-pool.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/local-dns/forward-zone/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/local-dns/forward-zone.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/local-dns/forward-zone/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/local-dns/forward-zone.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/local-dns/local-zone/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/local-dns/local-zone.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/local-dns/local-zone/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/local-dns/local-zone.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/local-dns/response-policy-zones/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/local-dns/response-policy-zones.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/local-dns/response-policy-zones/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/local-dns/response-policy-zones.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/local-dns/setting",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "dns/local-dns/setting.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/a.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/a.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/aaaa.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/aaaa.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/all/",
+    "methods": [
+      "get"
+    ],
+    "document": "dns/zone/dns-records/all.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/caa.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/caa.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/cname.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/cname.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/dname/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/dname.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/dname/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/dname.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ds/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/ds.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ds/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/ds.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/hinfo.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/hinfo.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/mx/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/mx.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/mx/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/mx.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/naptr/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/naptr.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/naptr/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/naptr.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/ns.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/ns.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ptr/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/ptr.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ptr/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/ptr.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/srv.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/srv.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/txt/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dns-records/txt.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/txt/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dns-records/txt.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/dnssec-key.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/dnssec-key.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/tsig-key/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/tsig-key.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/tsig-key.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/zone/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "dns/zone/zone.js"
+  },
+  {
+    "path": "/api/ad/v4/dns/zone/{dns_config_area}/zone/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "dns/zone/zone.js"
+  },
+  {
+    "path": "/cgi/file-resource/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "cgi/file-resource.js"
+  },
+  {
+    "path": "/cgi/notice",
+    "methods": [
+      "get"
+    ],
+    "document": "cgi/notice.js"
+  },
+  {
+    "path": "/scenario",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "scenario.js"
+  },
+  {
+    "path": "/sys/dns-log/",
+    "methods": [
+      "get",
+      "post",
+      "patch"
+    ],
+    "document": "sys/dns-log.js"
+  },
+  {
+    "path": "/sys/dns-log/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "sys/dns-log.js"
+  },
+  {
+    "path": "/sys/route-priority",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/route-priority.js"
+  }
+]
