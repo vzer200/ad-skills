@@ -61,8 +61,8 @@ def _device_summary_status(result: Dict[str, Any]) -> str:
         return "❌ 连接失败"
     analysis = result.get("analysis", {})
     summary = analysis.get("summary", {})
-    if summary.get("fail", 0) > 0 or summary.get("warn", 0) > 0:
-        return "⚠️ 异常"
+    if summary.get("fail", 0) > 0:
+        return "❌ 异常"
     return "✅ 正常"
 
 
@@ -113,7 +113,7 @@ def _render_device_detail_block(
         abnormal = []
         for k in keys:
             cr = check_results.get(k)
-            if cr and cr["status"] in ("fail", "warn"):
+            if cr and cr["status"] == "fail":
                 abnormal.append((k, cr))
         if not abnormal:
             continue
@@ -137,8 +137,8 @@ def _render_device_detail_block(
 
     lines.append("#### \U0001f4c8 统计汇总")
     lines.append("")
-    lines.append("| 类别 | 检查项数 | ✅ 通过 | ❌ 异常 | ⚠️ 警告 | 通过率 |")
-    lines.append("|------|----------|---------|---------|---------|--------|")
+    lines.append("| 类别 | 检查项数 | ✅ 通过 | ❌ 异常 | 通过率 |")
+    lines.append("|------|----------|---------|---------|--------|")
 
     for cat_key, cat_label in _CATEGORY_LABELS.items():
         keys = categories.get(cat_key, [])
@@ -146,10 +146,9 @@ def _render_device_detail_block(
             continue
         p = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "pass")
         f = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "fail")
-        w = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "warn")
-        t = p + f + w
+        t = p + f
         rate = round(p / max(t, 1) * 100)
-        lines.append("| {} | {} | {} | {} | {} | {}% |".format(cat_label, t, p, f, w, rate))
+        lines.append("| {} | {} | {} | {} | {}% |".format(cat_label, t, p, f, rate))
 
     lines.append("")
 
@@ -234,7 +233,7 @@ def _render_cross_device_comparison(
             status = s.get("status", "?")
             value = s.get("value", "?")
             row += " {} {} |".format(_check_icon(status), value)
-            if status in ("fail", "warn"):
+            if status == "fail":
                 notes.append(_extract_ip(host))
         row += " {} |".format(", ".join(notes) if notes else "-")
         comparison_rows.append(row)

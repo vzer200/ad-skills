@@ -470,55 +470,55 @@ CORRECTED_FIELD_RULES = {
     # === threshold (支持 warn_at 两级阈值：先检查 abnormal→fail，再检查 warn_at→warn) ===
     'power_state':       {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'warn_at': -1, 'warn_compare': '==', 'name': '电源状态'},  # 0=故障(fail), -1=无传感器VM(warn), 1=正常
     'fan_state':         {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'warn_at': -1, 'warn_compare': '==', 'name': '风扇状态'},  # 0=故障(fail), -1=无传感器VM(warn), 1=正常
-    'acceleration':      {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'warn',  'name': '加速引擎'},
+    'acceleration':      {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'name': '加速引擎'},
     'base_file_ds':      {'type': 'threshold', 'abnormal': 0,  'compare': '>',  'severity': 'fail',  'name': '文件描述符泄漏'},
     'base_log_error_exist':{'type': 'threshold','abnormal': 100,'compare': '>', 'severity': 'fail',  'warn_at': 0, 'warn_compare': '>', 'name': '错误日志数量'},  # >100=fail, >0=warn
-    'conntrack_count':   {'type': 'threshold', 'abnormal': 100000, 'compare': '>', 'severity': 'warn', 'name': '连接跟踪数'},
-    'conntrack_new_count':{'type':'threshold', 'abnormal': 10000,  'compare': '>', 'severity': 'warn', 'name': '新建连接数'},
+    'conntrack_count':   {'type': 'threshold', 'abnormal': 100000, 'compare': '>', 'severity': 'fail', 'name': '连接跟踪数'},
+    'conntrack_new_count':{'type':'threshold', 'abnormal': 10000,  'compare': '>', 'severity': 'fail', 'name': '新建连接数'},
     'snmp_mem_rate':     {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'warn_at': 80, 'warn_compare': '>', 'name': '内存使用率'},  # >90=fail, >80=warn
     'base_cpu_usage':    {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'warn_at': 80, 'warn_compare': '>', 'name': 'CPU使用率'},  # >90=fail, >80=warn
     # === bool_false ===
-    'ADAPI_authority':   {'type': 'bool_false', 'severity': 'warn',  'name': 'ADAPI授权'},
-    'ssh_authority':     {'type': 'bool_false', 'severity': 'warn',  'name': 'SSH授权'},
+    'ADAPI_authority':   {'type': 'bool_false', 'severity': 'fail',  'name': 'ADAPI授权'},
+    'ssh_authority':     {'type': 'bool_false', 'severity': 'fail',  'name': 'SSH授权'},
     'security_check_state':{'type':'bool_false', 'severity': 'fail',  'name': '安全检查状态'},
     'shm_sem_state':     {'type': 'bool_false', 'severity': 'fail',  'name': '共享内存状态'},
     'base_report_stab':  {'type': 'bool_false', 'severity': 'fail',  'name': '报表稳定性'},
     # === str_equal ===
-    'enable_iplimit':    {'type': 'str_equal', 'abnormal': 'false', 'severity': 'warn',  'name': 'IP限制'},
+    'enable_iplimit':    {'type': 'str_equal', 'abnormal': 'false', 'severity': 'fail',  'name': 'IP限制'},
     'remote_mt':         {'type': 'str_equal', 'abnormal': 'true',  'severity': 'fail',  'name': '远程维护'},
-    'online':            {'type': 'str_equal', 'abnormal': 'false', 'severity': 'warn',  'name': '设备在线状态'},
+    'online':            {'type': 'str_equal', 'abnormal': 'false', 'severity': 'fail',  'name': '设备在线状态'},
     # === str_not_equal ===
-    'auto_update':       {'type': 'str_not_equal', 'normal': 'true','severity':'warn',  'name': '自动更新'},
+    'auto_update':       {'type': 'str_not_equal', 'normal': 'true','severity':'fail',  'name': '自动更新'},
     # === non_empty ===
     'weak_pwd':          {'type': 'non_empty', 'severity': 'fail',  'name': '弱密码'},
     'dangerous_port':    {'type': 'non_empty', 'severity': 'fail',  'name': '危险端口'},
     'base_core_process_lack':{'type':'non_empty','severity':'fail', 'name': '缺失核心进程'},
     'base_eth_abnormal': {'type': 'non_empty', 'severity': 'fail',  'name': '网卡异常'},
-    'base_eth_mtu':      {'type': 'non_empty', 'severity': 'warn',  'name': '网卡MTU'},
+    'base_eth_mtu':      {'type': 'non_empty', 'severity': 'fail',  'name': '网卡MTU'},
     'base_drop_err_packet_rate':{'type':'non_empty','severity':'fail','name': '丢包率'},
     'id_conflict_list':  {'type': 'non_empty', 'severity': 'fail',  'name': '配置ID冲突'},
     'cluster_brain_split_check':{'type':'non_empty','severity':'fail','name': '集群脑裂检查'},
     'base_disk_high_usage':{'type':'non_empty', 'severity':'fail',  'name': '磁盘高使用率'},
     'base_crash_time':   {'type': 'non_empty', 'severity': 'fail',  'name': '崩溃时间'},
-    'base_blackbox_dmesg':{'type':'non_empty', 'severity':'warn',   'name': '黑盒dmesg数据'},
+    'base_blackbox_dmesg':{'type':'non_empty', 'severity':'fail',   'name': '黑盒dmesg数据'},
     # === bool_true ===
     'unsafe_algorithm':  {'type': 'bool_true',  'severity': 'fail',  'name': '不安全算法'},
     'unsafe_protocol':   {'type': 'bool_true',  'severity': 'fail',  'name': '不安全协议'},
     # === not_zero / zero / has_value / not_normal ===
     'base_kernel_log':   {'type': 'not_zero',   'severity': 'fail',  'name': '内核日志'},
-    'base_blackbox_state':{'type':'not_zero',   'severity': 'warn',  'name': '黑盒状态'},
-    'alarms_enabled':    {'type': 'zero',        'severity': 'warn',  'name': '告警启用'},
-    'bios_update_state': {'type': 'has_value',   'severity': 'warn',  'name': 'BIOS更新状态'},
+    'base_blackbox_state':{'type':'not_zero',   'severity': 'fail',  'name': '黑盒状态'},
+    'alarms_enabled':    {'type': 'zero',        'severity': 'fail',  'name': '告警启用'},
+    'bios_update_state': {'type': 'has_value',   'severity': 'fail',  'name': 'BIOS更新状态'},
     'I350_nic_state':    {'type': 'not_normal',  'severity': 'fail',  'name': 'I350网卡状态'},
     '82599_nic_state':   {'type': 'not_normal',  'severity': 'fail',  'name': '82599网卡状态'},
     # === special ===
     'base_eth_info':     {'type': 'eth_parse',   'severity': 'fail',  'name': '网卡信息'},
-    'snat_sport_exhaustion_log_num': {'type': 'threshold', 'abnormal': 0, 'compare': '>', 'severity': 'warn', 'name': 'SNAT端口耗尽'},
-    'disk_info':         {'type': 'empty_dict',  'severity': 'warn',  'name': '磁盘信息'},
-    'patch_info':        {'type': 'nested_list', 'key': 'patched_list', 'severity': 'warn', 'name': '补丁信息'},
-    'admin':             {'type': 'str_not_equal','normal': 'true', 'severity': 'warn',  'name': '管理员账户'},
-    'ad_appversion':     {'type': 'missing',      'severity': 'warn',  'name': 'AD版本'},
-    'base_running_time': {'type': 'missing',      'severity': 'warn',  'name': '运行时间'},
+    'snat_sport_exhaustion_log_num': {'type': 'threshold', 'abnormal': 0, 'compare': '>', 'severity': 'fail', 'name': 'SNAT端口耗尽'},
+    'disk_info':         {'type': 'empty_dict',  'severity': 'fail',  'name': '磁盘信息'},
+    'patch_info':        {'type': 'nested_list', 'key': 'patched_list', 'severity': 'fail', 'name': '补丁信息'},
+    'admin':             {'type': 'str_not_equal','normal': 'true', 'severity': 'fail',  'name': '管理员账户'},
+    'ad_appversion':     {'type': 'missing',      'severity': 'fail',  'name': 'AD版本'},
+    'base_running_time': {'type': 'missing',      'severity': 'fail',  'name': '运行时间'},
 }
 
 
@@ -535,7 +535,7 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
             "device_info": {},
             "check_results": {},
             "categories": {"feature": [], "health": [], "secure": []},
-            "summary": {"total": 0, "pass": 0, "fail": 0, "warn": 0, "score": 0},
+            "summary": {"total": 0, "pass": 0, "fail": 0, "score": 0},
             "health_scores": {"feature": {"pass": 0, "total": 0, "score": 0}, "health": {"pass": 0, "total": 0, "score": 0}, "secure": {"pass": 0, "total": 0, "score": 0}, "overall": 0},
             "suggestions": [],
         }
@@ -556,7 +556,7 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
     if has("ad_appversion"):
         # 1. APP_VERSION_CHECK
         app_ver = data.get("ad_appversion", "").strip()
-        check("APP_VERSION_CHECK", "pass" if app_ver else "warn",
+        check("APP_VERSION_CHECK", "pass" if app_ver else "fail",
               app_ver[:60] if app_ver else "未获取到版本信息")
 
     if has("admin"):
@@ -576,13 +576,13 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         # 5. DNS_DETECT_CHECK
         dns_proxy = data.get("dns_proxy_enabled", False)
         check("DNS_DETECT_CHECK",
-              "pass" if not dns_proxy else "warn",
+              "pass" if not dns_proxy else "fail",
               f"dns_proxy_enabled={dns_proxy}")
 
     if has("dnat_dst_ip2net_if"):
         # 6. DNAT_CHECK
         dnat = data.get("dnat_dst_ip2net_if", [])
-        check("DNAT_CHECK", "pass" if not dnat else "warn",
+        check("DNAT_CHECK", "pass" if not dnat else "fail",
               f"{len(dnat)} 条 DNAT 规则" if dnat else "无 DNAT 规则")
 
     if has("heartbeat_state"):
@@ -595,93 +595,93 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
     if has("static_ip_config"):
         # 8. STATIC_IP_CHECK
         static_ip = data.get("static_ip_config", [])
-        check("STATIC_IP_CHECK", "pass" if not static_ip else "warn",
+        check("STATIC_IP_CHECK", "pass" if not static_ip else "fail",
               f"{len(static_ip)} 条静态 IP" if static_ip else "无静态 IP 配置")
 
     if has("cluster_state"):
         # 9. CLUSTER_STATE_CHECK
         cluster = data.get("cluster_state", "NOT_CLUSTER_MODE")
         check("CLUSTER_STATE_CHECK",
-              "pass" if cluster == "NORMAL" else "warn",
+              "pass" if cluster == "NORMAL" else "fail",
               cluster)
 
     if has("cluster_virtual_mac"):
         # 11. VIRTUAL_MAC_CHECK
         vmac = data.get("cluster_virtual_mac", "CLUSTER_UNABLE")
         check("VIRTUAL_MAC_CHECK",
-              "pass" if vmac != "CLUSTER_UNABLE" else "warn",
+              "pass" if vmac != "CLUSTER_UNABLE" else "fail",
               vmac)
 
     if has("ms_state"):
         # 12. DUAL_STATE_CHECK
         ms = data.get("ms_state", "CLUSTER_UNABLE_OR_NOTIN")
         check("DUAL_STATE_CHECK",
-              "pass" if ms == "NORMAL" else "warn",
+              "pass" if ms == "NORMAL" else "fail",
               ms)
 
     if has("node_pool_persist"):
         # 13. POOL_PERSIST_CHECK
         pool_persist = data.get("node_pool_persist", [])
-        check("POOL_PERSIST_CHECK", "pass" if pool_persist else "warn",
+        check("POOL_PERSIST_CHECK", "pass" if pool_persist else "fail",
               f"{len(pool_persist)} 个节点池" if pool_persist else "无持久化节点池")
 
     if has("static_route_health_check"):
         # 14. STATIC_ROUTE_CHECK
         sr = data.get("static_route_health_check", [])
-        check("STATIC_ROUTE_CHECK", "pass" if not sr else "warn",
+        check("STATIC_ROUTE_CHECK", "pass" if not sr else "fail",
               f"{len(sr)} 条异常" if sr else "正常")
 
     if has("node_pool_health_check_detect"):
         # 15. POOL_HEALTH_CHECK
         ph = data.get("node_pool_health_check_detect", [])
         check("POOL_HEALTH_CHECK",
-              "pass" if not ph or ph == ["12"] else "warn",
+              "pass" if not ph or ph == ["12"] else "fail",
               f"检测到 {len(ph)} 个节点池" if ph else "正常")
 
     if has("rs_level_check"):
         # 16. RS_LEVEL_CHECK
         rs_level = data.get("rs_level_check", True)
         check("RS_LEVEL_CHECK",
-              "pass" if rs_level else "warn",
+              "pass" if rs_level else "fail",
               f"rs_level_check={rs_level}")
 
     if has("cluster_appgroup_unit"):
         # 17. APP_GROUP_CHECK
         ag = data.get("cluster_appgroup_unit", "CLUSTER_UNABLE")
         check("APP_GROUP_CHECK",
-              "pass" if ag != "CLUSTER_UNABLE" else "warn",
+              "pass" if ag != "CLUSTER_UNABLE" else "fail",
               ag)
 
     if has("dns_server_health"):
         # 18. DNS_SERVER_STATE_CHECK
         dns_h = data.get("dns_server_health", [])
-        check("DNS_SERVER_STATE_CHECK", "pass" if not dns_h else "warn",
+        check("DNS_SERVER_STATE_CHECK", "pass" if not dns_h else "fail",
               f"{len(dns_h)} 台异常" if dns_h else "正常")
 
     if has("link_health_check"):
         # 19. LINK_HEALTH_CHECK
         lh = data.get("link_health_check", [])
-        check("LINK_HEALTH_CHECK", "pass" if not lh else "warn",
+        check("LINK_HEALTH_CHECK", "pass" if not lh else "fail",
               f"{len(lh)} 条异常" if lh else "正常")
 
     if has("static_proximity_check"):
         # 20. STATIC_PROXIMITY_CHECK
         sp = data.get("static_proximity_check", True)
         check("STATIC_PROXIMITY_CHECK",
-              "pass" if sp else "warn",
+              "pass" if sp else "fail",
               f"static_proximity_check={sp}")
 
     if has("dns64_enabled"):
         # 21. DNS64_CHECK
         dns64 = data.get("dns64_enabled", False)
-        check("DNS64_CHECK", "pass" if not dns64 else "warn",
+        check("DNS64_CHECK", "pass" if not dns64 else "fail",
               f"dns64_enabled={dns64}")
 
     if has("newly_added_policy_route"):
         # 22. POLICY_ROUTE_CHECK
         npr = data.get("newly_added_policy_route", False)
         check("POLICY_ROUTE_CHECK",
-              "pass" if not npr else "warn",
+              "pass" if not npr else "fail",
               f"newly_added_policy_route={npr}")
 
     if has("ms_manage_ip_difference"):
@@ -694,39 +694,39 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
     if has("snmp_alarm_enabled"):
         # 24. SNMP_TRAPS_CHECK
         snmp = data.get("snmp_alarm_enabled", False)
-        check("SNMP_TRAPS_CHECK", "pass" if snmp else "warn",
+        check("SNMP_TRAPS_CHECK", "pass" if snmp else "fail",
               f"snmp_alarm_enabled={snmp}")
 
     if has("dns_pre_rule_exist"):
         # 25. DNS_REFLECT_CHECK
         dr = data.get("dns_pre_rule_exist", False)
-        check("DNS_REFLECT_CHECK", "pass" if not dr else "warn",
+        check("DNS_REFLECT_CHECK", "pass" if not dr else "fail",
               f"dns_pre_rule_exist={dr}")
 
     if has("dns_server_enabled"):
         # 26. DNS_SERVER_CHECK
         ds = data.get("dns_server_enabled", "")
         check("DNS_SERVER_CHECK",
-              "pass" if ds in ("true", "") else "warn",
+              "pass" if ds in ("true", "") else "fail",
               f"dns_server_enabled={ds}")
 
     if has("dnat_port_and_proto"):
         # 27. DNAT_PORT_CHECK
         dpp = data.get("dnat_port_and_proto", [])
-        check("DNAT_PORT_CHECK", "pass" if not dpp else "warn",
+        check("DNAT_PORT_CHECK", "pass" if not dpp else "fail",
               f"{len(dpp)} 条" if dpp else "无端口映射")
 
     if has("cluster_session_sync"):
         # 28. SESSION_SYNC_CHECK
         ss = data.get("cluster_session_sync", "CLUSTER_UNABLE")
         check("SESSION_SYNC_CHECK",
-              "pass" if ss in ("NORMAL", "CLUSTER_UNABLE") else "warn",
+              "pass" if ss in ("NORMAL", "CLUSTER_UNABLE") else "fail",
               ss)
 
     if has("email_alarm_enabled"):
         # 29. MAIL_WARN_CHECK
         mw = data.get("email_alarm_enabled", False)
-        check("MAIL_WARN_CHECK", "pass" if mw else "warn",
+        check("MAIL_WARN_CHECK", "pass" if mw else "fail",
               f"email_alarm_enabled={mw}")
 
     if has("virtual_ip_pool_check"):
@@ -744,33 +744,33 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         # 31. PROXY_POLICY_CHECK
         pp = data.get("proxy_policy_check", True)
         check("PROXY_POLICY_CHECK",
-              "pass" if pp else "warn",
+              "pass" if pp else "fail",
               f"proxy_policy_check={pp}")
 
     if has("dns_map_persist_enable"):
         # 32. DNS_MAP_PS_CHECK
         dm = data.get("dns_map_persist_enable", {})
         dm_empty = all(not v for v in dm.values())
-        check("DNS_MAP_PS_CHECK", "pass" if dm_empty else "warn",
+        check("DNS_MAP_PS_CHECK", "pass" if dm_empty else "fail",
               str(dm)[:60] if dm else "未启用")
 
     if has("wan_max_bandwidth"):
         # 33. WAN_BANDWIDTH_CHECK
         wb = data.get("wan_max_bandwidth", [])
-        check("WAN_BANDWIDTH_CHECK", "pass" if not wb else "warn",
+        check("WAN_BANDWIDTH_CHECK", "pass" if not wb else "fail",
               f"{len(wb)} 条带宽配置" if wb else "无配置")
 
     if has("cluster_fault_switch_enabled"):
         # 34. FAULT_SWITCH_CHECK
         fs = data.get("cluster_fault_switch_enabled", "CLUSTER_UNABLE")
         check("FAULT_SWITCH_CHECK",
-              "pass" if fs == "CLUSTER_UNABLE" else "warn",
+              "pass" if fs == "CLUSTER_UNABLE" else "fail",
               fs)
 
     if has("syslog_enabled"):
         # 35. SYSLOG_CHECK
         syl = data.get("syslog_enabled", False)
-        check("SYSLOG_CHECK", "pass" if syl else "warn",
+        check("SYSLOG_CHECK", "pass" if syl else "fail",
               f"syslog_enabled={syl}")
 
     # ─────────────────────────────────────────────────────────────────────
@@ -780,7 +780,7 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
     if has("auto_update"):
         # 36. AUTO_UPDATE_CHECK
         au = data.get("auto_update", "")
-        check("AUTO_UPDATE_CHECK", "pass" if au == "true" else "warn",
+        check("AUTO_UPDATE_CHECK", "pass" if au == "true" else "fail",
               f"auto_update={au}")
 
     if has("base_cpu_usage", "base_cpu_mpstat"):
@@ -788,20 +788,20 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         cpu = data.get("base_cpu_usage", [])
         cpu_max = max(cpu) if cpu else 0
         check("CPU_CHECK",
-              "pass" if cpu_max <= 80 else ("warn" if cpu_max <= 90 else "fail"),
+              "pass" if cpu_max <= 80 else ("fail" if cpu_max <= 90 else "fail"),
               f"max={cpu_max}%")
 
     if has("base_log_error_exist"):
         # 38. LOG_CHECK
         le = data.get("base_log_error_exist", -1)
         check("LOG_CHECK",
-              "pass" if le == 0 else ("warn" if le <= 100 else "fail"),
+              "pass" if le == 0 else ("fail" if le <= 100 else "fail"),
               f"{le} 条错误日志")
 
     if has("base_running_time"):
         # 39. DEVICE_RUN_TIME
         rt = data.get("base_running_time", "")
-        check("DEVICE_RUN_TIME", "pass" if rt else "warn", rt or "未知")
+        check("DEVICE_RUN_TIME", "pass" if rt else "fail", rt or "未知")
 
     if has("base_file_ds"):
         # 40. DEVICE_FILE_CHECK
@@ -824,32 +824,32 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         # 43. KERNEL_LOG_CHECK
         kl = data.get("base_kernel_log", -1)
         check("KERNEL_LOG_CHECK",
-              "pass" if kl == 0 else ("warn" if kl < 5 else "fail"),
+              "pass" if kl == 0 else ("fail" if kl < 5 else "fail"),
               f"{kl} 条")
 
     if has("remote_mt"):
         # 44. REMOTE_MAINTAIN_CHECK
         rm = data.get("remote_mt", "")
         check("REMOTE_MAINTAIN_CHECK",
-              "warn" if rm == "true" else "pass",
+              "fail" if rm == "true" else "pass",
               f"remote_mt={rm}")
 
     if has("base_blackbox_state"):
         # 45. BLACK_BOX_CHECK
         bb = data.get("base_blackbox_state", -1)
-        check("BLACK_BOX_CHECK", "pass" if bb == 0 else "warn", str(bb))
+        check("BLACK_BOX_CHECK", "pass" if bb == 0 else "fail", str(bb))
 
     if has("base_blackbox_dmesg"):
         # 46. DMESG_DATA_CHECK
         dmesg = data.get("base_blackbox_dmesg", {})
-        check("DMESG_DATA_CHECK", "pass" if not dmesg else "warn",
+        check("DMESG_DATA_CHECK", "pass" if not dmesg else "fail",
               f"{len(dmesg)} 条" if dmesg else "无")
 
     if has("disk_info"):
         # 47. DISK_CHECK
         disk = data.get("disk_info", {})
         check("DISK_CHECK",
-              "pass" if disk else "warn",
+              "pass" if disk else "fail",
               "正常" if disk else "无磁盘信息")
 
     if has("base_crash_time"):
@@ -862,42 +862,42 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         # 49. MEMORY_CHECK
         mr = data.get("snmp_mem_rate", 0)
         check("MEMORY_CHECK",
-              "pass" if mr <= 80 else ("warn" if mr <= 90 else "fail"),
+              "pass" if mr <= 80 else ("fail" if mr <= 90 else "fail"),
               f"使用率={mr}%")
 
     if has("acceleration"):
         # 50. SPEED_CARD_CHECK
         accel = data.get("acceleration", -1)
         check("SPEED_CARD_CHECK",
-              "pass" if accel in (1, 2) else "warn",
+              "pass" if accel in (1, 2) else "fail",
               f"acceleration={accel}")
 
     if has("fan_state"):
         # 51. FAN_STATE_CHECK
         fan = data.get("fan_state", -1)
         check("FAN_STATE_CHECK",
-              "pass" if fan == 1 else ("warn" if fan == -1 else "fail"),
+              "pass" if fan == 1 else ("fail" if fan == -1 else "fail"),
               str(fan))
 
     if has("power_state"):
         # 52. POWER_STATE_CHECK
         ps = data.get("power_state", -1)
         check("POWER_STATE_CHECK",
-              "pass" if ps == 1 else ("warn" if ps == -1 else "fail"),
+              "pass" if ps == 1 else ("fail" if ps == -1 else "fail"),
               str(ps))
 
     if has("bios_update_state"):
         # 53. BIOS_VERSION_CHECK
         bios = data.get("bios_update_state", "")
         check("BIOS_VERSION_CHECK",
-              "pass" if bios in ("", "normal") else "warn",
+              "pass" if bios in ("", "normal") else "fail",
               bios or "未更新")
 
     if has("alarms_enabled"):
         # 54. WARN_LOG_CHECK
         al = data.get("alarms_enabled", -1)
         check("WARN_LOG_CHECK",
-              "pass" if al >= 0 else "warn",
+              "pass" if al >= 0 else "fail",
               str(al))
 
     if has("shm_sem_state"):
@@ -919,7 +919,7 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         # 57. COREDUMP_INFO_CHECK
         nc = data.get("base_no_core", -1)
         check("COREDUMP_INFO_CHECK",
-              "pass" if nc == -1 else "warn",
+              "pass" if nc == -1 else "fail",
               "正常" if nc == -1 else f"base_no_core={nc}")
 
     if has("id_conflict_list"):
@@ -933,14 +933,14 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         i350 = data.get("I350_nic_state", "")
         nic99 = data.get("82599_nic_state", "")
         check("NIC_HEALTH_CHECK",
-              "pass" if i350 == "normal" and nic99 == "normal" else "warn",
+              "pass" if i350 == "normal" and nic99 == "normal" else "fail",
               f"I350={i350} 82599={nic99}")
 
     if has("snat_sport_exhaustion_log_num"):
         # 60. SNAT_SPORT_EXHAUSTION_CHECK
         snat = data.get("snat_sport_exhaustion_log_num", -1)
         check("SNAT_SPORT_EXHAUSTION_CHECK",
-              "pass" if snat == 0 else "warn",
+              "pass" if snat == 0 else "fail",
               str(snat))
 
     # ─────────────────────────────────────────────────────────────────────
@@ -957,7 +957,7 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         # 62. PATCH_INFO_CHECK
         patches = data.get("patch_info", {}).get("patched_list", [])
         check("PATCH_INFO_CHECK",
-              "pass" if patches else "warn",
+              "pass" if patches else "fail",
               f"{len(patches)} 个补丁" if patches else "无补丁")
 
     if has("base_report_stab"):
@@ -991,7 +991,7 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         # 67. OPEN_PORT_CHECK
         dp = data.get("dangerous_port", [])
         check("OPEN_PORT_CHECK",
-              "pass" if not dp else "warn",
+              "pass" if not dp else "fail",
               f"{len(dp)} 个风险端口: {', '.join(str(p) for p in dp[:3])}" if dp else "无")
 
     # ─────────────────────────────────────────────────────────────────────
@@ -1000,9 +1000,8 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
 
     pass_count = sum(1 for k, v in check_results.items() if v["status"] == "pass")
     fail_count = sum(1 for k, v in check_results.items() if v["status"] == "fail")
-    warn_count = sum(1 for k, v in check_results.items() if v["status"] == "warn")
     total = len(check_results)
-    score = round((pass_count + warn_count * 0.5) / total * 100) if total else 0
+    score = round(pass_count / total * 100) if total else 0
 
     # ── 自动分类：根据检查项名称归入功能/健康/安全 ─────────────────────
     FEATURE_PREFIXES = (
@@ -1052,7 +1051,7 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
     # ── 生成优化建议 ───────────────────────────────────────────────────
     suggestions = []
     for key, result in check_results.items():
-        if result["status"] in ("fail", "warn"):
+        if result["status"] == "fail":
             entry = {
                 "check": key,
                 "priority": "高" if result["status"] == "fail" else "中",
@@ -1078,7 +1077,6 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
             "total": total,
             "pass": pass_count,
             "fail": fail_count,
-            "warn": warn_count,
             "score": score,
         },
         "health_scores": {
@@ -1098,7 +1096,7 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
 def _check_field_rule(value, rule):
     """Type-based field rule evaluation. Returns (is_abnormal: bool, severity: str, issue: str)."""
     if value is None:
-        return False, "warn", "数据不可用"
+        return False, "fail", "数据不可用"
     rule_type = rule['type']
     name = rule['name']
     severity = rule.get('severity', 'fail')
@@ -1107,16 +1105,16 @@ def _check_field_rule(value, rule):
         # Handle list values (e.g., base_cpu_usage is a list of samples)
         if isinstance(value, list):
             if not value:
-                return False, "warn", f"{name}数据为空"
+                return False, "fail", f"{name}数据为空"
             try:
                 v = float(max(value))
             except (ValueError, TypeError):
-                return False, "warn", f"{name}值无法解析: {value}"
+                return False, "fail", f"{name}值无法解析: {value}"
         else:
             try:
                 v = float(value)
             except (ValueError, TypeError):
-                return False, "warn", f"{name}值无法解析: {value}"
+                return False, "fail", f"{name}值无法解析: {value}"
         abnormal = rule['abnormal']
         compare = rule.get('compare', '==')
         if compare == '>': is_ab = v > abnormal
@@ -1133,7 +1131,7 @@ def _check_field_rule(value, rule):
             elif warn_compare == '<': is_warn = v < warn_at
             else: is_warn = v == warn_at
             if is_warn:
-                return True, "warn", f"{name}警告: {value}"
+                return True, "fail", f"{name}异常: {value}"
         issue = ""
     elif rule_type == 'bool_false':
         is_ab = (value is False or str(value).lower() in ("false", "0", "no", ""))
@@ -1187,7 +1185,7 @@ def _check_field_rule(value, rule):
         else:
             is_ab, issue = False, ''
     else:
-        return False, "warn", f"未知规则类型: {rule_type}"
+        return False, "fail", f"未知规则类型: {rule_type}"
 
     return is_ab, severity if is_ab else "pass", issue
 
@@ -1256,7 +1254,7 @@ def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
         "device_info": {},
         "check_results": {},
         "categories": {"feature": [], "health": [], "secure": []},
-        "summary": {"total": 0, "pass": 0, "fail": 0, "warn": 0, "score": 0},
+        "summary": {"total": 0, "pass": 0, "fail": 0, "score": 0},
         "health_scores": {"feature": {"pass": 0, "total": 0, "score": 0}, "health": {"pass": 0, "total": 0, "score": 0}, "secure": {"pass": 0, "total": 0, "score": 0}, "overall": 0},
         "suggestions": [],
     }
@@ -1327,8 +1325,8 @@ def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
                     worst_value = str(val)[:100]
                     worst_detail = issue
                     break
-                elif is_ab and sev == "warn" and worst != "fail":
-                    worst = "warn"
+                elif is_ab and sev == "fail" and worst != "fail":
+                    worst = "fail"
                     worst_value = str(val)[:100]
                     worst_detail = issue
 
@@ -1375,8 +1373,8 @@ def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
                 if is_ab and sev == "fail":
                     worst = "fail"; worst_value = str(val)[:100]; worst_detail = issue
                     break
-                elif is_ab and sev == "warn" and worst != "fail":
-                    worst = "warn"; worst_value = str(val)[:100]; worst_detail = issue
+                elif is_ab and sev == "fail" and worst != "fail":
+                    worst = "fail"; worst_value = str(val)[:100]; worst_detail = issue
 
             if worst == "pass":
                 worst_value = str(field_statuses[0][3])[:100]
@@ -1410,9 +1408,8 @@ def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
     # ── Summary ───────────────────────────────────────────────────────
     pass_count = sum(1 for v in check_results.values() if v["status"] == "pass")
     fail_count = sum(1 for v in check_results.values() if v["status"] == "fail")
-    warn_count = sum(1 for v in check_results.values() if v["status"] == "warn")
     total = len(check_results)
-    score = round((pass_count + warn_count * 0.5) / total * 100) if total else 0
+    score = round(pass_count / total * 100) if total else 0
 
     def _dimension_scores(keys):
         p = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "pass")
@@ -1428,7 +1425,7 @@ def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
     # ── Suggestions ───────────────────────────────────────────────────
     suggestions = []
     for key, result in check_results.items():
-        if result["status"] in ("fail", "warn"):
+        if result["status"] == "fail":
             entry = {
                 "check": key,
                 "priority": "高" if result["status"] == "fail" else "中",
@@ -1449,7 +1446,7 @@ def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
         "device_info": device_info,
         "check_results": check_results,
         "categories": {"feature": feature_keys, "health": health_keys, "secure": secure_keys},
-        "summary": {"total": total, "pass": pass_count, "fail": fail_count, "warn": warn_count, "score": score},
+        "summary": {"total": total, "pass": pass_count, "fail": fail_count, "score": score},
         "health_scores": {"feature": f_score, "health": h_score, "secure": s_score, "overall": overall},
         "suggestions": suggestions,
     }
@@ -1502,10 +1499,10 @@ def render_markdown(
     secure_keys = analysis.get("categories", {}).get("secure", [])
 
     def icon(s: str) -> str:
-        return {"pass": "✅", "fail": "❌", "warn": "⚠️"}.get(s, s)
+        return {"pass": "✅", "fail": "❌"}.get(s, s)
 
     def status_label(s: str) -> str:
-        return {"pass": "正常", "fail": "异常", "warn": "异常"}.get(s, s)
+        return {"pass": "正常", "fail": "异常", "fail": "异常"}.get(s, s)
 
     def score_icon_for(val):
         return "🟢" if val >= 90 else ("🟡" if val >= 70 else "🔴")
@@ -1513,10 +1510,10 @@ def render_markdown(
     def cat_summary(keys):
         p = sum(1 for k in keys if k in results and results[k]["status"] == "pass")
         f = sum(1 for k in keys if k in results and results[k]["status"] == "fail")
-        w = sum(1 for k in keys if k in results and results[k]["status"] == "warn")
+        w = sum(1 for k in keys if k in results and results[k]["status"] == "fail")
         t = p + f + w
         rate = round(p / max(t, 1) * 100)
-        return {"total": t, "pass": p, "fail": f, "warn": w, "rate": rate}
+        return {"total": t, "pass": p, "fail": f, "fail": w, "rate": rate}
 
     f = cat_summary(feature_keys)
     h = cat_summary(health_keys)
@@ -1585,7 +1582,7 @@ def render_markdown(
         check_time = raw_time
 
     # ── 检查项详情渲染（全量展示正常+异常） ────────
-    has_anomaly = any(k in results and results[k]["status"] in ("fail", "warn") for k in all_keys)
+    has_anomaly = any(k in results and results[k]["status"] == "fail" for k in all_keys)
     if not has_anomaly:
         check_detail_section = "> 所有检查项通过，无异常。\n"
     else:
@@ -1624,9 +1621,9 @@ def render_markdown(
 
 | 类别 | 检查项数 | 通过 | 异常 | 通过率 |
 |------|----------|------|------|--------|
-| 功能巡检 | {f["total"]} | {f["pass"]} | {f["fail"] + f["warn"]} | {f["rate"]}% |
-| 健康巡检 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {h["rate"]}% |
-| 安全巡检 | {s["total"]} | {s["pass"]} | {s["fail"] + s["warn"]} | {s["rate"]}% |
+| 功能巡检 | {f["total"]} | {f["pass"]} | {f["fail"] + f["fail"]} | {f["rate"]}% |
+| 健康巡检 | {h["total"]} | {h["pass"]} | {h["fail"] + h["fail"]} | {h["rate"]}% |
+| 安全巡检 | {s["total"]} | {s["pass"]} | {s["fail"] + s["fail"]} | {s["rate"]}% |
 
 ---
 
