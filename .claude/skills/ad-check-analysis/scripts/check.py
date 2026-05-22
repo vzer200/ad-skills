@@ -1480,6 +1480,14 @@ def analyze(data: Dict[str, Any], check_info: dict | None = None) -> Dict[str, A
 # Markdown 报告渲染
 # ---------------------------------------------------------------------------
 
+def _strip_proto(host: str) -> str:
+    """去掉 URL 协议前缀，如 https://192.168.8.30 → 192.168.8.30"""
+    for prefix in ("https://", "http://"):
+        if host.startswith(prefix):
+            return host[len(prefix):]
+    return host
+
+
 def render_markdown(
     analysis: Dict[str, Any],
     meta: Dict[str, Any],
@@ -1588,7 +1596,7 @@ def render_markdown(
 
     return f"""## ✅ AD 巡检分析报告
 
-**设备**: {device_label} ({meta.get("host", "?")})
+**设备**: {device_label} ({_strip_proto(meta.get("host", "?"))})
 **巡检时间**: {check_time}
 **巡检场景**: {meta.get("scene", "?")}
 **检查项**: {summary["total"]} 项
