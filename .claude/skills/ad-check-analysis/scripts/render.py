@@ -19,6 +19,24 @@ def _extract_ip(host: str) -> str:
     return m.group(1) if m else host
 
 
+def _extract_host(host: str) -> str:
+    """Extract IP:port display string from a host URL.
+    Includes port only when it's non-standard (not 443 for https, not 80 for http).
+    """
+    m = re.search(r'https?://([^/]+)', host)
+    raw = m.group(1) if m else host
+    # If already IP:port form (no protocol), return as-is
+    # Drop default ports
+    if raw.endswith(':443'):
+        raw = raw[:-4]
+    elif raw.endswith(':80'):
+        raw = raw[:-3]
+    # If port is present and non-default, keep it
+    if ':' in raw:
+        return raw
+    return _extract_ip(host)
+
+
 def _format_check_time(raw_time: str) -> str:
     """Format YYYYMMDDHHMMSS to YYYY-MM-DD HH:MM:SS."""
     if raw_time and len(raw_time) >= 14:
@@ -241,9 +259,9 @@ def render_multi_device_report(
     for host in list(results.keys()):
         name = device_names.get(host)
         if name:
-            device_labels[host] = f"{name}（{_extract_ip(host)}）"
+            device_labels[host] = name  # e.g., "AD1 (21039)"
         else:
-            device_labels[host] = _extract_ip(host)
+            device_labels[host] = _extract_host(host)  # e.g., "192.168.8.30:21039"
 
     # ── Device comparison table ────────────────────────────────────────
     devices_info = []

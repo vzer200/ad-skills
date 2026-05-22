@@ -129,12 +129,15 @@ python scripts/check.py progress --hosts "https://IP1,https://IP2" --password xx
 # 单设备
 python scripts/check.py wait --host https://IP --password xxx --work-dir <步骤3返回的路径>
 
-# 多设备（每台分别调用）
+# 多设备（每台分别调用 wait，然后合并）
 python scripts/check.py wait --host https://IP1 --password xxx --work-dir <work_dir1>
 python scripts/check.py wait --host https://IP2 --password xxx --work-dir <work_dir2>
+
+# 合并多设备报告
+python scripts/check.py merge --work-dirs "<work_dir1>,<work_dir2>" --hosts "https://IP1,https://IP2" --scene "场景名"
 ```
 
-多设备报告含汇总表 + 每设备详细报告。**LLM 必须将脚本输出的 Markdown 全文作为对话消息输出**。工具执行结果仅为命令回显，不能替代对话消息正文。不截断、不折叠、不重新格式化。脚本输出即最终报告，禁止 LLM 自行二次渲染。
+多设备必须额外执行 `merge` 命令，合并输出含设备对比表 + 未检查项汇总 + 异常项分设备列 + 每设备独立完整报告。
 
 ---
 
@@ -211,6 +214,7 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 | 查询历史 | `python scripts/check.py history` | ❌ 直接调 `type=history` |
 | 多设备历史 | `python scripts/check.py history --hosts "..."` | ❌ 循环调用单设备 |
 | 分析报告 | `python scripts/check.py analyze` | ❌ 手动解析 |
+| 合并多设备报告 | `python scripts/check.py merge` | ❌ 手动合并多设备结果 |
 
 ## 已知设备
 
@@ -230,6 +234,7 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 | `progress` | ✅ | `--hosts` 并行查询多台进度 |
 | `history` | ✅ | 并行查询多台历史 |
 | `analyze` | ❌ | 用 `--path` 不连设备 |
+| `merge` | ✅ | 合并多台 `wait` 结果，输出多设备汇总报告 |
 
 ## 子命令选择决策
 
@@ -247,6 +252,7 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 | 查看历史记录（单设备） | `check.py history --host ...` | — |
 | 查看历史记录（多设备） | `check.py history --hosts "..."` | `--password` |
 | 分析本地巡检报告 | `check.py analyze --path ...` | `--host`, `--scene`（可选覆盖） |
+| 合并多设备报告 | `check.py merge --work-dirs "..."` | `--hosts`, `--scene` |
 
 ## 行为准则
 

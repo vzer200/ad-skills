@@ -1255,6 +1255,15 @@ def main():
     p_analyze.add_argument("--start-time", default="",
                            help="巡检开始时间（从 meta 读取时可省略）")
 
+    # merge — 多设备报告合并
+    p_merge = sub.add_parser("merge", help="合并多个单设备巡检结果，输出多设备汇总报告")
+    p_merge.add_argument("--work-dirs", required=True,
+                        help="工作目录，逗号分隔（与步骤3返回的 work_dir 一一对应）")
+    p_merge.add_argument("--hosts", default="",
+                        help="设备地址，逗号分隔（可从 meta 读取时可省略）")
+    p_merge.add_argument("--scene", default="",
+                        help="巡检场景（可从 meta 读取时可省略）")
+
     args = parser.parse_args()
 
     if args.command == "scenes":
@@ -1541,6 +1550,57 @@ def main():
         analysis = analyze(data, check_info)
         report = render_markdown(analysis, meta)
         print(report)
+
+    elif args.command == "merge":
+        work_dirs = [d.strip() for d in args.work_dirs.split(",") if d.strip()]
+        if not work_dirs:
+            print("错误: --work-dirs 为空", file=sys.stderr)
+            sys.exit(4)
+
+        hosts_list = [h.strip() for h in args.hosts.split(",") if h.strip()] if args.hosts else []
+        results = {}
+        for i, wd in enumerate(work_dirs):
+            # 读取 meta
+            meta_path = os.path.join(wd, "_meta.json")
+            if not os.path.exists(meta_path):
+                print(f"⚠️ {wd}: 找不到 _meta.json，跳过", file=sys.stderr)
+                continue
+            with open(meta_path, encoding="utf-8") as f:
+                meta = json.load(f)
+
+            host = hosts_list[i] if i < len(hosts_list) else meta.get("host", wd)
+            if not host:
+                host = wd
+
+            # 查找 ad.json
+            ad_path = os.path.join(wd, "ad.json")
+            if not os.path.exists(ad_path):
+                for root, _, files in os.walk(wd):
+                    if "ad.json" in files:
+                        ad_path = os.path.join(root, "ad.json")
+                        break
+            if not os.path.exists(ad_path):
+                print(f"⚠️ {wd}: 找不到 ad.json，跳过", file=sys.stderr)
+                results[host] = {"error": "找不到 ad.json"}
+                continue
+
+            with open(ad_path, encoding="utf-8") as f:
+                data = json.load(f)
+            analysis = analyze(data)
+            report_md = render_markdown(analysis, meta)
+            results[host] = {"meta": meta, "analysis": analysis, "markdown": report_md}
+
+        if not results:
+            print("错误: 没有有效的设备数据", file=sys.stderr)
+            sys.exit(4)
+
+        # 引入 render_multi_device_report
+        try:
+            scene = args.scene or next(iter(results.values()))["meta"].get("scene", "标准巡检")
+        except Exception:
+            scene = "标准巡检"
+
+        print(render_multi_device_report(results, scene=scene))
 
     else:
         parser.print_help()
