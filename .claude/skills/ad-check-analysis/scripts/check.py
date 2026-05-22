@@ -326,7 +326,6 @@ _SUGGESTION_MAP = {
     "bios_version_check": "BIOS有可用更新，建议评估后升级",
     "remote_maintenance": "远程维护已开启，建议评估安全风险后决定是否关闭",
     "enable_iplimit": "IP限制未启用，建议启用以增强安全性",
-    "check_dev_online": "设备未注册云平台，建议检查网络连接",
     "patch_info": "补丁信息为空，建议检查补丁管理状态",
     "base_blackbox_data": "黑盒dmesg数据存在异常记录",
     "base_blackbox_state": "黑盒状态异常，建议检查黑盒服务",
@@ -377,7 +376,6 @@ CHECK_RULES = {
     "WAN_BANDWIDTH_CHECK":     {"name": "WAN属性链路带宽设置检查", "desc": "检测当前设备的WAN属性链路，上下行带宽设置是否为默认配置",                       "category": "feature", "fields": ["wan_max_bandwidth"]},
     "FAULT_SWITCH_CHECK":      {"name": "故障切换",               "desc": "检测双机或集群下，设备是否启用故障切换",                                         "category": "feature", "fields": ["cluster_fault_switch_enabled"]},
     "SYSLOG_CHECK":            {"name": "syslog设置检测",        "desc": "检测当前场景下，设备是否启用syslog设置",                                         "category": "feature", "fields": ["syslog_enabled"]},
-    "check_dev_online":        {"name": "设备在线状态检测",       "desc": "检测当前设备是否正常注册到云平台",                                               "category": "feature", "fields": ["online"]},
     # ── 健康巡检 (health) ──────────────────────────────────────────────
     "AUTO_UPDATE_CHECK":       {"name": "自动更新能力检测",       "desc": "检查设备是否具备连接升级服务器的条件，同时自身已开启自动更新功能",               "category": "health", "fields": ["auto_update"]},
     "CPU_CHECK":               {"name": "CPU检测",                "desc": "过去一周cpu占用率是否异常；检查24小时内黑盒日志中CPU异常状态",                   "category": "health", "fields": ["base_cpu_usage", "base_cpu_mpstat"]},
@@ -570,9 +568,6 @@ FIELD_RULES = {
                           'check_key': 'IP_LIMIT_CHECK', 'category': 'secure'},
     'dangerous_port':    {'type': 'non_empty', 'severity': 'fail',  'name': '危险端口',       'description': '不应开放不必要的风险端口（如报表、智能DNS等非管理端口）',
                           'check_key': 'OPEN_PORT_CHECK', 'category': 'secure'},
-    # === 特殊字段（在线检测） ==============================================
-    'online':            {'type': 'str_equal', 'abnormal': 'false', 'severity': 'fail',  'name': '设备在线状态',    'description': '设备应正常注册到云平台',
-                          'check_key': 'check_dev_online', 'category': 'feature'},
 }
 
 # ---------------------------------------------------------------------------
