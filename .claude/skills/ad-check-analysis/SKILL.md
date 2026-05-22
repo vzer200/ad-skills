@@ -107,7 +107,7 @@ python scripts/check.py run --hosts "https://IP1,https://IP2" --password xxx --s
 
 ### 步骤 4：轮询进度 【必须】
 
-> ⛔ **禁止跳过此步骤直接调 `wait`**。`wait` 有 60s 硬超时，巡检通常需要更长时间。
+> ⛔ **禁止跳过此步骤直接调 `wait`**。工具执行平台有 60s 默认超时，`wait` 需阻塞等待巡检完成（脚本内部超时 600s），可能被平台提前终止。必须先通过 `progress` 轮询确认巡检 `FINISHED`，再调 `wait` 下载报告（此时几乎瞬间返回）。
 
 每 10s 轮询，直到所有设备 `state` 变为 `FINISHED`：
 

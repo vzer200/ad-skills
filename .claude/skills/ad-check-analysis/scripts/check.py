@@ -1264,8 +1264,8 @@ def main():
     p_wait.add_argument("--user", default="admin")
     p_wait.add_argument("--password", default="")
     p_wait.add_argument("--work-dir", default=os.path.join(tempfile.gettempdir(), "ad_check"),
-                        help="单设备: 工作目录；多设备: 公共父目录（每设备子目录自动推导）")
-    p_wait.add_argument("--work-dirs", default="", help="多设备工作目录，逗号分隔（与 --hosts 一一对应）")
+                        help="单设备工作目录")
+    p_wait.add_argument("--work-dirs", default="", help="多设备工作目录，逗号分隔（与 --hosts 一一对应，多设备时必需）")
     p_wait.add_argument("--poll-interval", type=int, default=10,
                         help="轮询间隔秒数，默认 10")
     p_wait.add_argument("--timeout", type=int, default=600,
@@ -1417,14 +1417,10 @@ def main():
                 sys.exit(4)
 
             # Resolve work_dirs
-            work_dirs_list = []
-            if args.work_dirs:
-                work_dirs_list = [d.strip() for d in args.work_dirs.split(",")]
-            if not work_dirs_list:
-                # Auto-derive from host_slug under base work_dir
-                for d in devices:
-                    slug = d["host"].replace("https://", "").replace("http://", "").replace(":", "_").replace("/", "_")
-                    work_dirs_list.append(os.path.join(args.work_dir, slug))
+            if not args.work_dirs:
+                print("错误: 多设备模式必须指定 --work-dirs（与 --hosts 一一对应，从步骤 3 的 work_dir 输出获取）", file=sys.stderr)
+                sys.exit(4)
+            work_dirs_list = [d.strip() for d in args.work_dirs.split(",")]
 
             results = {}
             for i, device in enumerate(devices):
