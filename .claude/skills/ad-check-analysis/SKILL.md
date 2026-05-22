@@ -277,6 +277,7 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 ### 禁止行为
 - ❌ 绝对不允许直接使用工具调用的结果作为对话输出，必须在对话框把工具调用的结果进行原样输出展示出来!!!
 - ❌ 绝对禁止多设备巡检逐台调 `wait --host` 再手动拼接结果。必须使用 `check.py wait --hosts "IP1,IP2" --work-dirs "dir1,dir2"` 一次性获取合并报告!!!
+- ❌ 绝对不允许用单次 `sleep N` 代替每 10s 循环轮询；绝对不允许调一次 `progress` 就继续下一步；绝对不允许或跳过轮询直接调 `wait`
 - ❌ LLM 直调 AD API（包括 http_request、curl 等）
 - ❌ 绝对不允许跳过工作流步骤（步骤 0-5）
 - ❌ 绝对不允许使用其他 skill 的脚本完成巡检（如 ad-ops 的 `ad_api.py`）
