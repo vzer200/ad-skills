@@ -12,9 +12,9 @@ from unittest.mock import patch, MagicMock
 
 from check import (
     start_check, analyze, render_markdown,
-    _SUGGESTION_MAP,
+    _SUGGESTION_MAP, CHECK_RULES, FIELD_RULES,
 )
-from check import _check_field_rule, _check_vip_pool
+from check import _evaluate_field, _evaluate_vip_pool
 from ad_api import ADAuthError, ADConnectionError
 
 
@@ -75,22 +75,68 @@ class TestStartCheck(unittest.TestCase):
 
 
 class TestAnalyze(unittest.TestCase):
-    """Test analyze() with mock check results."""
+    """Test analyze() with real ad.json fields."""
 
     def setUp(self):
         self.sample_data = {
-            "check_results": {
-                "cpu_check": {"status": "pass", "value": "17%"},
-                "memory_check": {"status": "pass", "value": "42%"},
-                "disk_check": {"status": "warn", "disk_usage": "/ 82%"},
-                "fan_state_check": {"status": "pass"},
-                "power_state_check": {"status": "pass"},
-                "kernel_log_check": {"status": "pass"},
-                "nic_state_check": {"status": "pass"},
-            },
-            "feature_scene": {"rule": ["APP_VERSION_CHECK", "ADMIN_ROLE_CHECK"]},
-            "health_scene": {"rule": ["CPU_CHECK", "MEMORY_CHECK", "DISK_CHECK"]},
-            "secure_scene": {"rule": ["SSH_API_CHECK", "WEAK_PASSWORD_CHECK"]},
+            "version": "AD 7.1.8",
+            "ad_appversion": "7.1.8.20250101",
+            "gateway_id": "GATEWAY001",
+            "base_running_time": "365 days",
+            "dst_ip": "192.168.1.100",
+            # Health fields
+            "base_cpu_usage": [10, 20, 30],
+            "snmp_mem_rate": 45,
+            "fan_state": 1,
+            "power_state": 1,
+            "acceleration": 2,
+            "base_file_ds": 0,
+            "base_log_error_exist": 0,
+            "base_kernel_log": 0,
+            "base_crash_time": [],
+            "base_blackbox_state": 0,
+            "base_blackbox_dmesg": {},
+            "base_core_process_lack": [],
+            "base_eth_abnormal": [],
+            "base_eth_mtu": [],
+            "base_drop_err_packet_rate": [],
+            "base_eth_info": "Link detected: yes\nSpeed: 1000Mb/s",
+            "disk_info": {"sda": {"size": "100G"}},
+            "base_disk_high_usage": [],
+            "shm_sem_state": True,
+            "bios_update_state": "",
+            "alarms_enabled": 1,
+            "I350_nic_state": "normal",
+            "82599_nic_state": "normal",
+            "conntrack_count": 5000,
+            "conntrack_new_count": 100,
+            "snat_sport_exhaustion_log_num": 0,
+            "base_no_core": -1,
+            "auto_update": "true",
+            "remote_mt": "false",
+            "id_conflict_list": [],
+            # Secure fields
+            "ssh_authority": True,
+            "ADAPI_authority": True,
+            "patch_info": {"patched_list": ["KB001"]},
+            "base_report_stab": True,
+            "weak_pwd": [],
+            "unsafe_algorithm": False,
+            "unsafe_protocol": False,
+            "enable_iplimit": "true",
+            "dangerous_port": [],
+            # Feature fields
+            "security_check_state": True,
+            "cluster_brain_split_check": [],
+            "admin": "true",
+            "online": "true",
+            "heartbeat_state": True,
+            "dns_proxy_enabled": False,
+            "cluster_state": "NORMAL",
+            "cluster_virtual_mac": "NORMAL",
+            "ms_state": "NORMAL",
+            "syslog_enabled": True,
+            "virtual_ip_pool_check": {"local": {"failure": [], "disable": []}, "global": {"failure": [], "disable": []}},
         }
 
     def test_analyze_health_scores(self):
@@ -106,26 +152,19 @@ class TestAnalyze(unittest.TestCase):
             self.assertIn("pass", item)
             self.assertIn("total", item)
 
-    def test_analyze_generates_suggestions_for_warn(self):
-        result = analyze(self.sample_data)
-        suggestions = result.get("suggestions", [])
-        # DISK_CHECK (from disk_check) with "warn" status should generate a suggestion
-        self.assertIsInstance(suggestions, list, "Must return a suggestions list")
-        # Sample data has disk_check warn, which maps to DISK_CHECK in _SUGGESTION_MAP
-        # after analyze() normalizes check names
-
-    def test_analyze_all_pass_no_suggestions(self):
-        data = {
-            "check_results": {
-                "cpu_check": {"status": "pass", "value": "17%"},
-                "memory_check": {"status": "pass", "value": "42%"},
-            },
-            "feature_scene": {"rule": []},
-            "health_scene": {"rule": ["CPU_CHECK", "MEMORY_CHECK"]},
-            "secure_scene": {"rule": []},
-        }
+    def test_analyze_generates_suggestions_for_fail(self):
+        # fan_state=0 is abnormal → fail
+        data = dict(self.sample_data, fan_state=0)
         result = analyze(data)
         suggestions = result.get("suggestions", [])
+        self.assertIsInstance(suggestions, list, "Must return a suggestions list")
+        cr = result.get("check_results", {})
+        self.assertEqual(cr.get("FAN_STATE_CHECK", {}).get("status"), "fail")
+
+    def test_analyze_all_pass_no_suggestions(self):
+        result = analyze(self.sample_data)
+        suggestions = result.get("suggestions", [])
+        # All fields pass in the setup data
         self.assertEqual(len(suggestions), 0)
 
 
@@ -402,7 +441,7 @@ class TestCheckMainSubcommands(unittest.TestCase):
 
 
 class TestAnalyzeV2(unittest.TestCase):
-    """Test v2 analyze() with real ad.json fields."""
+    """Test new data-driven analyze() with real ad.json fields."""
 
     def setUp(self):
         self.sample_data = {
@@ -414,13 +453,13 @@ class TestAnalyzeV2(unittest.TestCase):
             # Health fields
             "base_cpu_usage": [10, 20, 30],
             "snmp_mem_rate": 45,
-            "fan_state": 1,         # 1 = normal
-            "power_state": -1,      # -1 = VM, no sensor → warn
-            "acceleration": 2,      # 2 = normal
-            "base_file_ds": 0,      # 0 = no leak
+            "fan_state": 1,
+            "power_state": 1,
+            "acceleration": 2,
+            "base_file_ds": 0,
             "base_log_error_exist": 5,
             "base_kernel_log": 0,
-            "base_crash_time": [],  # empty = no crash
+            "base_crash_time": [],
             "base_blackbox_state": 0,
             "base_blackbox_dmesg": {},
             "base_core_process_lack": [],
@@ -429,6 +468,7 @@ class TestAnalyzeV2(unittest.TestCase):
             "base_drop_err_packet_rate": [],
             "base_eth_info": "Link detected: yes\nSpeed: 1000Mb/s",
             "disk_info": {"sda": {"size": "100G"}},
+            "base_disk_high_usage": [],
             "shm_sem_state": True,
             "bios_update_state": "",
             "alarms_enabled": 1,
@@ -437,10 +477,14 @@ class TestAnalyzeV2(unittest.TestCase):
             "conntrack_count": 5000,
             "conntrack_new_count": 100,
             "snat_sport_exhaustion_log_num": 0,
+            "base_no_core": -1,
+            "auto_update": "true",
+            "remote_mt": "false",
+            "id_conflict_list": [],
             # Secure fields
             "ssh_authority": True,
             "ADAPI_authority": True,
-            "patch_info": {"patched_list": []},
+            "patch_info": {"patched_list": ["KB001"]},
             "base_report_stab": True,
             "weak_pwd": [],
             "unsafe_algorithm": False,
@@ -452,387 +496,343 @@ class TestAnalyzeV2(unittest.TestCase):
             "cluster_brain_split_check": [],
             "admin": "true",
             "online": "true",
-            "remote_mt": "false",
-            "auto_update": "true",
-            "id_conflict_list": [],
+            "heartbeat_state": True,
+            "cluster_state": "NORMAL",
+            "cluster_virtual_mac": "NORMAL",
+            "ms_state": "NORMAL",
+            "syslog_enabled": True,
+            "virtual_ip_pool_check": {"local": {"failure": [], "disable": []}, "global": {"failure": [], "disable": []}},
+            "dns_proxy_enabled": False,
+            "cluster_fault_switch_enabled": "CLUSTER_UNABLE",
         }
 
-        self.check_info = {
-            "rules": [
-                {"id": "base_cpu_info"},
-                {"id": "base_memory"},
-                {"id": "fan_state"},
-                {"id": "power_state"},
-                {"id": "acceleration_check"},
-                {"id": "base_file_leak"},
-                {"id": "base_err_log"},
-                {"id": "base_kernel_log"},
-                {"id": "base_crash_time"},
-                {"id": "base_blackbox_state"},
-                {"id": "base_blackbox_data"},
-                {"id": "base_core_process"},
-                {"id": "base_net_state"},
-                {"id": "base_disk"},
-                {"id": "shm_sem_check"},
-                {"id": "bios_version_check"},
-                {"id": "alarms_enabled"},
-                {"id": "nic_health_check"},
-                {"id": "base_conntrack"},
-                {"id": "snat_sport_exhaustion_check"},
-                {"id": "ssh_or_adapi_authority"},
-                {"id": "patch_info"},
-                {"id": "base_report_stability"},
-                {"id": "weak_password"},
-                {"id": "ssl_strategy_check"},
-                {"id": "enable_iplimit"},
-                {"id": "dangerous_port"},
-                {"id": "security_check"},
-                {"id": "cluster_brain_split_check"},
-                {"id": "check_admin_account"},
-                {"id": "base_app_version"},
-                {"id": "base_running_time"},
-                {"id": "check_dev_online"},
-                {"id": "remote_maintenance"},
-                {"id": "config_id_conflict_check"},
-            ]
-        }
-
-    def test_analyze_with_check_info_all_35_rules(self):
-        """Main path: rules-driven analysis covers all 35 rules."""
-        result = analyze(self.sample_data, self.check_info)
-        self.assertEqual(len(result["check_results"]), 35)
+    def test_analyze_processes_all_mapped_fields(self):
+        """Engine processes all ad.json fields that have FIELD_RULES entries."""
+        result = analyze(self.sample_data)
+        self.assertGreater(len(result["check_results"]), 30)
         summary = result["summary"]
-        self.assertEqual(summary["total"], 35)
+        self.assertGreater(summary["total"], 30)
 
-    def test_analyze_fallback_no_check_info(self):
-        """Fallback path: no check_info → iterates RULE_FIELD_MAP."""
+    def test_analyze_fallback_with_none_check_info(self):
+        """None check_info → still processes all fields (parameter preserved, unused)."""
         result = analyze(self.sample_data, None)
         self.assertGreater(len(result["check_results"]), 0)
-        # Verify categories are populated
         cats = result["categories"]
         self.assertIn("feature", cats)
         self.assertIn("health", cats)
         self.assertIn("secure", cats)
 
-    def test_analyze_with_empty_check_info(self):
-        """Empty check_info dict → fallback path."""
-        result = analyze(self.sample_data, {})
-        self.assertGreater(len(result["check_results"]), 0)
-
-    def test_analyze_with_empty_rules(self):
-        """Empty rules list → fallback path."""
-        result = analyze(self.sample_data, {"rules": []})
-        self.assertGreater(len(result["check_results"]), 0)
-
     def test_analyze_output_structure(self):
         """Verify complete output structure."""
-        result = analyze(self.sample_data, self.check_info)
+        result = analyze(self.sample_data)
         self.assertIn("device_info", result)
         self.assertIn("check_results", result)
         self.assertIn("categories", result)
         self.assertIn("summary", result)
         self.assertIn("health_scores", result)
         self.assertIn("suggestions", result)
-        # device_info fields
         dev = result["device_info"]
         self.assertEqual(dev["version"], "AD 7.1.8")
 
     def test_analyze_fan_state_pass(self):
-        """fan_state=1 → pass (1 = normal)."""
-        data = dict(self.sample_data, fan_state=1)
-        ci = {"rules": [{"id": "fan_state"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["fan_state"]["status"], "pass")
+        """fan_state=1 → FAN_STATE_CHECK pass (1 = normal)."""
+        data = {"fan_state": 1}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["FAN_STATE_CHECK"]["status"], "pass")
 
     def test_analyze_fan_state_fail(self):
-        """fan_state=0 → fail."""
-        data = dict(self.sample_data, fan_state=0)
-        ci = {"rules": [{"id": "fan_state"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["fan_state"]["status"], "fail")
+        """fan_state=0 → FAN_STATE_CHECK fail."""
+        data = {"fan_state": 0}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["FAN_STATE_CHECK"]["status"], "fail")
 
-    def test_analyze_power_state_warn(self):
-        """power_state=-1 → warn (VM, no sensor)."""
-        data = dict(self.sample_data, power_state=-1)
-        ci = {"rules": [{"id": "power_state"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["power_state"]["status"], "warn")
+    def test_analyze_cpu_threshold_fail(self):
+        """CPU usage 95 > 90 → CPU_CHECK fail."""
+        data = {"base_cpu_usage": 95}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["CPU_CHECK"]["status"], "fail")
 
-    def test_analyze_cpu_threshold(self):
-        """CPU single value > 90 → fail (threshold rule type requires scalar, not list)."""
-        data = dict(self.sample_data, base_cpu_usage=95)
-        ci = {"rules": [{"id": "base_cpu_info"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["base_cpu_info"]["status"], "fail")
+    def test_analyze_cpu_threshold_pass(self):
+        """CPU usage 50 < 80 → CPU_CHECK pass."""
+        data = {"base_cpu_usage": 50}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["CPU_CHECK"]["status"], "pass")
 
-    def test_analyze_ssh_authority_false_warn(self):
-        """ssh_authority=False → warn (SSH disabled is security hardening)."""
-        data = dict(self.sample_data, ssh_authority=False)
-        ci = {"rules": [{"id": "ssh_or_adapi_authority"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["ssh_or_adapi_authority"]["status"], "warn")
+    def test_analyze_ssh_authority_false_fail(self):
+        """ssh_authority=False → SSH_API_CHECK fail (disabled)."""
+        data = {"ssh_authority": False}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["SSH_API_CHECK"]["status"], "fail")
 
     def test_analyze_unsafe_algorithm_fail(self):
-        """unsafe_algorithm=True → fail."""
-        data = dict(self.sample_data, unsafe_algorithm=True)
-        ci = {"rules": [{"id": "ssl_strategy_check"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["ssl_strategy_check"]["status"], "fail")
+        """unsafe_algorithm=True → SSL_POLICY_CHECK fail."""
+        data = {"unsafe_algorithm": True}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["SSL_POLICY_CHECK"]["status"], "fail")
 
     def test_analyze_dangerous_port_fail(self):
-        """dangerous_port non-empty → fail."""
-        data = dict(self.sample_data, dangerous_port=[22, 23])
-        ci = {"rules": [{"id": "dangerous_port"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["dangerous_port"]["status"], "fail")
+        """dangerous_port non-empty → OPEN_PORT_CHECK fail."""
+        data = {"dangerous_port": [22, 23]}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["OPEN_PORT_CHECK"]["status"], "fail")
 
     def test_analyze_weak_pwd_fail(self):
-        """weak_pwd non-empty → fail."""
-        data = dict(self.sample_data, weak_pwd=["admin"])
-        ci = {"rules": [{"id": "weak_password"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["weak_password"]["status"], "fail")
+        """weak_pwd non-empty → WEAK_PASSWORD_CHECK fail."""
+        data = {"weak_pwd": ["admin"]}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["WEAK_PASSWORD_CHECK"]["status"], "fail")
 
     def test_analyze_with_none_data(self):
         """None data → empty result, no crash."""
         result = analyze(None)
         self.assertEqual(result["summary"]["total"], 0)
 
-    def test_analyze_v1_engine(self):
-        """AD_CHECK_ENGINE=v1 uses legacy analyzer."""
-        import os as _os
-        _os.environ["AD_CHECK_ENGINE"] = "v1"
-        try:
-            result = analyze(self.sample_data)
-            self.assertIn("check_results", result)
-        finally:
-            _os.environ.pop("AD_CHECK_ENGINE", None)
-
-    def test_analyze_compare_engine(self):
-        """AD_CHECK_ENGINE=compare runs both engines."""
-        import os as _os
-        _os.environ["AD_CHECK_ENGINE"] = "compare"
-        try:
-            result = analyze(self.sample_data, self.check_info)
-            self.assertIn("check_results", result)
-        finally:
-            _os.environ.pop("AD_CHECK_ENGINE", None)
-
     def test_check_results_have_name_field(self):
-        """Every check_result entry must have a 'name' field."""
-        result = analyze(self.sample_data, self.check_info)
+        """Every check_result entry must have a 'name' field from CHECK_RULES."""
+        result = analyze(self.sample_data)
         for key, cr in result["check_results"].items():
             self.assertIn("name", cr, f"Missing 'name' in check_result {key}")
             self.assertIsNotNone(cr["name"])
 
-    def test_suggestions_use_rule_ids(self):
-        """Suggestions entries should use rule_id keys."""
-        data = dict(self.sample_data, fan_state=0)
-        ci = {"rules": [{"id": "fan_state"}]}
-        result = analyze(data, ci)
+    def test_suggestions_use_check_keys(self):
+        """Suggestions entries use CHECK_RULES keys."""
+        data = {"fan_state": 0}
+        result = analyze(data)
         sug = result["suggestions"]
         self.assertGreater(len(sug), 0)
-        self.assertEqual(sug[0]["check"], "fan_state")
+        self.assertEqual(sug[0]["check"], "FAN_STATE_CHECK")
 
-    # ── Two-tier threshold / list value integration tests ──────────
+    # ── Threshold / warn_at tier tests ─────────────────────────────
 
-    def test_analyze_fan_state_vm(self):
-        """fan_state=-1 (VM, no sensor) → warn."""
-        data = dict(self.sample_data, fan_state=-1)
-        ci = {"rules": [{"id": "fan_state"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["fan_state"]["status"], "warn")
-
-    def test_analyze_power_state_fault(self):
-        """power_state=0 (fault) → fail."""
-        data = dict(self.sample_data, power_state=0)
-        ci = {"rules": [{"id": "power_state"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["power_state"]["status"], "fail")
-
-    def test_analyze_cpu_list_handling(self):
+    def test_cpu_list_max_takes_highest(self):
         """base_cpu_usage as a list → takes max()."""
-        data = dict(self.sample_data, base_cpu_usage=[85, 92, 78])
-        ci = {"rules": [{"id": "base_cpu_info"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["base_cpu_info"]["status"], "fail")
+        data = {"base_cpu_usage": [85, 92, 78]}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["CPU_CHECK"]["status"], "fail")
 
-    def test_analyze_cpu_list_warn_tier(self):
-        """base_cpu_usage list max between 80-90 → warn (two-tier)."""
-        data = dict(self.sample_data, base_cpu_usage=[85, 70, 82])
-        ci = {"rules": [{"id": "base_cpu_info"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["base_cpu_info"]["status"], "warn")
+    def test_cpu_list_warn_tier(self):
+        """base_cpu_usage list max between 80-90 → fail (unified severity)."""
+        data = {"base_cpu_usage": [85, 70, 82]}
+        result = analyze(data)
+        cr = result["check_results"]["CPU_CHECK"]
+        self.assertIn(cr["status"], ["fail"])
 
-    def test_analyze_memory_warn_tier(self):
-        """snmp_mem_rate 85 → warn (>80, <=90)."""
-        data = dict(self.sample_data, snmp_mem_rate=85)
-        ci = {"rules": [{"id": "base_memory"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["base_memory"]["status"], "warn")
+    def test_memory_warn_tier(self):
+        """snmp_mem_rate 85 > 80 warn_at → fail (unified severity)."""
+        data = {"snmp_mem_rate": 85}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["MEMORY_CHECK"]["status"], "fail")
 
-    def test_analyze_log_error_warn_tier(self):
-        """base_log_error_exist 50 → warn (>0, <=100)."""
-        data = dict(self.sample_data, base_log_error_exist=50)
-        ci = {"rules": [{"id": "base_err_log"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["base_err_log"]["status"], "warn")
+    def test_log_error_warn_tier(self):
+        """base_log_error_exist 50 > 0 warn_at → fail (unified)."""
+        data = {"base_log_error_exist": 50}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["LOG_CHECK"]["status"], "fail")
 
-    def test_analyze_log_error_fail(self):
-        """base_log_error_exist 200 → fail (>100)."""
-        data = dict(self.sample_data, base_log_error_exist=200)
-        ci = {"rules": [{"id": "base_err_log"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["base_err_log"]["status"], "fail")
+    def test_log_error_fail(self):
+        """base_log_error_exist 200 > 100 → fail."""
+        data = {"base_log_error_exist": 200}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["LOG_CHECK"]["status"], "fail")
 
-    def test_analyze_log_error_zero_pass(self):
+    def test_log_error_zero_pass(self):
         """base_log_error_exist 0 → pass."""
-        data = dict(self.sample_data, base_log_error_exist=0)
-        ci = {"rules": [{"id": "base_err_log"}]}
-        result = analyze(data, ci)
-        self.assertEqual(result["check_results"]["base_err_log"]["status"], "pass")
+        data = {"base_log_error_exist": 0}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["LOG_CHECK"]["status"], "pass")
+
+    # ── Feature scene field tests ──────────────────────────────────
+
+    def test_admin_role_pass(self):
+        """admin='true' → ADMIN_ROLE_CHECK pass."""
+        data = {"admin": "true"}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["ADMIN_ROLE_CHECK"]["status"], "pass")
+
+    def test_heartbeat_state_pass(self):
+        """heartbeat_state=True → HEARTBEAT_CHECK pass."""
+        data = {"heartbeat_state": True}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["HEARTBEAT_CHECK"]["status"], "pass")
+
+    def test_cluster_state_pass(self):
+        """cluster_state='NORMAL' → CLUSTER_STATE_CHECK pass."""
+        data = {"cluster_state": "NORMAL"}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["CLUSTER_STATE_CHECK"]["status"], "pass")
+
+    def test_sibling_key_propagation(self):
+        """dns_proxy_enabled should propagate to both DNS_PROXY_CHECK and DNS_DETECT_CHECK."""
+        data = {"dns_proxy_enabled": False}
+        result = analyze(data)
+        # Both check_keys share the same field
+        self.assertIn("DNS_PROXY_CHECK", result["check_results"])
+        self.assertIn("DNS_DETECT_CHECK", result["check_results"])
+        self.assertEqual(result["check_results"]["DNS_PROXY_CHECK"]["status"],
+                         result["check_results"]["DNS_DETECT_CHECK"]["status"])
+
+    def test_vip_pool_check_pass(self):
+        """Empty VIP pool failures → VIP_POOL_CHECK pass."""
+        data = {"virtual_ip_pool_check": {"local": {"failure": [], "disable": []}, "global": {"failure": [], "disable": []}}}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["VIP_POOL_CHECK"]["status"], "pass")
+
+    def test_vip_pool_check_fail(self):
+        """VIP pool with failures → VIP_POOL_CHECK fail."""
+        data = {"virtual_ip_pool_check": {"local": {"failure": ["vs1"], "disable": []}, "global": {"failure": [], "disable": ["vs2"]}}}
+        result = analyze(data)
+        self.assertEqual(result["check_results"]["VIP_POOL_CHECK"]["status"], "fail")
+
+    # ── Categories are populated ───────────────────────────────────
+
+    def test_categories_contain_all_three(self):
+        result = analyze(self.sample_data)
+        cats = result["categories"]
+        self.assertGreater(len(cats["feature"]), 0, "Feature category should have items")
+        self.assertGreater(len(cats["health"]), 0, "Health category should have items")
+        self.assertGreater(len(cats["secure"]), 0, "Secure category should have items")
 
 
-class TestCheckFieldRule(unittest.TestCase):
-    """Test _check_field_rule for all 14 rule types."""
+class TestEvaluateField(unittest.TestCase):
+    """Test _evaluate_field for all rule types."""
 
     def test_threshold_gt_abnormal(self):
         rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'name': 'CPU', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule(95, rule)
+        is_ab, sev, issue = _evaluate_field(95, rule)
         self.assertTrue(is_ab)
         self.assertEqual(sev, 'fail')
 
     def test_threshold_gt_normal(self):
         rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'name': 'CPU', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule(50, rule)
+        is_ab, sev, issue = _evaluate_field(50, rule)
         self.assertFalse(is_ab)
         self.assertEqual(sev, 'pass')
 
     def test_threshold_eq_abnormal(self):
-        rule = {'type': 'threshold', 'abnormal': -1, 'compare': '==', 'name': 'Power', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule(-1, rule)
+        rule = {'type': 'threshold', 'abnormal': -1, 'compare': '==', 'name': 'Power', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field(-1, rule)
         self.assertTrue(is_ab)
-        self.assertEqual(sev, 'warn')
+        self.assertEqual(sev, 'fail')
 
     def test_threshold_bad_value(self):
         rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'name': 'Test', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule("not_a_number", rule)
+        is_ab, sev, issue = _evaluate_field("not_a_number", rule)
         self.assertFalse(is_ab)
-        self.assertEqual(sev, 'warn')
+        self.assertEqual(sev, 'fail')
         self.assertIn("无法解析", issue)
 
     def test_bool_false_false(self):
-        rule = {'type': 'bool_false', 'name': 'SSH', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule(False, rule)
+        rule = {'type': 'bool_false', 'name': 'SSH', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field(False, rule)
         self.assertTrue(is_ab)
-        self.assertEqual(sev, 'warn')
+        self.assertEqual(sev, 'fail')
 
     def test_bool_false_true(self):
-        rule = {'type': 'bool_false', 'name': 'SSH', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule(True, rule)
+        rule = {'type': 'bool_false', 'name': 'SSH', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field(True, rule)
         self.assertFalse(is_ab)
 
     def test_bool_false_string(self):
-        rule = {'type': 'bool_false', 'name': 'Test', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule("false", rule)
+        rule = {'type': 'bool_false', 'name': 'Test', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field("false", rule)
         self.assertTrue(is_ab)
 
     def test_bool_true_true(self):
         rule = {'type': 'bool_true', 'name': 'Unsafe', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule(True, rule)
+        is_ab, sev, issue = _evaluate_field(True, rule)
         self.assertTrue(is_ab)
         self.assertEqual(sev, 'fail')
 
     def test_str_equal_match(self):
-        rule = {'type': 'str_equal', 'abnormal': 'false', 'name': 'IPLimit', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule('false', rule)
+        rule = {'type': 'str_equal', 'abnormal': 'false', 'name': 'IPLimit', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field('false', rule)
         self.assertTrue(is_ab)
 
     def test_str_not_equal_mismatch(self):
-        rule = {'type': 'str_not_equal', 'normal': 'true', 'name': 'AutoUpdate', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule('false', rule)
+        rule = {'type': 'str_not_equal', 'normal': 'true', 'name': 'AutoUpdate', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field('false', rule)
         self.assertTrue(is_ab)
 
     def test_non_empty_list(self):
         rule = {'type': 'non_empty', 'name': 'WeakPwd', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule(['admin'], rule)
+        is_ab, sev, issue = _evaluate_field(['admin'], rule)
         self.assertTrue(is_ab)
 
     def test_non_empty_empty_list(self):
         rule = {'type': 'non_empty', 'name': 'WeakPwd', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule([], rule)
+        is_ab, sev, issue = _evaluate_field([], rule)
         self.assertFalse(is_ab)
 
     def test_not_normal_mismatch(self):
         rule = {'type': 'not_normal', 'name': 'NIC', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule('error', rule)
+        is_ab, sev, issue = _evaluate_field('error', rule)
         self.assertTrue(is_ab)
 
     def test_not_normal_match(self):
         rule = {'type': 'not_normal', 'name': 'NIC', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule('normal', rule)
+        is_ab, sev, issue = _evaluate_field('normal', rule)
         self.assertFalse(is_ab)
 
     def test_not_zero_nonzero(self):
         rule = {'type': 'not_zero', 'name': 'KernelLog', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule(5, rule)
+        is_ab, sev, issue = _evaluate_field(5, rule)
         self.assertTrue(is_ab)
 
     def test_not_zero_zero(self):
         rule = {'type': 'not_zero', 'name': 'KernelLog', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule(0, rule)
+        is_ab, sev, issue = _evaluate_field(0, rule)
         self.assertFalse(is_ab)
 
     def test_zero_zero(self):
-        rule = {'type': 'zero', 'name': 'Alarm', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule(0, rule)
+        rule = {'type': 'zero', 'name': 'Alarm', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field(0, rule)
         self.assertTrue(is_ab)
 
     def test_has_value_present(self):
-        rule = {'type': 'has_value', 'name': 'BIOS', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule('v2.0', rule)
+        rule = {'type': 'has_value', 'name': 'BIOS', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field('v2.0', rule)
         self.assertTrue(is_ab)
 
     def test_missing_empty(self):
-        rule = {'type': 'missing', 'name': 'Version', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule('', rule)
+        rule = {'type': 'missing', 'name': 'Version', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field('', rule)
         self.assertTrue(is_ab)
 
     def test_empty_dict_empty(self):
-        rule = {'type': 'empty_dict', 'name': 'Disk', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule({}, rule)
+        rule = {'type': 'empty_dict', 'name': 'Disk', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field({}, rule)
         self.assertTrue(is_ab)
 
     def test_empty_dict_non_empty(self):
-        rule = {'type': 'empty_dict', 'name': 'Disk', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule({"sda": "ok"}, rule)
+        rule = {'type': 'empty_dict', 'name': 'Disk', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field({"sda": "ok"}, rule)
         self.assertFalse(is_ab)
 
     def test_nested_list_empty(self):
-        rule = {'type': 'nested_list', 'key': 'patched_list', 'name': 'Patch', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule({"patched_list": []}, rule)
+        rule = {'type': 'nested_list', 'key': 'patched_list', 'name': 'Patch', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field({"patched_list": []}, rule)
         self.assertTrue(is_ab)
 
     def test_eth_parse_link_down(self):
         rule = {'type': 'eth_parse', 'name': 'Eth', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule('Link detected: no', rule)
+        is_ab, sev, issue = _evaluate_field('Link detected: no', rule)
         self.assertTrue(is_ab)
 
     def test_eth_parse_ok(self):
         rule = {'type': 'eth_parse', 'name': 'Eth', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule('Link detected: yes\nSpeed: 1000Mb/s', rule)
+        is_ab, sev, issue = _evaluate_field('Link detected: yes\nSpeed: 1000Mb/s', rule)
         self.assertFalse(is_ab)
 
     def test_none_value(self):
         rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'name': 'Test', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule(None, rule)
+        is_ab, sev, issue = _evaluate_field(None, rule)
         self.assertFalse(is_ab)
-        self.assertEqual(sev, 'warn')
+        self.assertEqual(sev, 'fail')
         self.assertIn("数据不可用", issue)
 
     def test_unknown_rule_type(self):
         rule = {'type': 'nonexistent', 'name': 'Test', 'severity': 'fail'}
-        is_ab, sev, issue = _check_field_rule("some_value", rule)
+        is_ab, sev, issue = _evaluate_field("some_value", rule)
         self.assertFalse(is_ab)
         self.assertIn("未知规则类型", issue)
 
@@ -842,23 +842,23 @@ class TestCheckFieldRule(unittest.TestCase):
         """value below warn_at → pass."""
         rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'severity': 'fail',
                 'warn_at': 80, 'warn_compare': '>', 'name': 'Test'}
-        is_ab, sev, issue = _check_field_rule(50, rule)
+        is_ab, sev, issue = _evaluate_field(50, rule)
         self.assertFalse(is_ab)
         self.assertEqual(sev, 'pass')
 
-    def test_threshold_warn_at_warn(self):
-        """value between warn_at and abnormal → warn."""
+    def test_threshold_warn_at_triggered(self):
+        """value between warn_at and abnormal → fail (severity unified)."""
         rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'severity': 'fail',
                 'warn_at': 80, 'warn_compare': '>', 'name': 'Test'}
-        is_ab, sev, issue = _check_field_rule(85, rule)
+        is_ab, sev, issue = _evaluate_field(85, rule)
         self.assertTrue(is_ab)
-        self.assertEqual(sev, 'warn')
+        self.assertEqual(sev, 'fail')
 
     def test_threshold_warn_at_fail(self):
         """value exceeds abnormal → fail."""
         rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'severity': 'fail',
                 'warn_at': 80, 'warn_compare': '>', 'name': 'Test'}
-        is_ab, sev, issue = _check_field_rule(95, rule)
+        is_ab, sev, issue = _evaluate_field(95, rule)
         self.assertTrue(is_ab)
         self.assertEqual(sev, 'fail')
 
@@ -866,59 +866,59 @@ class TestCheckFieldRule(unittest.TestCase):
         """List value → take max() before comparing."""
         rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'severity': 'fail',
                 'warn_at': 80, 'warn_compare': '>', 'name': 'CPU使用率'}
-        is_ab, sev, issue = _check_field_rule([95, 30, 85], rule)
+        is_ab, sev, issue = _evaluate_field([95, 30, 85], rule)
         self.assertTrue(is_ab)
         self.assertEqual(sev, 'fail')
 
     def test_threshold_list_value_warn(self):
-        """List value max between warn_at and abnormal → warn."""
+        """List value max between warn_at and abnormal → fail (unified)."""
         rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'severity': 'fail',
                 'warn_at': 80, 'warn_compare': '>', 'name': 'CPU使用率'}
-        is_ab, sev, issue = _check_field_rule([85, 30, 50], rule)
+        is_ab, sev, issue = _evaluate_field([85, 30, 50], rule)
         self.assertTrue(is_ab)
-        self.assertEqual(sev, 'warn')
+        self.assertEqual(sev, 'fail')
 
     def test_threshold_empty_list(self):
-        """Empty list → warn with data empty message."""
+        """Empty list → fail with data empty message."""
         rule = {'type': 'threshold', 'abnormal': 90, 'compare': '>', 'severity': 'fail', 'name': 'Test'}
-        is_ab, sev, issue = _check_field_rule([], rule)
+        is_ab, sev, issue = _evaluate_field([], rule)
         self.assertFalse(is_ab)
-        self.assertEqual(sev, 'warn')
+        self.assertEqual(sev, 'fail')
         self.assertIn("数据为空", issue)
 
     def test_threshold_warn_at_eq(self):
-        """warn_at with == compare."""
+        """warn_at with == compare → fail (unified severity)."""
         rule = {'type': 'threshold', 'abnormal': 0, 'compare': '==', 'severity': 'fail',
                 'warn_at': -1, 'warn_compare': '==', 'name': '电源状态'}
-        is_ab, sev, issue = _check_field_rule(-1, rule)
+        is_ab, sev, issue = _evaluate_field(-1, rule)
         self.assertTrue(is_ab)
-        self.assertEqual(sev, 'warn')
+        self.assertEqual(sev, 'fail')
 
     # ── bool_false edge cases ──────────────────────────────────────
 
     def test_bool_false_empty_string(self):
         """Empty string → abnormal (treated as falsy)."""
-        rule = {'type': 'bool_false', 'name': 'Test', 'severity': 'warn'}
-        is_ab, sev, issue = _check_field_rule("", rule)
+        rule = {'type': 'bool_false', 'name': 'Test', 'severity': 'fail'}
+        is_ab, sev, issue = _evaluate_field("", rule)
         self.assertTrue(is_ab)
 
 
-class TestCheckVipPool(unittest.TestCase):
-    """Test _check_vip_pool special handler."""
+class TestEvaluateVipPool(unittest.TestCase):
+    """Test _evaluate_vip_pool special handler."""
 
     def test_vip_pool_pass(self):
         data = {"virtual_ip_pool_check": {"local": {"failure": [], "disable": []}, "global": {"failure": [], "disable": []}}}
-        status, value, detail = _check_vip_pool(data)
+        status, value, detail = _evaluate_vip_pool(data)
         self.assertEqual(status, "pass")
 
     def test_vip_pool_fail(self):
         data = {"virtual_ip_pool_check": {"local": {"failure": ["vs1"], "disable": []}, "global": {"failure": [], "disable": ["vs2"]}}}
-        status, value, detail = _check_vip_pool(data)
+        status, value, detail = _evaluate_vip_pool(data)
         self.assertEqual(status, "fail")
         self.assertIn("2", value)
 
     def test_vip_pool_empty_data(self):
-        status, value, detail = _check_vip_pool({})
+        status, value, detail = _evaluate_vip_pool({})
         self.assertEqual(status, "pass")
 
 

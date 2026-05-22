@@ -337,868 +337,249 @@ _SUGGESTION_MAP = {
 }
 
 # ---------------------------------------------------------------------------
-# 35 条 rule_id → 中文名称映射
+# 67 项检查规则目录 (CHECK_RULES) — 所有可能的检查项引用目录
 # ---------------------------------------------------------------------------
 
-CHECK_NAMES = {
-    "ssh_or_adapi_authority": "SSH/ADAPI授权",
-    "patch_info": "补丁信息",
-    "base_report_stability": "报表稳定性",
-    "weak_password": "弱密码",
-    "ssl_strategy_check": "SSL策略",
-    "enable_iplimit": "IP限制",
-    "dangerous_port": "危险端口",
-    "security_check": "安全检查",
-    "cluster_brain_split_check": "集群脑裂检查",
-    "check_admin_account": "管理员账户",
-    "base_app_version": "AD版本",
-    "bios_version_check": "BIOS版本",
-    "shm_sem_check": "共享内存/信号量",
-    "base_conntrack": "连接跟踪",
-    "power_state": "电源状态",
-    "fan_state": "风扇状态",
-    "acceleration_check": "加速引擎",
-    "base_memory": "内存使用率",
-    "base_crash_time": "崩溃日志",
-    "base_disk": "磁盘信息",
-    "remote_maintenance": "远程维护",
-    "base_kernel_log": "内核日志",
-    "base_core_process": "核心进程",
-    "base_net_state": "网络状态",
-    "base_file_leak": "文件描述符泄漏",
-    "base_cpu_info": "CPU使用率",
-    "base_err_log": "错误日志",
-    "base_running_time": "运行时间",
-    "check_dev_online": "设备在线状态",
-    "base_blackbox_data": "黑盒dmesg数据",
-    "base_blackbox_state": "黑盒状态",
-    "alarms_enabled": "告警启用",
-    "config_id_conflict_check": "配置ID冲突",
-    "nic_health_check": "网卡健康检查",
-    "snat_sport_exhaustion_check": "SNAT端口耗尽",
-}
-
-# v1 check_key → user-friendly description (same semantics as v2 descriptions)
-CHECK_DESCRIPTIONS = {
-    "APP_VERSION_CHECK": "应能正常获取 AD 软件版本号",
-    "ADMIN_ROLE_CHECK": "管理员账户应处于正常配置状态",
-    "DEVICE_SAFE_CHECK": "设备安全检查功能应处于开启状态",
-    "DNS_DETECT_CHECK": "DNS 代理检测功能应正常",
-    "DNAT_CHECK": "不应存在不必要的 DNAT 规则",
-    "HEARTBEAT_CHECK": "主备心跳通信应正常",
-    "STATIC_IP_CHECK": "不应存在静态 IP 配置冲突",
-    "CLUSTER_CHECK": "集群状态应正常",
-    "DNS_PROXY_CHECK": "DNS 代理功能应正常",
-    "VIRTUAL_MAC_CHECK": "虚拟 MAC 地址应正常",
-    "DUAL_STATE_CHECK": "主备状态应正常",
-    "POOL_PERSIST_CHECK": "会话保持功能应正常配置",
-    "STATIC_ROUTE_CHECK": "静态路由应正常配置",
-    "RS_LEVEL_CHECK": "服务器负载均衡层级应正常",
-    "APP_GROUP_CHECK": "应用分组应正常配置",
-    "DNS_SERVER_STATE_CHECK": "DNS 服务器状态应正常",
-    "LINK_HEALTH_CHECK": "链路健康检查应正常",
-    "STATIC_PROXIMITY_CHECK": "静态就近性应正常配置",
-    "DNS64_CHECK": "DNS64 功能应正常",
-    "POLICY_ROUTE_CHECK": "策略路由应正常配置",
-    "MANAGE_IP_CHECK": "管理 IP 应正常配置",
-    "SNMP_TRAPS_CHECK": "SNMP Traps 应正常配置",
-    "DNS_REFLECT_CHECK": "DNS 反射防护应正常",
-    "DNS_SERVER_CHECK": "DNS 服务器应正常配置",
-    "SESSION_SYNC_CHECK": "会话同步应正常",
-    "MAIL_WARN_CHECK": "邮件告警应正常配置",
-    "VIP_POOL_CHECK": "VIP Pool 应正常配置",
-    "PROXY_POLICY_CHECK": "代理策略应正常配置",
-    "DNS_MAP_CHECK": "DNS 映射应正常配置",
-    "WAN_BANDWIDTH_CHECK": "WAN 带宽应正常配置",
-    "FAULT_SWITCH_CHECK": "故障切换应正常配置",
-    "SYSLOG_CHECK": "系统日志应正常配置",
-    "AUTO_UPDATE_CHECK": "自动更新功能应处于开启状态",
-    "CPU_CHECK": "使用率应保持在 80% 以内，过高说明负载偏大",
-    "LOG_CHECK": "日志功能应正常",
-    "DEVICE_RUN_TIME": "应能正常记录设备运行时长",
-    "DEVICE_FILE_LEAK_CHECK": "不应存在文件描述符泄漏",
-    "NIC_STATE_CHECK": "网卡不应存在异常状态",
-    "CORE_PROCESS_CHECK": "所有核心进程应正常运行，不应有缺失",
-    "KERNEL_LOG_CHECK": "不应有内核级别的异常日志",
-    "REMOTE_MAINTAIN_CHECK": "远程维护功能应处于关闭状态，降低安全风险",
-    "BLACK_BOX_CHECK": "黑盒诊断功能应处于正常状态",
-    "DMESG_DATA_CHECK": "不应有黑盒 dmesg 异常数据",
-    "DISK_CHECK": "各磁盘分区使用率应保持在安全范围内",
-    "CRASH_LOG_CHECK": "不应存在系统崩溃记录",
-    "MEMORY_CHECK": "使用率应保持在 80% 以内，过高可能影响性能",
-    "SPEED_CARD_CHECK": "加速引擎应正常启用，保证转发性能",
-    "FAN_CHECK": "风扇模块应正常运转，确保设备散热",
-    "POWER_CHECK": "电源模块应正常工作，供电稳定",
-    "BIOS_CHECK": "BIOS 应处于正常版本，不应有待更新提示",
-    "WARN_LOG_CHECK": "不应存在大量错误日志",
-    "DEVICE_CONNECTION_CHECK": "连接跟踪数应保持在合理范围内",
-    "COREDUMP_CHECK": "不应存在系统崩溃记录",
-    "CONFIG_ID_CHECK": "不应存在配置 ID 冲突",
-    "NIC_HEALTH_CHECK": "网卡应处于健康状态",
-    "SNAT_SPORT_EXHAUSTION_CHECK": "不应出现 SNAT 端口耗尽的情况",
-    "DNAT_PORT_CHECK": "DNAT 端口应正常配置",
-    "MAIL_WARN_RECIPIENT_CHECK": "邮件告警接收人应正常配置",
-    "WEAK_PASSWORD_CHECK": "不应存在使用弱密码的账户",
-    "SSH_CHECK": "SSH 远程管理权限应正常开启",
-    "SSL_POLICY_CHECK": "应使用安全的 SSL 加密算法，不应存在不安全的加密方式",
-    "IP_LIMIT_CHECK": "IP 访问限制应已启用，防止未授权访问",
-    "OPEN_PORT_CHECK": "不应开放不必要的风险端口（如报表、智能DNS等非管理端口）",
-    "DEVICE_SAFE_STATE_CHECK": "设备安全检查功能应处于开启状态",
-    "CLUSTER_BRAIN_SPLIT_CHECK": "不应出现集群脑裂（主备设备通信分裂）",
-    "base_cpu_info": "使用率应保持在 80% 以内，过高说明负载偏大",
-    "base_memory": "使用率应保持在 80% 以内，过高可能影响性能",
-    "base_disk": "应能正常采集到磁盘使用情况",
-    "fan_state": "风扇模块应正常运转，确保设备散热",
-    "power_state": "电源模块应正常工作，供电稳定",
-    "nic_health_check": "网卡应处于健康状态",
-    "base_core_process": "所有核心进程应正常运行，不应有缺失",
-    "base_kernel_log": "不应有内核级别的异常日志",
-    "weak_password": "不应存在使用弱密码的账户",
-    "ssh_or_adapi_authority": "SSH 和 ADAPI 远程管理权限应正常开启",
-    "ssl_strategy_check": "应使用安全的 SSL 加密算法，不应存在不安全的加密方式",
-    "dangerous_port": "不应开放不必要的风险端口（如报表、智能DNS等非管理端口）",
-    "base_net_state": "网口链路应全部连通，不应有断开或降速",
-    "config_id_conflict_check": "不应存在配置 ID 冲突",
-    "base_crash_time": "不应存在系统崩溃记录",
-    "shm_sem_check": "共享内存和信号量应处于正常可用状态",
-    "base_file_leak": "不应存在文件描述符泄漏",
-    "base_err_log": "不应存在大量错误日志",
-    "base_report_stability": "报表生成功能应稳定运行",
-    "base_conntrack": "连接跟踪数应保持在合理范围内",
-    "security_check": "设备安全检查功能应处于开启状态",
-    "cluster_brain_split_check": "不应出现集群脑裂（主备设备通信分裂）",
-    "check_admin_account": "管理员账户应处于正常配置状态",
-    "base_app_version": "应能正常获取 AD 软件版本号",
-    "bios_version_check": "BIOS 应处于正常版本，不应有待更新提示",
-    "remote_maintenance": "远程维护功能应处于关闭状态，降低安全风险",
-    "enable_iplimit": "IP 访问限制应已启用，防止未授权访问",
-    "check_dev_online": "设备应正常注册到云平台",
-    "patch_info": "应已安装系统补丁",
-    "base_blackbox_data": "不应有黑盒 dmesg 异常数据",
-    "base_blackbox_state": "黑盒诊断功能应处于正常状态",
-    "alarms_enabled": "告警功能应处于开启状态，以便及时发现异常",
-    "base_running_time": "应能正常记录设备运行时长",
-    "snat_sport_exhaustion_check": "不应出现 SNAT 端口耗尽的情况",
+CHECK_RULES = {
+    # ── 功能巡检 (feature) ──────────────────────────────────────────────
+    "APP_VERSION_CHECK":       {"name": "推荐软件版本检测",       "desc": "检查当前版本和推荐版本的差距，并给出当前推荐的版本，推动产品升级",             "category": "feature", "fields": ["ad_appversion"]},
+    "ADMIN_ROLE_CHECK":        {"name": "新增管理员账号检测",     "desc": "除管理员账号外，是否还存在多余的管理员账号，保障不能存在无用账号",               "category": "feature", "fields": ["admin"]},
+    "HEARTBEAT_ERROR_CHECK":   {"name": "心跳口故障检测检查",     "desc": "检测当前场景下，设备是否启用心跳口故障检测",                                   "category": "feature", "fields": ["heartbeat_state"]},
+    "DEVICE_SAFE_CHECK":       {"name": "设备安全隐患检测",       "desc": "检测设备是否存在安全隐患",                                                     "category": "feature", "fields": ["security_check_state"]},
+    "DNS_DETECT_CHECK":        {"name": "DNS服务器监视域名检测",  "desc": "检测当前设备的DNS代理是否配置了监视域名；前提：DNS代理开启",                     "category": "feature", "fields": ["dns_proxy_enabled"]},
+    "DNAT_CHECK":              {"name": "目的地址转换IP配置检测", "desc": "检测当前设备目的地址转换的IP地址是否配置在链路上或者配置了相应的arp代理",         "category": "feature", "fields": ["dnat_dst_ip2net_if"]},
+    "HEARTBEAT_CHECK":         {"name": "心跳口检测",             "desc": "检测当前场景下，设备的备份心跳口选择是否是管理口",                               "category": "feature", "fields": ["heartbeat_state"]},
+    "STATIC_IP_CHECK":         {"name": "接口静态IP检测",         "desc": "检测集群模式下集群内设备的链路是否都配置了静态IP",                               "category": "feature", "fields": ["static_ip_config"]},
+    "CLUSTER_STATE_CHECK":     {"name": "集群状态检测",           "desc": "检测当前场景下，集群健康状态、本机同步状态",                                     "category": "feature", "fields": ["cluster_state"]},
+    "DNS_PROXY_CHECK":         {"name": "DNS代理功能检测",       "desc": "检测当前设备是否启用DNS代理",                                                   "category": "feature", "fields": ["dns_proxy_enabled"]},
+    "VIRTUAL_MAC_CHECK":       {"name": "MAC同步(虚拟MAC)检测",  "desc": "检测当前场景下，双机是否启用MAC同步或集群是否配置虚拟mac",                       "category": "feature", "fields": ["cluster_virtual_mac"]},
+    "DUAL_STATE_CHECK":        {"name": "双机状态检测",           "desc": "检测当前两台组建双机的AD设备状态是否正常",                                       "category": "feature", "fields": ["ms_state"]},
+    "POOL_PERSIST_CHECK":      {"name": "节点池会话保持检测",     "desc": "检测当前设备的节点池是否启用会话保持功能",                                       "category": "feature", "fields": ["node_pool_persist"]},
+    "STATIC_ROUTE_CHECK":      {"name": "静态路由检测",           "desc": "检测当前设备的静态路由是否启用健康检查，以及是否在线",                           "category": "feature", "fields": ["static_route_health_check"]},
+    "POOL_HEALTH_CHECK":       {"name": "节点池健康检测",         "desc": "检测当前设备的节点池是否配置了合理的健康检查，并且是否在线",                     "category": "feature", "fields": ["node_pool_health_check_detect"]},
+    "RS_LEVEL_CHECK":          {"name": "监视器级别检测",         "desc": "检测双机场景下，设备是否启用监视器级别检测；前提：故障切换",                     "category": "feature", "fields": ["rs_level_check"]},
+    "APP_GROUP_CHECK":         {"name": "应用组关联内容检测",     "desc": "应用组关联内容是否合理",                                                         "category": "feature", "fields": ["cluster_appgroup_unit"]},
+    "DNS_SERVER_STATE_CHECK":  {"name": "DNS服务器状态检测",     "desc": "检测当前设备链路负载-DNS代理的DNS服务器是否正常在线",                           "category": "feature", "fields": ["dns_server_health"]},
+    "LINK_HEALTH_CHECK":       {"name": "链路健康检测",           "desc": "检测当前设备的链路是否配置了健康检查，以及状态是否正常",                         "category": "feature", "fields": ["link_health_check"]},
+    "STATIC_PROXIMITY_CHECK":  {"name": "静态就近性规则检测",     "desc": "如果DNS映射或虚拟IP池配置的调度策略为静态就近性，检测是否配置静态就近性规则",   "category": "feature", "fields": ["static_proximity_check"]},
+    "DNS64_CHECK":             {"name": "DNS64检测",              "desc": "检测当前设备是否启用DNS64的相关功能，前提是DNS代理开启",                         "category": "feature", "fields": ["dns64_enabled"]},
+    "POLICY_ROUTE_CHECK":      {"name": "智能路由检测",           "desc": "检测当前设备是否新增智能路由选路策略",                                           "category": "feature", "fields": ["newly_added_policy_route"]},
+    "MANAGE_IP_CHECK":         {"name": "管理口IP地址检测",       "desc": "要求主备机的管理口地址不一致；前提是备份心跳口都是管理口",                       "category": "feature", "fields": ["ms_manage_ip_difference"]},
+    "SNMP_TRAPS_CHECK":        {"name": "SNMP Traps告警检测",    "desc": "检测当前场景下，设备是否启用SNMP Traps告警功能",                                 "category": "feature", "fields": ["snmp_alarm_enabled"]},
+    "DNS_REFLECT_CHECK":       {"name": "DNS映射功能状态检测",   "desc": "检测当前设备的DNS映射是否是启用状态",                                             "category": "feature", "fields": ["dns_pre_rule_exist"]},
+    "DNS_SERVER_CHECK":        {"name": "DNS服务器检测",         "desc": "检测当前设备是否启用全局负载的DNS服务器功能",                                     "category": "feature", "fields": ["dns_server_enabled"]},
+    "DNAT_PORT_CHECK":         {"name": "目的地址转换端口配置检测", "desc": "检测当前设备目的地址转换的端口是否为0到0/协议条件是否为ALL",                     "category": "feature", "fields": ["dnat_port_and_proto"]},
+    "SESSION_SYNC_CHECK":      {"name": "会话同步检测",           "desc": "检测双机或集群下，设备是否启用会话同步",                                         "category": "feature", "fields": ["cluster_session_sync"]},
+    "MAIL_WARN_CHECK":         {"name": "邮件告警检测",           "desc": "检测当前场景下，设备是否启用邮件告警功能",                                       "category": "feature", "fields": ["email_alarm_enabled"]},
+    "VIP_POOL_CHECK":          {"name": "虚拟IP池检测",           "desc": "检测当前设备的虚拟IP池是否正常在线",                                             "category": "feature", "fields": ["virtual_ip_pool_check"]},
+    "PROXY_POLICY_CHECK":      {"name": "优先代理策略检测",       "desc": "检测当前设备是否启用优先代理策略",                                               "category": "feature", "fields": ["proxy_policy_check"]},
+    "DNS_MAP_PS_CHECK":        {"name": "DNS映射会话保持检测",   "desc": "检测当前设备是否启用DNS映射的会话保持",                                         "category": "feature", "fields": ["dns_map_persist_enable"]},
+    "WAN_BANDWIDTH_CHECK":     {"name": "WAN属性链路带宽设置检查", "desc": "检测当前设备的WAN属性链路，上下行带宽设置是否为默认配置",                       "category": "feature", "fields": ["wan_max_bandwidth"]},
+    "FAULT_SWITCH_CHECK":      {"name": "故障切换",               "desc": "检测双机或集群下，设备是否启用故障切换",                                         "category": "feature", "fields": ["cluster_fault_switch_enabled"]},
+    "SYSLOG_CHECK":            {"name": "syslog设置检测",        "desc": "检测当前场景下，设备是否启用syslog设置",                                         "category": "feature", "fields": ["syslog_enabled"]},
+    "check_dev_online":        {"name": "设备在线状态检测",       "desc": "检测当前设备是否正常注册到云平台",                                               "category": "feature", "fields": ["online"]},
+    # ── 健康巡检 (health) ──────────────────────────────────────────────
+    "AUTO_UPDATE_CHECK":       {"name": "自动更新能力检测",       "desc": "检查设备是否具备连接升级服务器的条件，同时自身已开启自动更新功能",               "category": "health", "fields": ["auto_update"]},
+    "CPU_CHECK":               {"name": "CPU检测",                "desc": "过去一周cpu占用率是否异常；检查24小时内黑盒日志中CPU异常状态",                   "category": "health", "fields": ["base_cpu_usage", "base_cpu_mpstat"]},
+    "LOG_CHECK":               {"name": "错误日志检测",           "desc": "检查当前设备过去一月内是否出现错误日志",                                         "category": "health", "fields": ["base_log_error_exist"]},
+    "DEVICE_RUN_TIME":         {"name": "设备运行时间",           "desc": "检测当前设备持续运行时间",                                                       "category": "health", "fields": ["base_running_time"]},
+    "DEVICE_FILE_CHECK":       {"name": "设备文件检查",           "desc": "是否存在文件描述符泄漏的风险",                                                   "category": "health", "fields": ["base_file_ds"]},
+    "NIC_STATE_CHECK":         {"name": "网卡状态检测",           "desc": "检测当前设备网口丢包错包率是否超过10%；展示设备网卡信息",                         "category": "health", "fields": ["base_eth_abnormal", "base_eth_mtu", "base_drop_err_packet_rate", "base_eth_info"]},
+    "CORE_PROCESS_CHECK":      {"name": "核心进程检测",           "desc": "核心进程及其开启状况，当前缺少的核心进程",                                       "category": "health", "fields": ["base_core_process_lack"]},
+    "KERNEL_LOG_CHECK":        {"name": "设备kernel日志",         "desc": "kernel log中是否存在堆栈信息",                                                   "category": "health", "fields": ["base_kernel_log"]},
+    "REMOTE_MAINTAIN_CHECK":   {"name": "远程维护检测",           "desc": "检查当前设备是否开启了WAN属性接口的远程维护",                                     "category": "health", "fields": ["remote_mt"]},
+    "BLACK_BOX_CHECK":         {"name": "黑匣子检测",             "desc": "黑匣子是否正常记录",                                                             "category": "health", "fields": ["base_blackbox_state"]},
+    "DMESG_DATA_CHECK":        {"name": "设备黑匣子dmesg数据",   "desc": "检测24小时内黑盒Dmesg日志中是否存在硬件异常信息",                               "category": "health", "fields": ["base_blackbox_dmesg"]},
+    "DISK_CHECK":              {"name": "硬盘检测",               "desc": "检测用户磁盘各分区读写情况",                                                     "category": "health", "fields": ["disk_info", "base_disk_high_usage"]},
+    "CRASH_LOG_CHECK":         {"name": "宕机日志检测",           "desc": "检测当前设备是否存在宕机情况",                                                   "category": "health", "fields": ["base_crash_time"]},
+    "MEMORY_CHECK":            {"name": "内存检测",               "desc": "过去一周内存占用率是否异常；最近两天内是否内存过载",                             "category": "health", "fields": ["snmp_mem_rate"]},
+    "SPEED_CARD_CHECK":        {"name": "加速卡状态检测",         "desc": "检测当前设备加速卡状态",                                                         "category": "health", "fields": ["acceleration"]},
+    "FAN_STATE_CHECK":         {"name": "风扇状态检测",           "desc": "检测当前设备风扇状态",                                                           "category": "health", "fields": ["fan_state"]},
+    "POWER_STATE_CHECK":       {"name": "电源状态检测",           "desc": "检测当前设备电源状态",                                                           "category": "health", "fields": ["power_state"]},
+    "BIOS_VERSION_CHECK":      {"name": "BIOS固件版本检测",       "desc": "此异常需要对您当前产品的BIOS固件进行升级操作，消除风险",                         "category": "health", "fields": ["bios_update_state"]},
+    "WARN_LOG_CHECK":          {"name": "开启告警日志检测",       "desc": "设备e-mail告警、snmp traps告警和syslog告警日志至少有一项开启，则正常",           "category": "health", "fields": ["alarms_enabled"]},
+    "MEMORY_LEAK_CHECK":       {"name": "共享内存和信号量泄露检测", "desc": "此异常需要您升级到6.6R1及以上正式版本，消除当前产品运行中存在的风险",           "category": "health", "fields": ["shm_sem_state"]},
+    "DEVICE_CONNECTION_CHECK": {"name": "设备连接数检测",         "desc": "检测当前设备新建和并发连接数",                                                   "category": "health", "fields": ["conntrack_count", "conntrack_new_count"]},
+    "COREDUMP_INFO_CHECK":     {"name": "设备堆栈信息",           "desc": "检测当前设备是否core dump",                                                     "category": "health", "fields": ["base_no_core"]},
+    "CONFIG_ID_CONFLICT_CHECK":{"name": "配置id冲突检测",         "desc": "检查当前设备的某些配置是否出现了id冲突",                                         "category": "health", "fields": ["id_conflict_list"]},
+    "NIC_HEALTH_CHECK":        {"name": "网卡交换芯片的健康状态检测", "desc": "检测82599网卡和I350网卡交换芯片的健康状态",                                   "category": "health", "fields": ["I350_nic_state", "82599_nic_state"]},
+    "SNAT_SPORT_EXHAUSTION_CHECK": {"name": "SNAT源端口枯竭告警检测", "desc": "检查当前设备在一周以内是否出现了SNAT源端口枯竭告警",                           "category": "health", "fields": ["snat_sport_exhaustion_log_num"]},
+    # ── 安全巡检 (secure) ──────────────────────────────────────────────
+    "SSH_API_CHECK":           {"name": "SSH与API权限检测",       "desc": "检查当前设备的用户角色是否开启了API或SSH权限",                                   "category": "secure", "fields": ["ssh_authority", "ADAPI_authority"]},
+    "PATCH_INFO_CHECK":        {"name": "关键补丁修复检测",       "desc": "检测产品自身安全性加固的补丁，或部分较大影响的稳定性补丁包",                     "category": "secure", "fields": ["patch_info"]},
+    "REPORT_CHECK":            {"name": "报表稳定性检测",         "desc": "检测当前设备最近一周的报表进程占用cpu是否异常",                                   "category": "secure", "fields": ["base_report_stab"]},
+    "WEAK_PASSWORD_CHECK":     {"name": "管理员弱密码检测",       "desc": "管理员账号是否有长时间未修改过密码的账号，是否有弱密码的账号",                   "category": "secure", "fields": ["weak_pwd"]},
+    "SSL_POLICY_CHECK":        {"name": "SSL策略检测",            "desc": "检测当前设备的SSL加密/卸载是否启用不安全的协议/不安全算法",                       "category": "secure", "fields": ["unsafe_algorithm", "unsafe_protocol"]},
+    "IP_LIMIT_CHECK":          {"name": "登录IP限制检测",         "desc": "是否设置了管理员登录设备IP段，只允许接入产品的细化地址段",                       "category": "secure", "fields": ["enable_iplimit"]},
+    "OPEN_PORT_CHECK":         {"name": "默认开放端口检测",       "desc": "如果检查到默认端口，会提示用户按需关闭",                                         "category": "secure", "fields": ["dangerous_port"]},
 }
 
 # ---------------------------------------------------------------------------
-# rule_id → category 映射
+# 字段规则表 (FIELD_RULES) — ad.json 字段名 → 评估规则 + check_key + category
 # ---------------------------------------------------------------------------
 
-CHECK_CATEGORY_MAP = {
-    "ssh_or_adapi_authority": "secure",
-    "patch_info": "secure",
-    "base_report_stability": "health",
-    "weak_password": "secure",
-    "ssl_strategy_check": "secure",
-    "enable_iplimit": "secure",
-    "dangerous_port": "secure",
-    "security_check": "secure",
-    "cluster_brain_split_check": "feature",
-    "check_admin_account": "secure",
-    "base_app_version": "feature",
-    "bios_version_check": "health",
-    "shm_sem_check": "health",
-    "base_conntrack": "health",
-    "power_state": "health",
-    "fan_state": "health",
-    "acceleration_check": "health",
-    "base_memory": "health",
-    "base_crash_time": "health",
-    "base_disk": "health",
-    "remote_maintenance": "secure",
-    "base_kernel_log": "health",
-    "base_core_process": "health",
-    "base_net_state": "health",
-    "base_file_leak": "health",
-    "base_cpu_info": "health",
-    "base_err_log": "health",
-    "base_running_time": "feature",
-    "check_dev_online": "feature",
-    "base_blackbox_data": "health",
-    "base_blackbox_state": "health",
-    "alarms_enabled": "health",
-    "config_id_conflict_check": "feature",
-    "nic_health_check": "health",
-    "snat_sport_exhaustion_check": "health",
+FIELD_RULES = {
+    # === feature — 功能巡检字段 ==========================================
+    'ad_appversion':     {'type': 'missing',      'severity': 'fail',  'name': 'AD版本',        'description': '应能正常获取 AD 软件版本号',
+                          'check_key': 'APP_VERSION_CHECK', 'category': 'feature'},
+    'admin':             {'type': 'str_not_equal','normal': 'true', 'severity': 'fail',  'name': '管理员账户',      'description': '管理员账户应处于正常配置状态',
+                          'check_key': 'ADMIN_ROLE_CHECK', 'category': 'feature'},
+    'heartbeat_state':   {'type': 'bool_false',   'severity': 'fail', 'name': '心跳口状态',     'description': '心跳口应处于正常状态',
+                          'check_key': 'HEARTBEAT_CHECK', 'category': 'feature'},
+    'security_check_state':{'type':'bool_false', 'severity': 'fail',  'name': '安全检查状态',    'description': '设备安全检查功能应处于开启状态',
+                          'check_key': 'DEVICE_SAFE_CHECK', 'category': 'feature'},
+    'dns_proxy_enabled': {'type': 'bool_true',    'severity': 'fail',  'name': 'DNS代理启用',    'description': '不应启用不必要的 DNS 代理功能',
+                          'check_key': 'DNS_PROXY_CHECK', 'category': 'feature'},
+    'dnat_dst_ip2net_if':{'type': 'non_empty',    'severity': 'fail',  'name': 'DNAT目标IP',    'description': '不应存在不必要的 DNAT 规则',
+                          'check_key': 'DNAT_CHECK', 'category': 'feature'},
+    'static_ip_config':  {'type': 'non_empty',    'severity': 'fail',  'name': '静态IP配置',     'description': '不应存在静态 IP 配置冲突',
+                          'check_key': 'STATIC_IP_CHECK', 'category': 'feature'},
+    'cluster_state':     {'type': 'str_not_equal','normal': 'NORMAL', 'severity': 'fail', 'name': '集群状态',       'description': '集群状态应正常',
+                          'check_key': 'CLUSTER_STATE_CHECK', 'category': 'feature'},
+    'cluster_brain_split_check':{'type':'non_empty','severity':'fail','name': '集群脑裂检查',    'description': '不应出现集群脑裂（主备设备通信分裂）',
+                          'check_key': 'CLUSTER_STATE_CHECK', 'category': 'feature'},
+    'cluster_virtual_mac':{'type': 'str_equal',   'abnormal': 'CLUSTER_UNABLE', 'severity': 'fail', 'name': '虚拟MAC', 'description': '虚拟 MAC 地址应正常配置',
+                          'check_key': 'VIRTUAL_MAC_CHECK', 'category': 'feature'},
+    'ms_state':          {'type': 'str_not_equal','normal': 'NORMAL', 'severity': 'fail', 'name': '双机状态', 'description': '主备状态应正常',
+                          'check_key': 'DUAL_STATE_CHECK', 'category': 'feature'},
+    'node_pool_persist': {'type': 'non_empty',    'severity': 'fail',  'name': '节点池会话保持',  'description': '会话保持功能应正常配置',
+                          'check_key': 'POOL_PERSIST_CHECK', 'category': 'feature'},
+    'static_route_health_check':{'type':'non_empty','severity':'fail', 'name': '静态路由健康检查', 'description': '静态路由应正常配置',
+                          'check_key': 'STATIC_ROUTE_CHECK', 'category': 'feature'},
+    'node_pool_health_check_detect':{'type':'non_empty','severity':'fail','name': '节点池健康检查', 'description': '节点池应配置合理的健康检查',
+                          'check_key': 'POOL_HEALTH_CHECK', 'category': 'feature'},
+    'rs_level_check':    {'type': 'bool_false',   'severity': 'fail',  'name': '监视器级别',     'description': '监视器级别检测应正常配置',
+                          'check_key': 'RS_LEVEL_CHECK', 'category': 'feature'},
+    'cluster_appgroup_unit':{'type': 'str_equal', 'abnormal': 'CLUSTER_UNABLE', 'severity': 'fail', 'name': '应用组关联',   'description': '应用组关联内容应配置合理',
+                          'check_key': 'APP_GROUP_CHECK', 'category': 'feature'},
+    'dns_server_health': {'type': 'non_empty',    'severity': 'fail',  'name': 'DNS服务器状态',   'description': 'DNS 服务器应正常在线',
+                          'check_key': 'DNS_SERVER_STATE_CHECK', 'category': 'feature'},
+    'link_health_check': {'type': 'non_empty',    'severity': 'fail',  'name': '链路健康检查',   'description': '链路应配置健康检查且状态正常',
+                          'check_key': 'LINK_HEALTH_CHECK', 'category': 'feature'},
+    'static_proximity_check':{'type':'bool_false','severity': 'fail',  'name': '静态就近性规则',  'description': '静态就近性规则应正常配置',
+                          'check_key': 'STATIC_PROXIMITY_CHECK', 'category': 'feature'},
+    'dns64_enabled':     {'type': 'bool_true',    'severity': 'fail',  'name': 'DNS64启用',      'description': '不应启用 DNS64 相关功能',
+                          'check_key': 'DNS64_CHECK', 'category': 'feature'},
+    'newly_added_policy_route':{'type':'bool_true','severity':'fail',  'name': '新增策略路由',    'description': '不应新增智能路由选路策略',
+                          'check_key': 'POLICY_ROUTE_CHECK', 'category': 'feature'},
+    'ms_manage_ip_difference':{'type':'str_not_equal','normal':'CLUSTER_UNABLE','severity':'fail','name': '管理IP差异', 'description': '管理口 IP 地址应正常配置',
+                          'check_key': 'MANAGE_IP_CHECK', 'category': 'feature'},
+    'snmp_alarm_enabled':{'type': 'bool_false',   'severity': 'fail',  'name': 'SNMP告警',       'description': 'SNMP Traps 告警应正常配置',
+                          'check_key': 'SNMP_TRAPS_CHECK', 'category': 'feature'},
+    'dns_pre_rule_exist':{'type': 'bool_true',    'severity': 'fail',  'name': 'DNS映射规则',    'description': 'DNS 映射功能应处于正常状态',
+                          'check_key': 'DNS_REFLECT_CHECK', 'category': 'feature'},
+    'dns_server_enabled':{'type': 'str_equal',    'abnormal': 'false', 'severity': 'fail', 'name': 'DNS服务器启用',  'description': 'DNS 服务器应正常配置',
+                          'check_key': 'DNS_SERVER_CHECK', 'category': 'feature'},
+    'dnat_port_and_proto':{'type':'non_empty',    'severity': 'fail',  'name': 'DNAT端口协议',   'description': 'DNAT 端口应正常配置',
+                          'check_key': 'DNAT_PORT_CHECK', 'category': 'feature'},
+    'cluster_session_sync':{'type':'str_equal',   'abnormal': 'ABNORMAL','severity':'fail', 'name': '会话同步',       'description': '会话同步应正常配置',
+                          'check_key': 'SESSION_SYNC_CHECK', 'category': 'feature'},
+    'email_alarm_enabled':{'type':'bool_false',   'severity': 'fail',  'name': '邮件告警',       'description': '邮件告警应正常配置',
+                          'check_key': 'MAIL_WARN_CHECK', 'category': 'feature'},
+    'proxy_policy_check':{'type': 'bool_false',   'severity': 'fail',  'name': '优先代理策略',    'description': '代理策略应正常配置',
+                          'check_key': 'PROXY_POLICY_CHECK', 'category': 'feature'},
+    'dns_map_persist_enable':{'type':'empty_dict','severity': 'fail',  'name': 'DNS映射会话保持', 'description': 'DNS 映射会话保持应正常配置',
+                          'check_key': 'DNS_MAP_PS_CHECK', 'category': 'feature'},
+    'wan_max_bandwidth': {'type': 'non_empty',    'severity': 'fail',  'name': 'WAN带宽设置',    'description': 'WAN 属性链路带宽应正常配置',
+                          'check_key': 'WAN_BANDWIDTH_CHECK', 'category': 'feature'},
+    'cluster_fault_switch_enabled':{'type':'str_equal','abnormal':'ENABLE','severity':'fail','name': '故障切换',   'description': '故障切换应正常配置',
+                          'check_key': 'FAULT_SWITCH_CHECK', 'category': 'feature'},
+    'syslog_enabled':    {'type': 'bool_false',   'severity': 'fail',  'name': 'syslog设置',     'description': 'syslog 应正常配置',
+                          'check_key': 'SYSLOG_CHECK', 'category': 'feature'},
+    # === health — 健康巡检字段 ============================================
+    'auto_update':       {'type': 'str_not_equal', 'normal': 'true','severity':'fail',  'name': '自动更新',       'description': '自动更新功能应处于开启状态',
+                          'check_key': 'AUTO_UPDATE_CHECK', 'category': 'health'},
+    'base_cpu_usage':    {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'warn_at': 80, 'warn_compare': '>', 'name': 'CPU使用率',      'description': '使用率应保持在 80% 以内，过高说明负载偏大',
+                          'check_key': 'CPU_CHECK', 'category': 'health'},
+    'base_cpu_mpstat':   {'type': 'threshold', 'abnormal': 0,   'compare': '==', 'severity': 'fail',  'name': 'CPU架构状态',    'description': 'CPU 架构数据应可正常采集',
+                          'check_key': 'CPU_CHECK', 'category': 'health'},
+    'base_log_error_exist':{'type': 'threshold','abnormal': 100,'compare': '>', 'severity': 'fail',  'warn_at': 0, 'warn_compare': '>', 'name': '错误日志数量',    'description': '不应存在大量错误日志',
+                          'check_key': 'LOG_CHECK', 'category': 'health'},
+    'base_running_time': {'type': 'missing',      'severity': 'fail',  'name': '运行时间',       'description': '应能正常记录设备运行时长',
+                          'check_key': 'DEVICE_RUN_TIME', 'category': 'health'},
+    'base_file_ds':      {'type': 'threshold', 'abnormal': 0,  'compare': '>',  'severity': 'fail',  'name': '文件描述符泄漏',  'description': '不应存在文件描述符泄漏',
+                          'check_key': 'DEVICE_FILE_CHECK', 'category': 'health'},
+    'base_eth_abnormal': {'type': 'non_empty', 'severity': 'fail',  'name': '网卡异常',       'description': '网卡不应存在异常状态',
+                          'check_key': 'NIC_STATE_CHECK', 'category': 'health'},
+    'base_eth_mtu':      {'type': 'non_empty', 'severity': 'fail',  'name': '网卡MTU',       'description': '网卡 MTU 应配置正常',
+                          'check_key': 'NIC_STATE_CHECK', 'category': 'health'},
+    'base_drop_err_packet_rate':{'type':'non_empty','severity':'fail','name': '丢包率',        'description': '网卡丢包率应保持在正常范围',
+                          'check_key': 'NIC_STATE_CHECK', 'category': 'health'},
+    'base_eth_info':     {'type': 'eth_parse',   'severity': 'fail',  'name': '网卡信息',       'description': '网口链路应全部连通，不应有断开或降速',
+                          'check_key': 'NIC_STATE_CHECK', 'category': 'health'},
+    'base_core_process_lack':{'type':'non_empty','severity':'fail', 'name': '缺失核心进程',    'description': '所有核心进程应正常运行，不应有缺失',
+                          'check_key': 'CORE_PROCESS_CHECK', 'category': 'health'},
+    'base_kernel_log':   {'type': 'not_zero',   'severity': 'fail',  'name': '内核日志',       'description': '不应有内核级别的异常日志',
+                          'check_key': 'KERNEL_LOG_CHECK', 'category': 'health'},
+    'remote_mt':         {'type': 'str_equal', 'abnormal': 'true',  'severity': 'fail',  'name': '远程维护',       'description': '远程维护功能应处于关闭状态，降低安全风险',
+                          'check_key': 'REMOTE_MAINTAIN_CHECK', 'category': 'health'},
+    'base_blackbox_state':{'type':'not_zero',   'severity': 'fail',  'name': '黑盒状态',       'description': '黑盒诊断功能应处于正常状态',
+                          'check_key': 'BLACK_BOX_CHECK', 'category': 'health'},
+    'base_blackbox_dmesg':{'type':'non_empty', 'severity':'fail',   'name': '黑盒dmesg数据',   'description': '不应有黑盒 dmesg 异常数据',
+                          'check_key': 'DMESG_DATA_CHECK', 'category': 'health'},
+    'disk_info':         {'type': 'empty_dict',  'severity': 'fail',  'name': '磁盘信息',       'description': '应能正常采集到磁盘使用情况',
+                          'check_key': 'DISK_CHECK', 'category': 'health'},
+    'base_disk_high_usage':{'type':'non_empty', 'severity':'fail',  'name': '磁盘高使用率',     'description': '各磁盘分区使用率应保持在安全范围内',
+                          'check_key': 'DISK_CHECK', 'category': 'health'},
+    'base_crash_time':   {'type': 'non_empty', 'severity': 'fail',  'name': '崩溃时间',       'description': '不应存在系统崩溃记录',
+                          'check_key': 'CRASH_LOG_CHECK', 'category': 'health'},
+    'snmp_mem_rate':     {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'warn_at': 80, 'warn_compare': '>', 'name': '内存使用率',      'description': '使用率应保持在 80% 以内，过高可能影响性能',
+                          'check_key': 'MEMORY_CHECK', 'category': 'health'},
+    'acceleration':      {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'name': '加速引擎',       'description': '加速引擎应正常启用，保证转发性能',
+                          'check_key': 'SPEED_CARD_CHECK', 'category': 'health'},
+    'fan_state':         {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'warn_at': -1, 'warn_compare': '==', 'name': '风扇状态',       'description': '风扇模块应正常运转，确保设备散热',
+                          'check_key': 'FAN_STATE_CHECK', 'category': 'health'},
+    'power_state':       {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'warn_at': -1, 'warn_compare': '==', 'name': '电源状态',       'description': '电源模块应正常工作，供电稳定',
+                          'check_key': 'POWER_STATE_CHECK', 'category': 'health'},
+    'bios_update_state': {'type': 'has_value',   'severity': 'fail',  'name': 'BIOS更新状态',   'description': 'BIOS 应处于正常版本，不应有待更新提示',
+                          'check_key': 'BIOS_VERSION_CHECK', 'category': 'health'},
+    'alarms_enabled':    {'type': 'zero',        'severity': 'fail',  'name': '告警启用',       'description': '告警功能应处于开启状态，以便及时发现异常',
+                          'check_key': 'WARN_LOG_CHECK', 'category': 'health'},
+    'shm_sem_state':     {'type': 'bool_false', 'severity': 'fail',  'name': '共享内存状态',    'description': '共享内存和信号量应处于正常可用状态',
+                          'check_key': 'MEMORY_LEAK_CHECK', 'category': 'health'},
+    'conntrack_count':   {'type': 'threshold', 'abnormal': 100000, 'compare': '>', 'severity': 'fail', 'name': '连接跟踪数',     'description': '连接跟踪数应保持在合理范围内',
+                          'check_key': 'DEVICE_CONNECTION_CHECK', 'category': 'health'},
+    'conntrack_new_count':{'type':'threshold', 'abnormal': 10000,  'compare': '>', 'severity': 'fail', 'name': '新建连接数',     'description': '新建连接数应保持在合理范围内',
+                          'check_key': 'DEVICE_CONNECTION_CHECK', 'category': 'health'},
+    'base_no_core':      {'type': 'threshold',  'abnormal': -1, 'compare': '>',  'severity': 'fail',  'name': '堆栈信息',       'description': '不应存在 core dump 情况',
+                          'check_key': 'COREDUMP_INFO_CHECK', 'category': 'health'},
+    'id_conflict_list':  {'type': 'non_empty', 'severity': 'fail',  'name': '配置ID冲突',      'description': '不应存在配置 ID 冲突',
+                          'check_key': 'CONFIG_ID_CONFLICT_CHECK', 'category': 'health'},
+    'I350_nic_state':    {'type': 'not_normal',  'severity': 'fail',  'name': 'I350网卡状态',   'description': 'I350 网卡应处于健康状态',
+                          'check_key': 'NIC_HEALTH_CHECK', 'category': 'health'},
+    '82599_nic_state':   {'type': 'not_normal',  'severity': 'fail',  'name': '82599网卡状态',  'description': '82599 网卡应处于健康状态',
+                          'check_key': 'NIC_HEALTH_CHECK', 'category': 'health'},
+    'snat_sport_exhaustion_log_num': {'type': 'threshold', 'abnormal': 0, 'compare': '>', 'severity': 'fail', 'name': 'SNAT端口耗尽',   'description': '不应出现 SNAT 端口耗尽的情况',
+                          'check_key': 'SNAT_SPORT_EXHAUSTION_CHECK', 'category': 'health'},
+    # === secure — 安全巡检字段 ============================================
+    'ssh_authority':     {'type': 'bool_false', 'severity': 'fail',  'name': 'SSH授权',        'description': 'SSH 远程管理权限应正常开启',
+                          'check_key': 'SSH_API_CHECK', 'category': 'secure'},
+    'ADAPI_authority':   {'type': 'bool_false', 'severity': 'fail',  'name': 'ADAPI授权',      'description': 'ADAPI 远程管理权限应正常开启',
+                          'check_key': 'SSH_API_CHECK', 'category': 'secure'},
+    'patch_info':        {'type': 'nested_list', 'key': 'patched_list', 'severity': 'fail', 'name': '补丁信息',       'description': '应已安装系统补丁',
+                          'check_key': 'PATCH_INFO_CHECK', 'category': 'secure'},
+    'base_report_stab':  {'type': 'bool_false', 'severity': 'fail',  'name': '报表稳定性',      'description': '报表生成功能应稳定运行',
+                          'check_key': 'REPORT_CHECK', 'category': 'secure'},
+    'weak_pwd':          {'type': 'non_empty', 'severity': 'fail',  'name': '弱密码',         'description': '不应存在使用弱密码的账户',
+                          'check_key': 'WEAK_PASSWORD_CHECK', 'category': 'secure'},
+    'unsafe_algorithm':  {'type': 'bool_true',  'severity': 'fail',  'name': '不安全算法',      'description': '应使用安全的 SSL 加密算法，不应存在不安全的加密方式',
+                          'check_key': 'SSL_POLICY_CHECK', 'category': 'secure'},
+    'unsafe_protocol':   {'type': 'bool_true',  'severity': 'fail',  'name': '不安全协议',      'description': '应使用安全的 SSL 协议版本，不应存在不安全的协议',
+                          'check_key': 'SSL_POLICY_CHECK', 'category': 'secure'},
+    'enable_iplimit':    {'type': 'str_equal', 'abnormal': 'false', 'severity': 'fail',  'name': 'IP限制',         'description': 'IP 访问限制应已启用，防止未授权访问',
+                          'check_key': 'IP_LIMIT_CHECK', 'category': 'secure'},
+    'dangerous_port':    {'type': 'non_empty', 'severity': 'fail',  'name': '危险端口',       'description': '不应开放不必要的风险端口（如报表、智能DNS等非管理端口）',
+                          'check_key': 'OPEN_PORT_CHECK', 'category': 'secure'},
+    # === 特殊字段（在线检测） ==============================================
+    'online':            {'type': 'str_equal', 'abnormal': 'false', 'severity': 'fail',  'name': '设备在线状态',    'description': '设备应正常注册到云平台',
+                          'check_key': 'check_dev_online', 'category': 'feature'},
 }
 
 # ---------------------------------------------------------------------------
-# rule_id → ad.json 实际字段名映射
+# 字段评估引擎
 # ---------------------------------------------------------------------------
 
-RULE_FIELD_MAP = {
-    "ssh_or_adapi_authority": ["ssh_authority", "ADAPI_authority"],
-    "patch_info": ["patch_info"],
-    "base_report_stability": ["base_report_stab"],
-    "weak_password": ["weak_pwd"],
-    "ssl_strategy_check": ["unsafe_algorithm", "unsafe_protocol"],
-    "enable_iplimit": ["enable_iplimit"],
-    "dangerous_port": ["dangerous_port"],
-    "security_check": ["security_check_state"],
-    "cluster_brain_split_check": ["cluster_brain_split_check"],
-    "check_admin_account": ["admin"],
-    "base_app_version": ["ad_appversion"],
-    "bios_version_check": ["bios_update_state"],
-    "shm_sem_check": ["shm_sem_state"],
-    "base_conntrack": ["conntrack_count", "conntrack_new_count"],
-    "power_state": ["power_state"],
-    "fan_state": ["fan_state"],
-    "acceleration_check": ["acceleration"],
-    "base_memory": ["snmp_mem_rate"],
-    "base_crash_time": ["base_crash_time"],
-    "base_disk": ["disk_info", "base_disk_high_usage"],
-    "remote_maintenance": ["remote_mt"],
-    "base_kernel_log": ["base_kernel_log"],
-    "base_core_process": ["base_core_process_lack"],
-    "base_net_state": ["base_eth_abnormal", "base_eth_mtu", "base_drop_err_packet_rate", "base_eth_info"],
-    "base_file_leak": ["base_file_ds"],
-    "base_cpu_info": ["base_cpu_usage"],
-    "base_err_log": ["base_log_error_exist"],
-    "base_running_time": ["base_running_time"],
-    "check_dev_online": ["online"],
-    "base_blackbox_data": ["base_blackbox_dmesg"],
-    "base_blackbox_state": ["base_blackbox_state"],
-    "alarms_enabled": ["alarms_enabled"],
-    "config_id_conflict_check": ["id_conflict_list"],
-    "nic_health_check": ["I350_nic_state", "82599_nic_state"],
-    "snat_sport_exhaustion_check": ["snat_sport_exhaustion_log_num"],
-}
-
-# ---------------------------------------------------------------------------
-# 按 ad.json 实际字段名索引的类型化判定规则
-# ---------------------------------------------------------------------------
-
-CORRECTED_FIELD_RULES = {
-    # === threshold ===
-    'power_state':       {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'warn_at': -1, 'warn_compare': '==', 'name': '电源状态',       'description': '电源模块应正常工作，供电稳定'},
-    'fan_state':         {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'warn_at': -1, 'warn_compare': '==', 'name': '风扇状态',       'description': '风扇模块应正常运转，确保设备散热'},
-    'acceleration':      {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'name': '加速引擎',       'description': '加速引擎应正常启用，保证转发性能'},
-    'base_file_ds':      {'type': 'threshold', 'abnormal': 0,  'compare': '>',  'severity': 'fail',  'name': '文件描述符泄漏',  'description': '不应存在文件描述符泄漏'},
-    'base_log_error_exist':{'type': 'threshold','abnormal': 100,'compare': '>', 'severity': 'fail',  'warn_at': 0, 'warn_compare': '>', 'name': '错误日志数量',    'description': '不应存在大量错误日志'},
-    'conntrack_count':   {'type': 'threshold', 'abnormal': 100000, 'compare': '>', 'severity': 'fail', 'name': '连接跟踪数',     'description': '连接跟踪数应保持在合理范围内'},
-    'conntrack_new_count':{'type':'threshold', 'abnormal': 10000,  'compare': '>', 'severity': 'fail', 'name': '新建连接数',     'description': '新建连接数应保持在合理范围内'},
-    'snmp_mem_rate':     {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'warn_at': 80, 'warn_compare': '>', 'name': '内存使用率',      'description': '使用率应保持在 80% 以内，过高可能影响性能'},
-    'base_cpu_usage':    {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'warn_at': 80, 'warn_compare': '>', 'name': 'CPU使用率',      'description': '使用率应保持在 80% 以内，过高说明负载偏大'},
-    # === bool_false ===
-    'ADAPI_authority':   {'type': 'bool_false', 'severity': 'fail',  'name': 'ADAPI授权',      'description': 'ADAPI 远程管理权限应正常开启'},
-    'ssh_authority':     {'type': 'bool_false', 'severity': 'fail',  'name': 'SSH授权',        'description': 'SSH 远程管理权限应正常开启'},
-    'security_check_state':{'type':'bool_false', 'severity': 'fail',  'name': '安全检查状态',    'description': '设备安全检查功能应处于开启状态'},
-    'shm_sem_state':     {'type': 'bool_false', 'severity': 'fail',  'name': '共享内存状态',    'description': '共享内存和信号量应处于正常可用状态'},
-    'base_report_stab':  {'type': 'bool_false', 'severity': 'fail',  'name': '报表稳定性',      'description': '报表生成功能应稳定运行'},
-    # === str_equal ===
-    'enable_iplimit':    {'type': 'str_equal', 'abnormal': 'false', 'severity': 'fail',  'name': 'IP限制',         'description': 'IP 访问限制应已启用，防止未授权访问'},
-    'remote_mt':         {'type': 'str_equal', 'abnormal': 'true',  'severity': 'fail',  'name': '远程维护',       'description': '远程维护功能应处于关闭状态，降低安全风险'},
-    'online':            {'type': 'str_equal', 'abnormal': 'false', 'severity': 'fail',  'name': '设备在线状态',    'description': '设备应正常注册到云平台'},
-    # === str_not_equal ===
-    'auto_update':       {'type': 'str_not_equal', 'normal': 'true','severity':'fail',  'name': '自动更新',       'description': '自动更新功能应处于开启状态'},
-    # === non_empty ===
-    'weak_pwd':          {'type': 'non_empty', 'severity': 'fail',  'name': '弱密码',         'description': '不应存在使用弱密码的账户'},
-    'dangerous_port':    {'type': 'non_empty', 'severity': 'fail',  'name': '危险端口',       'description': '不应开放不必要的风险端口（如报表、智能DNS等非管理端口）'},
-    'base_core_process_lack':{'type':'non_empty','severity':'fail', 'name': '缺失核心进程',    'description': '所有核心进程应正常运行，不应有缺失'},
-    'base_eth_abnormal': {'type': 'non_empty', 'severity': 'fail',  'name': '网卡异常',       'description': '网卡不应存在异常状态'},
-    'base_eth_mtu':      {'type': 'non_empty', 'severity': 'fail',  'name': '网卡MTU',       'description': '网卡 MTU 应配置正常'},
-    'base_drop_err_packet_rate':{'type':'non_empty','severity':'fail','name': '丢包率',        'description': '网卡丢包率应保持在正常范围'},
-    'id_conflict_list':  {'type': 'non_empty', 'severity': 'fail',  'name': '配置ID冲突',      'description': '不应存在配置 ID 冲突'},
-    'cluster_brain_split_check':{'type':'non_empty','severity':'fail','name': '集群脑裂检查',    'description': '不应出现集群脑裂（主备设备通信分裂）'},
-    'base_disk_high_usage':{'type':'non_empty', 'severity':'fail',  'name': '磁盘高使用率',     'description': '各磁盘分区使用率应保持在安全范围内'},
-    'base_crash_time':   {'type': 'non_empty', 'severity': 'fail',  'name': '崩溃时间',       'description': '不应存在系统崩溃记录'},
-    'base_blackbox_dmesg':{'type':'non_empty', 'severity':'fail',   'name': '黑盒dmesg数据',   'description': '不应有黑盒 dmesg 异常数据'},
-    # === bool_true ===
-    'unsafe_algorithm':  {'type': 'bool_true',  'severity': 'fail',  'name': '不安全算法',      'description': '应使用安全的 SSL 加密算法，不应存在不安全的加密方式'},
-    'unsafe_protocol':   {'type': 'bool_true',  'severity': 'fail',  'name': '不安全协议',      'description': '应使用安全的 SSL 协议版本，不应存在不安全的协议'},
-    # === not_zero / zero / has_value / not_normal ===
-    'base_kernel_log':   {'type': 'not_zero',   'severity': 'fail',  'name': '内核日志',       'description': '不应有内核级别的异常日志'},
-    'base_blackbox_state':{'type':'not_zero',   'severity': 'fail',  'name': '黑盒状态',       'description': '黑盒诊断功能应处于正常状态'},
-    'alarms_enabled':    {'type': 'zero',        'severity': 'fail',  'name': '告警启用',       'description': '告警功能应处于开启状态，以便及时发现异常'},
-    'bios_update_state': {'type': 'has_value',   'severity': 'fail',  'name': 'BIOS更新状态',   'description': 'BIOS 应处于正常版本，不应有待更新提示'},
-    'I350_nic_state':    {'type': 'not_normal',  'severity': 'fail',  'name': 'I350网卡状态',   'description': 'I350 网卡应处于健康状态'},
-    '82599_nic_state':   {'type': 'not_normal',  'severity': 'fail',  'name': '82599网卡状态',  'description': '82599 网卡应处于健康状态'},
-    # === special ===
-    'base_eth_info':     {'type': 'eth_parse',   'severity': 'fail',  'name': '网卡信息',       'description': '网口链路应全部连通，不应有断开或降速'},
-    'snat_sport_exhaustion_log_num': {'type': 'threshold', 'abnormal': 0, 'compare': '>', 'severity': 'fail', 'name': 'SNAT端口耗尽',   'description': '不应出现 SNAT 端口耗尽的情况'},
-    'disk_info':         {'type': 'empty_dict',  'severity': 'fail',  'name': '磁盘信息',       'description': '应能正常采集到磁盘使用情况'},
-    'patch_info':        {'type': 'nested_list', 'key': 'patched_list', 'severity': 'fail', 'name': '补丁信息',       'description': '应已安装系统补丁'},
-    'admin':             {'type': 'str_not_equal','normal': 'true', 'severity': 'fail',  'name': '管理员账户',      'description': '管理员账户应处于正常配置状态'},
-    'ad_appversion':     {'type': 'missing',      'severity': 'fail',  'name': 'AD版本',        'description': '应能正常获取 AD 软件版本号'},
-    'base_running_time': {'type': 'missing',      'severity': 'fail',  'name': '运行时间',       'description': '应能正常记录设备运行时长'},
-}
-
-
-def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    根据 ad.json 内容进行结构化分析。
-    严格按 ad.json 中实际存在的字段分析，不依赖场景定义。
-    字段不存在则跳过该检查项，不记录。
-    分类规则：根据字段名自动归入功能/健康/安全三类。
-    """
-
-    if not isinstance(data, dict):
-        return {
-            "device_info": {},
-            "check_results": {},
-            "categories": {"feature": [], "health": [], "secure": []},
-            "summary": {"total": 0, "pass": 0, "fail": 0, "score": 0},
-            "health_scores": {"feature": {"pass": 0, "total": 0, "score": 0}, "health": {"pass": 0, "total": 0, "score": 0}, "secure": {"pass": 0, "total": 0, "score": 0}, "overall": 0},
-            "suggestions": [],
-        }
-    check_results = {}
-    data_keys = set(data.keys())  # ad.json 中实际存在的字段集合
-
-    def has(*keys) -> bool:
-        """检查 ad.json 中是否包含至少一个指定字段"""
-        return any(k in data_keys for k in keys)
-
-    def check(name: str, status: str, value: str = "", detail: str = ""):
-        display_name = CHECK_NAMES.get(name, name)
-        description = CHECK_DESCRIPTIONS.get(name, "")
-        check_results[name] = {"status": status, "name": display_name, "value": str(value), "detail": detail, "description": description}
-
-    # ─────────────────────────────────────────────────────────────────────
-    # 逐字段分析（ad.json 有什么就分析什么，字段不存在则跳过）
-    # ─────────────────────────────────────────────────────────────────────
-
-    if has("ad_appversion"):
-        # 1. APP_VERSION_CHECK
-        app_ver = data.get("ad_appversion", "").strip()
-        check("APP_VERSION_CHECK", "pass" if app_ver else "fail",
-              app_ver[:60] if app_ver else "未获取到版本信息")
-
-    if has("admin"):
-        # 2. ADMIN_ROLE_CHECK
-        admin = data.get("admin", "")
-        check("ADMIN_ROLE_CHECK", "pass" if admin == "true" else "fail",
-              f"admin={admin}", detail="管理员角色未正确配置" if admin != "true" else "")
-
-    if has("security_check_state"):
-        # 4. DEVICE_SAFE_CHECK
-        sec_state = data.get("security_check_state", False)
-        check("DEVICE_SAFE_CHECK",
-              "pass" if sec_state else "fail",
-              f"security_check_state={sec_state}")
-
-    if has("dns_proxy_enabled"):
-        # 5. DNS_DETECT_CHECK
-        dns_proxy = data.get("dns_proxy_enabled", False)
-        check("DNS_DETECT_CHECK",
-              "pass" if not dns_proxy else "fail",
-              f"dns_proxy_enabled={dns_proxy}")
-
-    if has("dnat_dst_ip2net_if"):
-        # 6. DNAT_CHECK
-        dnat = data.get("dnat_dst_ip2net_if", [])
-        check("DNAT_CHECK", "pass" if not dnat else "fail",
-              f"{len(dnat)} 条 DNAT 规则" if dnat else "无 DNAT 规则")
-
-    if has("heartbeat_state"):
-        # 7. HEARTBEAT_CHECK
-        hb = data.get("heartbeat_state", True)
-        check("HEARTBEAT_CHECK",
-              "pass" if hb else "fail",
-              f"heartbeat_state={hb}")
-
-    if has("static_ip_config"):
-        # 8. STATIC_IP_CHECK
-        static_ip = data.get("static_ip_config", [])
-        check("STATIC_IP_CHECK", "pass" if not static_ip else "fail",
-              f"{len(static_ip)} 条静态 IP" if static_ip else "无静态 IP 配置")
-
-    if has("cluster_state"):
-        # 9. CLUSTER_STATE_CHECK
-        cluster = data.get("cluster_state", "NOT_CLUSTER_MODE")
-        check("CLUSTER_STATE_CHECK",
-              "pass" if cluster == "NORMAL" else "fail",
-              cluster)
-
-    if has("cluster_virtual_mac"):
-        # 11. VIRTUAL_MAC_CHECK
-        vmac = data.get("cluster_virtual_mac", "CLUSTER_UNABLE")
-        check("VIRTUAL_MAC_CHECK",
-              "pass" if vmac != "CLUSTER_UNABLE" else "fail",
-              vmac)
-
-    if has("ms_state"):
-        # 12. DUAL_STATE_CHECK
-        ms = data.get("ms_state", "CLUSTER_UNABLE_OR_NOTIN")
-        check("DUAL_STATE_CHECK",
-              "pass" if ms == "NORMAL" else "fail",
-              ms)
-
-    if has("node_pool_persist"):
-        # 13. POOL_PERSIST_CHECK
-        pool_persist = data.get("node_pool_persist", [])
-        check("POOL_PERSIST_CHECK", "pass" if pool_persist else "fail",
-              f"{len(pool_persist)} 个节点池" if pool_persist else "无持久化节点池")
-
-    if has("static_route_health_check"):
-        # 14. STATIC_ROUTE_CHECK
-        sr = data.get("static_route_health_check", [])
-        check("STATIC_ROUTE_CHECK", "pass" if not sr else "fail",
-              f"{len(sr)} 条异常" if sr else "正常")
-
-    if has("node_pool_health_check_detect"):
-        # 15. POOL_HEALTH_CHECK
-        ph = data.get("node_pool_health_check_detect", [])
-        check("POOL_HEALTH_CHECK",
-              "pass" if not ph or ph == ["12"] else "fail",
-              f"检测到 {len(ph)} 个节点池" if ph else "正常")
-
-    if has("rs_level_check"):
-        # 16. RS_LEVEL_CHECK
-        rs_level = data.get("rs_level_check", True)
-        check("RS_LEVEL_CHECK",
-              "pass" if rs_level else "fail",
-              f"rs_level_check={rs_level}")
-
-    if has("cluster_appgroup_unit"):
-        # 17. APP_GROUP_CHECK
-        ag = data.get("cluster_appgroup_unit", "CLUSTER_UNABLE")
-        check("APP_GROUP_CHECK",
-              "pass" if ag != "CLUSTER_UNABLE" else "fail",
-              ag)
-
-    if has("dns_server_health"):
-        # 18. DNS_SERVER_STATE_CHECK
-        dns_h = data.get("dns_server_health", [])
-        check("DNS_SERVER_STATE_CHECK", "pass" if not dns_h else "fail",
-              f"{len(dns_h)} 台异常" if dns_h else "正常")
-
-    if has("link_health_check"):
-        # 19. LINK_HEALTH_CHECK
-        lh = data.get("link_health_check", [])
-        check("LINK_HEALTH_CHECK", "pass" if not lh else "fail",
-              f"{len(lh)} 条异常" if lh else "正常")
-
-    if has("static_proximity_check"):
-        # 20. STATIC_PROXIMITY_CHECK
-        sp = data.get("static_proximity_check", True)
-        check("STATIC_PROXIMITY_CHECK",
-              "pass" if sp else "fail",
-              f"static_proximity_check={sp}")
-
-    if has("dns64_enabled"):
-        # 21. DNS64_CHECK
-        dns64 = data.get("dns64_enabled", False)
-        check("DNS64_CHECK", "pass" if not dns64 else "fail",
-              f"dns64_enabled={dns64}")
-
-    if has("newly_added_policy_route"):
-        # 22. POLICY_ROUTE_CHECK
-        npr = data.get("newly_added_policy_route", False)
-        check("POLICY_ROUTE_CHECK",
-              "pass" if not npr else "fail",
-              f"newly_added_policy_route={npr}")
-
-    if has("ms_manage_ip_difference"):
-        # 23. MANAGE_IP_CHECK
-        mip = data.get("ms_manage_ip_difference", "CLUSTER_UNABLE")
-        check("MANAGE_IP_CHECK",
-              "pass" if mip == "CLUSTER_UNABLE" else "fail",
-              mip)
-
-    if has("snmp_alarm_enabled"):
-        # 24. SNMP_TRAPS_CHECK
-        snmp = data.get("snmp_alarm_enabled", False)
-        check("SNMP_TRAPS_CHECK", "pass" if snmp else "fail",
-              f"snmp_alarm_enabled={snmp}")
-
-    if has("dns_pre_rule_exist"):
-        # 25. DNS_REFLECT_CHECK
-        dr = data.get("dns_pre_rule_exist", False)
-        check("DNS_REFLECT_CHECK", "pass" if not dr else "fail",
-              f"dns_pre_rule_exist={dr}")
-
-    if has("dns_server_enabled"):
-        # 26. DNS_SERVER_CHECK
-        ds = data.get("dns_server_enabled", "")
-        check("DNS_SERVER_CHECK",
-              "pass" if ds in ("true", "") else "fail",
-              f"dns_server_enabled={ds}")
-
-    if has("dnat_port_and_proto"):
-        # 27. DNAT_PORT_CHECK
-        dpp = data.get("dnat_port_and_proto", [])
-        check("DNAT_PORT_CHECK", "pass" if not dpp else "fail",
-              f"{len(dpp)} 条" if dpp else "无端口映射")
-
-    if has("cluster_session_sync"):
-        # 28. SESSION_SYNC_CHECK
-        ss = data.get("cluster_session_sync", "CLUSTER_UNABLE")
-        check("SESSION_SYNC_CHECK",
-              "pass" if ss in ("NORMAL", "CLUSTER_UNABLE") else "fail",
-              ss)
-
-    if has("email_alarm_enabled"):
-        # 29. MAIL_WARN_CHECK
-        mw = data.get("email_alarm_enabled", False)
-        check("MAIL_WARN_CHECK", "pass" if mw else "fail",
-              f"email_alarm_enabled={mw}")
-
-    if has("virtual_ip_pool_check"):
-        # 30. VIP_POOL_CHECK
-        vip = data.get("virtual_ip_pool_check", {})
-        vip_fail = []
-        for region in ("local", "global"):
-            region_data = vip.get(region, {})
-            vip_fail.extend(region_data.get("failure", []))
-            vip_fail.extend(region_data.get("disable", []))
-        check("VIP_POOL_CHECK", "pass" if not vip_fail else "fail",
-              f"{len(vip_fail)} 个异常" if vip_fail else "正常")
-
-    if has("proxy_policy_check"):
-        # 31. PROXY_POLICY_CHECK
-        pp = data.get("proxy_policy_check", True)
-        check("PROXY_POLICY_CHECK",
-              "pass" if pp else "fail",
-              f"proxy_policy_check={pp}")
-
-    if has("dns_map_persist_enable"):
-        # 32. DNS_MAP_PS_CHECK
-        dm = data.get("dns_map_persist_enable", {})
-        dm_empty = all(not v for v in dm.values())
-        check("DNS_MAP_PS_CHECK", "pass" if dm_empty else "fail",
-              str(dm)[:60] if dm else "未启用")
-
-    if has("wan_max_bandwidth"):
-        # 33. WAN_BANDWIDTH_CHECK
-        wb = data.get("wan_max_bandwidth", [])
-        check("WAN_BANDWIDTH_CHECK", "pass" if not wb else "fail",
-              f"{len(wb)} 条带宽配置" if wb else "无配置")
-
-    if has("cluster_fault_switch_enabled"):
-        # 34. FAULT_SWITCH_CHECK
-        fs = data.get("cluster_fault_switch_enabled", "CLUSTER_UNABLE")
-        check("FAULT_SWITCH_CHECK",
-              "pass" if fs == "CLUSTER_UNABLE" else "fail",
-              fs)
-
-    if has("syslog_enabled"):
-        # 35. SYSLOG_CHECK
-        syl = data.get("syslog_enabled", False)
-        check("SYSLOG_CHECK", "pass" if syl else "fail",
-              f"syslog_enabled={syl}")
-
-    # ─────────────────────────────────────────────────────────────────────
-    # 健康巡检（25 项）
-    # ─────────────────────────────────────────────────────────────────────
-
-    if has("auto_update"):
-        # 36. AUTO_UPDATE_CHECK
-        au = data.get("auto_update", "")
-        check("AUTO_UPDATE_CHECK", "pass" if au == "true" else "fail",
-              f"auto_update={au}")
-
-    if has("base_cpu_usage", "base_cpu_mpstat"):
-        # 37. CPU_CHECK
-        cpu = data.get("base_cpu_usage", [])
-        cpu_max = max(cpu) if cpu else 0
-        check("CPU_CHECK",
-              "pass" if cpu_max <= 80 else ("fail" if cpu_max <= 90 else "fail"),
-              f"max={cpu_max}%")
-
-    if has("base_log_error_exist"):
-        # 38. LOG_CHECK
-        le = data.get("base_log_error_exist", -1)
-        check("LOG_CHECK",
-              "pass" if le == 0 else ("fail" if le <= 100 else "fail"),
-              f"{le} 条错误日志")
-
-    if has("base_running_time"):
-        # 39. DEVICE_RUN_TIME
-        rt = data.get("base_running_time", "")
-        check("DEVICE_RUN_TIME", "pass" if rt else "fail", rt or "未知")
-
-    if has("base_file_ds"):
-        # 40. DEVICE_FILE_CHECK
-        fd = data.get("base_file_ds", -1)
-        check("DEVICE_FILE_CHECK", "pass" if fd == 0 else "fail", str(fd))
-
-    if has("base_eth_abnormal"):
-        # 41. NIC_STATE_CHECK
-        eth_ab = data.get("base_eth_abnormal", [])
-        check("NIC_STATE_CHECK", "pass" if not eth_ab else "fail",
-              f"{len(eth_ab)} 网口异常" if eth_ab else "正常")
-
-    if has("base_core_process_lack"):
-        # 42. CORE_PROCESS_CHECK
-        cpl = data.get("base_core_process_lack", [])
-        check("CORE_PROCESS_CHECK", "pass" if not cpl else "fail",
-              f"{len(cpl)} 个缺失" if cpl else "正常")
-
-    if has("base_kernel_log"):
-        # 43. KERNEL_LOG_CHECK
-        kl = data.get("base_kernel_log", -1)
-        check("KERNEL_LOG_CHECK",
-              "pass" if kl == 0 else ("fail" if kl < 5 else "fail"),
-              f"{kl} 条")
-
-    if has("remote_mt"):
-        # 44. REMOTE_MAINTAIN_CHECK
-        rm = data.get("remote_mt", "")
-        check("REMOTE_MAINTAIN_CHECK",
-              "fail" if rm == "true" else "pass",
-              f"remote_mt={rm}")
-
-    if has("base_blackbox_state"):
-        # 45. BLACK_BOX_CHECK
-        bb = data.get("base_blackbox_state", -1)
-        check("BLACK_BOX_CHECK", "pass" if bb == 0 else "fail", str(bb))
-
-    if has("base_blackbox_dmesg"):
-        # 46. DMESG_DATA_CHECK
-        dmesg = data.get("base_blackbox_dmesg", {})
-        check("DMESG_DATA_CHECK", "pass" if not dmesg else "fail",
-              f"{len(dmesg)} 条" if dmesg else "无")
-
-    if has("disk_info"):
-        # 47. DISK_CHECK
-        disk = data.get("disk_info", {})
-        check("DISK_CHECK",
-              "pass" if disk else "fail",
-              "正常" if disk else "无磁盘信息")
-
-    if has("base_crash_time"):
-        # 48. CRASH_LOG_CHECK
-        crash = data.get("base_crash_time", [])
-        check("CRASH_LOG_CHECK", "pass" if not crash else "fail",
-              f"{len(crash)} 条" if crash else "无")
-
-    if has("snmp_mem_rate"):
-        # 49. MEMORY_CHECK
-        mr = data.get("snmp_mem_rate", 0)
-        check("MEMORY_CHECK",
-              "pass" if mr <= 80 else ("fail" if mr <= 90 else "fail"),
-              f"使用率={mr}%")
-
-    if has("acceleration"):
-        # 50. SPEED_CARD_CHECK
-        accel = data.get("acceleration", -1)
-        check("SPEED_CARD_CHECK",
-              "pass" if accel in (1, 2) else "fail",
-              f"acceleration={accel}")
-
-    if has("fan_state"):
-        # 51. FAN_STATE_CHECK
-        fan = data.get("fan_state", -1)
-        check("FAN_STATE_CHECK",
-              "pass" if fan == 1 else ("fail" if fan == -1 else "fail"),
-              str(fan))
-
-    if has("power_state"):
-        # 52. POWER_STATE_CHECK
-        ps = data.get("power_state", -1)
-        check("POWER_STATE_CHECK",
-              "pass" if ps == 1 else ("fail" if ps == -1 else "fail"),
-              str(ps))
-
-    if has("bios_update_state"):
-        # 53. BIOS_VERSION_CHECK
-        bios = data.get("bios_update_state", "")
-        check("BIOS_VERSION_CHECK",
-              "pass" if bios in ("", "normal") else "fail",
-              bios or "未更新")
-
-    if has("alarms_enabled"):
-        # 54. WARN_LOG_CHECK
-        al = data.get("alarms_enabled", -1)
-        check("WARN_LOG_CHECK",
-              "pass" if al >= 0 else "fail",
-              str(al))
-
-    if has("shm_sem_state"):
-        # 55. MEMORY_LEAK_CHECK
-        leak = data.get("shm_sem_state", False)
-        check("MEMORY_LEAK_CHECK",
-              "pass" if leak else "fail",
-              f"shm_sem_state={leak}", detail="共享内存/信号量异常" if not leak else "")
-
-    if has("base_eth_info"):
-        # 56. DEVICE_CONNECTION_CHECK
-        eth_info = data.get("base_eth_info", "")
-        link_detected = "Link detected: yes" in eth_info if eth_info else False
-        check("DEVICE_CONNECTION_CHECK",
-              "pass" if link_detected else "fail",
-              "eth0 已连通" if link_detected else "eth0 未连通")
-
-    if has("base_no_core"):
-        # 57. COREDUMP_INFO_CHECK
-        nc = data.get("base_no_core", -1)
-        check("COREDUMP_INFO_CHECK",
-              "pass" if nc == -1 else "fail",
-              "正常" if nc == -1 else f"base_no_core={nc}")
-
-    if has("id_conflict_list"):
-        # 58. CONFIG_ID_CONFLICT_CHECK
-        idc = data.get("id_conflict_list", [])
-        check("CONFIG_ID_CONFLICT_CHECK", "pass" if not idc else "fail",
-              f"{len(idc)} 个冲突" if idc else "无冲突")
-
-    if has("I350_nic_state", "82599_nic_state"):
-        # 59. NIC_HEALTH_CHECK
-        i350 = data.get("I350_nic_state", "")
-        nic99 = data.get("82599_nic_state", "")
-        check("NIC_HEALTH_CHECK",
-              "pass" if i350 == "normal" and nic99 == "normal" else "fail",
-              f"I350={i350} 82599={nic99}")
-
-    if has("snat_sport_exhaustion_log_num"):
-        # 60. SNAT_SPORT_EXHAUSTION_CHECK
-        snat = data.get("snat_sport_exhaustion_log_num", -1)
-        check("SNAT_SPORT_EXHAUSTION_CHECK",
-              "pass" if snat == 0 else "fail",
-              str(snat))
-
-    # ─────────────────────────────────────────────────────────────────────
-    # 安全巡检（7 项）
-    # ─────────────────────────────────────────────────────────────────────
-
-    if has("ssh_authority"):
-        # 61. SSH_API_CHECK
-        ssh = data.get("ssh_authority", False)
-        check("SSH_API_CHECK", "pass" if ssh else "fail",
-              f"ssh_authority={ssh}")
-
-    if has("patch_info"):
-        # 62. PATCH_INFO_CHECK
-        patches = data.get("patch_info", {}).get("patched_list", [])
-        check("PATCH_INFO_CHECK",
-              "pass" if patches else "fail",
-              f"{len(patches)} 个补丁" if patches else "无补丁")
-
-    if has("base_report_stab"):
-        # 63. REPORT_CHECK
-        br = data.get("base_report_stab", False)
-        check("REPORT_CHECK", "pass" if br else "fail",
-              f"base_report_stab={br}")
-
-    if has("weak_pwd"):
-        # 64. WEAK_PASSWORD_CHECK
-        wp = data.get("weak_pwd", [])
-        check("WEAK_PASSWORD_CHECK", "pass" if not wp else "fail",
-              f"{len(wp)} 个弱密码" if wp else "无")
-
-    if has("unsafe_algorithm", "unsafe_protocol"):
-        # 65. SSL_POLICY_CHECK
-        ua = data.get("unsafe_algorithm", False)
-        up = data.get("unsafe_protocol", False)
-        check("SSL_POLICY_CHECK",
-              "pass" if not ua and not up else "fail",
-              f"algorithm={ua} protocol={up}")
-
-    if has("enable_iplimit"):
-        # 66. IP_LIMIT_CHECK
-        ipl = data.get("enable_iplimit", "")
-        check("IP_LIMIT_CHECK",
-              "pass" if ipl == "true" else "fail",
-              f"enable_iplimit={ipl}")
-
-    if has("dangerous_port"):
-        # 67. OPEN_PORT_CHECK
-        dp = data.get("dangerous_port", [])
-        check("OPEN_PORT_CHECK",
-              "pass" if not dp else "fail",
-              f"{len(dp)} 个风险端口: {', '.join(str(p) for p in dp[:3])}" if dp else "无")
-
-    # ─────────────────────────────────────────────────────────────────────
-    # 汇总（仅统计当前场景的检查项）
-    # ─────────────────────────────────────────────────────────────────────
-
-    pass_count = sum(1 for k, v in check_results.items() if v["status"] == "pass")
-    fail_count = sum(1 for k, v in check_results.items() if v["status"] == "fail")
-    total = len(check_results)
-    score = round(pass_count / total * 100) if total else 0
-
-    # ── 自动分类：根据检查项名称归入功能/健康/安全 ─────────────────────
-    FEATURE_PREFIXES = (
-        "APP_", "ADMIN_", "HEARTBEAT_", "DEVICE_SAFE_", "DNS_DETECT_",
-        "DNAT_", "HEARTBEAT_", "STATIC_IP_", "CLUSTER_", "DNS_PROXY_",
-        "VIRTUAL_MAC_", "DUAL_STATE_", "POOL_", "STATIC_ROUTE_",
-        "RS_LEVEL_", "APP_GROUP_", "DNS_SERVER_STATE_", "LINK_HEALTH_",
-        "STATIC_PROXIMITY_", "DNS64_", "POLICY_ROUTE_", "MANAGE_IP_",
-        "SNMP_TRAPS_", "DNS_REFLECT_", "DNS_SERVER_", "SESSION_SYNC_",
-        "MAIL_WARN_", "VIP_POOL_", "PROXY_POLICY_", "DNS_MAP_",
-        "WAN_BANDWIDTH_", "FAULT_SWITCH_", "SYSLOG_",
-    )
-    HEALTH_PREFIXES = (
-        "AUTO_UPDATE_", "CPU_", "LOG_", "DEVICE_RUN_", "DEVICE_FILE_",
-        "NIC_STATE_", "CORE_PROCESS_", "KERNEL_LOG_", "REMOTE_MAINTAIN_",
-        "BLACK_BOX_", "DMESG_", "DISK_", "CRASH_LOG_", "MEMORY_",
-        "SPEED_CARD_", "FAN_", "POWER_", "BIOS_", "WARN_LOG_",
-        "DEVICE_CONNECTION_", "COREDUMP_", "CONFIG_ID_", "NIC_HEALTH_",
-        "SNAT_SPORT_",
-    )
-    SECURE_PREFIXES = (
-        "SSH_", "PATCH_", "REPORT_", "WEAK_PASSWORD_", "SSL_",
-        "IP_LIMIT_", "OPEN_PORT_",
-    )
-
-    feature_keys = [k for k in check_results if any(k.startswith(p) for p in FEATURE_PREFIXES)]
-    health_keys = [k for k in check_results if any(k.startswith(p) for p in HEALTH_PREFIXES)]
-    secure_keys = [k for k in check_results if any(k.startswith(p) for p in SECURE_PREFIXES)]
-    # 未匹配的归入功能巡检
-    categorized = set(feature_keys + health_keys + secure_keys)
-    uncategorized = [k for k in check_results if k not in categorized]
-    if uncategorized:
-        feature_keys.extend(uncategorized)
-
-    # ── 计算各维度健康评分 ─────────────────────────────────────────────
-    def _dimension_scores(keys):
-        p = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "pass")
-        t = len(keys)
-        s = round(p / max(t, 1) * 100)
-        return {"pass": p, "total": t, "score": s}
-
-    f_score = _dimension_scores(feature_keys)
-    h_score = _dimension_scores(health_keys)
-    s_score = _dimension_scores(secure_keys)
-    overall = round((f_score["score"] + h_score["score"] + s_score["score"]) / 3)
-
-    # ── 生成优化建议 ───────────────────────────────────────────────────
-    suggestions = []
-    for key, result in check_results.items():
-        if result["status"] == "fail":
-            entry = {
-                "check": key,
-                "priority": "高" if result["status"] == "fail" else "中",
-                "suggestion": _SUGGESTION_MAP.get(key, f"检查项 {key} 状态为 {result['status']}，建议进一步排查"),
-            }
-            suggestions.append(entry)
-
-    return {
-        "device_info": {
-            "version": data.get("version", ""),
-            "app_version": data.get("ad_appversion", "").strip(),
-            "gateway_id": data.get("gateway_id", ""),
-            "runtime": data.get("base_running_time", ""),
-            "ip": data.get("dst_ip", ""),
-        },
-        "check_results": check_results,
-        "categories": {
-            "feature": feature_keys,
-            "health": health_keys,
-            "secure": secure_keys,
-        },
-        "summary": {
-            "total": total,
-            "pass": pass_count,
-            "fail": fail_count,
-            "score": score,
-        },
-        "health_scores": {
-            "feature": f_score,
-            "health": h_score,
-            "secure": s_score,
-            "overall": overall,
-        },
-        "suggestions": suggestions,
-    }
-
-
-# ---------------------------------------------------------------------------
-# v2 规则驱动分析引擎
-# ---------------------------------------------------------------------------
-
-def _check_field_rule(value, rule):
+def _evaluate_field(value, rule):
     """Type-based field rule evaluation. Returns (is_abnormal: bool, severity: str, issue: str)."""
     if value is None:
         return False, "fail", "数据不可用"
@@ -1295,7 +676,7 @@ def _check_field_rule(value, rule):
     return is_ab, severity if is_ab else "pass", issue
 
 
-def _check_vip_pool(data):
+def _evaluate_vip_pool(data):
     """Special handler for VIP Pool check — nested dict traversal."""
     vip = data.get("virtual_ip_pool_check", {})
     failures = []
@@ -1308,53 +689,14 @@ def _check_vip_pool(data):
     return "fail", f"{len(failures)} 个异常", f"VIP Pool 存在 {len(failures)} 个异常"
 
 
-def _print_compare_diff(v1_result: dict, v2_result: dict):
-    """Print v1 vs v2 difference summary to stderr.
+def analyze(data: Dict[str, Any], check_info: dict | None = None) -> Dict[str, Any]:
+    """Data-driven analysis engine: evaluates ad.json fields against FIELD_RULES,
+    groups by check_key, and produces structured results for render_markdown().
 
-    Note: v1 and v2 use different key systems (v1: old names like CPU_CHECK,
-    v2: rule_ids like base_cpu_info), so direct key comparison is not possible.
-    This compares aggregate counts instead.
+    Args:
+        data: ad.json content
+        check_info: acheck_offline_check_info.json content (preserved for future use)
     """
-    v1_s = v1_result.get("summary", {})
-    v2_s = v2_result.get("summary", {})
-    print(f"[AD_CHECK_ENGINE=compare] v1: total={v1_s.get('total','?')} pass={v1_s.get('pass','?')} fail={v1_s.get('fail','?')} warn={v1_s.get('warn','?')} score={v1_s.get('score','?')}", file=sys.stderr)
-    print(f"[AD_CHECK_ENGINE=compare] v2: total={v2_s.get('total','?')} pass={v2_s.get('pass','?')} fail={v2_s.get('fail','?')} warn={v2_s.get('warn','?')} score={v2_s.get('score','?')}", file=sys.stderr)
-    # Compare per-category scores
-    v1_hs = v1_result.get("health_scores", {})
-    v2_hs = v2_result.get("health_scores", {})
-    for cat in ("feature", "health", "secure"):
-        s1 = v1_hs.get(cat, {}).get("score", "?")
-        s2 = v2_hs.get(cat, {}).get("score", "?")
-        if s1 != s2:
-            print(f"[AD_CHECK_ENGINE=compare] {cat}: v1={s1} v2={s2}", file=sys.stderr)
-    # Also compare v1 and v2 check_result keys where they intersect
-    v1_results = v1_result.get("check_results", {})
-    v2_results = v2_result.get("check_results", {})
-    v1_only = set(v1_results.keys()) - set(v2_results.keys())
-    v2_only = set(v2_results.keys()) - set(v1_results.keys())
-    common = set(v1_results.keys()) & set(v2_results.keys())
-    if v1_only:
-        print(f"[AD_CHECK_ENGINE=compare] v1-only keys ({len(v1_only)}): {sorted(v1_only)[:10]}...", file=sys.stderr)
-    if v2_only:
-        print(f"[AD_CHECK_ENGINE=compare] v2-only keys ({len(v2_only)}): {sorted(v2_only)[:10]}...", file=sys.stderr)
-    diffs = []
-    for k in sorted(common):
-        s1 = v1_results.get(k, {}).get("status", "?")
-        s2 = v2_results.get(k, {}).get("status", "?")
-        if s1 != s2:
-            diffs.append(f"  {k}: v1={s1} v2={s2}")
-    if diffs:
-        print(f"[AD_CHECK_ENGINE=compare] Common key diffs ({len(diffs)}):", file=sys.stderr)
-        for d in diffs[:20]:
-            print(d, file=sys.stderr)
-    elif v1_only or v2_only:
-        print("[AD_CHECK_ENGINE=compare] Key systems differ (v1 old names vs v2 rule_ids) — compare summary scores above.", file=sys.stderr)
-
-
-def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
-    """Core v2 analysis: rules-driven with check_info defining scope."""
-
-    # Empty result template
     _empty = {
         "device_info": {},
         "check_results": {},
@@ -1367,162 +709,96 @@ def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
     if not isinstance(data, dict):
         return _empty
 
-    # ── Entry guard: extract rules from check_info ─────────────────────
-    rules = None
-    if check_info and isinstance(check_info, dict):
-        rules = check_info.get("rules")
-        if not rules:  # None or empty list
-            rules = None
+    # ── Phase 1: Evaluate each ad.json field against FIELD_RULES ────────
+    # grouped: {check_key: [(is_abnormal, severity, issue, value, field_name), ...]}
+    grouped: dict = {}
 
-    check_results = {}
+    for field_name, value in data.items():
+        # ── Special handler: virtual_ip_pool_check (nested dict traversal) ──
+        if field_name == 'virtual_ip_pool_check':
+            status, val_str, detail = _evaluate_vip_pool(data)
+            grouped.setdefault('VIP_POOL_CHECK', []).append(
+                (status == "fail", status, detail, val_str, field_name))
+            continue
 
-    if rules:
-        # ── Main path: rules-driven ───────────────────────────────────
-        covered_rule_ids = set()
+        field_rule = FIELD_RULES.get(field_name)
+        if not field_rule:
+            continue  # Skip fields without evaluation rules (e.g., version, gateway_id, etc.)
 
-        for rule_entry in rules:
-            rule_id = rule_entry.get("id") or rule_entry.get("rule_id") or rule_entry.get("name", "")
-            if not rule_id:
-                continue
-            covered_rule_ids.add(rule_id)
+        check_key = field_rule.get('check_key', field_name)
 
-            # Special handler: VIP_POOL_CHECK
-            if rule_id == "virtual_ip_pool_check":
-                status, value, detail = _check_vip_pool(data)
-                name = CHECK_NAMES.get(rule_id, rule_id)
-                check_results[rule_id] = {"status": status, "name": name, "value": value, "detail": detail}
-                continue
+        is_ab, severity, issue = _evaluate_field(value, field_rule)
+        grouped.setdefault(check_key, []).append(
+            (is_ab, severity, issue, value, field_name))
 
-            # Get ad.json fields for this rule_id
-            fields = RULE_FIELD_MAP.get(rule_id, [])
-            if not fields:
-                # rule_id not in RULE_FIELD_MAP → skip with diagnostic
-                print(f"[analyze] 未映射的 rule_id: {rule_id}", file=sys.stderr)
-                continue
+    # ── Phase 2: Aggregate field results into check_results ──────────────
+    check_results: dict = {}
 
-            # Evaluate each field against CORRECTED_FIELD_RULES
-            field_statuses = []
-            for field_name in fields:
-                if field_name not in data:
-                    continue
-                value = data[field_name]
-                field_rule = CORRECTED_FIELD_RULES.get(field_name)
-                if not field_rule:
-                    print(f"[analyze] 字段 {field_name} 无对应规则", file=sys.stderr)
-                    continue
-                is_ab, severity, issue = _check_field_rule(value, field_rule)
-                field_statuses.append((is_ab, severity, issue, value))
+    for check_key, field_statuses in grouped.items():
+        # Resolve display name from CHECK_RULES (preferred) or first field rule
+        rule_entry = CHECK_RULES.get(check_key, {})
+        name = rule_entry.get('name', check_key)
+        desc = rule_entry.get('desc', '')
 
-            if not field_statuses:
-                # No fields found in ad.json — rule executed but no data
-                name = CHECK_NAMES.get(rule_id, rule_id)
-                check_results[rule_id] = {"status": "pass", "name": name, "value": "（无可读取字段）", "detail": ""}
-                print(f"[analyze] rule_id={rule_id} 在 ad.json 中无对应字段", file=sys.stderr)
-                continue
+        # Fallback description from first field rule
+        if not desc:
+            for _, _, _, _, fn in field_statuses:
+                fr = FIELD_RULES.get(fn, {})
+                if fr.get('description'):
+                    desc = fr['description']
+                    break
 
-            # Aggregate: worst status wins (fail > warn > pass)
-            worst = "pass"
-            worst_value = ""
-            worst_detail = ""
-            for is_ab, sev, issue, val in field_statuses:
-                if is_ab and sev == "fail":
-                    worst = "fail"
-                    worst_value = str(val)[:100]
+        # Aggregate: worst status wins (fail > pass)
+        worst = "pass"
+        worst_value = ""
+        worst_detail = ""
+        for is_ab, sev, issue, val, _ in field_statuses:
+            if is_ab:
+                worst = "fail"
+                if not worst_detail:
                     worst_detail = issue
-                    break
-                elif is_ab and sev == "fail" and worst != "fail":
-                    worst = "fail"
+                if not worst_value:
                     worst_value = str(val)[:100]
-                    worst_detail = issue
 
-            if worst == "pass":
-                worst_value = str(field_statuses[0][3])[:100] if field_statuses else ""
+        if worst == "pass" and field_statuses:
+            worst_value = str(field_statuses[0][3])[:100]
 
-            name = CHECK_NAMES.get(rule_id, rule_id)
-            _desc = ""
-            for _fn in RULE_FIELD_MAP.get(rule_id, []):
-                _rule = CORRECTED_FIELD_RULES.get(_fn, {})
-                if _rule.get("description"):
-                    _desc = _rule["description"]
-                    break
-            check_results[rule_id] = {"status": worst, "name": name, "value": worst_value, "detail": worst_detail, "description": _desc}
+        check_results[check_key] = {
+            "status": worst,
+            "name": name,
+            "value": worst_value,
+            "detail": worst_detail,
+            "description": desc,
+        }
 
-        # Print uncovered rule_ids diagnostic
-        all_known = set(RULE_FIELD_MAP.keys())
-        uncovered = all_known - covered_rule_ids
-        if uncovered:
-            print(f"[analyze] 未覆盖的 rule_id ({len(uncovered)}): {sorted(uncovered)}", file=sys.stderr)
-    else:
-        # ── Fallback path: iterate by rule_id for correct categorization ──
-        # Build reverse mapping: field_name → rule_id
-        _field_to_rule = {}
-        for _rid, _fields in RULE_FIELD_MAP.items():
-            for _f in _fields:
-                _field_to_rule[_f] = _rid
+    # ── Phase 2b: Propagate results to sibling check_keys ────────────────
+    # Some CHECK_RULES entries share the same ad.json field but have different
+    # check_keys (e.g., dns_proxy_enabled → DNS_DETECT_CHECK + DNS_PROXY_CHECK).
+    # Clone the result from the primary mapping.
+    for ck_entry, ck_info in CHECK_RULES.items():
+        if ck_entry in check_results:
+            continue
+        ck_fields = ck_info.get('fields', [])
+        for fname in ck_fields:
+            fr = FIELD_RULES.get(fname)
+            if fr and fr.get('check_key', '') in check_results:
+                check_results[ck_entry] = dict(check_results[fr['check_key']])
+                check_results[ck_entry]['name'] = ck_info.get('name', ck_entry)
+                check_results[ck_entry]['description'] = ck_info.get('desc', '')
+                break
 
-        for rule_id, fields in RULE_FIELD_MAP.items():
-            # Check if any mapped field exists in ad.json
-            field_statuses = []
-            for field_name in fields:
-                if field_name not in data:
-                    continue
-                value = data[field_name]
-                field_rule = CORRECTED_FIELD_RULES.get(field_name)
-                if not field_rule:
-                    continue
-                is_ab, severity, issue = _check_field_rule(value, field_rule)
-                field_statuses.append((is_ab, severity, issue, value))
-
-            if not field_statuses:
-                continue
-
-            # Aggregate: worst status wins
-            worst = "pass"
-            worst_value = ""
-            worst_detail = ""
-            for is_ab, sev, issue, val in field_statuses:
-                if is_ab and sev == "fail":
-                    worst = "fail"; worst_value = str(val)[:100]; worst_detail = issue
-                    break
-                elif is_ab and sev == "fail" and worst != "fail":
-                    worst = "fail"; worst_value = str(val)[:100]; worst_detail = issue
-
-            if worst == "pass":
-                worst_value = str(field_statuses[0][3])[:100]
-
-            name = CHECK_NAMES.get(rule_id, rule_id)
-            _desc = ""
-            for _fn in RULE_FIELD_MAP.get(rule_id, []):
-                _rule = CORRECTED_FIELD_RULES.get(_fn, {})
-                if _rule.get("description"):
-                    _desc = _rule["description"]
-                    break
-            check_results[rule_id] = {"status": worst, "name": name, "value": worst_value, "detail": worst_detail, "description": _desc}
-
-        # Also check orphan fields (in CORRECTED_FIELD_RULES but not in RULE_FIELD_MAP)
-        for field_name, field_rule in CORRECTED_FIELD_RULES.items():
-            if field_name in _field_to_rule:
-                continue  # already handled above
-            if field_name not in data:
-                continue
-            value = data[field_name]
-            is_ab, severity, issue = _check_field_rule(value, field_rule)
-            status = severity if is_ab else "pass"
-            name = field_rule.get('name', field_name)
-            check_results[field_name] = {"status": status, "name": name, "value": str(value)[:100], "detail": issue, "description": field_rule.get("description", "")}
-
-    # ── Categorize ────────────────────────────────────────────────────
+    # ── Phase 3: Categorize via CHECK_RULES ──────────────────────────────
     feature_keys, health_keys, secure_keys = [], [], []
-    for rule_id in check_results:
-        cat = CHECK_CATEGORY_MAP.get(rule_id, "feature")
-        if cat == "feature":
-            feature_keys.append(rule_id)
-        elif cat == "health":
-            health_keys.append(rule_id)
+    for ck in check_results:
+        cat = CHECK_RULES.get(ck, {}).get('category', 'feature')
+        if cat == 'health':
+            health_keys.append(ck)
+        elif cat == 'secure':
+            secure_keys.append(ck)
         else:
-            secure_keys.append(rule_id)
+            feature_keys.append(ck)
 
-    # ── Summary ───────────────────────────────────────────────────────
+    # ── Phase 4: Summary & health scores ─────────────────────────────────
     pass_count = sum(1 for v in check_results.values() if v["status"] == "pass")
     fail_count = sum(1 for v in check_results.values() if v["status"] == "fail")
     total = len(check_results)
@@ -1539,18 +815,21 @@ def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
     s_score = _dimension_scores(secure_keys)
     overall = round((f_score["score"] + h_score["score"] + s_score["score"]) / 3)
 
-    # ── Suggestions ───────────────────────────────────────────────────
+    # ── Phase 5: Suggestions ────────────────────────────────────────────
     suggestions = []
     for key, result in check_results.items():
         if result["status"] == "fail":
             entry = {
                 "check": key,
-                "priority": "高" if result["status"] == "fail" else "中",
-                "suggestion": _SUGGESTION_MAP.get(key, f"检查项 {result.get('name', key)} 状态为 {result['status']}，建议进一步排查"),
+                "priority": "高",
+                "suggestion": _SUGGESTION_MAP.get(
+                    key,
+                    f"检查项 {result.get('name', key)} 状态为 fail，建议进一步排查",
+                ),
             }
             suggestions.append(entry)
 
-    # ── Device info ───────────────────────────────────────────────────
+    # ── Phase 6: Device info ────────────────────────────────────────────
     device_info = {
         "version": data.get("version", ""),
         "app_version": str(data.get("ad_appversion", "")).strip(),
@@ -1567,27 +846,6 @@ def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
         "health_scores": {"feature": f_score, "health": h_score, "secure": s_score, "overall": overall},
         "suggestions": suggestions,
     }
-
-
-def analyze(data: Dict[str, Any], check_info: dict | None = None) -> Dict[str, Any]:
-    """New v2 rule-driven analysis engine.
-
-    Args:
-        data: ad.json content
-        check_info: acheck_offline_check_info.json content (None → fallback mode)
-
-    Engine selection via AD_CHECK_ENGINE env var:
-        v1 → use analyze_v1(), v2 or unset → use this, compare → run both + diff
-    """
-    engine = os.environ.get("AD_CHECK_ENGINE", "v2")
-    if engine == "v1":
-        return analyze_v1(data)
-    if engine == "compare":
-        v1_result = analyze_v1(data)
-        v2_result = _analyze_v2(data, check_info)
-        _print_compare_diff(v1_result, v2_result)
-        return v2_result
-    return _analyze_v2(data, check_info)
 
 
 # ---------------------------------------------------------------------------
@@ -1733,9 +991,9 @@ def render_markdown(
 
 | 类别 | 检查项数 | 通过 | 异常 | 通过率 |
 |------|----------|------|------|--------|
-| 功能巡检 | {f["total"]} | {f["pass"]} | {f["fail"] + f["fail"]} | {f["rate"]}% |
-| 健康巡检 | {h["total"]} | {h["pass"]} | {h["fail"] + h["fail"]} | {h["rate"]}% |
-| 安全巡检 | {s["total"]} | {s["pass"]} | {s["fail"] + s["fail"]} | {s["rate"]}% |
+| 功能巡检 | {f["total"]} | {f["pass"]} | {f["fail"]} | {f["rate"]}% |
+| 健康巡检 | {h["total"]} | {h["pass"]} | {h["fail"]} | {h["rate"]}% |
+| 安全巡检 | {s["total"]} | {s["pass"]} | {s["fail"]} | {s["rate"]}% |
 
 ---
 
