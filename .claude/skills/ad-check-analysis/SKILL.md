@@ -263,6 +263,7 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 - ✅ 报告内容直接展示在对话消息正文中
 
 ### 禁止行为
+- ❌ 绝对不允许在多设备巡检的时候手动拼了一个伪多设备汇总，必须使用merge合并命令
 - ❌ 绝对不允许直接使用工具调用的结果作为对话输出，必须在对话框把工具调用的结果进行展示出来
 - ❌ LLM 直调 AD API（包括 http_request、curl 等）
 - ❌ 混合其他 API 调用结果（用户列表、虚拟服务等）
