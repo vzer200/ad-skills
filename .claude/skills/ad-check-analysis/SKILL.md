@@ -218,8 +218,8 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 
 | 设备名 | IP 地址 | 用户名 |
 |--------|---------|--------|
-| AD1 | 192.168.8.30 | admin |
-| AD2 | 192.168.8.31 | admin |
+| AD1 | https://192.168.8.30 | admin |
+| AD2 | https://192.168.8.31 | admin |
 
 ### 多设备子命令支持
 
