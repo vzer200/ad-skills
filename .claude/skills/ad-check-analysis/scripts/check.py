@@ -378,6 +378,109 @@ CHECK_NAMES = {
     "snat_sport_exhaustion_check": "SNAT端口耗尽",
 }
 
+# v1 check_key → user-friendly description (same semantics as v2 descriptions)
+CHECK_DESCRIPTIONS = {
+    "APP_VERSION_CHECK": "应能正常获取 AD 软件版本号",
+    "ADMIN_ROLE_CHECK": "管理员账户应处于正常配置状态",
+    "DEVICE_SAFE_CHECK": "设备安全检查功能应处于开启状态",
+    "DNS_DETECT_CHECK": "DNS 代理检测功能应正常",
+    "DNAT_CHECK": "不应存在不必要的 DNAT 规则",
+    "HEARTBEAT_CHECK": "主备心跳通信应正常",
+    "STATIC_IP_CHECK": "不应存在静态 IP 配置冲突",
+    "CLUSTER_CHECK": "集群状态应正常",
+    "DNS_PROXY_CHECK": "DNS 代理功能应正常",
+    "VIRTUAL_MAC_CHECK": "虚拟 MAC 地址应正常",
+    "DUAL_STATE_CHECK": "主备状态应正常",
+    "POOL_PERSIST_CHECK": "会话保持功能应正常配置",
+    "STATIC_ROUTE_CHECK": "静态路由应正常配置",
+    "RS_LEVEL_CHECK": "服务器负载均衡层级应正常",
+    "APP_GROUP_CHECK": "应用分组应正常配置",
+    "DNS_SERVER_STATE_CHECK": "DNS 服务器状态应正常",
+    "LINK_HEALTH_CHECK": "链路健康检查应正常",
+    "STATIC_PROXIMITY_CHECK": "静态就近性应正常配置",
+    "DNS64_CHECK": "DNS64 功能应正常",
+    "POLICY_ROUTE_CHECK": "策略路由应正常配置",
+    "MANAGE_IP_CHECK": "管理 IP 应正常配置",
+    "SNMP_TRAPS_CHECK": "SNMP Traps 应正常配置",
+    "DNS_REFLECT_CHECK": "DNS 反射防护应正常",
+    "DNS_SERVER_CHECK": "DNS 服务器应正常配置",
+    "SESSION_SYNC_CHECK": "会话同步应正常",
+    "MAIL_WARN_CHECK": "邮件告警应正常配置",
+    "VIP_POOL_CHECK": "VIP Pool 应正常配置",
+    "PROXY_POLICY_CHECK": "代理策略应正常配置",
+    "DNS_MAP_CHECK": "DNS 映射应正常配置",
+    "WAN_BANDWIDTH_CHECK": "WAN 带宽应正常配置",
+    "FAULT_SWITCH_CHECK": "故障切换应正常配置",
+    "SYSLOG_CHECK": "系统日志应正常配置",
+    "AUTO_UPDATE_CHECK": "自动更新功能应处于开启状态",
+    "CPU_CHECK": "使用率应保持在 80% 以内，过高说明负载偏大",
+    "LOG_CHECK": "日志功能应正常",
+    "DEVICE_RUN_TIME": "应能正常记录设备运行时长",
+    "DEVICE_FILE_LEAK_CHECK": "不应存在文件描述符泄漏",
+    "NIC_STATE_CHECK": "网卡不应存在异常状态",
+    "CORE_PROCESS_CHECK": "所有核心进程应正常运行，不应有缺失",
+    "KERNEL_LOG_CHECK": "不应有内核级别的异常日志",
+    "REMOTE_MAINTAIN_CHECK": "远程维护功能应处于关闭状态，降低安全风险",
+    "BLACK_BOX_CHECK": "黑盒诊断功能应处于正常状态",
+    "DMESG_DATA_CHECK": "不应有黑盒 dmesg 异常数据",
+    "DISK_CHECK": "各磁盘分区使用率应保持在安全范围内",
+    "CRASH_LOG_CHECK": "不应存在系统崩溃记录",
+    "MEMORY_CHECK": "使用率应保持在 80% 以内，过高可能影响性能",
+    "SPEED_CARD_CHECK": "加速引擎应正常启用，保证转发性能",
+    "FAN_CHECK": "风扇模块应正常运转，确保设备散热",
+    "POWER_CHECK": "电源模块应正常工作，供电稳定",
+    "BIOS_CHECK": "BIOS 应处于正常版本，不应有待更新提示",
+    "WARN_LOG_CHECK": "不应存在大量错误日志",
+    "DEVICE_CONNECTION_CHECK": "连接跟踪数应保持在合理范围内",
+    "COREDUMP_CHECK": "不应存在系统崩溃记录",
+    "CONFIG_ID_CHECK": "不应存在配置 ID 冲突",
+    "NIC_HEALTH_CHECK": "网卡应处于健康状态",
+    "SNAT_SPORT_EXHAUSTION_CHECK": "不应出现 SNAT 端口耗尽的情况",
+    "DNAT_PORT_CHECK": "DNAT 端口应正常配置",
+    "MAIL_WARN_RECIPIENT_CHECK": "邮件告警接收人应正常配置",
+    "WEAK_PASSWORD_CHECK": "不应存在使用弱密码的账户",
+    "SSH_CHECK": "SSH 远程管理权限应正常开启",
+    "SSL_POLICY_CHECK": "应使用安全的 SSL 加密算法，不应存在不安全的加密方式",
+    "IP_LIMIT_CHECK": "IP 访问限制应已启用，防止未授权访问",
+    "OPEN_PORT_CHECK": "不应开放不必要的风险端口（如报表、智能DNS等非管理端口）",
+    "DEVICE_SAFE_STATE_CHECK": "设备安全检查功能应处于开启状态",
+    "CLUSTER_BRAIN_SPLIT_CHECK": "不应出现集群脑裂（主备设备通信分裂）",
+    "base_cpu_info": "使用率应保持在 80% 以内，过高说明负载偏大",
+    "base_memory": "使用率应保持在 80% 以内，过高可能影响性能",
+    "base_disk": "应能正常采集到磁盘使用情况",
+    "fan_state": "风扇模块应正常运转，确保设备散热",
+    "power_state": "电源模块应正常工作，供电稳定",
+    "nic_health_check": "网卡应处于健康状态",
+    "base_core_process": "所有核心进程应正常运行，不应有缺失",
+    "base_kernel_log": "不应有内核级别的异常日志",
+    "weak_password": "不应存在使用弱密码的账户",
+    "ssh_or_adapi_authority": "SSH 和 ADAPI 远程管理权限应正常开启",
+    "ssl_strategy_check": "应使用安全的 SSL 加密算法，不应存在不安全的加密方式",
+    "dangerous_port": "不应开放不必要的风险端口（如报表、智能DNS等非管理端口）",
+    "base_net_state": "网口链路应全部连通，不应有断开或降速",
+    "config_id_conflict_check": "不应存在配置 ID 冲突",
+    "base_crash_time": "不应存在系统崩溃记录",
+    "shm_sem_check": "共享内存和信号量应处于正常可用状态",
+    "base_file_leak": "不应存在文件描述符泄漏",
+    "base_err_log": "不应存在大量错误日志",
+    "base_report_stability": "报表生成功能应稳定运行",
+    "base_conntrack": "连接跟踪数应保持在合理范围内",
+    "security_check": "设备安全检查功能应处于开启状态",
+    "cluster_brain_split_check": "不应出现集群脑裂（主备设备通信分裂）",
+    "check_admin_account": "管理员账户应处于正常配置状态",
+    "base_app_version": "应能正常获取 AD 软件版本号",
+    "bios_version_check": "BIOS 应处于正常版本，不应有待更新提示",
+    "remote_maintenance": "远程维护功能应处于关闭状态，降低安全风险",
+    "enable_iplimit": "IP 访问限制应已启用，防止未授权访问",
+    "check_dev_online": "设备应正常注册到云平台",
+    "patch_info": "应已安装系统补丁",
+    "base_blackbox_data": "不应有黑盒 dmesg 异常数据",
+    "base_blackbox_state": "黑盒诊断功能应处于正常状态",
+    "alarms_enabled": "告警功能应处于开启状态，以便及时发现异常",
+    "base_running_time": "应能正常记录设备运行时长",
+    "snat_sport_exhaustion_check": "不应出现 SNAT 端口耗尽的情况",
+}
+
 # ---------------------------------------------------------------------------
 # rule_id → category 映射
 # ---------------------------------------------------------------------------
@@ -467,58 +570,58 @@ RULE_FIELD_MAP = {
 # ---------------------------------------------------------------------------
 
 CORRECTED_FIELD_RULES = {
-    # === threshold (支持 warn_at 两级阈值：先检查 abnormal→fail，再检查 warn_at→warn) ===
-    'power_state':       {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'warn_at': -1, 'warn_compare': '==', 'name': '电源状态'},  # 0=故障(fail), -1=无传感器VM(warn), 1=正常
-    'fan_state':         {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'warn_at': -1, 'warn_compare': '==', 'name': '风扇状态'},  # 0=故障(fail), -1=无传感器VM(warn), 1=正常
-    'acceleration':      {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'name': '加速引擎'},
-    'base_file_ds':      {'type': 'threshold', 'abnormal': 0,  'compare': '>',  'severity': 'fail',  'name': '文件描述符泄漏'},
-    'base_log_error_exist':{'type': 'threshold','abnormal': 100,'compare': '>', 'severity': 'fail',  'warn_at': 0, 'warn_compare': '>', 'name': '错误日志数量'},  # >100=fail, >0=warn
-    'conntrack_count':   {'type': 'threshold', 'abnormal': 100000, 'compare': '>', 'severity': 'fail', 'name': '连接跟踪数'},
-    'conntrack_new_count':{'type':'threshold', 'abnormal': 10000,  'compare': '>', 'severity': 'fail', 'name': '新建连接数'},
-    'snmp_mem_rate':     {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'warn_at': 80, 'warn_compare': '>', 'name': '内存使用率'},  # >90=fail, >80=warn
-    'base_cpu_usage':    {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'warn_at': 80, 'warn_compare': '>', 'name': 'CPU使用率'},  # >90=fail, >80=warn
+    # === threshold ===
+    'power_state':       {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'warn_at': -1, 'warn_compare': '==', 'name': '电源状态',       'description': '电源模块应正常工作，供电稳定'},
+    'fan_state':         {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'warn_at': -1, 'warn_compare': '==', 'name': '风扇状态',       'description': '风扇模块应正常运转，确保设备散热'},
+    'acceleration':      {'type': 'threshold', 'abnormal': 0,  'compare': '==', 'severity': 'fail',  'name': '加速引擎',       'description': '加速引擎应正常启用，保证转发性能'},
+    'base_file_ds':      {'type': 'threshold', 'abnormal': 0,  'compare': '>',  'severity': 'fail',  'name': '文件描述符泄漏',  'description': '不应存在文件描述符泄漏'},
+    'base_log_error_exist':{'type': 'threshold','abnormal': 100,'compare': '>', 'severity': 'fail',  'warn_at': 0, 'warn_compare': '>', 'name': '错误日志数量',    'description': '不应存在大量错误日志'},
+    'conntrack_count':   {'type': 'threshold', 'abnormal': 100000, 'compare': '>', 'severity': 'fail', 'name': '连接跟踪数',     'description': '连接跟踪数应保持在合理范围内'},
+    'conntrack_new_count':{'type':'threshold', 'abnormal': 10000,  'compare': '>', 'severity': 'fail', 'name': '新建连接数',     'description': '新建连接数应保持在合理范围内'},
+    'snmp_mem_rate':     {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'warn_at': 80, 'warn_compare': '>', 'name': '内存使用率',      'description': '使用率应保持在 80% 以内，过高可能影响性能'},
+    'base_cpu_usage':    {'type': 'threshold', 'abnormal': 90,  'compare': '>', 'severity': 'fail',  'warn_at': 80, 'warn_compare': '>', 'name': 'CPU使用率',      'description': '使用率应保持在 80% 以内，过高说明负载偏大'},
     # === bool_false ===
-    'ADAPI_authority':   {'type': 'bool_false', 'severity': 'fail',  'name': 'ADAPI授权'},
-    'ssh_authority':     {'type': 'bool_false', 'severity': 'fail',  'name': 'SSH授权'},
-    'security_check_state':{'type':'bool_false', 'severity': 'fail',  'name': '安全检查状态'},
-    'shm_sem_state':     {'type': 'bool_false', 'severity': 'fail',  'name': '共享内存状态'},
-    'base_report_stab':  {'type': 'bool_false', 'severity': 'fail',  'name': '报表稳定性'},
+    'ADAPI_authority':   {'type': 'bool_false', 'severity': 'fail',  'name': 'ADAPI授权',      'description': 'ADAPI 远程管理权限应正常开启'},
+    'ssh_authority':     {'type': 'bool_false', 'severity': 'fail',  'name': 'SSH授权',        'description': 'SSH 远程管理权限应正常开启'},
+    'security_check_state':{'type':'bool_false', 'severity': 'fail',  'name': '安全检查状态',    'description': '设备安全检查功能应处于开启状态'},
+    'shm_sem_state':     {'type': 'bool_false', 'severity': 'fail',  'name': '共享内存状态',    'description': '共享内存和信号量应处于正常可用状态'},
+    'base_report_stab':  {'type': 'bool_false', 'severity': 'fail',  'name': '报表稳定性',      'description': '报表生成功能应稳定运行'},
     # === str_equal ===
-    'enable_iplimit':    {'type': 'str_equal', 'abnormal': 'false', 'severity': 'fail',  'name': 'IP限制'},
-    'remote_mt':         {'type': 'str_equal', 'abnormal': 'true',  'severity': 'fail',  'name': '远程维护'},
-    'online':            {'type': 'str_equal', 'abnormal': 'false', 'severity': 'fail',  'name': '设备在线状态'},
+    'enable_iplimit':    {'type': 'str_equal', 'abnormal': 'false', 'severity': 'fail',  'name': 'IP限制',         'description': 'IP 访问限制应已启用，防止未授权访问'},
+    'remote_mt':         {'type': 'str_equal', 'abnormal': 'true',  'severity': 'fail',  'name': '远程维护',       'description': '远程维护功能应处于关闭状态，降低安全风险'},
+    'online':            {'type': 'str_equal', 'abnormal': 'false', 'severity': 'fail',  'name': '设备在线状态',    'description': '设备应正常注册到云平台'},
     # === str_not_equal ===
-    'auto_update':       {'type': 'str_not_equal', 'normal': 'true','severity':'fail',  'name': '自动更新'},
+    'auto_update':       {'type': 'str_not_equal', 'normal': 'true','severity':'fail',  'name': '自动更新',       'description': '自动更新功能应处于开启状态'},
     # === non_empty ===
-    'weak_pwd':          {'type': 'non_empty', 'severity': 'fail',  'name': '弱密码'},
-    'dangerous_port':    {'type': 'non_empty', 'severity': 'fail',  'name': '危险端口'},
-    'base_core_process_lack':{'type':'non_empty','severity':'fail', 'name': '缺失核心进程'},
-    'base_eth_abnormal': {'type': 'non_empty', 'severity': 'fail',  'name': '网卡异常'},
-    'base_eth_mtu':      {'type': 'non_empty', 'severity': 'fail',  'name': '网卡MTU'},
-    'base_drop_err_packet_rate':{'type':'non_empty','severity':'fail','name': '丢包率'},
-    'id_conflict_list':  {'type': 'non_empty', 'severity': 'fail',  'name': '配置ID冲突'},
-    'cluster_brain_split_check':{'type':'non_empty','severity':'fail','name': '集群脑裂检查'},
-    'base_disk_high_usage':{'type':'non_empty', 'severity':'fail',  'name': '磁盘高使用率'},
-    'base_crash_time':   {'type': 'non_empty', 'severity': 'fail',  'name': '崩溃时间'},
-    'base_blackbox_dmesg':{'type':'non_empty', 'severity':'fail',   'name': '黑盒dmesg数据'},
+    'weak_pwd':          {'type': 'non_empty', 'severity': 'fail',  'name': '弱密码',         'description': '不应存在使用弱密码的账户'},
+    'dangerous_port':    {'type': 'non_empty', 'severity': 'fail',  'name': '危险端口',       'description': '不应开放不必要的风险端口（如报表、智能DNS等非管理端口）'},
+    'base_core_process_lack':{'type':'non_empty','severity':'fail', 'name': '缺失核心进程',    'description': '所有核心进程应正常运行，不应有缺失'},
+    'base_eth_abnormal': {'type': 'non_empty', 'severity': 'fail',  'name': '网卡异常',       'description': '网卡不应存在异常状态'},
+    'base_eth_mtu':      {'type': 'non_empty', 'severity': 'fail',  'name': '网卡MTU',       'description': '网卡 MTU 应配置正常'},
+    'base_drop_err_packet_rate':{'type':'non_empty','severity':'fail','name': '丢包率',        'description': '网卡丢包率应保持在正常范围'},
+    'id_conflict_list':  {'type': 'non_empty', 'severity': 'fail',  'name': '配置ID冲突',      'description': '不应存在配置 ID 冲突'},
+    'cluster_brain_split_check':{'type':'non_empty','severity':'fail','name': '集群脑裂检查',    'description': '不应出现集群脑裂（主备设备通信分裂）'},
+    'base_disk_high_usage':{'type':'non_empty', 'severity':'fail',  'name': '磁盘高使用率',     'description': '各磁盘分区使用率应保持在安全范围内'},
+    'base_crash_time':   {'type': 'non_empty', 'severity': 'fail',  'name': '崩溃时间',       'description': '不应存在系统崩溃记录'},
+    'base_blackbox_dmesg':{'type':'non_empty', 'severity':'fail',   'name': '黑盒dmesg数据',   'description': '不应有黑盒 dmesg 异常数据'},
     # === bool_true ===
-    'unsafe_algorithm':  {'type': 'bool_true',  'severity': 'fail',  'name': '不安全算法'},
-    'unsafe_protocol':   {'type': 'bool_true',  'severity': 'fail',  'name': '不安全协议'},
+    'unsafe_algorithm':  {'type': 'bool_true',  'severity': 'fail',  'name': '不安全算法',      'description': '应使用安全的 SSL 加密算法，不应存在不安全的加密方式'},
+    'unsafe_protocol':   {'type': 'bool_true',  'severity': 'fail',  'name': '不安全协议',      'description': '应使用安全的 SSL 协议版本，不应存在不安全的协议'},
     # === not_zero / zero / has_value / not_normal ===
-    'base_kernel_log':   {'type': 'not_zero',   'severity': 'fail',  'name': '内核日志'},
-    'base_blackbox_state':{'type':'not_zero',   'severity': 'fail',  'name': '黑盒状态'},
-    'alarms_enabled':    {'type': 'zero',        'severity': 'fail',  'name': '告警启用'},
-    'bios_update_state': {'type': 'has_value',   'severity': 'fail',  'name': 'BIOS更新状态'},
-    'I350_nic_state':    {'type': 'not_normal',  'severity': 'fail',  'name': 'I350网卡状态'},
-    '82599_nic_state':   {'type': 'not_normal',  'severity': 'fail',  'name': '82599网卡状态'},
+    'base_kernel_log':   {'type': 'not_zero',   'severity': 'fail',  'name': '内核日志',       'description': '不应有内核级别的异常日志'},
+    'base_blackbox_state':{'type':'not_zero',   'severity': 'fail',  'name': '黑盒状态',       'description': '黑盒诊断功能应处于正常状态'},
+    'alarms_enabled':    {'type': 'zero',        'severity': 'fail',  'name': '告警启用',       'description': '告警功能应处于开启状态，以便及时发现异常'},
+    'bios_update_state': {'type': 'has_value',   'severity': 'fail',  'name': 'BIOS更新状态',   'description': 'BIOS 应处于正常版本，不应有待更新提示'},
+    'I350_nic_state':    {'type': 'not_normal',  'severity': 'fail',  'name': 'I350网卡状态',   'description': 'I350 网卡应处于健康状态'},
+    '82599_nic_state':   {'type': 'not_normal',  'severity': 'fail',  'name': '82599网卡状态',  'description': '82599 网卡应处于健康状态'},
     # === special ===
-    'base_eth_info':     {'type': 'eth_parse',   'severity': 'fail',  'name': '网卡信息'},
-    'snat_sport_exhaustion_log_num': {'type': 'threshold', 'abnormal': 0, 'compare': '>', 'severity': 'fail', 'name': 'SNAT端口耗尽'},
-    'disk_info':         {'type': 'empty_dict',  'severity': 'fail',  'name': '磁盘信息'},
-    'patch_info':        {'type': 'nested_list', 'key': 'patched_list', 'severity': 'fail', 'name': '补丁信息'},
-    'admin':             {'type': 'str_not_equal','normal': 'true', 'severity': 'fail',  'name': '管理员账户'},
-    'ad_appversion':     {'type': 'missing',      'severity': 'fail',  'name': 'AD版本'},
-    'base_running_time': {'type': 'missing',      'severity': 'fail',  'name': '运行时间'},
+    'base_eth_info':     {'type': 'eth_parse',   'severity': 'fail',  'name': '网卡信息',       'description': '网口链路应全部连通，不应有断开或降速'},
+    'snat_sport_exhaustion_log_num': {'type': 'threshold', 'abnormal': 0, 'compare': '>', 'severity': 'fail', 'name': 'SNAT端口耗尽',   'description': '不应出现 SNAT 端口耗尽的情况'},
+    'disk_info':         {'type': 'empty_dict',  'severity': 'fail',  'name': '磁盘信息',       'description': '应能正常采集到磁盘使用情况'},
+    'patch_info':        {'type': 'nested_list', 'key': 'patched_list', 'severity': 'fail', 'name': '补丁信息',       'description': '应已安装系统补丁'},
+    'admin':             {'type': 'str_not_equal','normal': 'true', 'severity': 'fail',  'name': '管理员账户',      'description': '管理员账户应处于正常配置状态'},
+    'ad_appversion':     {'type': 'missing',      'severity': 'fail',  'name': 'AD版本',        'description': '应能正常获取 AD 软件版本号'},
+    'base_running_time': {'type': 'missing',      'severity': 'fail',  'name': '运行时间',       'description': '应能正常记录设备运行时长'},
 }
 
 
@@ -547,7 +650,9 @@ def analyze_v1(data: Dict[str, Any]) -> Dict[str, Any]:
         return any(k in data_keys for k in keys)
 
     def check(name: str, status: str, value: str = "", detail: str = ""):
-        check_results[name] = {"status": status, "value": str(value), "detail": detail}
+        display_name = CHECK_NAMES.get(name, name)
+        description = CHECK_DESCRIPTIONS.get(name, "")
+        check_results[name] = {"status": status, "name": display_name, "value": str(value), "detail": detail, "description": description}
 
     # ─────────────────────────────────────────────────────────────────────
     # 逐字段分析（ad.json 有什么就分析什么，字段不存在则跳过）
@@ -1334,7 +1439,13 @@ def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
                 worst_value = str(field_statuses[0][3])[:100] if field_statuses else ""
 
             name = CHECK_NAMES.get(rule_id, rule_id)
-            check_results[rule_id] = {"status": worst, "name": name, "value": worst_value, "detail": worst_detail}
+            _desc = ""
+            for _fn in RULE_FIELD_MAP.get(rule_id, []):
+                _rule = CORRECTED_FIELD_RULES.get(_fn, {})
+                if _rule.get("description"):
+                    _desc = _rule["description"]
+                    break
+            check_results[rule_id] = {"status": worst, "name": name, "value": worst_value, "detail": worst_detail, "description": _desc}
 
         # Print uncovered rule_ids diagnostic
         all_known = set(RULE_FIELD_MAP.keys())
@@ -1380,7 +1491,13 @@ def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
                 worst_value = str(field_statuses[0][3])[:100]
 
             name = CHECK_NAMES.get(rule_id, rule_id)
-            check_results[rule_id] = {"status": worst, "name": name, "value": worst_value, "detail": worst_detail}
+            _desc = ""
+            for _fn in RULE_FIELD_MAP.get(rule_id, []):
+                _rule = CORRECTED_FIELD_RULES.get(_fn, {})
+                if _rule.get("description"):
+                    _desc = _rule["description"]
+                    break
+            check_results[rule_id] = {"status": worst, "name": name, "value": worst_value, "detail": worst_detail, "description": _desc}
 
         # Also check orphan fields (in CORRECTED_FIELD_RULES but not in RULE_FIELD_MAP)
         for field_name, field_rule in CORRECTED_FIELD_RULES.items():
@@ -1392,7 +1509,7 @@ def _analyze_v2(data: dict, check_info: dict | None = None) -> dict:
             is_ab, severity, issue = _check_field_rule(value, field_rule)
             status = severity if is_ab else "pass"
             name = field_rule.get('name', field_name)
-            check_results[field_name] = {"status": status, "name": name, "value": str(value)[:100], "detail": issue}
+            check_results[field_name] = {"status": status, "name": name, "value": str(value)[:100], "detail": issue, "description": field_rule.get("description", "")}
 
     # ── Categorize ────────────────────────────────────────────────────
     feature_keys, health_keys, secure_keys = [], [], []
@@ -1502,7 +1619,7 @@ def render_markdown(
         return {"pass": "✅", "fail": "❌"}.get(s, s)
 
     def status_label(s: str) -> str:
-        return {"pass": "正常", "fail": "异常", "fail": "异常"}.get(s, s)
+        return {"pass": "正常", "fail": "异常"}.get(s, s)
 
     def score_icon_for(val):
         return "🟢" if val >= 90 else ("🟡" if val >= 70 else "🔴")
@@ -1510,10 +1627,9 @@ def render_markdown(
     def cat_summary(keys):
         p = sum(1 for k in keys if k in results and results[k]["status"] == "pass")
         f = sum(1 for k in keys if k in results and results[k]["status"] == "fail")
-        w = sum(1 for k in keys if k in results and results[k]["status"] == "fail")
-        t = p + f + w
+        t = p + f
         rate = round(p / max(t, 1) * 100)
-        return {"total": t, "pass": p, "fail": f, "fail": w, "rate": rate}
+        return {"total": t, "pass": p, "fail": f, "rate": rate}
 
     f = cat_summary(feature_keys)
     h = cat_summary(health_keys)
@@ -1527,8 +1643,8 @@ def render_markdown(
         for k in all_keys:
             if k in results:
                 r = results[k]
-                detail = r.get('detail') or r['value']
-                rows.append(f"| {r.get('name', k)} | {icon(r['status'])} {status_label(r['status'])} | {detail.replace(chr(10), ' ')} |")
+                desc = r.get('description', '') or '检查项'
+                rows.append(f"| {r.get('name', k)} | {desc} | {icon(r['status'])} {status_label(r['status'])} |")
         return "\n".join(rows)
 
     # ── 健康评分（优先使用 analyze 返回的 health_scores） ─────────────
@@ -1582,13 +1698,9 @@ def render_markdown(
         check_time = raw_time
 
     # ── 检查项详情渲染（全量展示正常+异常） ────────
-    has_anomaly = any(k in results and results[k]["status"] == "fail" for k in all_keys)
-    if not has_anomaly:
-        check_detail_section = "> 所有检查项通过，无异常。\n"
-    else:
-        all_rows_text = all_check_rows()
-        check_detail_section = f"""| 检查项 | 状态 | 详情 |
-|--------|------|------|
+    all_rows_text = all_check_rows()
+    check_detail_section = f"""| 检查项 | 检查详情 | 状态 |
+|--------|---------|------|
 {all_rows_text}
 """
 
@@ -1798,11 +1910,14 @@ def main():
 
     # wait — 步骤 4-6：轮询确认新报告生成 → 下载 → 分析
     p_wait = sub.add_parser("wait", help="下载巡检报告并分析（请先用 progress 确认已完成）")
-    p_wait.add_argument("--host", required=True)
+    p_wait.add_argument("--host", default="", help="设备地址 https://IP")
+    p_wait.add_argument("--hosts", default="", help="多设备地址，逗号分隔（配合 --work-dirs 使用）")
+    p_wait.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
     p_wait.add_argument("--user", default="admin")
     p_wait.add_argument("--password", default="")
     p_wait.add_argument("--work-dir", default=os.path.join(tempfile.gettempdir(), "ad_check"),
-                        help="与 run 的 --work-dir 保持一致")
+                        help="单设备: 工作目录；多设备: 公共父目录（每设备子目录自动推导）")
+    p_wait.add_argument("--work-dirs", default="", help="多设备工作目录，逗号分隔（与 --hosts 一一对应）")
     p_wait.add_argument("--poll-interval", type=int, default=10,
                         help="轮询间隔秒数，默认 10")
     p_wait.add_argument("--timeout", type=int, default=600,
@@ -1912,6 +2027,74 @@ def main():
         if not password:
             print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
             sys.exit(4)
+
+        if args.hosts:
+            # ── 多设备 wait ──────────────────────────────────────────
+            if args.devices:
+                devices = load_devices_json(args.devices)
+                # Filter to only hosts specified in --hosts
+                hosts_set = set(h.strip() for h in args.hosts.split(","))
+                devices = [d for d in devices if d["host"] in hosts_set]
+            else:
+                # Try to discover devices.json for display names
+                _devices_paths = [
+                    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "devices.json"),
+                    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "devices.json"),
+                ]
+                _found = False
+                for _dp in _devices_paths:
+                    if os.path.isfile(_dp):
+                        try:
+                            all_devices = load_devices_json(_dp)
+                            hosts_set = set(h.strip() for h in args.hosts.split(","))
+                            devices = [d for d in all_devices if d["host"] in hosts_set]
+                            if devices:
+                                _found = True
+                                break
+                        except Exception:
+                            continue
+                if not _found:
+                    devices = parse_hosts_arg(args.hosts, args.user, password)
+            if not devices:
+                print("错误: 设备列表为空", file=sys.stderr)
+                sys.exit(4)
+
+            # Resolve work_dirs
+            work_dirs_list = []
+            if args.work_dirs:
+                work_dirs_list = [d.strip() for d in args.work_dirs.split(",")]
+            if not work_dirs_list:
+                # Auto-derive from host_slug under base work_dir
+                for d in devices:
+                    slug = d["host"].replace("https://", "").replace("http://", "").replace(":", "_").replace("/", "_")
+                    work_dirs_list.append(os.path.join(args.work_dir, slug))
+
+            results = {}
+            for i, device in enumerate(devices):
+                host = device["host"]
+                wd = work_dirs_list[i] if i < len(work_dirs_list) else os.path.join(args.work_dir, f"dev{i}")
+                try:
+                    client = ADClient(host, args.user, password)
+                    meta = wait_and_download(client, work_dir=wd, poll_interval=args.poll_interval, timeout=args.timeout)
+                    with open(meta["ad_json_path"], encoding="utf-8") as f:
+                        data = json.load(f)
+                    analysis = analyze(data)
+                    analysis["_meta"] = meta
+                    results[host] = {"meta": meta, "analysis": analysis, "markdown": render_markdown(analysis, meta)}
+                    print(f"[{host}] ✅ 完成", file=sys.stderr)
+                except (CheckTimeoutError, CheckDownloadError, RuntimeError, ADAuthError, ADConnectionError, ADAPIError) as e:
+                    results[host] = {"error": str(e)}
+                    print(f"[{host}] ❌ {e}", file=sys.stderr)
+
+            device_names = {d["host"]: d["name"] for d in devices if d.get("name")}
+            print(render_multi_device_report(results, scene="标准巡检", device_names=device_names))
+            sys.exit(compute_multi_exit_code(results))
+
+        if not args.host:
+            print("错误: 必须指定 --host 或 --hosts", file=sys.stderr)
+            sys.exit(4)
+
+        # ── 单设备 wait ──────────────────────────────────────────────
         client = ADClient(args.host, args.user, password)
         try:
             meta = wait_and_download(
@@ -1920,7 +2103,6 @@ def main():
                 poll_interval=args.poll_interval,
                 timeout=args.timeout,
             )
-            # 下载完成后自动分析并输出 markdown
             with open(meta["ad_json_path"], encoding="utf-8") as f:
                 data = json.load(f)
             check_info = None

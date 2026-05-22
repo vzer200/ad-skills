@@ -4,12 +4,9 @@
 Multi-device inspection report rendering.
 
 Produces rich markdown reports from check analysis results, including
-per-device detail blocks, cross-device comparison, and summary tables.
-
-All functions in this module are specific to ad-check-analysis.
+a unified check-items table, per-device summary, and health scores.
 """
 
-import sys
 from typing import Any, Dict, Optional
 
 
@@ -41,8 +38,8 @@ def _score_icon(score: int) -> str:
 
 
 def _check_icon(status: str) -> str:
-    """Icon for pass/fail/warn check status."""
-    return {"pass": "✅", "fail": "❌", "warn": "⚠️"}.get(status, status)
+    """Icon for pass/fail check status."""
+    return {"pass": "✅", "fail": "❌"}.get(status, status)
 
 
 _CATEGORY_LABELS = {
@@ -53,7 +50,7 @@ _CATEGORY_LABELS = {
 
 
 def _device_summary_status(result: Dict[str, Any]) -> str:
-    """Determine device-level status string (with icon) from a result dict."""
+    """Determine device-level status string (with icon)."""
     if "error" in result:
         err = result["error"]
         if any(kw in err for kw in ("Auth", "401", "认证")):
@@ -66,201 +63,80 @@ def _device_summary_status(result: Dict[str, Any]) -> str:
     return "✅ 正常"
 
 
-def _render_device_detail_block(
-    host: str,
-    result: Dict[str, Any],
-    device_name: str,
+def _render_unified_check_table(
+    results: Dict[str, Any],
+    device_names: Dict[str, str],
 ) -> str:
-    """Render a single device's detail block for the multi-device report."""
-    ip = _extract_ip(host)
-    heading = "### \U0001f50d {} ({}) 详细报告".format(device_name, ip)
+    """Build the unified all-items check table: | 检查项 | 检查详情 | 异常设备 |."""
+    valid_hosts = [h for h, r in results.items() if "error" not in r and r.get("analysis")]
 
-    analysis = result.get("analysis", {})
-    if not analysis:
-        return "{}\n\n> 无分析数据\n".format(heading)
+    if not valid_hosts:
+        return ""
 
-    meta = result.get("meta", {})
-    dev = analysis.get("device_info", {})
-    check_results = analysis.get("check_results", {})
-    categories = analysis.get("categories", {})
-    suggestions = analysis.get("suggestions", [])
-    health_scores = analysis.get("health_scores", {})
+    # Collect all check keys from the first valid device (all devices share same key set)
+    all_keys = list(results[valid_hosts[0]]["analysis"].get("check_results", {}).keys())
+    if not all_keys:
+        return ""
 
-    raw_time = meta.get("start_time", "")
-    check_time = _format_check_time(raw_time)
+    lines = [
+        "| 检查项 | 检查详情 | 异常设备 |",
+        "|--------|---------|---------|",
+    ]
 
-    lines = [heading, ""]
-    if check_time:
-        lines.append("**巡检时间**: {}".format(check_time))
-        lines.append("")
+    for key in all_keys:
+        # Gather info from all devices
+        display_name = key
+        description = ""
+        failed_devices = []
 
-    lines.append("#### \U0001f4ca 设备基本信息")
-    lines.append("")
-    lines.append("| 项目 | 值 |")
-    lines.append("|------|-----|")
-    lines.append("| AD 版本 | {} |".format(dev.get("version", "-")))
-    lines.append("| APP 版本 | {} |".format(dev.get("app_version", "-")))
-    lines.append("| 网关 ID | {} |".format(dev.get("gateway_id", "-")))
-    lines.append("| 运行时间 | {} |".format(dev.get("runtime", "-")))
-    lines.append("| 管理 IP | {} |".format(dev.get("ip", ip)))
-    lines.append("")
+        for host in valid_hosts:
+            cr = results[host]["analysis"]["check_results"].get(key)
+            if not cr:
+                continue
+            if cr.get("name"):
+                display_name = cr["name"]
+            if cr.get("description") and not description:
+                description = cr["description"]
+            if cr["status"] == "fail":
+                dev_name = device_names.get(host, _extract_ip(host))
+                failed_devices.append(dev_name)
 
-    for cat_key, cat_label in _CATEGORY_LABELS.items():
-        keys = categories.get(cat_key, [])
-        if not keys:
-            continue
-        # Only show abnormal items, skip all-pass categories
-        abnormal = []
-        for k in keys:
-            cr = check_results.get(k)
-            if cr and cr["status"] == "fail":
-                abnormal.append((k, cr))
-        if not abnormal:
-            continue
-        lines.append("#### {} ({} 项异常)".format(cat_label, len(abnormal)))
-        lines.append("")
-        lines.append("| 检查项 | 状态 | 值 |")
-        lines.append("|--------|------|-----|")
-        for k, cr in abnormal:
-            lines.append("| {} | {} {} | {} |".format(cr.get('name', k), _check_icon(cr["status"]), cr["status"], cr.get("detail") or cr["value"]))
-        lines.append("")
-
-    # If no anomalies at all, show summary line
-    all_pass = all(
-        check_results.get(k, {}).get("status") == "pass"
-        for cat_key in _CATEGORY_LABELS
-        for k in categories.get(cat_key, [])
-    )
-    if all_pass:
-        lines.append("> 所有检查项通过，无异常。")
-        lines.append("")
-
-    lines.append("#### \U0001f4c8 统计汇总")
-    lines.append("")
-    lines.append("| 类别 | 检查项数 | ✅ 通过 | ❌ 异常 | 通过率 |")
-    lines.append("|------|----------|---------|---------|--------|")
-
-    for cat_key, cat_label in _CATEGORY_LABELS.items():
-        keys = categories.get(cat_key, [])
-        if not keys:
-            continue
-        p = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "pass")
-        f = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "fail")
-        t = p + f
-        rate = round(p / max(t, 1) * 100)
-        lines.append("| {} | {} | {} | {} | {}% |".format(cat_label, t, p, f, rate))
-
-    lines.append("")
-
-    lines.append("#### \U0001f4a1 优化建议")
-    lines.append("")
-    if suggestions:
-        lines.append("| 优先级 | 检查项 | 建议 |")
-        lines.append("|--------|--------|------|")
-        for sug in suggestions:
-            check_key = sug.get("check", "")
-            check_name = check_results.get(check_key, {}).get("name", check_key) if check_key else "-"
-            lines.append("| {} | {} | {} |".format(
-                sug.get("priority", ""), check_name, sug.get("suggestion", ""),
-            ))
-    else:
-        lines.append("暂无优化建议。")
-    lines.append("")
-
-    overall = health_scores.get("overall", analysis.get("summary", {}).get("score", 0))
-    lines.append("#### ✅ 健康评分")
-    lines.append("")
-    lines.append("| 项目 | 评分 |")
-    lines.append("|------|------|")
-    lines.append("| **综合评分** | {} **{}/100** |".format(_score_icon(overall), overall))
-    lines.append("")
+        abnormal = ", ".join(failed_devices) if failed_devices else "全部通过"
+        lines.append(f"| {display_name} | {description} | {abnormal} |")
 
     return "\n".join(lines)
 
 
-def _render_cross_device_comparison(
+def _render_suggestions_multi(
     results: Dict[str, Any],
     device_names: Dict[str, str],
 ) -> str:
-    """Generate cross-device comparison table for items with inter-device differences."""
-    valid_hosts = []
-    for host, result in results.items():
-        if "error" not in result and result.get("analysis"):
-            valid_hosts.append(host)
+    """Build suggestions table with anomaly device column."""
+    valid_hosts = [h for h, r in results.items() if "error" not in r and r.get("analysis")]
 
-    if len(valid_hosts) < 2:
-        return ""
-
-    has_anomaly = False
+    # Collect all suggestions keyed by check_key with device info
+    suggestion_map: Dict[str, Dict] = {}
     for host in valid_hosts:
-        summary = results[host]["analysis"].get("summary", {})
-        if summary.get("fail", 0) > 0 or summary.get("warn", 0) > 0:
-            has_anomaly = True
-            break
-    if not has_anomaly:
-        return ""
+        analysis = results[host]["analysis"]
+        dev_name = device_names.get(host, _extract_ip(host))
+        for sug in analysis.get("suggestions", []):
+            ck = sug.get("check", "")
+            if ck not in suggestion_map:
+                suggestion_map[ck] = {"priority": sug.get("priority", "高"), "suggestion": sug.get("suggestion", ""), "devices": []}
+            suggestion_map[ck]["devices"].append(dev_name)
 
-    all_keys = set()
-    for host in valid_hosts:
-        all_keys.update(results[host]["analysis"].get("check_results", {}).keys())
-
-    comparison_rows = []
-    for key in sorted(all_keys):
-        statuses = {}
-        for host in valid_hosts:
-            cr = results[host]["analysis"]["check_results"].get(key)
-            if cr:
-                statuses[host] = cr
-
-        if len(statuses) < 2:
-            continue
-
-        unique_statuses = set(s["status"] for s in statuses.values())
-        if len(unique_statuses) <= 1 and all(s["status"] == "pass" for s in statuses.values()):
-            continue
-
-        # Sample display name from first available host's check_result
-        display_name = key
-        for host in valid_hosts:
-            cr = results[host]["analysis"]["check_results"].get(key)
-            if cr and cr.get("name"):
-                display_name = cr["name"]
-                break
-        row = "| {} |".format(display_name)
-        notes = []
-        for host in valid_hosts:
-            s = statuses.get(host, {})
-            status = s.get("status", "?")
-            value = s.get("value", "?")
-            row += " {} {} |".format(_check_icon(status), value)
-            if status == "fail":
-                notes.append(_extract_ip(host))
-        row += " {} |".format(", ".join(notes) if notes else "-")
-        comparison_rows.append(row)
-
-    if not comparison_rows:
-        return ""
-
-    header_parts = ["| 检查项 |"]
-    for host in valid_hosts:
-        name = device_names.get(host, _extract_ip(host))
-        header_parts.append(" {} |".format(name))
-    header_parts.append(" 未通过设备 |")
-    header = "".join(header_parts)
-
-    sep_cols = ["--------"] * (len(valid_hosts) + 2)
-    separator = "|" + "|".join(sep_cols) + "|"
+    if not suggestion_map:
+        return "暂无优化建议。\n"
 
     lines = [
-        "### \U0001f4c8 跨设备对比",
-        "",
-        "以下检查项在多台设备间存在显著差异：",
-        "",
-        header,
-        separator,
+        "| 优先级 | 检查项 | 异常设备 | 建议 |",
+        "|--------|--------|---------|------|",
     ]
-    lines.extend(comparison_rows)
-    lines.append("")
+    for ck, info in suggestion_map.items():
+        cr = results[valid_hosts[0]]["analysis"]["check_results"].get(ck, {})
+        check_name = cr.get("name", ck)
+        dev_list = ", ".join(info["devices"])
+        lines.append(f"| {info['priority']} | {check_name} | {dev_list} | {info['suggestion']} |")
 
     return "\n".join(lines)
 
@@ -272,134 +148,177 @@ def render_multi_device_report(
 ) -> str:
     """Render a rich multi-device inspection report in markdown.
 
-    Produces the full output format defined in
-    ad-check-analysis/examples/output-multi.md, including:
+    Produces:
       - Header with scene / time range / device count
-      - 6-column summary table
-      - Per-device detail blocks (category-grouped items, stats, suggestions)
-      - Cross-device comparison (when >=2 devices connected and >=1 has anomalies)
-      - Error blocks for failed devices
-
-    Args:
-        results: {host: result_dict, ...} from run_multi().
-                 Success results carry {meta, analysis, markdown};
-                 error results carry {error}.
-        scene: inspection scene name.
-        device_names: optional {host: name} mapping for display.
-
-    Returns:
-        Markdown string with the full multi-device report.
+      - Device summary table (quick overview)
+      - Unified check-items table (all items, anomaly-device column)
+      - Per-device statistics summary
+      - Suggestions (with anomaly device column)
+      - Health scores per device
     """
     device_names = device_names or {}
 
+    # ── Device summary table ──────────────────────────────────────────
     devices_info = []
     for host, result in results.items():
         ip = _extract_ip(host)
         name = device_names.get(host, ip)
-
         if "error" in result:
             devices_info.append({
-                "host": host,
-                "name": name,
-                "ip": ip,
-                "has_error": True,
-                "status_text": _device_summary_status(result),
-                "error": result["error"],
-                "total_checks": "-",
-                "pass_rate": "-",
-                "score_text": "-",
+                "host": host, "name": name, "ip": ip,
+                "has_anomaly": True, "status_text": _device_summary_status(result),
+                "total_checks": "-", "pass_rate": "-", "score_text": "-",
             })
         else:
             analysis = result.get("analysis", {})
             summary = analysis.get("summary", {})
             total = summary.get("total", 0)
+            fail_count = summary.get("fail", 0)
             pass_count = summary.get("pass", 0)
             score = summary.get("score", 0)
             rate = round(pass_count / max(total, 1) * 100) if total else 0
-
             devices_info.append({
-                "host": host,
-                "name": name,
-                "ip": ip,
-                "has_error": False,
-                "status_text": _device_summary_status(result),
+                "host": host, "name": name, "ip": ip,
+                "has_anomaly": fail_count > 0, "status_text": _device_summary_status(result),
                 "total_checks": str(total) if total else "-",
-                "pass_rate": "{}%".format(rate) if total else "-",
-                "score_text": "{} {}/100".format(_score_icon(score), score) if total else "-",
+                "pass_rate": f"{rate}%" if total else "-",
+                "score_text": f"{_score_icon(score)} {score}/100" if total else "-",
             })
 
+    # Time range
     times = []
     for host, result in results.items():
         if "error" not in result:
-            meta = result.get("meta", {})
-            t = meta.get("start_time", "")
+            t = result.get("meta", {}).get("start_time", "")
             formatted = _format_check_time(t)
             if formatted:
                 times.append(formatted)
     times.sort()
     if len(times) >= 2:
-        time_range = "{} ~ {}".format(times[0], times[-1])
+        time_range = f"{times[0]} ~ {times[-1]}"
     elif len(times) == 1:
         time_range = times[0]
     else:
         time_range = "N/A"
 
     total_devices = len(results)
-    success_count = sum(1 for d in devices_info if not d["has_error"])
+    success_count = sum(1 for d in devices_info if not d["has_anomaly"])
     failed_count = total_devices - success_count
 
+    valid_hosts = [h for h, r in results.items() if "error" not in r and r.get("analysis")]
+
+    # ── Header ────────────────────────────────────────────────────────
     lines = [
         "## AD 巡检分析报告（多设备）",
         "",
-        "**巡检场景**: {}".format(scene),
-        "**巡检时间**: {}".format(time_range),
-        "**设备数量**: {} 台".format(total_devices),
+        f"**巡检场景**: {scene}",
+        f"**巡检时间**: {time_range}",
+        f"**设备数量**: {total_devices} 台",
         "",
         "---",
         "",
-        "### \U0001f4ca 设备汇总",
+        "### 📊 设备汇总",
         "",
         "| 设备 | IP | 状态 | 检查项 | 通过率 | 综合评分 |",
         "|------|-----|------|--------|--------|----------|",
     ]
 
     for d in devices_info:
-        lines.append("| {} | {} | {} | {} | {} | {} |".format(
-            d["name"], d["ip"], d["status_text"],
-            d["total_checks"], d["pass_rate"], d["score_text"],
-        ))
-
+        lines.append(f"| {d['name']} | {d['ip']} | {d['status_text']} | {d['total_checks']} | {d['pass_rate']} | {d['score_text']} |")
     lines.append("")
 
     if failed_count == 0:
-        lines.append("> {} 台设备: {} 台正常, 0 台异常".format(total_devices, success_count))
+        lines.append(f"> {total_devices} 台设备: {success_count} 台正常, 0 台异常")
     elif success_count == 0:
-        lines.append("> {} 台设备: 0 台正常, {} 台异常".format(total_devices, failed_count))
+        lines.append(f"> {total_devices} 台设备: 0 台正常, {failed_count} 台异常")
     else:
-        lines.append("> {} 台设备: {} 台正常, {} 台异常".format(total_devices, success_count, failed_count))
-
+        lines.append(f"> {total_devices} 台设备: {success_count} 台正常, {failed_count} 台异常")
     lines.append("")
 
-    for i, d in enumerate(devices_info):
-        if d["has_error"]:
-            continue  # Connection/auth failures are reported by ad-connect, not in this report
+    # ── Unified check table ───────────────────────────────────────────
+    check_table = _render_unified_check_table(results, device_names)
+    if check_table:
         lines.append("---")
         lines.append("")
-        result = results[d["host"]]
-        detail_block = _render_device_detail_block(d["host"], result, d["name"])
-        lines.append(detail_block)
+        lines.append("### 🔍 巡检结果详情")
+        lines.append("")
+        lines.append(check_table)
+        lines.append("")
 
-    cross = _render_cross_device_comparison(results, device_names)
-    if cross:
+    # ── Statistics summary (per-device × category) ────────────────────
+    if valid_hosts:
         lines.append("---")
         lines.append("")
-        lines.append(cross)
+        lines.append("### 📈 统计汇总")
+        lines.append("")
+
+        # Build header row with category names
+        cat_keys = list(_CATEGORY_LABELS.keys())
+        header_cols = " | ".join([_CATEGORY_LABELS[k] for k in cat_keys])
+        lines.append(f"| 设备 | {header_cols} | 综合通过率 |")
+        sep = "|".join(["------"] * (len(cat_keys) + 2))
+        lines.append(f"|{sep}|")
+
+        for host in valid_hosts:
+            analysis = results[host]["analysis"]
+            dev_name = device_names.get(host, _extract_ip(host))
+            categories = analysis.get("categories", {})
+            total_pass = 0
+            total_items = 0
+            cat_stats = []
+            for ck in cat_keys:
+                keys = categories.get(ck, [])
+                if not keys:
+                    cat_stats.append("-")
+                    continue
+                check_results = analysis.get("check_results", {})
+                p = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "pass")
+                t = len(keys)
+                total_pass += p
+                total_items += t
+                cat_stats.append(f"{p}/{t} ({round(p / max(t, 1) * 100)}%)")
+            overall_rate = round(total_pass / max(total_items, 1) * 100)
+            cols = " | ".join(cat_stats)
+            lines.append(f"| {dev_name} | {cols} | {overall_rate}% |")
+        lines.append("")
+
+    # ── Suggestions ───────────────────────────────────────────────────
+    suggestions = _render_suggestions_multi(results, device_names)
+    lines.append("---")
+    lines.append("")
+    lines.append("### 💡 优化建议")
+    lines.append("")
+    lines.append(suggestions)
+
+    # ── Health scores per device ──────────────────────────────────────
+    if valid_hosts:
+        lines.append("---")
+        lines.append("")
+        lines.append("### ✅ 健康评分")
+        lines.append("")
+        lines.append("| 设备 | 系统稳定性 | 硬件健康 | 安全配置 | 综合评分 |")
+        lines.append("|------|----------|---------|---------|---------|")
+
+        for host in valid_hosts:
+            analysis = results[host]["analysis"]
+            dev_name = device_names.get(host, _extract_ip(host))
+            hs = analysis.get("health_scores", {})
+            f_s = hs.get("feature", {}).get("score", 0)
+            h_s = hs.get("health", {}).get("score", 0)
+            s_s = hs.get("secure", {}).get("score", 0)
+            overall = hs.get("overall", analysis.get("summary", {}).get("score", 0))
+            lines.append(
+                f"| {dev_name} | {_score_icon(f_s)} {f_s}/100 | {_score_icon(h_s)} {h_s}/100 | "
+                f"{_score_icon(s_s)} {s_s}/100 | {_score_icon(overall)} **{overall}/100** |"
+            )
+        lines.append("")
 
     lines.append("---")
     lines.append("")
     lines.append("**说明**: 以上结果全部来自各设备巡检报告文件 `ad.json`。")
 
     return "\n".join(lines)
+
 
 if __name__ == "__main__":
     print("This module is not meant to be run directly.", file=sys.stderr)
