@@ -129,15 +129,11 @@ python scripts/check.py progress --hosts "https://IP1,https://IP2" --password xx
 # 单设备
 python scripts/check.py wait --host https://IP --password xxx --work-dir <步骤3返回的路径>
 
-# 多设备（每台分别调用 wait，然后合并）
-python scripts/check.py wait --host https://IP1 --password xxx --work-dir <work_dir1>
-python scripts/check.py wait --host https://IP2 --password xxx --work-dir <work_dir2>
-
-# 合并多设备报告
-python scripts/check.py merge --work-dirs "<work_dir1>,<work_dir2>" --hosts "https://IP1,https://IP2" --scene "场景名"
+# 多设备（一键下载合并，输出多设备汇总报告）
+python scripts/check.py wait --hosts "https://IP1,https://IP2" --password xxx --work-dirs "<work_dir1>,<work_dir2>"
 ```
 
-多设备必须额外执行 `merge` 命令，合并输出含设备对比表 + 未检查项汇总 + 异常项分设备列 + 每设备独立完整报告。
+多设备使用 `wait --hosts`，内部自动完成逐台下载 → 合并 → 输出多设备汇总报告（含设备对比表 + 未检查项汇总 + 异常项分设备列 + 每设备独立完整报告）。禁止逐台调 `wait --host` 再手动拼接结果。
 
 ---
 
@@ -234,7 +230,7 @@ python scripts/check.py analyze --path /tmp/ad_check_xxx
 | `progress` | ✅ | `--hosts` 并行查询多台进度 |
 | `history` | ✅ | 并行查询多台历史 |
 | `analyze` | ❌ | 用 `--path` 不连设备 |
-| `merge` | ✅ | 合并多台 `wait` 结果，输出多设备汇总报告 |
+| `wait` | ✅ | `--hosts` 一键下载合并多台，输出多设备汇总报告 |
 
 ## 子命令选择决策
 
