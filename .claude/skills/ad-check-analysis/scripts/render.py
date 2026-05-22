@@ -217,7 +217,7 @@ def _render_suggestions_multi(
             suggestion_map[ck]["devices"].append(dev_name)
 
     if not suggestion_map:
-        return "暂无优化建议。\n"
+        return "暂无排查建议。\n"
 
     lines = [
         "| 优先级 | 检查项 | 异常设备 | 建议 |",
@@ -372,7 +372,7 @@ def render_multi_device_report(
     suggestions = _render_suggestions_multi(results, device_labels)
     lines.append("---")
     lines.append("")
-    lines.append("### \U0001f4a1 优化建议")
+    lines.append("### \U0001f4a1 排查建议")
     lines.append("")
     lines.append(suggestions)
 

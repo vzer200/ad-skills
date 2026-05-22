@@ -295,44 +295,80 @@ def wait_and_download(
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
-# 优化建议映射表
+# 排查建议映射表（67 条 CHECK_RULES key → 具体排查指引）
 # ---------------------------------------------------------------------------
 
 _SUGGESTION_MAP = {
-    "base_cpu_info": "CPU 使用率偏高，建议检查是否存在异常进程或考虑扩容",
-    "base_memory": "内存使用率偏高，建议检查是否存在内存泄漏或考虑扩容",
-    "base_disk": "磁盘信息缺失，建议检查磁盘状态",
-    "fan_state": "风扇状态异常，建议检查硬件并及时更换故障风扇",
-    "power_state": "电源状态异常，建议检查电源模块并安排维护",
-    "nic_health_check": "网卡健康状态异常，建议检查网卡硬件和驱动",
-    "base_core_process": "核心进程缺失，建议检查服务状态并重启相关服务",
-    "base_kernel_log": "内核日志存在异常，建议排查内核错误日志",
-    "weak_password": "存在弱密码账户，建议修改为强密码",
-    "ssh_or_adapi_authority": "SSH/ADAPI 权限未正确配置，建议检查并加固访问控制",
-    "ssl_strategy_check": "SSL 策略存在不安全算法或协议，建议禁用旧版本",
-    "dangerous_port": "存在风险端口开放，建议关闭不必要的端口",
-    "base_net_state": "设备网口连接异常，建议检查物理链路",
-    "config_id_conflict_check": "配置 ID 存在冲突，建议排查并修正配置",
-    "base_crash_time": "存在崩溃日志，建议排查系统稳定性问题",
-    "shm_sem_check": "共享内存/信号量异常，可能存在内存泄漏",
-    "base_file_leak": "文件描述符泄漏，建议检查进程资源使用",
-    "base_err_log": "错误日志数量偏高，建议排查系统日志",
-    "base_report_stability": "报表稳定性异常，建议检查报表服务",
-    "base_conntrack": "连接跟踪数偏高，建议检查网络连接状况",
-    "security_check": "安全检查未通过，建议排查安全配置",
-    "cluster_brain_split_check": "检测到集群脑裂风险，建议检查集群通信",
-    "check_admin_account": "管理员账户未正确配置，建议检查账户设置",
-    "base_app_version": "AD版本信息缺失，建议检查系统状态",
-    "bios_version_check": "BIOS有可用更新，建议评估后升级",
-    "remote_maintenance": "远程维护已开启，建议评估安全风险后决定是否关闭",
-    "enable_iplimit": "IP限制未启用，建议启用以增强安全性",
-    "patch_info": "补丁信息为空，建议检查补丁管理状态",
-    "base_blackbox_data": "黑盒dmesg数据存在异常记录",
-    "base_blackbox_state": "黑盒状态异常，建议检查黑盒服务",
-    "alarms_enabled": "告警未启用，建议配置告警策略",
-    "base_running_time": "运行时间数据缺失，建议检查系统状态",
-    "acceleration_check": "加速引擎未就绪，建议检查加速卡状态",
-    "snat_sport_exhaustion_check": "SNAT端口耗尽，建议检查NAT配置",
+    # ── 功能巡检 (35) ──────────────────────────────────────────────────
+    "APP_VERSION_CHECK":       "当前版本与推荐版本存在差距，建议尽快升级到推荐版本以获取最新功能和安全修复",
+    "ADMIN_ROLE_CHECK":        "存在非必要的管理员账号，建议在系统管理-用户管理中清理多余的管理员账号",
+    "HEARTBEAT_ERROR_CHECK":   "心跳口故障检测未开启，建议在双机配置中启用心跳口故障检测以避免脑裂风险",
+    "DEVICE_SAFE_CHECK":       "设备存在安全隐患，建议按安全检查提示逐项修复",
+    "DNS_DETECT_CHECK":        "DNS代理未配置监视域名，建议在DNS代理配置中添加监视域名以实现故障切换",
+    "DNAT_CHECK":              "DNAT规则的目标IP未配置在设备链路上或未配置ARP代理，建议检查DNAT规则和对应链路配置",
+    "HEARTBEAT_CHECK":         "备份心跳口选择了管理口，建议使用独立的数据口作为心跳口以保证双机可靠性",
+    "STATIC_IP_CHECK":         "集群内设备链路未全部配置静态IP，建议为所有业务链路配置静态IP以确保集群通信稳定",
+    "CLUSTER_STATE_CHECK":     "集群状态异常，建议检查集群成员设备的网络连通性和同步配置",
+    "DNS_PROXY_CHECK":         "DNS代理功能未启用，如需使用DNS映射/DNS64等功能，建议在链路负载配置中启用DNS代理",
+    "VIRTUAL_MAC_CHECK":       "双机未启用MAC同步或集群未配置虚拟MAC，建议启用以减少故障切换时的ARP更新延迟",
+    "DUAL_STATE_CHECK":        "主备状态异常，建议检查对端设备是否在线及心跳口配置是否正确",
+    "POOL_PERSIST_CHECK":      "节点池未启用会话保持功能，建议在节点池配置中启用会话保持以保证同一客户端请求分发到同一节点",
+    "STATIC_ROUTE_CHECK":      "静态路由未启用健康检查失败，建议为静态路由配置健康检查并验证下一跳可达性",
+    "POOL_HEALTH_CHECK":       "节点池未配置健康检查或节点不在线，建议为节点池配置TCP/HTTP/ICMP等健康检查方法",
+    "RS_LEVEL_CHECK":          "双机场景下未启用监视器级别检测，建议在故障切换配置中启用监视器级别检测",
+    "APP_GROUP_CHECK":         "应用组关联内容配置不合理，建议检查应用组与节点池/虚拟服务的关联关系",
+    "DNS_SERVER_STATE_CHECK":  "DNS服务器不在线或状态异常，建议检查DNS服务器的可达性和健康状态",
+    "LINK_HEALTH_CHECK":       "链路未配置健康检查或状态异常，建议为链路配置健康检查并验证链路状态",
+    "STATIC_PROXIMITY_CHECK":  "使用静态就近性调度策略但未配置静态就近性规则，建议在DNS映射或虚拟IP池中补充对应规则",
+    "DNS64_CHECK":             "DNS64功能已启用，如非必要建议在DNS代理配置中关闭DNS64功能",
+    "POLICY_ROUTE_CHECK":      "检测到新增智能路由选路策略，建议检查策略配置是否符合预期",
+    "MANAGE_IP_CHECK":         "主备机管理口IP地址配置不当，建议确保主备机管理口IP地址不同",
+    "SNMP_TRAPS_CHECK":        "SNMP Traps告警未启用，建议在系统管理-告警配置中启用SNMP Traps以便及时接收设备告警",
+    "DNS_REFLECT_CHECK":       "DNS映射功能未启用或状态异常，建议检查DNS映射配置并确保规则处于启用状态",
+    "DNS_SERVER_CHECK":        "全局负载DNS服务器功能未启用，如需使用全局负载功能建议在DNS配置中启用",
+    "DNAT_PORT_CHECK":         "DNAT规则的端口范围为0-0或协议为ALL，建议缩小端口范围和协议范围以降低安全风险",
+    "SESSION_SYNC_CHECK":      "双机/集群未启用会话同步，建议启用以保证故障切换时已有连接不中断",
+    "MAIL_WARN_CHECK":         "邮件告警未启用，建议在系统管理-告警配置中配置邮件告警以便及时接收设备异常通知",
+    "VIP_POOL_CHECK":          "虚拟IP池不在线或状态异常，建议检查虚拟IP池配置和关联节点状态",
+    "PROXY_POLICY_CHECK":      "优先代理策略未启用，如需使用代理策略功能建议在相应配置中启用",
+    "DNS_MAP_PS_CHECK":        "DNS映射未启用会话保持，建议在DNS映射配置中启用会话保持以保证请求一致性",
+    "WAN_BANDWIDTH_CHECK":     "WAN属性链路带宽为默认值，建议根据实际带宽修改为准确值以避免QoS策略失效",
+    "FAULT_SWITCH_CHECK":      "双机/集群未启用故障切换，建议启用以实现自动故障转移",
+    "SYSLOG_CHECK":            "syslog未启用，建议在系统管理-日志配置中配置syslog服务器以便集中收集和审计日志",
+    # ── 健康巡检 (25) ──────────────────────────────────────────────────
+    "AUTO_UPDATE_CHECK":       "自动更新未开启或无法连接升级服务器，建议检查网络连通性",
+    "CPU_CHECK":               "CPU使用率异常偏高，建议通过top/ps命令排查高CPU进程，检查是否有异常流量或配置导致的CPU负载",
+    "LOG_CHECK":               "设备存在错误日志记录，建议导出黑盒日志分析错误来源",
+    "DEVICE_RUN_TIME":         "运行时间数据缺失，建议检查系统状态采集服务是否正常运行",
+    "DEVICE_FILE_CHECK":       "存在文件描述符泄漏风险，建议检查长期运行进程的资源释放情况，必要时重启相关服务",
+    "NIC_STATE_CHECK":         "网卡存在丢包/错包/断链/降速情况，建议检查物理线缆、光模块和对端交换机端口状态，确保MTU一致",
+    "CORE_PROCESS_CHECK":      "核心进程存在缺失，建议检查缺失进程对应的服务状态，必要时重启设备恢复",
+    "KERNEL_LOG_CHECK":        "内核日志存在堆栈信息，建议导出系统日志排查内核异常原因，关注驱动或硬件层面的问题",
+    "REMOTE_MAINTAIN_CHECK":   "WAN接口开启了远程维护功能，建议评估安全风险后关闭不必要的远程维护端口",
+    "BLACK_BOX_CHECK":         "黑盒诊断功能未正常记录，建议在系统管理-调试配置中检查黑盒服务状态",
+    "DMESG_DATA_CHECK":        "黑盒dmesg日志中存在硬件异常信息，建议重点排查dmesg中的error/warning项，关注内存、PCIe等硬件状态",
+    "DISK_CHECK":              "磁盘使用率异常或磁盘信息采集失败，建议检查各分区使用情况，清理过期日志和临时文件，必要时扩容",
+    "CRASH_LOG_CHECK":         "设备存在宕机记录，建议导出宕机日志分析宕机原因，关注宕机前的内存、CPU和进程状态",
+    "MEMORY_CHECK":            "内存使用率异常偏高，建议检查是否存在内存泄漏进程，关注连接表和会话表等内存消耗大户",
+    "SPEED_CARD_CHECK":        "加速卡状态异常或加速引擎未就绪，建议检查加速卡硬件状态和驱动加载情况",
+    "FAN_STATE_CHECK":         "检测到风扇模块异常，建议检查风扇物理状态和转速，及时更换故障风扇，如为虚拟机请忽略",
+    "POWER_STATE_CHECK":       "检测到电源模块异常，建议检查电源线缆连接和电源模块指示灯状态，如为虚拟机请忽略",
+    "BIOS_VERSION_CHECK":      "BIOS固件有可用更新，建议评估更新内容后升级BIOS以消除潜在风险",
+    "WARN_LOG_CHECK":          "邮件/snmptraps/syslog告警均未开启，建议至少开启一项以便在设备异常时及时收到通知",
+    "MEMORY_LEAK_CHECK":       "检测到共享内存或信号量异常，建议升级到6.6R1及以上正式版本以修复已知问题",
+    "DEVICE_CONNECTION_CHECK": "新建或并发连接数偏高，建议检查是否存在连接泄漏或异常流量，必要时调整连接数限制",
+    "COREDUMP_INFO_CHECK":     "设备存在core dump记录，建议收集core dump文件联系深信服技术支持分析根因",
+    "CONFIG_ID_CONFLICT_CHECK":"部分配置存在ID冲突，建议在系统管理中检查并修正冲突的配置ID",
+    "NIC_HEALTH_CHECK":        "网卡交换芯片健康状态异常，建议检查82599/I350网卡硬件状态和驱动版本",
+    "SNAT_SPORT_EXHAUSTION_CHECK": "一周内出现SNAT源端口枯竭告警，建议检查NAT配置，适当扩大端口范围或增加公网IP",
+    # ── 安全巡检 (7) ───────────────────────────────────────────────────
+    "SSH_API_CHECK":           "非管理员用户开启了SSH/API权限，建议在用户管理中关闭不必要的远程访问权限",
+    "PATCH_INFO_CHECK":        "关键补丁未安装或不完整，建议在系统管理-补丁管理中检查并安装遗漏的安全补丁",
+    "REPORT_CHECK":            "报表进程占用CPU异常，建议检查报表任务调度频率和数据量，必要时调整报表生成策略",
+    "WEAK_PASSWORD_CHECK":     "存在弱密码或长期未修改密码的账号，建议修改为强密码（长度≥8位，含大小写字母+数字+特殊字符）",
+    "SSL_POLICY_CHECK":        "SSL策略存在不安全算法或协议，建议禁用TLS 1.0/1.1及弱加密套件（如RC4、3DES）",
+    "IP_LIMIT_CHECK":          "未设置管理员登录IP限制，建议配置仅允许信任的IP地址段访问设备管理界面",
+    "OPEN_PORT_CHECK":         "设备开放了非必要端口（报表、智能DNS等），建议在防火墙策略中按需关闭非必要的默认服务端口",
 }
 
 # ---------------------------------------------------------------------------
@@ -851,7 +887,7 @@ def analyze(data: Dict[str, Any], check_info: dict | None = None) -> Dict[str, A
                 "priority": "高",
                 "suggestion": _SUGGESTION_MAP.get(
                     key,
-                    f"检查项 {result.get('name', key)} 状态为 fail，建议进一步排查",
+                    f"检查项 {result.get('name', key)} 状态异常，请关注",
                 ),
             }
             suggestions.append(entry)
@@ -947,7 +983,7 @@ def render_markdown(
         overall = summary["score"]
     score_icon = score_icon_for(overall)
 
-    # ── 优化建议 ───────────────────────────────────────────────────────
+    # ── 排查建议 ───────────────────────────────────────────────────────
     suggestions = analysis.get("suggestions", [])
     suggestion_rows = []
     for sug in suggestions:
@@ -956,7 +992,7 @@ def render_markdown(
         suggestion_rows.append(
             f"| {sug.get('priority', '')} | {check_name} | {sug.get('suggestion', '')} |"
         )
-    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无优化建议 |"
+    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无排查建议 |"
 
     # 设备显示名：name（ip），降级到纯 IP
     device_ip = _strip_proto(meta.get("host", "?"))
@@ -1046,7 +1082,7 @@ def render_markdown(
 
 ---
 
-### 💡 优化建议
+### 💡 排查建议
 
 | 优先级 | 检查项 | 建议 |
 |--------|--------|------|

@@ -192,7 +192,7 @@ class TestRenderMarkdown(unittest.TestCase):
         }
         meta = {"host": "https://10.0.0.1", "scene": "标准巡检", "start_time": "2026-01-01 00:00:00"}
         output = render_markdown(analysis, meta)
-        self.assertIn("优化建议", output)
+        self.assertIn("排查建议", output)
         self.assertIn("健康评分", output)
         self.assertIn("100", output)
 
