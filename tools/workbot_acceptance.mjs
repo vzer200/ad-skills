@@ -84,8 +84,25 @@ const expected = {
   "r4-xff": ["init_env.py", "render_slb_bundle.py", "http-profile", "plan-and-render", "summarize-plan"],
 };
 
+function log(event, data = {}) {
+  console.error(JSON.stringify({ ts: new Date().toISOString(), event, ...data }));
+}
+
 async function text(page) {
   return page.locator("body").innerText({ timeout: 5000 }).catch(() => "");
+}
+
+async function savePageArtifacts(page, label) {
+  const safeLabel = label.replace(/[^a-zA-Z0-9_.-]+/g, "-");
+  const base = path.join(OUT_DIR, `${Date.now()}-${safeLabel}`);
+  const artifacts = {};
+  artifacts.text = `${base}.txt`;
+  artifacts.html = `${base}.html`;
+  artifacts.screenshot = `${base}.png`;
+  await fs.promises.writeFile(artifacts.text, await text(page), "utf8").catch(() => {});
+  await fs.promises.writeFile(artifacts.html, await page.content(), "utf8").catch(() => {});
+  await page.screenshot({ path: artifacts.screenshot, fullPage: true }).catch(() => {});
+  return artifacts;
 }
 
 async function waitForConversation(page) {
@@ -112,10 +129,11 @@ async function loginIfNeeded(page) {
   await waitForConversation(page);
 }
 
-async function waitForIdleText(page, beforeText, maxMs = 300000) {
+async function waitForIdleText(page, beforeText, label, maxMs = 300000) {
   const start = Date.now();
   let last = beforeText;
   let lastChanged = Date.now();
+  let lastLog = 0;
   while (Date.now() - start < maxMs) {
     await page.waitForTimeout(3000);
     const current = await text(page);
@@ -124,8 +142,18 @@ async function waitForIdleText(page, beforeText, maxMs = 300000) {
       lastChanged = Date.now();
     }
     const sendEnabled = await page.locator('button[utid="send-btn"]').isEnabled().catch(() => false);
+    const elapsedMs = Date.now() - start;
+    if (elapsedMs - lastLog > 30000) {
+      log("wait", { label, elapsedMs, textLength: current.length, sendEnabled });
+      lastLog = elapsedMs;
+    }
+    if (current !== beforeText && Date.now() - lastChanged > 20000) {
+      log("wait-stable", { label, elapsedMs, textLength: current.length, sendEnabled });
+      return current;
+    }
     if (sendEnabled && Date.now() - lastChanged > 12000) return current;
   }
+  log("wait-timeout", { label, maxMs });
   return text(page);
 }
 
@@ -150,21 +178,27 @@ async function expandToolCalls(page) {
 }
 
 async function sendPrompt(page, name, prompt) {
+  log("prompt-start", { name, promptLength: prompt.length });
   const before = await text(page);
   await page.locator("textarea.chat-input__textarea").fill(prompt);
   await page.locator('button[utid="send-btn"]').click();
-  const after = await waitForIdleText(page, before);
+  log("prompt-sent", { name, beforeLength: before.length });
+  const after = await waitForIdleText(page, before, name);
   await expandToolCalls(page);
   const expanded = await text(page);
   const delta = expanded.startsWith(before) ? expanded.slice(before.length) : expanded;
-  return { name, prompt, text: delta.slice(-12000) };
+  const artifacts = await savePageArtifacts(page, name);
+  log("prompt-done", { name, afterLength: after.length, expandedLength: expanded.length, deltaLength: delta.length, artifacts });
+  return { name, prompt, text: delta.slice(-12000), artifacts };
 }
 
 async function uploadZip(page) {
+  log("upload-start", { zip: ZIP_PATH });
   const input = page.locator('input[type="file"].hidden-input');
   if (!(await input.count())) throw new Error("upload file input not found");
   await input.setInputFiles(ZIP_PATH);
   await page.waitForTimeout(2000);
+  log("upload-done");
 }
 
 function verify(run) {
@@ -177,16 +211,28 @@ function verify(run) {
 
 async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  const { chromium } = resolvePlaywrightCore();
-  const browser = await chromium.launch({
-    headless: HEADLESS,
-    executablePath: fs.existsSync(CHROME_PATH) ? CHROME_PATH : undefined,
-    args: ["--ignore-certificate-errors"],
-  });
-  const page = await browser.newPage({ ignoreHTTPSErrors: true });
   const results = [];
+  const debug = {};
+  let failure = null;
+  let browser = null;
+  let page = null;
   try {
+    log("main-start", { cases: CASES, zip: ZIP_PATH, outDir: OUT_DIR });
+    log("resolve-playwright-start");
+    const { chromium } = resolvePlaywrightCore();
+    log("resolve-playwright-done");
+    log("browser-launch-start", { headless: HEADLESS, chrome: fs.existsSync(CHROME_PATH) ? CHROME_PATH : "bundled" });
+    browser = await chromium.launch({
+      headless: HEADLESS,
+      executablePath: fs.existsSync(CHROME_PATH) ? CHROME_PATH : undefined,
+      args: ["--ignore-certificate-errors", "--no-sandbox"],
+    });
+    log("browser-launch-done");
+    page = await browser.newPage({ ignoreHTTPSErrors: true });
+    log("page-new-done");
+    log("login-start", { url: WORKBOT_URL, headless: HEADLESS });
     await loginIfNeeded(page);
+    log("login-done", { currentUrl: page.url() });
     results.push(verify(await sendPrompt(page, "cleanup", prompts.cleanup)));
     if (CASES.includes("install")) {
       await uploadZip(page);
@@ -196,20 +242,31 @@ async function main() {
       if (!prompts[name]) throw new Error(`unknown case: ${name}`);
       results.push(verify(await sendPrompt(page, name, prompts[name])));
     }
+  } catch (error) {
+    failure = error;
+    debug.error = error && error.stack ? error.stack : String(error);
+    if (page) debug.artifacts = await savePageArtifacts(page, "failure");
+    log("failure", { message: error && error.message ? error.message : String(error), artifacts: debug.artifacts });
   } finally {
+    if (page) {
+      debug.finalUrl = page.url();
+      debug.finalTitle = await page.title().catch(() => "");
+    }
     const report = {
-      ok: results.every((item) => item.ok),
+      ok: !failure && results.every((item) => item.ok),
       url: WORKBOT_URL,
       zip: ZIP_PATH,
       cases: CASES,
       results,
+      debug,
       created_at: new Date().toISOString(),
     };
     const reportPath = path.join(OUT_DIR, `workbot-acceptance-${Date.now()}.json`);
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2), "utf8");
     console.log(JSON.stringify({ ok: report.ok, report: reportPath }, null, 2));
-    await browser.close();
+    if (browser) await browser.close();
   }
+  if (failure) process.exitCode = 1;
 }
 
 await main();
