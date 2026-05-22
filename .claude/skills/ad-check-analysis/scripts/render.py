@@ -66,8 +66,8 @@ def _check_icon(status: str) -> str:
 # Uncovered (both devices missing) summary
 # ---------------------------------------------------------------------------
 
-def _render_uncovered_both(results: Dict[str, Any]) -> str:
-    """Build the 'all devices unchecked' summary — items uncovered on every device."""
+def _render_uncovered_both(results: Dict[str, Any], device_labels: Dict[str, str]) -> str:
+    """Build the 'unchecked items' summary — items uncovered on every device."""
     valid_hosts = [h for h, r in results.items() if "error" not in r and r.get("analysis")]
     if not valid_hosts:
         return ""
@@ -86,22 +86,25 @@ def _render_uncovered_both(results: Dict[str, Any]) -> str:
     if not common:
         return ""
 
+    # Build device list string for the column
+    dev_list = ", ".join(device_labels.get(h, _extract_ip(h)) for h in valid_hosts)
+
     # Build rows from the first device's uncovered data (descriptions are the same)
     first_uc = {u["check_key"]: u for u in results[valid_hosts[0]]["analysis"].get("uncovered", [])}
     rows = []
     for ck in sorted(common):
         info = first_uc.get(ck, {})
         name = info.get("name", ck)
-        reasons = info.get("reasons", ["设备未采集该数据"])
-        reason_str = reasons[0] if reasons else "设备未采集该数据"
-        rows.append(f"| {name} | {reason_str} |")
+        reasons = info.get("reasons", ["不在本次巡检范围内"])
+        reason_str = reasons[0] if reasons else "不在本次巡检范围内"
+        rows.append(f"| {name} | {dev_list} | {reason_str} |")
 
     if not rows:
         return ""
 
-    header = f"### ⚠️ 所有设备均未检查（{len(rows)} 项）\n\n"
+    header = f"### ⚠️ 未检查项（{len(rows)} 项）\n\n"
     header += "以下检查项在所有设备上均未采集到对应数据，不代表设备存在异常。\n\n"
-    header += "| 检查项 | 原因 |\n|--------|------|\n"
+    header += "| 检查项 | 未检查设备 | 原因 |\n|--------|-----------|------|\n"
     return header + "\n".join(rows) + "\n"
 
 
@@ -360,7 +363,7 @@ def render_multi_device_report(
         for s in all_uc_sets[1:]:
             uncovered_both = uncovered_both & s
 
-    uncovered_section = _render_uncovered_both(results)
+    uncovered_section = _render_uncovered_both(results, device_labels)
     if uncovered_section:
         lines.append("---")
         lines.append("")
