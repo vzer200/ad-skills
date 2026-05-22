@@ -701,9 +701,10 @@ def analyze(data: Dict[str, Any], check_info: dict | None = None) -> Dict[str, A
         "device_info": {},
         "check_results": {},
         "categories": {"feature": [], "health": [], "secure": []},
-        "summary": {"total": 0, "pass": 0, "fail": 0, "score": 0},
+        "summary": {"total": 0, "total_expected": len(CHECK_RULES), "pass": 0, "fail": 0, "score": 0},
         "health_scores": {"feature": {"pass": 0, "total": 0, "score": 0}, "health": {"pass": 0, "total": 0, "score": 0}, "secure": {"pass": 0, "total": 0, "score": 0}, "overall": 0},
         "suggestions": [],
+        "uncovered": [],
     }
 
     if not isinstance(data, dict):
@@ -787,7 +788,38 @@ def analyze(data: Dict[str, Any], check_info: dict | None = None) -> Dict[str, A
                 check_results[ck_entry]['description'] = ck_info.get('desc', '')
                 break
 
-    # ── Phase 3: Categorize via CHECK_RULES ──────────────────────────────
+    # ── 字段缺失原因映射 ──────────────────────────────────────────────────
+    _FIELD_MISSING_REASONS = {
+        "heartbeat_state":        "非双机/集群模式，设备不采集心跳口数据",
+        "static_ip_config":       "非集群模式，不适用",
+        "rs_level_check":         "非双机模式，不适用",
+        "static_proximity_check": "未配置 DNS 就近性规则",
+        "proxy_policy_check":     "未配置优先代理策略",
+        "base_disk_high_usage":   "磁盘使用率正常，未触发高使用率告警",
+    }
+
+    # ── Phase 3: Track uncovered CHECK_RULES items ─────────────────────────
+    uncovered = []  # list of {check_key, name, desc, missing_fields, reasons}
+    for ck_entry, ck_info in CHECK_RULES.items():
+        if ck_entry in check_results:
+            continue
+        missing_fields = []
+        reasons = []
+        for fname in ck_info.get("fields", []):
+            if fname not in data:
+                missing_fields.append(fname)
+                reason = _FIELD_MISSING_REASONS.get(fname, "设备未采集该数据")
+                reasons.append(reason)
+        if missing_fields:
+            uncovered.append({
+                "check_key": ck_entry,
+                "name": ck_info.get("name", ck_entry),
+                "desc": ck_info.get("desc", ""),
+                "missing_fields": missing_fields,
+                "reasons": reasons,
+            })
+
+    # ── Phase 4: Categorize via CHECK_RULES ──────────────────────────────
     feature_keys, health_keys, secure_keys = [], [], []
     for ck in check_results:
         cat = CHECK_RULES.get(ck, {}).get('category', 'feature')
@@ -842,9 +874,10 @@ def analyze(data: Dict[str, Any], check_info: dict | None = None) -> Dict[str, A
         "device_info": device_info,
         "check_results": check_results,
         "categories": {"feature": feature_keys, "health": health_keys, "secure": secure_keys},
-        "summary": {"total": total, "pass": pass_count, "fail": fail_count, "score": score},
+        "summary": {"total": total, "total_expected": len(CHECK_RULES), "pass": pass_count, "fail": fail_count, "score": score},
         "health_scores": {"feature": f_score, "health": h_score, "secure": s_score, "overall": overall},
         "suggestions": suggestions,
+        "uncovered": uncovered,
     }
 
 
@@ -962,12 +995,33 @@ def render_markdown(
 {all_rows_text}
 """
 
+    # ── 未检查项渲染 ───────────────────────────────────────────────────
+    uncovered = analysis.get("uncovered", [])
+    uncovered_section = ""
+    if uncovered:
+        uc_rows = []
+        for uc in uncovered:
+            reasons_str = "；".join(uc.get("reasons", ["设备未采集该数据"]))
+            fields_str = ", ".join(uc.get("missing_fields", []))
+            uc_rows.append(f"| {uc['name']} | {uc['desc']} | `{fields_str}` | {reasons_str} |")
+        uncovered_table = "\n".join(uc_rows)
+        uncovered_section = f"""
+### ⚠️ 未检查项（{len(uncovered)} 项）
+
+以下检查项目前未出现在本次巡检报告中，通常是因为设备未采集对应数据，不代表设备存在异常。
+
+| 检查项 | 检查详情 | 缺失字段 | 可能原因 |
+|--------|---------|---------|---------|
+{uncovered_table}
+
+"""
+
     return f"""## ✅ AD 巡检分析报告
 
 **设备**: {device_label}
 **巡检时间**: {check_time}
 **巡检场景**: {meta.get("scene", "?")}
-**检查项**: {summary["total"]} 项
+**检查项**: {summary["total"]}/{summary.get("total_expected", summary["total"])} 项
 
 ---
 
@@ -984,7 +1038,7 @@ def render_markdown(
 ### 🔍 巡检结果详情
 
 {check_detail_section}
-
+{uncovered_section}
 ---
 
 ### 📈 统计汇总
