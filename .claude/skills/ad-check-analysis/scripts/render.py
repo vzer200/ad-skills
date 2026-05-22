@@ -202,6 +202,8 @@ def _render_suggestions_multi(
     """Build suggestions table with anomaly device column."""
     valid_hosts = [h for h, r in results.items() if "error" not in r and r.get("analysis")]
 
+    _CATEGORY_ICON = {"secure": "🛡️ 安全巡检", "health": "❤️ 健康巡检", "feature": "⚙️ 功能巡检"}
+    _CATEGORY_ORDER = {"secure": 0, "health": 1, "feature": 2}
     suggestion_map: Dict[str, Dict] = {}
     for host in valid_hosts:
         analysis = results[host]["analysis"]
@@ -210,24 +212,27 @@ def _render_suggestions_multi(
             ck = sug.get("check", "")
             if ck not in suggestion_map:
                 suggestion_map[ck] = {
-                    "priority": sug.get("priority", "高"),
+                    "category": sug.get("category", "feature"),
                     "suggestion": sug.get("suggestion", ""),
                     "devices": [],
                 }
             suggestion_map[ck]["devices"].append(dev_name)
 
     if not suggestion_map:
-        return "暂无排查建议。\n"
+        return "暂无异常项。\n"
 
     lines = [
-        "| 优先级 | 检查项 | 异常设备 | 建议 |",
-        "|--------|--------|---------|------|",
+        "| 类别 | 检查项 | 异常设备 | 建议 |",
+        "|------|--------|---------|------|",
     ]
-    for ck, info in suggestion_map.items():
+    sorted_checks = sorted(suggestion_map.keys(), key=lambda ck: _CATEGORY_ORDER.get(suggestion_map[ck]["category"], 99))
+    for ck in sorted_checks:
+        info = suggestion_map[ck]
         cr = results[valid_hosts[0]]["analysis"]["check_results"].get(ck, {})
         check_name = cr.get("name", ck)
         dev_list = ", ".join(info["devices"])
-        lines.append(f"| {info['priority']} | {check_name} | {dev_list} | {info['suggestion']} |")
+        cat_icon = _CATEGORY_ICON.get(info["category"], info["category"])
+        lines.append(f"| {cat_icon} | {check_name} | {dev_list} | {info['suggestion']} |")
 
     return "\n".join(lines)
 
@@ -373,6 +378,8 @@ def render_multi_device_report(
     lines.append("---")
     lines.append("")
     lines.append("### \U0001f4a1 排查建议")
+    lines.append("")
+    lines.append("以下检查项在本次巡检中状态为异常，建议按指引逐一排查：")
     lines.append("")
     lines.append(suggestions)
 

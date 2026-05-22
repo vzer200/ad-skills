@@ -839,7 +839,7 @@ def analyze(data: Dict[str, Any], check_info: dict | None = None) -> Dict[str, A
         for fname in ck_info.get("fields", []):
             if fname not in data:
                 missing_fields.append(fname)
-                reason = _FIELD_MISSING_REASONS.get(fname, "设备未采集该数据")
+                reason = _FIELD_MISSING_REASONS.get(fname, "不在本次巡检范围内")
                 reasons.append(reason)
         if missing_fields:
             uncovered.append({
@@ -879,18 +879,20 @@ def analyze(data: Dict[str, Any], check_info: dict | None = None) -> Dict[str, A
     overall = round((f_score["score"] + h_score["score"] + s_score["score"]) / 3)
 
     # ── Phase 5: Suggestions ────────────────────────────────────────────
+    _CATEGORY_ORDER = {"secure": 0, "health": 1, "feature": 2}
     suggestions = []
     for key, result in check_results.items():
         if result["status"] == "fail":
-            entry = {
+            cat = CHECK_RULES.get(key, {}).get("category", "feature")
+            suggestions.append({
                 "check": key,
-                "priority": "高",
+                "category": cat,
                 "suggestion": _SUGGESTION_MAP.get(
                     key,
                     f"检查项 {result.get('name', key)} 状态异常，请关注",
                 ),
-            }
-            suggestions.append(entry)
+            })
+    suggestions.sort(key=lambda s: _CATEGORY_ORDER.get(s["category"], 99))
 
     # ── Phase 6: Device info ────────────────────────────────────────────
     device_info = {
@@ -984,15 +986,17 @@ def render_markdown(
     score_icon = score_icon_for(overall)
 
     # ── 排查建议 ───────────────────────────────────────────────────────
+    _CATEGORY_ICON = {"secure": "🛡️ 安全巡检", "health": "❤️ 健康巡检", "feature": "⚙️ 功能巡检"}
     suggestions = analysis.get("suggestions", [])
     suggestion_rows = []
     for sug in suggestions:
         check_key = sug.get('check', '')
         check_name = results.get(check_key, {}).get('name', check_key) if check_key else '-'
+        cat_icon = _CATEGORY_ICON.get(sug.get('category', ''), sug.get('category', ''))
         suggestion_rows.append(
-            f"| {sug.get('priority', '')} | {check_name} | {sug.get('suggestion', '')} |"
+            f"| {cat_icon} | {check_name} | {sug.get('suggestion', '')} |"
         )
-    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无排查建议 |"
+    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无异常项 |"
 
     # 设备显示名：name（ip），降级到纯 IP
     device_ip = _strip_proto(meta.get("host", "?"))
@@ -1032,17 +1036,16 @@ def render_markdown(
     if uncovered:
         uc_rows = []
         for uc in uncovered:
-            reasons_str = "；".join(uc.get("reasons", ["设备未采集该数据"]))
-            fields_str = ", ".join(uc.get("missing_fields", []))
-            uc_rows.append(f"| {uc['name']} | {uc['desc']} | `{fields_str}` | {reasons_str} |")
+            reasons_str = "；".join(uc.get("reasons", ["不在本次巡检范围内"]))
+            uc_rows.append(f"| {uc['name']} | {uc['desc']} | {reasons_str} |")
         uncovered_table = "\n".join(uc_rows)
         uncovered_section = f"""
 ### ⚠️ 未检查项（{len(uncovered)} 项）
 
 以下检查项目前未出现在本次巡检报告中，通常是因为设备未采集对应数据，不代表设备存在异常。
 
-| 检查项 | 检查详情 | 缺失字段 | 可能原因 |
-|--------|---------|---------|---------|
+| 检查项 | 检查详情 | 可能原因 |
+|--------|---------|---------|
 {uncovered_table}
 
 """
@@ -1076,16 +1079,18 @@ def render_markdown(
 
 | 类别 | 检查项数 | 通过 | 异常 | 通过率 |
 |------|----------|------|------|--------|
-| 功能巡检 | {f["total"]} | {f["pass"]} | {f["fail"]} | {f["rate"]}% |
-| 健康巡检 | {h["total"]} | {h["pass"]} | {h["fail"]} | {h["rate"]}% |
-| 安全巡检 | {s["total"]} | {s["pass"]} | {s["fail"]} | {s["rate"]}% |
+| ⚙️ 功能巡检 | {f["total"]} | {f["pass"]} | {f["fail"]} | {f["rate"]}% |
+| ❤️ 健康巡检 | {h["total"]} | {h["pass"]} | {h["fail"]} | {h["rate"]}% |
+| 🛡️ 安全巡检 | {s["total"]} | {s["pass"]} | {s["fail"]} | {s["rate"]}% |
 
 ---
 
 ### 💡 排查建议
 
-| 优先级 | 检查项 | 建议 |
-|--------|--------|------|
+以下检查项在本次巡检中状态为异常，建议按指引逐一排查：
+
+| 类别 | 检查项 | 建议 |
+|------|--------|------|
 {suggestions_table}
 
 ---
