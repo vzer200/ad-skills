@@ -20,6 +20,7 @@ import os
 import sys
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 from ad_api import ADClient
 from multi_device import (
@@ -145,9 +146,13 @@ def build_overview(client: ADClient, subcommand: str = "all") -> Dict[str, Any]:
     """
     api_types = API_GROUPS.get(subcommand, [subcommand])
 
+    device_name = getattr(client, "device_name", "")
+    if not isinstance(device_name, str):
+        device_name = ""
+
     overview: Dict[str, Any] = {
         "query": subcommand,
-        "device": {"host": client.host},
+        "device": {"host": client.host, "name": device_name},
         "virtual_services": [],
         "certificates": [],
         "hardware": {},
@@ -377,6 +382,21 @@ def _level_cn(level: str) -> str:
     return _LEVEL_CN_MAP.get(level, level)
 
 
+def _display_host(host: str) -> str:
+    """Return a user-facing host without URL scheme."""
+    parsed = urlparse(str(host or ""))
+    return parsed.hostname or str(host or "")
+
+
+def _display_device(device: Dict[str, Any]) -> str:
+    """Return a compact user-facing device label."""
+    host = _display_host(device.get("host", ""))
+    name = str(device.get("name") or "").strip()
+    if name and host:
+        return f"{name}（{host}）"
+    return name or host
+
+
 def render_markdown(overview: Dict[str, Any]) -> str:
     """Render the overview dictionary as a Markdown string."""
     lines: List[str] = []
@@ -388,7 +408,7 @@ def render_markdown(overview: Dict[str, Any]) -> str:
         lines.append(e)
 
     a("## 查询结论")
-    a(f"- 目标：{overview.get('device', {}).get('host', '')}")
+    a(f"- 目标设备：{_display_device(overview.get('device', {}))}")
     a(f"- 维度：{query}")
     a("- 数据来源：设备实时查询")
     a(f"- 状态：{'失败' if failed else '成功'}")
@@ -507,15 +527,6 @@ def render_markdown(overview: Dict[str, Any]) -> str:
                 hw_row(f"Interface: {i.get('name', '')}", i.get("status", ""), i.get("level", "ok"))
     a("")
 
-    a("## 覆盖说明")
-    if query == "all":
-        a("- all：覆盖配置、流量、设备状态、SSL 证书。")
-    else:
-        a(f"- 单项查询：仅展示 {query} 维度。")
-    if failed:
-        a(f"- 部分数据源失败：{', '.join(failed.keys())}。")
-    a("")
-
     return "\n".join(lines)
 
 
@@ -605,6 +616,7 @@ def main() -> None:
             sys.exit(4)
 
         results = run_multi(devices, _overview_one, subcommand=args.subcommand)
+        device_names = {d["host"]: _display_device({"host": d.get("host", ""), "name": d.get("name", "")}) for d in devices}
 
         if args.format == "json":
             output = {
@@ -618,18 +630,19 @@ def main() -> None:
             }
             print(json.dumps(output, indent=2, ensure_ascii=False))
         else:
-            lines = [render_multi_summary(results, "AD Device Overview — 多设备")]
+            lines = [render_multi_summary(results, "AD Device Overview — 多设备", device_names)]
             lines.append("---")
             for host, result in results.items():
+                device_label = device_names.get(host, _display_host(host))
                 if "error" in result:
-                    lines.append(f"## {host}")
+                    lines.append(f"## {device_label}")
                     lines.append(f"> 错误: {result['error']}")
                 else:
-                    lines.append(f"## {host}")
+                    lines.append(f"## {device_label}")
                     lines.append(result.get("markdown", ""))
                 lines.append("")
             lines.append("---")
-            lines.append(render_multi_summary(results, "", {}))
+            lines.append(render_multi_summary(results, "", device_names))
             print("\n".join(lines))
 
         sys.exit(compute_multi_exit_code(results))

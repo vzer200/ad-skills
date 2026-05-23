@@ -1133,7 +1133,7 @@ function templateExpectedFor(name, cfg) {
   if (cfg.templateExpected) return cfg.templateExpected;
   if (name.startsWith("r1-all")) return ["巡检结论", "设备概览", "全局共性问题"];
   if (name.startsWith("r1")) return ["巡检结论", "分类统计", "设备基本信息", "检查项明细", "优化建议", "健康评分"];
-  if (name.startsWith("r2")) return ["查询结论", "查询范围", "查询结果", "覆盖说明"];
+  if (name.startsWith("r2")) return ["查询结论", "查询范围", "查询结果"];
   if (name.startsWith("r3")) return ["感知结论", "分析结果", "结论边界"];
   if (name.startsWith("r4")) return ["配置结论", "执行摘要", "生成产物", "安全确认", "下一步"];
   return [];
@@ -1357,6 +1357,9 @@ function verify(run) {
       defaultVisibleForbidden.push("跨设备对比", "高频异常", "重点关注设备", "设备详情", "详细报告");
     }
   }
+  if (/^r2/.test(run.name)) {
+    defaultVisibleForbidden.push("覆盖说明");
+  }
   const visibleForbidden = cfg.visibleForbidden || defaultVisibleForbidden;
   const visibleForbiddenFound = visibleForbidden.filter((token) => visibleText.includes(token));
   const visibleForbiddenRegexes = /^r1/.test(run.name)
@@ -1368,6 +1371,9 @@ function verify(run) {
     : [];
   if (/^r1/.test(run.name) && !run.name.startsWith("r1-all")) {
     visibleForbiddenRegexes.push({ name: "single target URL form", regex: /目标[：:][^\n]*\(\s*https?:\/\// });
+  }
+  if (/^r2/.test(run.name)) {
+    visibleForbiddenRegexes.push({ name: "query target URL scheme", regex: /目标设备?[：:][^\n]*https?:\/\// });
   }
   const visibleForbiddenRegexFound = visibleForbiddenRegexes
     .filter((item) => item.regex.test(visibleText))

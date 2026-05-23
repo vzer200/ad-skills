@@ -101,7 +101,7 @@ Every requirement run must use the corresponding skill output template. Missing 
 ```text
 R1 单设备: 巡检结论 / 分类统计 / 设备基本信息 / 检查项明细 / 优化建议 / 健康评分
 R1 多设备: 巡检结论 / 设备概览 / 全局共性问题
-R2: 查询结论 / 查询范围 / 查询结果 / 覆盖说明
+R2: 查询结论 / 查询范围 / 查询结果
 R3: 感知结论 / 分析结果 / 结论边界
 R4: 配置结论 / 执行摘要 / 生成产物 / 安全确认
 ```
@@ -289,6 +289,7 @@ Pass criteria:
 - Device/hardware status query calls `overview.py hardware`.
 - Multi-device VS/Pool/cert/traffic/status/hardware prompts must call `overview.py <dimension> --devices ...` and must not fall back to `--device AD1` or `--device AD2`.
 - Tool commands must not use `2>&1`; stderr must stay separate from stdout so the visible report remains script-controlled.
+- Visible R2 answers must not include `覆盖说明`; target lines should use `目标设备：AD1（192.168.8.30）` rather than exposing URL schemes such as `https://192.168.8.30`.
 - HA can be tested manually when needed, but is intentionally skipped in the default acceptance batch.
 - `connect.py` validates the AD1 target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
 - The answer includes VS, Pool/config, traffic/status, and certificate sections only if returned by the script.

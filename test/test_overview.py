@@ -30,6 +30,7 @@ class TestOverviewAPI(unittest.TestCase):
         """Set up a mock ADClient with realistic return values for all APIs."""
         self.client = MagicMock()
         self.client.host = "https://10.0.0.1"
+        self.client.device_name = "AD1"
 
         # -- Virtual Services -------------------------------------------------
         self.client.get_virtual_services.return_value = {
@@ -251,7 +252,8 @@ class TestOverviewAPI(unittest.TestCase):
         self.assertIn("查询结论", md)
         self.assertIn("查询范围", md)
         self.assertIn("查询结果", md)
-        self.assertIn("覆盖说明", md)
+        self.assertIn("目标设备：AD1（10.0.0.1）", md)
+        self.assertNotIn("覆盖说明", md)
         self.assertIn("AD Device Overview", md)
         self.assertIn("Device Info", md)
         self.assertIn("Virtual Services", md)
