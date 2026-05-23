@@ -11,6 +11,7 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 - 最终回答必须复制 `overview.py --format markdown` 的 stdout 原文。不要改写成自定义表格，不要只摘取 VS/Pool/证书数据，不要把脚本输出重新组织成自己的摘要。
 - `## 工具调用` 中必须出现字面量 `connect.py` 和 `overview.py <维度>`，并写明退出码/stdout 摘要；即使工具面板已经展示调用，最终回答也必须保留这两个脚本名。
 - 工具面板里的真实命令必须先单独执行 `skills/ad-connect/scripts/connect.py`，再执行 `skills/ad-ops/scripts/overview.py`。不能把 `overview.py` stdout 中提到的 `connect.py` 当作连接预检。
+- 每一条新的用户查询都必须重新执行一次 `connect.py`。禁止复用上一轮 VS/Pool/证书查询里的连接预检结果。
 - 查询真实设备前必须先调用 `ad-connect`。
 - 用户要“配置、流量、状态、证书”整体视图时，必须使用 `overview.py all`。
 - 用户要特定维度时，必须先用 `connect.py` 验证目标设备，再使用 `overview.py vs|pool|cert|hardware|ha|traffic`；不要直接调用 `ad_api.py` 给用户生成查询结果。
