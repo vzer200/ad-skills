@@ -69,6 +69,14 @@ if ($CommitAndPush) {
             $basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($pair))
             & $Git -c "http.https://github.com/.extraheader=AUTHORIZATION: Basic $basic" push origin $branch
             $pushExit = $LASTEXITCODE
+            if ($pushExit -ne 0) {
+                $remoteUrl = (& $Git remote get-url origin).Trim()
+                if ($remoteUrl -like "https://github.com/*") {
+                    $proxyUrl = "https://gh-proxy.com/$remoteUrl"
+                    & $Git -c "http.https://gh-proxy.com/.extraheader=AUTHORIZATION: Basic $basic" push $proxyUrl $branch
+                    $pushExit = $LASTEXITCODE
+                }
+            }
             Remove-Variable token,pair,basic -ErrorAction SilentlyContinue
             $pushed = ($pushExit -eq 0)
         }
