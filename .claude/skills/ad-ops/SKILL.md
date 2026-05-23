@@ -18,6 +18,7 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 - 输出必须来自脚本 stdout。禁止模型自己拼接 VS、Pool、证书或状态表。
 - 支持 `devices.json` 中的 AD1/AD2。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-ops/devices.json` 或 `.claude/skills/ad-ops/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
 - 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动使用设备清单并加 `--device AD1`。
+- 用户说“所有 AD 设备 / 全部 AD / 多台设备”时，必须使用 `--devices skills/ad-ops/devices.json`，不要加 `--device AD1` 或 `--device AD2`，让脚本按设备清单查询全部设备。
 - 若设备清单中的地址不可达，但同一设备的内网地址可达，可以使用可达地址完成查询；必须在“覆盖说明”中说明地址切换原因，不要询问用户是否修改 `devices.json`。
 - “虚拟服务配置/VS 配置”映射到 `overview.py vs`；“节点配置/节点池/Pool 配置”映射到 `overview.py pool`；整体配置、流量、状态、证书查询映射到 `overview.py all`。
 - “SSL 证书/证书到期”映射到 `overview.py cert`；“流量情况”映射到 `overview.py traffic`；“HA 状态”映射到 `overview.py ha`；“设备状态/硬件状态”映射到 `overview.py hardware`。
@@ -26,6 +27,13 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 
 ```bash
 python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json && python3 skills/ad-ops/scripts/overview.py all --devices skills/ad-ops/devices.json --device AD1 --format markdown
+```
+
+## 多设备查询
+
+```bash
+# 所有 AD 设备的 VS / 虚拟服务
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --format json && python3 skills/ad-ops/scripts/overview.py vs --devices skills/ad-ops/devices.json --format markdown
 ```
 
 ## 分项查询

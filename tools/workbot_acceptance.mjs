@@ -54,7 +54,7 @@ const CHROME_PATH = argValue(
 const CASES = (
   argValue(
     "--cases",
-    "install,r1,r1-full,r1-security,r1-all,r1-all-full,r1-all-security,r2,r2-vs,r2-node,r2-pool,r2-cert,r2-traffic,r2-status,r2-ha,r2-hardware,r3,r3-traffic,r3-state,r3-conflict,r3-logs,r4-script",
+    "install,r1,r1-full,r1-security,r1-all,r1-all-full,r1-all-security,r2,r2-vs,r2-vs-alt,r2-vs-all,r2-node,r2-pool,r2-cert,r2-traffic,r2-status,r2-hardware,r3,r3-traffic,r3-state,r3-conflict,r3-logs,r4-script",
   ) || ""
 )
   .split(",")
@@ -80,7 +80,7 @@ const COMMAND_FOLLOWUP =
 
 const cases = {
   cleanup: {
-    prompt: "请实际调用工具清理旧的 AD skills 和相关记忆。必须用 shell 检查并删除 skills/ad-*，用 cron_list 检查定时任务，用 memory_export/memory_purge 清理记忆，最后列出工具、命令、退出码和 stdout/stderr 摘要；不要只输出结论。",
+    prompt: "清理旧 AD skills 和记忆。必须先出现真实工具调用：shell 查删 skills/ad-*，cron_list 查任务，memory_export/memory_purge 清记忆，再用 shell 和 memory_export 验证；没有工具调用就回答失败，不要编执行表。",
     expected: ["skill", "记忆"],
     requireTools: true,
   },
@@ -158,6 +158,20 @@ const cases = {
   "r2-vs": {
     prompt: "帮我查一下 AD1 的虚拟服务配置。",
     expected: ["connect.py", "AD1", "overview.py", "vs"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-vs-alt": {
+    prompt: "看下 AD1 上有哪些 VS。",
+    expected: ["connect.py", "AD1", "overview.py", "vs"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-vs-all": {
+    prompt: "帮我查一下所有 AD 设备的虚拟服务配置。",
+    expected: ["connect.py", "devices.json", "overview.py", "vs"],
+    commandExpected: ["connect.py", "overview.py", "--devices"],
+    commandForbidden: ["--device AD1", "--device AD2"],
     requireTools: true,
     requireDevice: true,
   },
@@ -661,6 +675,8 @@ function verify(run) {
   const commandExpected = commandExpectedFor(run.name, cfg);
   const commandFound = commandExpected.filter((token) => toolCommandText.includes(token));
   const commandMissing = commandExpected.filter((token) => !toolCommandText.includes(token));
+  const commandForbidden = cfg.commandForbidden || [];
+  const commandForbiddenFound = commandForbidden.filter((token) => toolCommandText.includes(token));
   const forbidden = cfg.forbidExecute && /(^|\s)--execute(\s|$)/.test(searchable);
   const toolEvidenceOk = !cfg.requireTools || run.responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence);
   const deviceEvidenceOk = !cfg.requireDevice || hasDeviceEvidence(searchable);
@@ -678,6 +694,8 @@ function verify(run) {
     commandExpected,
     commandFound,
     commandMissing,
+    commandForbidden,
+    commandForbiddenFound,
     toolCommands,
     toolEvidenceOk,
     cleanToolTriggerOk,
@@ -687,7 +705,7 @@ function verify(run) {
     toolFollowupUsed: Boolean(run.toolFollowupUsed),
     commandFollowupUsed: Boolean(run.commandFollowupUsed),
     deviceFollowupUsed: Boolean(run.deviceFollowupUsed),
-    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk,
+    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && commandForbiddenFound.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk,
     forbidden_execute: forbidden,
   };
 }
