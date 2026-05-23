@@ -7,6 +7,7 @@ AD 巡检脚本 — 严格按照 ad-check-analysis SKILL.md 流程实现
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -996,6 +997,80 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
 # Markdown 报告渲染
 # ---------------------------------------------------------------------------
 
+_DETAIL_FIELD_LABELS = {
+    "admin": "管理员角色",
+    "dns_proxy_enabled": "DNS 代理",
+    "heartbeat_state": "心跳状态",
+    "rs_level_check": "节点级别检查",
+    "static_proximity_check": "静态就近性检查",
+    "dns64_enabled": "DNS64",
+    "newly_added_policy_route": "新增策略路由",
+    "snmp_alarm_enabled": "SNMP Trap 告警",
+    "dns_pre_rule_exist": "DNS 前置策略",
+    "dns_server_enabled": "DNS 服务",
+    "email_alarm_enabled": "邮件告警",
+    "proxy_policy_check": "代理策略",
+    "syslog_enabled": "Syslog",
+    "auto_update": "自动更新",
+    "max": "最大值",
+    "acceleration": "加速卡状态",
+    "shm_sem_state": "共享内存/信号量",
+    "base_no_core": "Core 文件状态",
+    "I350": "I350 网卡",
+    "82599": "82599 网卡",
+    "security_check_state": "设备安全检查",
+    "remote_mt": "远程维护",
+    "ssh_authority": "SSH/API 访问控制",
+    "base_report_stab": "报表服务状态",
+    "algorithm": "不安全算法",
+    "protocol": "不安全协议",
+    "enable_iplimit": "管理登录 IP 限制",
+}
+
+_DETAIL_VALUE_REPLACEMENTS = {
+    "true": "是",
+    "false": "否",
+    "True": "是",
+    "False": "否",
+    "NORMAL": "正常",
+    "normal": "正常",
+    "NOT_CLUSTER_MODE": "非集群模式",
+    "CLUSTER_UNABLE": "集群不可用",
+    "CLUSTER_UNABLE_OR_NOTIN": "未加入集群或集群不可用",
+}
+
+
+def _friendly_detail_value(field: str, raw_value: str) -> str:
+    value = raw_value.strip().strip("\"'")
+    lower = value.lower()
+    if lower in ("true", "false"):
+        enabled_word = "已开启" if lower == "true" else "未开启"
+        pass_word = "通过" if lower == "true" else "未通过"
+        if field.endswith("_enabled") or field in {
+            "dns64_enabled", "syslog_enabled", "auto_update", "enable_iplimit", "remote_mt",
+        }:
+            return enabled_word
+        if field.endswith("_state") or field.endswith("_check") or field in {
+            "admin", "ssh_authority", "security_check_state", "base_report_stab",
+            "shm_sem_state",
+        }:
+            return pass_word
+    return _DETAIL_VALUE_REPLACEMENTS.get(value, value)
+
+
+def _user_detail(text: Any) -> str:
+    detail = str(text or "").replace("\n", " ")
+
+    def repl(match: re.Match[str]) -> str:
+        field = match.group(1)
+        value = match.group(2)
+        label = _DETAIL_FIELD_LABELS.get(field, field.replace("_", " "))
+        return f"{label}：{_friendly_detail_value(field, value)}"
+
+    detail = re.sub(r"\b([A-Za-z][A-Za-z0-9_]*|82599)=([^\s,|]+)", repl, detail)
+    return detail.replace("`ad.json`", "设备巡检报告").replace("ad.json", "设备巡检报告")
+
+
 def render_markdown(
     analysis: Dict[str, Any],
     meta: Dict[str, Any],
@@ -1044,9 +1119,9 @@ def render_markdown(
         for k in all_keys:
             if k in results:
                 r = results[k]
-                detail = r.get('detail') or r['value']
+                detail = _user_detail(r.get('detail') or r['value'])
                 check_name = r.get("name") or check_label(k)
-                rows.append(f"| {check_name} | {icon(r['status'])} {status_label(r['status'])} | {detail.replace(chr(10), ' ')} |")
+                rows.append(f"| {check_name} | {icon(r['status'])} {status_label(r['status'])} | {detail} |")
         return "\n".join(rows)
 
     def abnormal_rows() -> str:
@@ -1054,9 +1129,9 @@ def render_markdown(
         for k in all_keys:
             if k in results and results[k]["status"] in ("fail", "warn"):
                 r = results[k]
-                detail = r.get("detail") or r["value"]
+                detail = _user_detail(r.get("detail") or r["value"])
                 check_name = r.get("name") or check_label(k)
-                rows.append(f"| {check_name} | {icon(r['status'])} {status_label(r['status'])} | {detail.replace(chr(10), ' ')} |")
+                rows.append(f"| {check_name} | {icon(r['status'])} {status_label(r['status'])} | {detail} |")
         return "\n".join(rows)
 
     # ── 健康评分（优先使用 analyze 返回的 health_scores） ─────────────
@@ -1078,7 +1153,7 @@ def render_markdown(
     suggestion_rows = []
     for sug in suggestions:
         suggestion_rows.append(
-            f"| {sug.get('priority', '')} | {sug.get('check_name') or check_label(sug.get('check', ''))} | {sug.get('suggestion', '')} |"
+            f"| {sug.get('priority', '')} | {sug.get('check_name') or check_label(sug.get('check', ''))} | {_user_detail(sug.get('suggestion', ''))} |"
         )
     suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无优化建议 |"
 
@@ -1181,7 +1256,7 @@ def render_markdown(
 | 安全配置 | {score_cell(security_score, s["total"])} |
 | **综合评分** | {score_icon} **{overall}/100** |
 
-**说明**: 以上结果全部来自巡检报告文件 `ad.json`，严格按照巡检返回数据进行分析。
+**说明**: 以上结果全部来自设备巡检报告，严格按照巡检返回数据进行分析。
 """
 
 
@@ -1493,8 +1568,19 @@ def main() -> None:
                 verbose=args.verbose,
                 _timeout=min(max(args.timeout + 15, 30), 75),
             )
+            if len(devices) == 1:
+                only = next(iter(results.values()))
+                if "error" not in only and only.get("markdown"):
+                    print("\n" + only["markdown"])
+                    sys.exit(compute_multi_exit_code(results))
             device_names = {d["host"]: d["name"] for d in devices if d.get("name")}
-            print(render_multi_device_report(results, scene="巡检", device_names=device_names))
+            scenes = [
+                r.get("meta", {}).get("scene")
+                for r in results.values()
+                if "error" not in r and r.get("meta", {}).get("scene")
+            ]
+            scene = scenes[0] if scenes else "巡检"
+            print(render_multi_device_report(results, scene=scene, device_names=device_names))
             sys.exit(compute_multi_exit_code(results))
 
         if not args.host:

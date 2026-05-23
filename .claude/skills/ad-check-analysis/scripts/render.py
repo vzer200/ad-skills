@@ -9,6 +9,7 @@
 本模块所有函数均为 ad-check-analysis 专用。
 """
 
+import re
 from typing import Any, Dict, Optional
 
 
@@ -68,6 +69,79 @@ _CATEGORY_LABELS = {
     "health": "健康巡检",
     "secure": "安全巡检",
 }
+
+_DETAIL_FIELD_LABELS = {
+    "admin": "管理员角色",
+    "dns_proxy_enabled": "DNS 代理",
+    "heartbeat_state": "心跳状态",
+    "rs_level_check": "节点级别检查",
+    "static_proximity_check": "静态就近性检查",
+    "dns64_enabled": "DNS64",
+    "newly_added_policy_route": "新增策略路由",
+    "snmp_alarm_enabled": "SNMP Trap 告警",
+    "dns_pre_rule_exist": "DNS 前置策略",
+    "dns_server_enabled": "DNS 服务",
+    "email_alarm_enabled": "邮件告警",
+    "proxy_policy_check": "代理策略",
+    "syslog_enabled": "Syslog",
+    "auto_update": "自动更新",
+    "max": "最大值",
+    "acceleration": "加速卡状态",
+    "shm_sem_state": "共享内存/信号量",
+    "base_no_core": "Core 文件状态",
+    "I350": "I350 网卡",
+    "82599": "82599 网卡",
+    "security_check_state": "设备安全检查",
+    "remote_mt": "远程维护",
+    "ssh_authority": "SSH/API 访问控制",
+    "base_report_stab": "报表服务状态",
+    "algorithm": "不安全算法",
+    "protocol": "不安全协议",
+    "enable_iplimit": "管理登录 IP 限制",
+}
+
+_DETAIL_VALUE_REPLACEMENTS = {
+    "true": "是",
+    "false": "否",
+    "True": "是",
+    "False": "否",
+    "NORMAL": "正常",
+    "normal": "正常",
+    "NOT_CLUSTER_MODE": "非集群模式",
+    "CLUSTER_UNABLE": "集群不可用",
+    "CLUSTER_UNABLE_OR_NOTIN": "未加入集群或集群不可用",
+}
+
+
+def _friendly_detail_value(field: str, raw_value: str) -> str:
+    value = raw_value.strip().strip("\"'")
+    lower = value.lower()
+    if lower in ("true", "false"):
+        enabled_word = "已开启" if lower == "true" else "未开启"
+        pass_word = "通过" if lower == "true" else "未通过"
+        if field.endswith("_enabled") or field in {
+            "dns64_enabled", "syslog_enabled", "auto_update", "enable_iplimit", "remote_mt",
+        }:
+            return enabled_word
+        if field.endswith("_state") or field.endswith("_check") or field in {
+            "admin", "ssh_authority", "security_check_state", "base_report_stab",
+            "shm_sem_state",
+        }:
+            return pass_word
+    return _DETAIL_VALUE_REPLACEMENTS.get(value, value)
+
+
+def _user_detail(text: Any) -> str:
+    detail = str(text or "").replace("\n", " ")
+
+    def repl(match: re.Match[str]) -> str:
+        field = match.group(1)
+        value = match.group(2)
+        label = _DETAIL_FIELD_LABELS.get(field, field.replace("_", " "))
+        return "{}：{}".format(label, _friendly_detail_value(field, value))
+
+    detail = re.sub(r"\b([A-Za-z][A-Za-z0-9_]*|82599)=([^\s,|]+)", repl, detail)
+    return detail.replace("`ad.json`", "设备巡检报告").replace("ad.json", "设备巡检报告")
 
 
 def _device_summary_status(result: Dict[str, Any]) -> str:
@@ -148,7 +222,7 @@ def _render_device_detail_block(
                 _check_label(k, cr),
                 _check_icon(cr["status"]),
                 _status_label(cr["status"]),
-                cr.get("detail") or cr["value"],
+                _user_detail(cr.get("detail") or cr["value"]),
             ))
         lines.append("")
 
@@ -256,7 +330,7 @@ def _render_cross_device_comparison(
         for host in valid_hosts:
             s = statuses.get(host, {})
             status = s.get("status", "?")
-            value = s.get("value", "?")
+            value = _user_detail(s.get("value", "?"))
             row += " {} {} |".format(_check_icon(status), value)
             if status in ("fail", "warn"):
                 notes.append(_extract_ip(host))
@@ -395,7 +469,7 @@ def render_multi_device_report(
                 cr = check_results.get(key)
                 if not cr or cr.get("status") not in ("fail", "warn"):
                     continue
-                detail = cr.get("detail") or cr.get("value", "")
+                detail = _user_detail(cr.get("detail") or cr.get("value", ""))
                 abnormal_rows.append("| {} | {} | {} {} | {} |".format(
                     d["name"],
                     cat_label,
@@ -476,7 +550,7 @@ def render_multi_device_report(
 
     lines.append("---")
     lines.append("")
-    lines.append("**说明**: 以上结果全部来自各设备巡检报告文件 `ad.json`，严格按照巡检返回数据进行分析。")
+    lines.append("**说明**: 以上结果全部来自各设备巡检报告，严格按照巡检返回数据进行分析。")
 
     return "\n".join(lines)
 

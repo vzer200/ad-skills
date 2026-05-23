@@ -262,6 +262,39 @@ class TestRenderMultiDeviceReport(unittest.TestCase):
         self.assertIn("59/100", output)
         self.assertNotIn("76/100", output)
 
+    def test_multi_device_report_sanitizes_raw_device_fields(self):
+        results = {
+            "https://dev1.com": {
+                "meta": {"host": "https://dev1.com", "start_time": "20260520120000"},
+                "analysis": _make_analysis(
+                    check_results={
+                        "DEVICE_SAFE_CHECK": {"status": "fail", "name": "设备安全状态检查", "value": "security_check_state=False"},
+                        "SSL_POLICY_CHECK": {"status": "fail", "name": "SSL 安全策略检查", "value": "algorithm=True protocol=True"},
+                    },
+                    categories={"feature": ["DEVICE_SAFE_CHECK"], "health": [], "secure": ["SSL_POLICY_CHECK"]},
+                    summary={"total": 2, "pass": 0, "fail": 2, "warn": 0, "score": 0},
+                ),
+            },
+            "https://dev2.com": {
+                "meta": {"host": "https://dev2.com", "start_time": "20260520130000"},
+                "analysis": _make_analysis(
+                    check_results={
+                        "DEVICE_SAFE_CHECK": {"status": "fail", "name": "设备安全状态检查", "value": "security_check_state=False"},
+                    },
+                    categories={"feature": ["DEVICE_SAFE_CHECK"], "health": [], "secure": []},
+                    summary={"total": 1, "pass": 0, "fail": 1, "warn": 0, "score": 0},
+                ),
+            },
+        }
+        output = render_multi_device_report(results, device_names={"https://dev1.com": "AD1", "https://dev2.com": "AD2"})
+        self.assertIn("设备安全检查：未通过", output)
+        self.assertIn("不安全算法：是", output)
+        self.assertIn("不安全协议：是", output)
+        self.assertNotIn("security_check_state=", output)
+        self.assertNotIn("algorithm=", output)
+        self.assertNotIn("protocol=", output)
+        self.assertNotIn("ad.json", output)
+
 
 if __name__ == "__main__":
     unittest.main()

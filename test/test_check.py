@@ -197,6 +197,32 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertIn("**100/100**", output)
         self.assertNotIn("硬件健康 | 🔴 0/100", output)
 
+    def test_render_sanitizes_raw_device_fields(self):
+        analysis = analyze({
+            "admin": "false",
+            "heartbeat_state": False,
+            "shm_sem_state": False,
+            "security_check_state": False,
+            "unsafe_algorithm": True,
+            "unsafe_protocol": True,
+            "enable_iplimit": "false",
+        })
+        output = render_markdown(analysis, {"host": "https://10.0.0.1", "scene": "标准巡检", "start_time": ""})
+        self.assertIn("管理员角色未正确配置", output)
+        self.assertIn("心跳状态：未通过", output)
+        self.assertIn("共享内存/信号量异常", output)
+        self.assertIn("设备安全检查未开启", output)
+        self.assertIn("存在不安全算法和不安全协议", output)
+        self.assertIn("未启用管理登录 IP 限制", output)
+        self.assertNotIn("admin=", output)
+        self.assertNotIn("heartbeat_state=", output)
+        self.assertNotIn("shm_sem_state=", output)
+        self.assertNotIn("security_check_state=", output)
+        self.assertNotIn("algorithm=", output)
+        self.assertNotIn("protocol=", output)
+        self.assertNotIn("enable_iplimit=", output)
+        self.assertNotIn("ad.json", output)
+
 
 class TestExitCodes(unittest.TestCase):
     """Test exit code mappings."""

@@ -185,7 +185,8 @@ Pass criteria:
 - The final answer does not add model-written inspection findings, wrapper phrases, or skill-policy explanations.
 - The final visible answer starts at `## 巡检结论` and must not append a second execution table or any phrase such as `工具调用`, `退出码`, `stdout`, `上方 stdout`, `connect.py`, or `check.py`.
 - The final visible answer must not include phrases such as `根据技能`, `技能规则`, `根据 ad-check-analysis`, `下面汇总展示`, or `报告均已获取成功`.
-- The final visible answer must not include raw device field syntax such as `security_check_state=`, `remote_mt=`, `ssh_authority=`, `algorithm=`, `protocol=`, or `enable_iplimit=`; these must be rendered as Chinese operator-facing descriptions.
+- The final visible answer must not include raw device field syntax such as `security_check_state=`, `remote_mt=`, `ssh_authority=`, `algorithm=`, `protocol=`, or `enable_iplimit=`; these must be rendered as Chinese operator-facing descriptions. It must also not mention internal report file names such as `ad.json`.
+- Acceptance artifacts are redacted before saving; credential fields, tokens, cookies, and known runtime passwords must not be persisted in WorkBot result files.
 - WorkBot commands must not use `2>&1` for the final `wait` command. If stderr is needed for debugging, it stays inside tool evidence and is not copied into the user-visible answer.
 - Check items in final answers use Chinese labels, not internal IDs such as `DEVICE_SAFE_CHECK`.
 - Single-device reports may list all check items. Multi-device reports use the same top-level headings but only expand abnormal items per device to avoid oversized output.

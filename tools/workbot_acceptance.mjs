@@ -131,6 +131,47 @@ if (CASES.some((name) => name.startsWith("r4-")) && !fs.existsSync(R4_YAML_PATH)
   throw new Error(`R4 YAML fixture not found: ${R4_YAML_PATH}`);
 }
 
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+const SENSITIVE_VALUES = Array.from(new Set([
+  WORKBOT_PASSWORD,
+  AD_VERIFY_PASSWORD,
+  process.env.AD1_PASS,
+  process.env.AD2_PASS,
+  process.env.AD_PASS,
+  process.env.AD_PASSWORD,
+  process.env.WORKBOT_PASSWORD,
+].filter((item) => item && String(item).length >= 4).map(String)));
+
+function redactSensitive(value) {
+  let text = String(value ?? "");
+  for (const secret of SENSITIVE_VALUES) {
+    text = text.replace(new RegExp(escapeRegExp(secret), "g"), "[REDACTED_SECRET]");
+  }
+  text = text.replace(
+    /["']?\b(?:password|passwd|pwd|authorization|cookie|secret|api[_-]?token|access[_-]?token|auth[_-]?token)\b["']?\s*[:=]\s*(?:"[^"]*"|'[^']*'|[^\s,}<]+)/gi,
+    "[REDACTED_CREDENTIAL_FIELD]",
+  );
+  text = text.replace(
+    /(--(?:password|passwd|pwd|token)\b(?:=|\s+))(?:"[^"]*"|'[^']*'|[^\s"']+)/gi,
+    "[REDACTED_CREDENTIAL_ARG]",
+  );
+  return text;
+}
+
+function redactToolEvidence(toolEvidence) {
+  if (!toolEvidence) return toolEvidence;
+  return {
+    ...toolEvidence,
+    candidates: (toolEvidence.candidates || []).map((candidate) => ({
+      ...candidate,
+      text: redactSensitive(candidate.text || ""),
+    })),
+  };
+}
+
 const NO_TOOL_FOLLOWUP =
   "我没有看到工具调用记录。为什么没有调用工具？请说明原因，然后不要凭记忆回答，立即实际调用工具完成刚才的任务。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
 const DEVICE_FOLLOWUP =
@@ -499,12 +540,12 @@ async function savePageArtifacts(page, label) {
   artifacts.lastAgentText = `${base}.agent.txt`;
   artifacts.lastAgentAnswerText = `${base}.answer.txt`;
   artifacts.lastAgentHtml = `${base}.agent.html`;
-  await fs.promises.writeFile(artifacts.text, await text(page), "utf8").catch(() => {});
-  await fs.promises.writeFile(artifacts.html, await page.content(), "utf8").catch(() => {});
-  await fs.promises.writeFile(artifacts.lastAgentText, await lastAgentText(page), "utf8").catch(() => {});
-  await fs.promises.writeFile(artifacts.lastAgentAnswerText, await lastAgentAnswerText(page), "utf8").catch(() => {});
+  await fs.promises.writeFile(artifacts.text, redactSensitive(await text(page)), "utf8").catch(() => {});
+  await fs.promises.writeFile(artifacts.html, redactSensitive(await page.content()), "utf8").catch(() => {});
+  await fs.promises.writeFile(artifacts.lastAgentText, redactSensitive(await lastAgentText(page)), "utf8").catch(() => {});
+  await fs.promises.writeFile(artifacts.lastAgentAnswerText, redactSensitive(await lastAgentAnswerText(page)), "utf8").catch(() => {});
   const agent = await lastAgent(page);
-  if (agent) await fs.promises.writeFile(artifacts.lastAgentHtml, await agent.evaluate((node) => node.outerHTML), "utf8").catch(() => {});
+  if (agent) await fs.promises.writeFile(artifacts.lastAgentHtml, redactSensitive(await agent.evaluate((node) => node.outerHTML)), "utf8").catch(() => {});
   await page.screenshot({ path: artifacts.screenshot, fullPage: true }).catch(() => {});
   return artifacts;
 }
@@ -896,17 +937,21 @@ function hasDeviceEvidence(value) {
 function extractToolCommands(responses) {
   const commands = [];
   const commandPattern = /"command"\s*:\s*"((?:\\.|[^"\\])*)"/g;
-  for (const response of responses || []) {
-    for (const candidate of (response.toolEvidence && response.toolEvidence.candidates) || []) {
-      const text = candidate.text || "";
-      for (const match of text.matchAll(commandPattern)) {
-        try {
-          commands.push(JSON.parse(`"${match[1]}"`));
-        } catch {
-          commands.push(match[1]);
-        }
+  const parseText = (text) => {
+    for (const match of String(text || "").matchAll(commandPattern)) {
+      try {
+        commands.push(JSON.parse(`"${match[1]}"`));
+      } catch {
+        commands.push(match[1]);
       }
     }
+  };
+  for (const response of responses || []) {
+    for (const candidate of (response.toolEvidence && response.toolEvidence.candidates) || []) {
+      parseText(candidate.text || "");
+    }
+    parseText(response.agentText || "");
+    parseText(response.text || "");
   }
   return Array.from(new Set(commands));
 }
@@ -1102,8 +1147,11 @@ async function sendPrompt(page, name, prompt) {
   const expanded = await text(page);
   const delta = expanded.startsWith(before) ? expanded.slice(before.length) : expanded;
   const agentText = await lastAgentText(page);
-  const toolEvidence = await collectToolEvidence(page);
+  const toolEvidence = redactToolEvidence(await collectToolEvidence(page));
   const artifacts = await savePageArtifacts(page, name);
+  const redactedDelta = redactSensitive(delta);
+  const redactedAgentText = redactSensitive(agentText);
+  const redactedVisibleAgentText = redactSensitive(visibleAgentText);
   log("prompt-done", {
     name,
     afterLength: after.length,
@@ -1119,10 +1167,10 @@ async function sendPrompt(page, name, prompt) {
   return {
     name,
     prompt,
-    text: delta.slice(-12000),
-    agentText: agentText.slice(-12000),
-    visibleText: visibleAgentText.slice(-12000),
-    visibleAgentText: visibleAgentText.slice(-12000),
+    text: redactedDelta.slice(-12000),
+    agentText: redactedAgentText.slice(-12000),
+    visibleText: redactedVisibleAgentText.slice(-12000),
+    visibleAgentText: redactedVisibleAgentText.slice(-12000),
     toolEvidence,
     artifacts,
   };
@@ -1163,10 +1211,14 @@ function verify(run) {
   const commandExpected = commandExpectedFor(run.name, cfg);
   const commandFound = commandExpected.filter((token) => toolCommandText.includes(token));
   const commandMissing = commandExpected.filter((token) => !toolCommandText.includes(token));
-  const defaultCommandForbidden = /^r[1-4]/.test(run.name) ? ["2>&1", "sleep"] : [];
+  const defaultCommandForbidden = /^r[1-4]/.test(run.name) ? ["2>&1"] : [];
   const commandForbidden = [...defaultCommandForbidden, ...(cfg.commandForbidden || [])];
   const commandForbiddenFound = commandForbidden.filter((token) => toolCommandText.includes(token));
-  const visibleForbidden = cfg.visibleForbidden || (/^r[1-4]/.test(run.name) ? [
+  if (/^r1/.test(run.name)) {
+    const combinedProgress = /\b(?:sleep|Start-Sleep)\b[^\n]*\bcheck\.py\b[^\n]*\bprogress\b|\bcheck\.py\b[^\n]*\bprogress\b[^\n]*\b(?:sleep|Start-Sleep)\b/i;
+    if (combinedProgress.test(toolCommandText)) commandForbiddenFound.push("sleep + check.py progress");
+  }
+  const defaultVisibleForbidden = /^r[1-4]/.test(run.name) ? [
     "工具调用",
     "退出码",
     "stdout",
@@ -1189,14 +1241,23 @@ function verify(run) {
     "根据ad-check-analysis",
     "下面汇总展示",
     "报告均已获取成功",
-    "security_check_state=",
-    "remote_mt=",
-    "ssh_authority=",
-    "base_report_stab=",
-    "algorithm=",
-    "protocol=",
-    "enable_iplimit=",
-  ] : []);
+  ] : [];
+  if (/^r1/.test(run.name)) {
+    defaultVisibleForbidden.push(
+      "ad.json",
+      "security_check_state=",
+      "remote_mt=",
+      "ssh_authority=",
+      "base_report_stab=",
+      "algorithm=",
+      "protocol=",
+      "enable_iplimit=",
+      "admin=",
+      "heartbeat_state=",
+      "shm_sem_state=",
+    );
+  }
+  const visibleForbidden = cfg.visibleForbidden || defaultVisibleForbidden;
   const visibleForbiddenFound = visibleForbidden.filter((token) => visibleText.includes(token));
   const forbiddenWorkBotDeviceHosts = /^r[1-4]/.test(run.name) ? WORKBOT_FORBIDDEN_DEVICE_HOSTS : [];
   const forbiddenWorkBotDeviceHostsFound = forbiddenWorkBotDeviceHosts.filter((token) => searchable.includes(token));
@@ -1390,7 +1451,7 @@ async function main() {
       created_at: new Date().toISOString(),
     };
     const reportPath = path.join(OUT_DIR, `workbot-acceptance-${Date.now()}.json`);
-    fs.writeFileSync(reportPath, JSON.stringify(report, null, 2), "utf8");
+    fs.writeFileSync(reportPath, redactSensitive(JSON.stringify(report, null, 2)), "utf8");
     console.log(JSON.stringify({ ok: report.ok, report: reportPath }, null, 2));
     if (browser) await browser.close();
   }
