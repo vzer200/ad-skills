@@ -90,6 +90,9 @@ const FIXED_CASES = [
   "r3-logs",
   "r3-logs-5d",
   "r4-script",
+  "r4-vs-pool-node-script",
+  "r4-pool-profile-script",
+  "r4-pool-prerule-script",
   "r4-delivery",
 ].join(",");
 const EXTENDED_CASES = [
@@ -109,9 +112,9 @@ const EXTENDED_CASES = [
 const R4_CASES = [
   "install",
   "r4-script",
+  "r4-vs-pool-node-script",
   "r4-pool-profile-script",
   "r4-pool-prerule-script",
-  "r4-vs-pool-script",
   "r4-delivery",
 ].join(",");
 const CASE_SUITES = {
@@ -510,6 +513,19 @@ const cases = {
     commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
     requireTools: true,
   },
+  "r4-vs-pool-node-script": {
+    steps: [
+      "在 AD1 上帮我创建虚拟服务，创建节点池并添加节点。",
+      { upload: R4_YAML_PATH, name: "r4-yaml" },
+      "我写完了 YAML。",
+      "直接给出脚本。",
+    ],
+    expected: ["AD1", "节点池", "节点", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
+    commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
+    commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
+    visibleForbidden: ["操作计划", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
+    requireTools: true,
+  },
   "r4-pool-prerule-script": {
     steps: [
       "在 AD1 上帮我创建虚拟服务，引用节点池和前置策略。",
@@ -520,6 +536,7 @@ const cases = {
     expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
     commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
+    visibleForbidden: ["操作计划", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
     requireTools: true,
   },
   "r4-vs-pool-script": {
@@ -532,6 +549,7 @@ const cases = {
     expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
     commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
+    visibleForbidden: ["操作计划", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
     requireTools: true,
   },
   "r4-audit-script": {
@@ -557,6 +575,7 @@ const cases = {
     ],
     expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback-and-verify", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"],
+    visibleForbidden: ["操作计划", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
     requireTools: true,
     verifyAbsent: {
       vsName: "wb_vs_workbot_flow_01",
@@ -1093,6 +1112,24 @@ function textOfResponse(response) {
   ].filter(Boolean).join("\n");
 }
 
+function responseEvidenceText(response) {
+  return [
+    response && response.visibleText,
+    response && response.visibleAgentText,
+    response && response.text,
+    response && response.agentText,
+    ...(((response && response.toolEvidence && response.toolEvidence.candidates) || []).map((item) => item.text || "")),
+  ].filter(Boolean).join("\n");
+}
+
+function hasGeneratedArtifactEvidence(response, names) {
+  const evidence = responseEvidenceText(response);
+  return names.every((name) => {
+    const escaped = escapeRegExp(name);
+    return new RegExp(`(?:${escaped}[^\\n]{0,120}(?:exists|generated|已生成|写入|路径|path)|(?:exists|generated|已生成|写入|路径|path)[^\\n]{0,120}${escaped})`, "i").test(evidence);
+  });
+}
+
 function stepRuleViolationsFor(name, cfg, responses) {
   if (name.startsWith("r4") && cfg.steps) {
     const violations = [];
@@ -1110,9 +1147,28 @@ function stepRuleViolationsFor(name, cfg, responses) {
     const choiceCommands = extractStepToolCommands(choice).join("\n");
     const rollbackCommands = extractStepToolCommands(rollback).join("\n");
     const prematureStageACommands = ["plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"];
+    const compactTemplateRequired = ["配置结论", "产出物", "下一步"];
+    const verboseTemplateForbidden = ["操作计划", "执行摘要", "安全确认"];
+    const internalArtifactForbidden = ["adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"];
+
+    const assertCompactTemplate = (label, text) => {
+      for (const token of compactTemplateRequired) {
+        if (!text.includes(token)) violations.push(`r4 ${label} missing compact heading: ${token}`);
+      }
+      for (const token of [...verboseTemplateForbidden, ...internalArtifactForbidden]) {
+        if (text.includes(token)) violations.push(`r4 ${label} leaked verbose/internal content: ${token}`);
+      }
+    };
 
     if (!stageAVisible.includes("AD1")) violations.push("r4 stageA did not keep target device AD1 visible");
     if (!/YAML|yaml|adops-bundle/.test(stageAVisible)) violations.push("r4 stageA did not produce or point to a YAML artifact");
+    assertCompactTemplate("stageA", stageAVisible);
+    if (!hasGeneratedArtifactEvidence(stageA, ["adops-bundle.yml"])) {
+      violations.push("r4 stageA has no tool/page evidence that YAML artifact was generated");
+    }
+    if (stageAVisible.includes("apply.py") || stageAVisible.includes("rollback_apply.py")) {
+      violations.push("r4 stageA showed scripts before YAML was completed");
+    }
     for (const token of prematureStageACommands) {
       if (stageACommands.includes(token)) violations.push(`r4 stageA executed premature command: ${token}`);
     }
@@ -1126,6 +1182,13 @@ function stepRuleViolationsFor(name, cfg, responses) {
     if (!/(同名|预检|复用|待新建|无冲突|无同名)/.test(yamlDoneVisible)) {
       violations.push("r4 yaml-complete step did not explain same-name/reference preflight result");
     }
+    assertCompactTemplate("yaml-complete", yamlDoneVisible);
+    if (!yamlDoneVisible.includes("apply.py") || !yamlDoneVisible.includes("rollback_apply.py")) {
+      violations.push("r4 yaml-complete step did not list forward and rollback scripts");
+    }
+    if (!hasGeneratedArtifactEvidence(yamlDone, ["apply.py", "rollback_apply.py"])) {
+      violations.push("r4 yaml-complete step has no tool/page evidence that script artifacts were generated");
+    }
     if (!/(真实下发|直接给出脚本|不需要下发|先不下发|脚本)/.test(yamlDoneVisible)) {
       violations.push("r4 yaml-complete step did not ask the user to choose delivery or script-only mode");
     }
@@ -1134,19 +1197,40 @@ function stepRuleViolationsFor(name, cfg, responses) {
     if (isDelivery) {
       if (!choiceCommands.includes("apply-slb-plan")) violations.push("r4 delivery step missing apply-slb-plan");
       if (choiceCommands.includes("rollback-and-verify")) violations.push("r4 delivery step rolled back before user confirmation");
+      assertCompactTemplate("delivery", choiceVisible);
+      if (!choiceVisible.includes("apply.py") || !choiceVisible.includes("rollback_apply.py")) {
+        violations.push("r4 delivery step did not list forward and rollback scripts");
+      }
+      if (!hasGeneratedArtifactEvidence(choice, ["apply.py", "rollback_apply.py"])) {
+        violations.push("r4 delivery step has no tool/page evidence that script artifacts were generated");
+      }
       if (!/(检查|验证|回滚)/.test(choiceVisible)) violations.push("r4 delivery step did not pause for manual inspection/rollback confirmation");
       const presentCheck = responses.find((item) => item.localVerification && item.localVerification.kind === "verify_present");
       if (presentCheck && presentCheck.localVerification.status === "fail") {
         violations.push("r4 local AD present verification failed after delivery");
       }
       if (!rollbackCommands.includes("rollback-and-verify")) violations.push("r4 rollback step missing rollback-and-verify");
+      assertCompactTemplate("rollback", rollbackVisible);
+      if (!rollbackVisible.includes("apply.py") || !rollbackVisible.includes("rollback_apply.py")) {
+        violations.push("r4 rollback step did not list forward and rollback scripts");
+      }
+      if (!hasGeneratedArtifactEvidence(rollback, ["apply.py", "rollback_apply.py"])) {
+        violations.push("r4 rollback step has no tool/page evidence that script artifacts were generated");
+      }
       if (!/回滚/.test(rollbackVisible)) violations.push("r4 rollback step did not report rollback");
     } else {
       for (const token of ["apply-slb-plan", "rollback-and-verify"]) {
         if (choiceCommands.includes(token)) violations.push(`r4 script-only step executed forbidden command: ${token}`);
       }
+      assertCompactTemplate("script-only", choiceVisible);
       if (!choiceVisible.includes("apply.py") || !choiceVisible.includes("rollback_apply.py")) {
         violations.push("r4 script-only step did not provide forward and rollback scripts");
+      }
+      if (!hasGeneratedArtifactEvidence(choice, ["apply.py", "rollback_apply.py"])) {
+        violations.push("r4 script-only step has no tool/page evidence that script artifacts were generated");
+      }
+      if (!/(使用|执行|运行)/.test(choiceVisible)) {
+        violations.push("r4 script-only step did not explain how to use scripts");
       }
     }
     return violations;

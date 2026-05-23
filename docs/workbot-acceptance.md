@@ -373,13 +373,15 @@ Requirement 4 is a general configuration-generation workflow. The minimum suppor
 
 Requirement 4 is always staged. Prompt-to-YAML is a mandatory first flow and must not be replaced by parameter follow-up questions. Stage A prompts must name the target AD device. If the prompt is incomplete or ambiguous, WorkBot generates a YAML template with blanks and stops for manual completion. A completed YAML then enters the second flow: plan/script generation, same-name resource GET preflight against the target device, and a user choice between script-only output or delivery verification.
 
-Fixed Stage A mainline prompt:
+Fixed Stage A mainline prompts:
 
 ```text
 在 AD1 上帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。
 ```
 
-Fixed Stage A coverage prompts:
+```text
+在 AD1 上帮我创建虚拟服务，创建节点池并添加节点。
+```
 
 ```text
 在 AD1 上帮我创建一个 HTTP 虚拟服务，引用节点池和 http 优化策略。
@@ -387,10 +389,6 @@ Fixed Stage A coverage prompts:
 
 ```text
 在 AD1 上帮我创建虚拟服务，引用节点池和前置策略。
-```
-
-```text
-在 AD1 上帮我创建虚拟服务，挂节点池。
 ```
 
 Extended suite Stage A prompts, not part of the fixed R4 gate:
@@ -440,6 +438,15 @@ YAML pass criteria:
 - If the user says `不符合预期` or similar wording after delivery, WorkBot must tell the user to rollback the current delivery and submit a corrected YAML. It must not patch the previous YAML in chat or continue mutating the device.
 - If completed YAML is invalid, WorkBot reports script validation errors and stops before any mutating call.
 
+Visible-output template criteria:
+
+- Every R4 answer uses the compact headings `配置结论 / 产出物 / 下一步`; delivery and rollback answers may include the verification sentence inside `配置结论`.
+- Stage A `产出物` lists only the YAML template artifact.
+- After YAML completion, script-only, delivery, and rollback answers must list both `apply.py` and `rollback_apply.py` prominently under `产出物`; a run fails if either script is missing from the visible answer.
+- Tool evidence must prove the artifacts were actually generated. Stage A must show evidence for `adops-bundle.yml`; after YAML completion and every later R4 answer must show evidence for both `apply.py` and `rollback_apply.py` through tool stdout/artifact output or visible file links.
+- User-visible R4 output must not include long internal sections such as `操作计划`, `执行摘要`, or `安全确认`.
+- User-visible R4 output must not list internal files such as `adops-batch.json`, `adops-effective-plan.json`, `adops-post-apply.json`, `adops-post-rollback.json`, or `adops-rollback-compare.json` unless the user explicitly asks for troubleshooting details.
+
 Expected tool calls:
 
 ```text
@@ -469,7 +476,7 @@ Pass criteria:
 - Stage B always runs `preflight-slb-plan` before script output or delivery. Same-name create targets found by GET are reused and omitted from the effective plan. Referenced-existing resources must also be confirmed by GET before delivery.
 - Stage B treats non-404 GET failures as blockers. WorkBot must stop before any mutating call if preflight cannot prove whether a same-name resource exists. For referenced-existing resources, HTTP 404 is also a blocker; for create targets, HTTP 404 is expected.
 - Same-name reuse is a name-based reuse policy, not an overwrite. If `reuse_compatibility_warning_count` is greater than zero, WorkBot must report the warning and include it in the manual inspection checklist.
-- Script-only mode lists `apply.py`, `rollback_apply.py`, `adops-effective-plan.json`, and `adops-preflight.json`, then ends with no mutating call.
+- Script-only mode lists `apply.py` and `rollback_apply.py`, gives a short usage note, then ends with no mutating call.
 - Delivery mode runs `apply-slb-plan`, writes `adops-execute-result.json`, `adops-rollback.json`, `adops-post-apply.json`, and then pauses for manual inspection.
 - Delivery acceptance independently verifies the real AD device through API after `apply-slb-plan`: the VS, Pool, node, HTTP Profile, and Pre Rule from the YAML must be present before the rollback prompt is sent.
 - Rollback runs only after explicit user confirmation. `rollback-and-verify` must write `adops-post-rollback.json` and `adops-rollback-compare.json`.

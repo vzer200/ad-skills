@@ -39,6 +39,7 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py status --workdir "$AD_OPS_WO
 - 阶段 A 结束时停止，告诉用户下载生成的 YAML、填写必要内容后重新上传；用户只需回复“我写完了 YAML”即可进入阶段 B。
 - 阶段 A 用户可见正文只说明 YAML 产物和下一步，不做计划、不做设备 GET、不下发。
 - 阶段 A 用户可见正文必须明确写出目标设备，例如 `设备：AD1` 或 `目标设备：AD1`。
+- 阶段 A 必须把 `adops-bundle.yml` 作为可见产出物写在 `## 产出物` 表格里；如果平台支持附件/下载链接，必须让用户能下载该 YAML。
 
 ```bash
 python3 skills/ad-config-ops/scripts/render_slb_bundle.py \
@@ -84,6 +85,7 @@ Same-name reuse safety: an existing resource is reused by name and is not overwr
 
 - 用户回复“直接给出脚本”“不需要下发”“先不下发”“只要脚本”：输出 `apply.py` 和 `rollback_apply.py`，说明如何使用，然后结束；禁止执行 `apply-slb-plan`。
 - 用户回复“真实下发”：进入阶段 C。
+- 阶段 B 及后续每次用户可见回答都必须在 `## 产出物` 表格里列出 `apply.py` 和 `rollback_apply.py`；不能只说“脚本已生成”。
 
 ### 阶段 C：下发、人工检查、回滚兜底
 
@@ -117,19 +119,10 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py rollback-and-verify \
   --workdir "$AD_OPS_WORKDIR"
 ```
 
-阶段 B/C 成功后必须告诉用户：
+阶段 B/C 成功后必须优先告诉用户这两个脚本产物，不能只列内部 JSON：
 
 - 下发脚本：`$AD_OPS_WORKDIR/apply.py`
-- batch：`$AD_OPS_WORKDIR/adops-batch.json`
-- 预检 baseline：`$AD_OPS_WORKDIR/adops-preflight.json`
-- 有效计划：`$AD_OPS_WORKDIR/adops-effective-plan.json`
-- 执行结果：`$AD_OPS_WORKDIR/adops-execute-result.json`
-- 下发后 GET：`$AD_OPS_WORKDIR/adops-post-apply.json`
 - 回滚脚本：`$AD_OPS_WORKDIR/rollback_apply.py`
-- 回滚清单：`$AD_OPS_WORKDIR/adops-rollback.json`
-- 回滚后 GET：`$AD_OPS_WORKDIR/adops-post-rollback.json`
-- 回滚前后比较：`$AD_OPS_WORKDIR/adops-rollback-compare.json`
-- 设备验证结果：`apply-slb-plan` 结果中的 `verify_result`
 
 Rollback safety: `rollback-and-verify` must use the rollback manifest and baseline created by the same `apply-slb-plan` run and the same AD host. A host/plan mismatch is a hard stop.
 
@@ -167,49 +160,78 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 
 ## 固定输出模板
 
-必须按这个模板输出，不要额外发挥：
+必须按阶段使用下面的精简模板，不要额外发挥。禁止输出 `操作计划`、`执行摘要`、`安全确认` 这类长区块；不要列 `batch`、`effective_plan`、`post_apply`、`post_rollback`、`rollback_compare` 等内部文件，除非用户明确要求排障细节。
 
-```text
+### 阶段 A：YAML 待填写
+
+```markdown
 ## 配置结论
-- 目标：<一句话说明用户要生成什么>
-- 阶段：<YAML 待填写/脚本已生成/已下发待回滚/已回滚>
-- 数据来源：配置计划和设备预检结果
-- 设备：<AD1/未下发>
+- 设备：AD1
+- 阶段：等待填写 YAML
+- 内容：<虚拟服务、节点池、节点、前置策略、HTTP 优化策略等一句话概括>
 
-## 执行摘要
-- 配置计划：<已生成/失败>
-- 同名预检：<无冲突/复用已有资源/失败>
-- 下发验证：<未执行/通过/失败>
-- 回滚验证：<未执行/一致/不一致>
-
-## 生成产物
+## 产出物
 | 产物 | 路径 |
 | --- | --- |
-| YAML/bundle | <路径> |
-| plan | <路径> |
-| effective_plan | <路径> |
-| batch | <路径> |
-| 正向脚本 apply.py | <路径> |
-| 回滚脚本 rollback_apply.py | <路径> |
-| preflight GET | <路径> |
-| execute_result | <路径/未执行> |
-| post_apply GET | <路径/未执行> |
-| rollback manifest | <路径/未执行> |
-| post_rollback GET | <路径/未执行> |
-| rollback_compare | <路径/未执行> |
-
-## 操作计划
-- <method> <path> (<operation id>)
-
-## 安全确认
-- 同名资源复用：<无/有，列出 reused_count 和 warning_count>
-- 下发状态：<未下发/已下发>
-- 设备验证：<未执行/通过/失败>
-- 回滚状态：<未执行/已执行>
-- 回滚后 GET 与下发前 baseline：<一致/不一致/未执行>
+| YAML 模板 | <adops-bundle.yml 路径> |
 
 ## 下一步
-<等待填写 YAML/等待选择“真实下发”或“直接给出脚本”/等待用户决定是否回滚/流程结束>
+下载 YAML，填写必要内容后上传，并回复“我写完了 YAML”。
+```
+
+### 阶段 B：YAML 已确认，等待选择
+
+```markdown
+## 配置结论
+- 设备：AD1
+- 阶段：脚本已生成，未下发
+- 预检：<待新建资源/复用已有资源/引用资源已确认/失败>
+
+## 产出物
+| 产物 | 路径 |
+| --- | --- |
+| 正向脚本 | <apply.py 路径> |
+| 回滚脚本 | <rollback_apply.py 路径> |
+| YAML | <adops-bundle.yml 路径> |
+
+## 下一步
+回复“真实下发”执行到设备验证；回复“直接给出脚本”或“不需要下发”则只保留脚本结束。
+```
+
+### 阶段 C：已下发，等待人工确认
+
+```markdown
+## 配置结论
+- 设备：AD1
+- 阶段：已下发，等待确认是否回滚
+- 设备验证：<通过/失败>
+
+## 产出物
+| 产物 | 路径 |
+| --- | --- |
+| 正向脚本 | <apply.py 路径> |
+| 回滚脚本 | <rollback_apply.py 路径> |
+
+## 下一步
+请到设备侧确认配置是否符合预期；需要回滚请回复“是”或“需要回滚”。
+```
+
+### 阶段 D：已回滚/流程结束
+
+```markdown
+## 配置结论
+- 设备：AD1
+- 阶段：已回滚
+- 回滚验证：<与下发前一致/不一致>
+
+## 产出物
+| 产物 | 路径 |
+| --- | --- |
+| 正向脚本 | <apply.py 路径> |
+| 回滚脚本 | <rollback_apply.py 路径> |
+
+## 下一步
+流程结束。后续要调整配置，请重新提交 YAML。
 ```
 
 ## 通用模板流程
