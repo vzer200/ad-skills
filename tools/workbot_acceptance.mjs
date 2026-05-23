@@ -1342,7 +1342,8 @@ async function main() {
     const cleanupResult = await runCase(page, "cleanup");
     results.push(cleanupResult);
     assertGate(cleanupResult, "cleanup");
-    if (CASES.includes("install")) {
+    const needsInstalledSkills = CASES.some((name) => name !== "install" && name !== "cleanup") || CASES.includes("install");
+    if (needsInstalledSkills) {
       await uploadZip(page);
       const installResult = await runCase(page, "install");
       results.push(installResult);
