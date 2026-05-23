@@ -8,7 +8,7 @@ description: 深信服 AD 感知分析 skill。用于分析 VS 流量异常、CP
 ## 强制规则
 
 - 路由硬隔离：只要用户文本或当前任务包含 `巡检`、`标准巡检`、`全量巡检`、`安全巡检`、`健康检查`、`巡检报告`，必须交给 `ad-check-analysis`。本 skill 禁止执行 `perception.py`、`connect.py` 或输出 `感知结论` 来回答巡检任务。
-- 路由硬隔离：用户只问“AD1 现在啥情况 / 当前情况 / 设备概况 / 看一下 AD1 情况”这类总览查询，且没有明确说“感知、异常、分析、趋势、冲突、日志”时，必须交给 `ad-ops` 使用 `overview.py all`；本 skill 禁止用 `perception.py analyze` 抢答这种查询总览。
+- 路由硬隔离：用户只问“AD1 现在啥情况 / 当前情况 / 设备概况 / 看一下 AD1 情况 / 设备状态 / 硬件状态 / 资源状态查一下”这类查询，且没有明确说“感知、异常、分析、趋势、冲突、日志”时，必须交给 `ad-ops`；本 skill 禁止用 `perception.py analyze` 或 `perception.py state` 抢答查询任务。
 - 分析真实设备前必须先调用 `ad-connect`。
 - 所有分析必须由 `skills/ad-perception/scripts/perception.py` 或 `collector.py` 生成。
 - 脚本输出是唯一事实来源。禁止模型自行推断根因、编造异常、补充未由脚本返回的设备状态。
@@ -20,8 +20,10 @@ description: 深信服 AD 感知分析 skill。用于分析 VS 流量异常、CP
 - 如果历史基线数据不足，脚本会输出实时/降级分析；最终结论只能照脚本结果表达，不能补充 3σ、日志根因或趋势结论。
 - 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动先用设备清单加 `--device AD1` 做连接预检。
 - 每一条新的感知分析都必须重新执行一次 `connect.py`，包括 traffic/state/conflict/logs 分项分析。禁止复用上一轮查询或感知里的连接结果。
-- “流量异常/流量分析”映射到 `perception.py traffic`；“设备资源/状态异常”映射到 `perception.py state`；“地址冲突/冲突分析”映射到 `perception.py conflict`；综合感知分析映射到 `perception.py analyze`。
-- “服务日志/日志线索”映射到 `perception.py logs`。
+- “流量趋势分析/流量分析/流量走势”映射到 `perception.py traffic`。如果用户明确指定某个虚拟服务名称（例如 `vs_real 虚拟服务`），必须加 `--vs vs_real`，不要扩大到全部虚拟服务。
+- “设备资源分析/资源状态异常/状态趋势/状态告警”映射到 `perception.py state`；只说“设备状态/硬件状态/资源状态查一下”仍属于 `ad-ops` 查询。
+- “地址冲突/地址端口冲突/冲突分析”映射到 `perception.py conflict`；冲突结论只能复述脚本返回的 `vs_overlaps` / `pool_overlaps`，没有冲突时明确说未发现冲突，不要编造正例。
+- “日志分析/服务日志/日志线索”映射到 `perception.py logs`。
 
 ## 全量感知分析
 
@@ -34,7 +36,7 @@ python3 skills/ad-perception/scripts/perception.py analyze --devices skills/ad-p
 
 ```bash
 python3 skills/ad-connect/scripts/connect.py --devices skills/ad-perception/devices.json --device AD1 --format json
-python3 skills/ad-perception/scripts/perception.py traffic --devices skills/ad-perception/devices.json --device AD1 --format markdown
+python3 skills/ad-perception/scripts/perception.py traffic --devices skills/ad-perception/devices.json --device AD1 --vs vs_real --format markdown
 
 python3 skills/ad-connect/scripts/connect.py --devices skills/ad-perception/devices.json --device AD1 --format json
 python3 skills/ad-perception/scripts/perception.py state --devices skills/ad-perception/devices.json --device AD1 --format markdown

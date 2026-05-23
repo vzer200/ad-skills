@@ -310,42 +310,21 @@ Pass criteria:
 
 ## Requirement 3: Perception Analysis
 
-R3 is perception/abnormality analysis, not a plain current-state query. R2 already covers current device status and hardware/resource values through `overview.py hardware`; R3 still needs to validate analysis-oriented prompts that call `perception.py`.
+R3 is perception/trend/log analysis, not a plain current-state query. R2 already covers current device status and hardware/resource values through `overview.py hardware`. To avoid routing ambiguity, the fixed R3 mainline only keeps the two clearest user tasks: log analysis and specified-VS traffic trend analysis.
 
 Fixed mainline prompts:
 
 | Case | Prompt | Expected command |
 | --- | --- | --- |
-| `r3` | `请对 AD1 做一次感知分析，重点看流量、资源、冲突和日志线索。` | `perception.py analyze` |
-| `r3-traffic` | `帮我分析一下 AD1 的流量异常。` | `perception.py traffic` |
-| `r3-state` | `帮我分析一下 AD1 的设备资源状态异常。` | `perception.py state` |
-| `r3-conflict` | `帮我分析一下 AD1 有没有地址冲突。` | `perception.py conflict` |
-| `r3-logs` | `帮我看一下 AD1 的服务日志线索。` | `perception.py logs` |
+| `r3-traffic-vs` | `对 AD1 设备的 vs_real 虚拟服务进行流量趋势分析。` | `perception.py traffic --vs vs_real` |
+| `r3-logs` | `对 AD1 设备的日志进行分析。` | `perception.py logs` |
 
-Full analysis prompt:
+Avoid vague R3 prompts such as `AD1 做个感知分析` or `AD1 有没有异常`. They are too broad for a stable mainline gate and can collide with R2 query routing.
 
-```text
-请对 AD1 做一次感知分析，重点看流量、资源、冲突和日志线索。
-```
-
-Extended suite short prompts, not part of the fixed mainline gate:
+Optional single-dimension prompts, not part of the fixed mainline gate:
 
 ```text
-AD1 做个感知分析。
-```
-
-```text
-AD1 有没有异常？
-```
-
-Fixed single-dimension prompts:
-
-```text
-帮我分析一下 AD1 的流量异常。
-```
-
-```text
-帮我分析一下 AD1 的设备资源状态异常。
+对 AD1 设备的流量趋势进行分析。
 ```
 
 ```text
@@ -359,10 +338,6 @@ Fixed single-dimension prompts:
 Extended suite single-dimension prompts:
 
 ```text
-AD1 CPU/内存/磁盘看下。
-```
-
-```text
 AD1 有没有地址端口冲突？
 ```
 
@@ -370,18 +345,21 @@ Expected tool calls:
 
 ```text
 connect.py
-perception.py analyze
+perception.py traffic --vs vs_real
+perception.py logs
 ```
 
 Pass criteria:
 
 - `connect.py` validates the AD1 target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
 - The final conclusion is backed by `perception.py` output.
-- Single-dimension prompts call `perception.py traffic|state|conflict|logs` respectively.
+- The VS traffic trend prompt must call `perception.py traffic` with `--vs vs_real`; it must not broaden to all VS unless the user omitted a VS name.
+- The log prompt must call `perception.py logs`.
 - R3 final answers use `感知结论 / 分析结果 / 结论边界`; subcommand outputs must not bypass the perception template.
-- R2/R3 boundary: `设备状态/硬件状态/资源状态查询` belongs to R2, while `设备资源状态异常/异常分析/趋势` belongs to R3.
+- R2/R3 boundary: `设备状态/硬件状态/资源状态查询` belongs to R2; R3 only owns prompts that explicitly ask for analysis, trend, log, conflict, or perception.
 - No root cause, anomaly, or trend is invented outside script stdout.
 - Acceptance prompts must not include parameter-fill follow-ups for R3.
+- Address conflict is a specialty/optional R3 case, not a fixed mainline case. Its acceptance checks are: real `connect.py` call first, real `perception.py conflict` call second, visible output uses the R3 template, the conclusion mirrors script fields `vs_overlaps` and `pool_overlaps`, and if the device has no conflict the answer must say no conflict found rather than inventing one. A positive conflict finding requires controlled device data or a fixture; the live mainline should not require a conflict to exist.
 
 ## Requirement 4: Config Generation
 
