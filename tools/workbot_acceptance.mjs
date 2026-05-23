@@ -1600,6 +1600,21 @@ function verify(run) {
       defaultVisibleForbidden.push("虚拟服务配置", "节点池配置", "流量状态", "当前连接数", "新建速率", "吞吐量", "SSL 证书");
     }
   }
+  if (/^r4/.test(run.name)) {
+    defaultVisibleForbidden.push(
+      "模板中你需要填写",
+      "字段\t说明",
+      "字段 说明",
+      "其余字段",
+      "可按需填写",
+      "留空会自动忽略",
+      "name —",
+      "vips —",
+      "vports —",
+      "pre_rules —",
+      "http_profile —",
+    );
+  }
   const visibleForbidden = [...defaultVisibleForbidden, ...(cfg.visibleForbidden || [])];
   const visibleForbiddenFound = visibleForbidden.filter((token) => visibleText.includes(token));
   const visibleForbiddenRegexes = /^r1/.test(run.name)
