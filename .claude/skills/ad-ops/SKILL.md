@@ -24,25 +24,31 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 ## 总览查询
 
 ```bash
-python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json
-python3 skills/ad-ops/scripts/overview.py all --devices skills/ad-ops/devices.json --device AD1 --format markdown
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json && python3 skills/ad-ops/scripts/overview.py all --devices skills/ad-ops/devices.json --device AD1 --format markdown
 ```
 
 ## 分项查询
 
+分项查询必须复制对应的一整条命令：先 `connect.py`，再 `overview.py`。禁止只执行 `overview.py` 后半段。
+
 ```bash
-python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json
-python3 skills/ad-ops/scripts/overview.py vs --devices skills/ad-ops/devices.json --device AD1 --format markdown
-python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json
-python3 skills/ad-ops/scripts/overview.py pool --devices skills/ad-ops/devices.json --device AD1 --format markdown
-python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json
-python3 skills/ad-ops/scripts/overview.py cert --devices skills/ad-ops/devices.json --device AD1 --format markdown
-python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json
-python3 skills/ad-ops/scripts/overview.py traffic --devices skills/ad-ops/devices.json --device AD1 --format markdown
-python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json
-python3 skills/ad-ops/scripts/overview.py hardware --devices skills/ad-ops/devices.json --device AD1 --format markdown
-python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json
-python3 skills/ad-ops/scripts/overview.py ha --devices skills/ad-ops/devices.json --device AD1 --format markdown
+# VS / 虚拟服务
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json && python3 skills/ad-ops/scripts/overview.py vs --devices skills/ad-ops/devices.json --device AD1 --format markdown
+
+# Pool / 节点池 / 节点配置
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json && python3 skills/ad-ops/scripts/overview.py pool --devices skills/ad-ops/devices.json --device AD1 --format markdown
+
+# SSL 证书
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json && python3 skills/ad-ops/scripts/overview.py cert --devices skills/ad-ops/devices.json --device AD1 --format markdown
+
+# 流量
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json && python3 skills/ad-ops/scripts/overview.py traffic --devices skills/ad-ops/devices.json --device AD1 --format markdown
+
+# 设备/硬件状态
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json && python3 skills/ad-ops/scripts/overview.py hardware --devices skills/ad-ops/devices.json --device AD1 --format markdown
+
+# HA 状态
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json && python3 skills/ad-ops/scripts/overview.py ha --devices skills/ad-ops/devices.json --device AD1 --format markdown
 ```
 
 ## 输出模板
