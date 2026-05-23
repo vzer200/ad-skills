@@ -248,6 +248,34 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertIn("| 设备安全状态检查 | ❌ 异常 | 设备安全检查未开启 |", output)
         self.assertIn("✅ 正常", output)
 
+    def test_render_check_details_and_suggestions_are_operator_facing(self):
+        analysis = analyze({
+            "admin": "false",
+            "security_check_state": False,
+            "base_log_error_exist": 6,
+            "acceleration": 2,
+            "power_state": -1,
+            "unsafe_algorithm": True,
+            "unsafe_protocol": True,
+            "enable_iplimit": "false",
+            "dangerous_port": ["TCP:85为报表服务", "TCP:161为智能DNS服务"],
+        })
+        output = render_markdown(analysis, {"host": "https://10.0.0.1", "scene": "标准巡检", "start_time": ""})
+
+        self.assertIn("管理员角色未正确配置，可能影响设备管理权限完整性", output)
+        self.assertIn("检测到 6 条错误日志，建议结合日志时间点排查", output)
+        self.assertIn("| 加速卡状态检查 | ✅ 正常 | 加速卡状态正常 |", output)
+        self.assertIn("| 电源状态检查 | ❌ 异常 | 未采集到明确正常的电源状态 |", output)
+        self.assertIn("2 个风险端口开放：TCP:85为报表服务, TCP:161为智能DNS服务", output)
+        self.assertIn("管理登录 IP 限制未启用，建议开启管理来源限制", output)
+        self.assertNotIn("| 电源状态检查 | ❌ 异常 | -1 |", output)
+        self.assertNotIn("状态异常，建议进一步排查", output)
+
+        suggestion_checks = {item["check"] for item in analysis["suggestions"]}
+        self.assertIn("POWER_STATE_CHECK", suggestion_checks)
+        self.assertIn("OPEN_PORT_CHECK", suggestion_checks)
+        self.assertNotIn("SPEED_CARD_CHECK", suggestion_checks)
+
     def test_wait_devices_timeout_does_not_render_report(self):
         from check import main
         with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as f:

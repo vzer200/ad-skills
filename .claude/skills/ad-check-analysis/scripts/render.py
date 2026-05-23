@@ -39,6 +39,18 @@ def _score_icon(score: int) -> str:
         return "\U0001f534"
 
 
+def _risk_display(risk: str) -> str:
+    return {"低": "🟢 低", "中": "🟡 中", "高": "🔴 高"}.get(risk, risk)
+
+
+def _score_display(score: int) -> str:
+    return "{} {}/100".format(_score_icon(score), score)
+
+
+def _table_cell(text: Any) -> str:
+    return str(text or "").replace("\n", " ").replace("|", "\\|").strip()
+
+
 def _check_icon(status: str) -> str:
     """根据 pass/fail/warn 检查状态返回对应图标。"""
     return {"pass": "✅", "fail": "❌", "warn": "⚠️"}.get(status, status)
@@ -175,7 +187,7 @@ def _suggestion_for_check(analysis: Dict[str, Any], check_key: str, check_name: 
     for suggestion in analysis.get("suggestions", []) or []:
         if suggestion.get("check") == check_key or suggestion.get("check_name") == check_name:
             return _user_detail(suggestion.get("suggestion", ""))
-    return "{} 状态异常，建议进一步排查".format(check_name)
+    return "{} 未达到预期状态，建议结合设备配置页确认业务影响后处理".format(check_name)
 
 
 def _render_device_detail_block(
@@ -448,7 +460,7 @@ def render_multi_device_report(
                 "has_error": False,
                 "status_text": _device_summary_status(result),
                 "abnormal_count": str(fail_warn),
-                "score_text": "{}/100".format(score),
+                "score_text": _score_display(score),
             })
 
     total_devices = len(results)
@@ -478,8 +490,8 @@ def render_multi_device_report(
             check = check_results.get(key, {})
             check_name = _check_label(key, check)
             common_rows.append("| {} | {} |".format(
-                check_name,
-                _suggestion_for_check(first_analysis, key, check_name),
+                _table_cell(check_name),
+                _table_cell(_suggestion_for_check(first_analysis, key, check_name)),
             ))
 
     lines = [
@@ -488,7 +500,7 @@ def render_multi_device_report(
         "- 场景：{}".format(scene),
         "- 设备数量：{} 台".format(total_devices),
         "- 异常设备：{} 台".format(device_abnormal_count),
-        "- 总体风险：{}".format(risk),
+        "- 总体风险：{}".format(_risk_display(risk)),
         "",
         "## 设备概览",
         "",
@@ -498,8 +510,8 @@ def render_multi_device_report(
 
     for d in devices_info:
         lines.append("| {} | {} | {} | {} | {} |".format(
-            d["name"], d["ip"], d["status_text"],
-            d["score_text"], d["abnormal_count"],
+            _table_cell(d["name"]), _table_cell(d["ip"]), _table_cell(d["status_text"]),
+            _table_cell(d["score_text"]), _table_cell(d["abnormal_count"]),
         ))
 
     lines.append("")

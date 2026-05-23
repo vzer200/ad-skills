@@ -292,7 +292,7 @@ class TestRenderMultiDeviceReport(unittest.TestCase):
         }
         output = render_multi_device_report(results, device_names={"https://dev1.com": "AD1", "https://dev2.com": "AD2"})
         self.assertIn("设备安全状态检查", output)
-        self.assertIn("设备安全状态检查 状态异常，建议进一步排查", output)
+        self.assertIn("设备安全状态检查 未达到预期状态", output)
         self.assertNotIn("SSL 安全策略检查", output)
         self.assertNotIn("security_check_state=", output)
         self.assertNotIn("algorithm=", output)

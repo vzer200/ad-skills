@@ -310,14 +310,59 @@ def wait_and_download(
 # ---------------------------------------------------------------------------
 
 _SUGGESTION_MAP = {
+    "ADMIN_ROLE_CHECK": "管理员角色配置异常，建议确认管理账号角色是否完整，并按最小权限原则修正角色授权",
+    "DEVICE_SAFE_CHECK": "设备安全检查未开启，建议开启设备安全检查并复核高危配置项",
+    "DNS_DETECT_CHECK": "DNS 代理配置需要确认，建议核对当前业务是否依赖 DNS 代理，避免误开放代理能力",
+    "DNAT_CHECK": "存在 DNAT 映射规则，建议确认公网映射是否仍在使用，并清理无业务归属的规则",
+    "HEARTBEAT_CHECK": "心跳状态异常，建议检查双机/集群心跳链路、心跳接口和对端设备状态",
+    "STATIC_IP_CHECK": "存在静态 IP 配置，建议核对地址规划，避免与动态分配或业务地址冲突",
+    "CLUSTER_STATE_CHECK": "集群状态未处于正常状态，建议确认当前是否为预期单机模式；如应为集群，请检查集群链路和成员状态",
+    "VIRTUAL_MAC_CHECK": "虚拟 MAC 状态异常，建议确认集群/双机场景下虚拟 MAC 是否启用并同步正常",
+    "DUAL_STATE_CHECK": "双机状态异常，建议检查主备关系、同步状态和心跳连通性",
+    "POOL_PERSIST_CHECK": "节点池持久化配置需要确认，建议核对关键业务是否需要会话保持或连接保持",
+    "STATIC_ROUTE_CHECK": "静态路由健康检查存在异常，建议检查下一跳可达性、路由绑定接口和探测目标",
+    "POOL_HEALTH_CHECK": "节点池健康检查存在异常，建议检查节点池成员状态、健康检查配置和后端服务可达性",
+    "RS_LEVEL_CHECK": "节点级别检查未通过，建议确认节点优先级、权重和实际承载策略是否符合预期",
+    "APP_GROUP_CHECK": "应用组状态异常，建议检查应用组成员、关联虚拟服务和集群同步状态",
+    "DNS_SERVER_STATE_CHECK": "DNS 服务健康状态异常，建议检查 DNS 服务进程、监听地址和解析测试结果",
+    "LINK_HEALTH_CHECK": "链路健康检查存在异常，建议检查链路探测目标、运营商线路和出口连通性",
+    "STATIC_PROXIMITY_CHECK": "静态就近性检查未通过，建议核对就近性策略、地址库和调度结果",
+    "DNS64_CHECK": "DNS64 配置需要确认，建议核对 IPv6/IPv4 转换业务是否需要该能力",
+    "POLICY_ROUTE_CHECK": "检测到新增策略路由，建议确认变更来源和业务归属，避免异常流量绕行",
+    "MANAGE_IP_CHECK": "管理 IP 状态不一致，建议检查集群成员管理地址配置和同步状态",
+    "SNMP_TRAPS_CHECK": "SNMP Trap 告警未开启，建议按监控规范配置 Trap 服务器并验证告警送达",
+    "DNS_REFLECT_CHECK": "DNS 前置策略配置需要确认，建议检查策略命中范围和业务影响",
+    "DNS_SERVER_CHECK": "DNS 服务配置异常，建议确认 DNS 服务是否应启用，并检查监听和解析配置",
+    "DNAT_PORT_CHECK": "DNAT 端口/协议配置需要确认，建议核对映射端口是否仍有业务使用",
+    "SESSION_SYNC_CHECK": "会话同步状态异常，建议检查双机/集群会话同步开关、链路和成员状态",
+    "MAIL_WARN_CHECK": "邮件告警未开启，建议配置告警收件人和 SMTP 服务器并发送测试邮件",
+    "VIP_POOL_CHECK": "虚拟 IP 池存在异常地址，建议检查地址池可用性、冲突地址和关联业务",
+    "PROXY_POLICY_CHECK": "代理策略检查未通过，建议核对代理策略范围、启用状态和业务需求",
+    "DNS_MAP_PS_CHECK": "DNS 映射持久化配置需要确认，建议检查持久化策略是否符合业务访问预期",
+    "WAN_BANDWIDTH_CHECK": "WAN 带宽配置需要确认，建议核对带宽限制是否与线路能力和业务策略一致",
+    "FAULT_SWITCH_CHECK": "故障切换配置需要确认，建议检查切换策略、触发条件和演练结果",
+    "SYSLOG_CHECK": "Syslog 未开启，建议配置日志服务器并验证设备日志可正常外送",
+    "AUTO_UPDATE_CHECK": "自动更新未开启，建议确认是否按运维规范启用更新或建立人工补丁检查机制",
     "CPU_CHECK": "CPU 使用率偏高，建议检查是否存在异常进程或考虑扩容",
     "MEMORY_CHECK": "内存使用率偏高，建议检查是否存在内存泄漏或考虑扩容",
-    "DISK_CHECK": "磁盘使用率偏高，建议清理日志或扩容磁盘",
+    "LOG_CHECK": "检测到错误日志，建议优先查看最近时间段错误日志，定位是否存在服务异常或配置变更失败",
+    "DEVICE_RUN_TIME": "设备运行时间未正常获取，建议确认基础状态采集是否正常",
+    "DEVICE_FILE_CHECK": "设备文件检查异常，建议检查临时文件、异常残留文件和磁盘目录权限",
+    "DISK_CHECK": "磁盘信息缺失或使用率异常，建议检查磁盘采集状态、清理日志或扩容磁盘",
     "FAN_STATE_CHECK": "风扇状态异常，建议检查硬件并及时更换故障风扇",
     "POWER_STATE_CHECK": "电源状态异常，建议检查电源模块并安排维护",
     "NIC_STATE_CHECK": "网口状态异常，建议检查物理链路和网卡状态",
     "CORE_PROCESS_CHECK": "核心进程缺失，建议检查服务状态并重启相关服务",
     "KERNEL_LOG_CHECK": "内核日志存在异常，建议排查内核错误日志",
+    "REMOTE_MAINTAIN_CHECK": "远程维护未开启，建议确认是否需要开启远程维护通道，并按安全要求限制访问来源",
+    "BLACK_BOX_CHECK": "黑盒日志状态异常，建议检查黑盒日志采集和存储状态",
+    "DMESG_DATA_CHECK": "启动日志存在异常信息，建议检查内核启动日志并确认是否影响设备稳定性",
+    "SPEED_CARD_CHECK": "加速卡状态异常，建议检查加速卡驱动、硬件状态和业务加速能力",
+    "BIOS_VERSION_CHECK": "BIOS 状态需要确认，建议核对当前 BIOS 版本和厂商推荐版本",
+    "WARN_LOG_CHECK": "告警日志状态异常，建议查看设备告警中心并确认是否存在未处理告警",
+    "COREDUMP_INFO_CHECK": "Core 文件状态异常，建议收集 Core 文件并排查相关服务崩溃原因",
+    "NIC_HEALTH_CHECK": "网卡健康状态异常，建议检查网卡驱动、链路质量和硬件告警",
+    "SNAT_SPORT_EXHAUSTION_CHECK": "SNAT 源端口存在耗尽风险，建议检查连接数、SNAT 地址池和端口复用配置",
     "WEAK_PASSWORD_CHECK": "存在弱密码账户，建议修改为强密码",
     "SSH_API_CHECK": "SSH 权限未正确配置，建议检查并加固 SSH 访问控制",
     "SSL_POLICY_CHECK": "SSL 策略存在不安全算法或协议，建议禁用旧版本",
@@ -325,8 +370,18 @@ _SUGGESTION_MAP = {
     "DEVICE_CONNECTION_CHECK": "设备网口连接异常，建议检查物理链路",
     "CONFIG_ID_CONFLICT_CHECK": "配置 ID 存在冲突，建议排查并修正配置",
     "CRASH_LOG_CHECK": "存在崩溃日志，建议排查系统稳定性问题",
+    "PATCH_INFO_CHECK": "未检测到补丁信息，建议确认当前版本是否已包含最新安全修复，并按变更流程评估补丁升级",
+    "REPORT_CHECK": "报表服务状态异常，建议检查报表服务进程、磁盘空间和服务日志",
+    "IP_LIMIT_CHECK": "管理登录 IP 限制未启用，建议开启管理来源限制，仅允许可信运维网段登录",
     "MEMORY_LEAK_CHECK": "共享内存/信号量异常，可能存在内存泄漏",
 }
+
+
+def _suggestion_for_check(check_key: str, check_name: str, result: Dict[str, Any]) -> str:
+    suggestion = _SUGGESTION_MAP.get(check_key)
+    if suggestion:
+        return suggestion
+    return f"{check_name} 未达到预期状态，建议结合详情列查看当前状态，并在设备对应配置页核对业务影响后处理"
 
 _CHECK_LABELS = {
     "APP_VERSION_CHECK": "应用版本检查",
@@ -985,7 +1040,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
                 "check": key,
                 "check_name": check_name,
                 "priority": "高" if result["status"] == "fail" else "中",
-                "suggestion": _SUGGESTION_MAP.get(key, f"{check_name} 状态异常，建议进一步排查"),
+                "suggestion": _suggestion_for_check(key, check_name, result),
             }
             suggestions.append(entry)
 
@@ -1100,6 +1155,96 @@ def _user_detail(text: Any) -> str:
     return detail.replace("`ad.json`", "设备巡检报告").replace("ad.json", "设备巡检报告")
 
 
+def _table_cell(text: Any) -> str:
+    return str(text or "").replace("\n", " ").replace("|", "\\|").strip()
+
+
+def _first_int(text: str) -> Optional[int]:
+    match = re.search(r"-?\d+", text or "")
+    return int(match.group(0)) if match else None
+
+
+def _friendly_check_detail(check_key: str, result: Dict[str, Any]) -> str:
+    status = result.get("status", "")
+    value = _user_detail(result.get("detail") or result.get("value") or "")
+    raw_value = str(result.get("value", "")).strip()
+    is_ok = status == "pass"
+
+    if check_key == "APP_VERSION_CHECK":
+        return f"当前应用版本：{value}" if value else "未获取到应用版本信息"
+    if check_key == "ADMIN_ROLE_CHECK":
+        return "管理员角色配置正常" if is_ok else "管理员角色未正确配置，可能影响设备管理权限完整性"
+    if check_key == "DEVICE_SAFE_CHECK":
+        return "设备安全检查已开启" if is_ok else "设备安全检查未开启"
+    if check_key == "AUTO_UPDATE_CHECK":
+        return "自动更新已开启" if is_ok else "自动更新未开启，请确认是否符合补丁管理要求"
+    if check_key == "CPU_CHECK":
+        current = value.replace("最大值：", "").strip()
+        return f"本次采集最大 CPU 使用率：{current}" if current else "未获取到 CPU 使用率"
+    if check_key == "MEMORY_CHECK":
+        current = value.replace("使用率：", "").strip()
+        return f"本次采集内存使用率：{current}" if current else "未获取到内存使用率"
+    if check_key == "LOG_CHECK":
+        count = _first_int(value)
+        return "未检测到错误日志" if count == 0 else f"检测到 {count} 条错误日志，建议结合日志时间点排查" if count is not None else value
+    if check_key == "DEVICE_FILE_CHECK":
+        count = _first_int(value)
+        return "未发现异常文件" if count == 0 else f"检测到 {count} 项文件异常" if count is not None else value
+    if check_key == "KERNEL_LOG_CHECK":
+        count = _first_int(value)
+        return "未检测到内核错误日志" if count == 0 else f"检测到 {count} 条内核日志异常" if count is not None else value
+    if check_key == "BLACK_BOX_CHECK":
+        count = _first_int(value)
+        return "黑盒日志未发现异常" if count == 0 else f"黑盒日志状态异常，返回值：{value}" if value else "黑盒日志状态异常"
+    if check_key == "DMESG_DATA_CHECK":
+        return "启动日志未发现异常" if is_ok else f"启动日志存在异常记录：{value}"
+    if check_key == "DISK_CHECK":
+        return "磁盘信息采集正常" if is_ok else "未获取到磁盘使用率信息，需确认磁盘采集是否正常"
+    if check_key == "CRASH_LOG_CHECK":
+        count = _first_int(value)
+        return "未发现崩溃日志" if count == 0 else f"检测到 {count} 条崩溃日志" if count is not None else value
+    if check_key == "SPEED_CARD_CHECK":
+        return "加速卡状态正常" if is_ok else f"加速卡状态异常或未采集到正常值（{value}）"
+    if check_key == "FAN_STATE_CHECK":
+        return "风扇状态正常" if raw_value == "1" else "未采集到明确正常的风扇状态" if raw_value == "-1" else f"风扇状态异常，返回值：{value}"
+    if check_key == "POWER_STATE_CHECK":
+        return "电源状态正常" if raw_value == "1" else "未采集到明确正常的电源状态" if raw_value == "-1" else f"电源状态异常，返回值：{value}"
+    if check_key == "BIOS_VERSION_CHECK":
+        return "未发现需要关注的 BIOS 更新信息" if is_ok else f"BIOS 状态需要确认：{value}"
+    if check_key == "WARN_LOG_CHECK":
+        count = _first_int(value)
+        return f"当前告警日志数量：{count}" if count is not None and count >= 0 else "未获取到告警日志状态"
+    if check_key == "MEMORY_LEAK_CHECK":
+        return "共享内存/信号量状态正常" if is_ok else "共享内存/信号量异常，可能存在内存泄漏风险"
+    if check_key == "DEVICE_CONNECTION_CHECK":
+        return "设备管理网口连通正常" if is_ok else "设备管理网口未连通或链路状态异常"
+    if check_key == "COREDUMP_INFO_CHECK":
+        return "未发现 Core 文件" if is_ok else f"检测到 Core 文件状态异常：{value}"
+    if check_key == "NIC_HEALTH_CHECK":
+        return "网卡健康状态正常" if is_ok else f"网卡健康状态需要确认：{value}"
+    if check_key == "SNAT_SPORT_EXHAUSTION_CHECK":
+        count = _first_int(value)
+        return "未发现 SNAT 源端口耗尽风险" if count == 0 else f"检测到 {count} 条 SNAT 源端口耗尽相关记录" if count is not None else value
+    if check_key == "SSH_API_CHECK":
+        return "SSH/API 访问控制已开启" if is_ok else "SSH/API 访问控制未开启"
+    if check_key == "PATCH_INFO_CHECK":
+        count = _first_int(value)
+        return f"检测到 {count} 个补丁信息" if is_ok and count is not None else "未检测到已安装补丁信息"
+    if check_key == "REPORT_CHECK":
+        return "报表服务状态正常" if is_ok else "报表服务状态异常"
+    if check_key == "WEAK_PASSWORD_CHECK":
+        count = _first_int(value)
+        return "未发现弱密码账户" if is_ok else f"检测到 {count} 个弱密码账户" if count is not None else value
+    if check_key == "IP_LIMIT_CHECK":
+        return "已启用管理登录 IP 限制" if is_ok else "未启用管理登录 IP 限制，管理入口暴露范围偏大"
+    if check_key == "OPEN_PORT_CHECK":
+        return value.replace("个风险端口: ", "个风险端口开放：").replace("个风险端口:", "个风险端口开放：") if value else "未发现风险端口开放"
+
+    if value in ("0", "0 条", "无", "正常"):
+        return "未发现异常" if is_ok else value
+    return value or ("检查通过" if is_ok else "设备返回异常状态")
+
+
 def render_markdown(
     analysis: Dict[str, Any],
     meta: Dict[str, Any],
@@ -1119,11 +1264,23 @@ def render_markdown(
     def score_icon_for(val: Union[int, float]) -> str:
         return "🟢" if val >= 90 else ("🟡" if val >= 70 else "🔴")
 
+    def risk_label(val: Union[int, float]) -> str:
+        return "低风险" if val >= 90 else ("中风险" if val >= 70 else "高风险")
+
+    def overall_status() -> str:
+        return "✅ 正常" if summary["fail"] + summary["warn"] == 0 else "❌ 发现异常"
+
+    def priority_label(priority: str) -> str:
+        return {"高": "🔴 高", "中": "🟡 中", "低": "🟢 低"}.get(priority, priority)
+
     def rate_cell(cat: Dict[str, int]) -> str:
         return f"{cat['rate']}%" if cat["total"] else "未覆盖"
 
     def score_cell(score: Union[int, float], total: int) -> str:
         return f"{score_icon_for(score)} {score}/100" if total else "未覆盖"
+
+    def risk_cell(score: Union[int, float], total: int) -> str:
+        return risk_label(score) if total else "未覆盖"
 
     def cat_summary(keys: List[str]) -> Dict[str, int]:
         p = sum(1 for k in keys if k in results and results[k]["status"] == "pass")
@@ -1145,9 +1302,9 @@ def render_markdown(
         for k in all_keys:
             if k in results:
                 r = results[k]
-                detail = _user_detail(r.get('detail') or r['value'])
+                detail = _friendly_check_detail(k, r)
                 check_name = r.get("name") or check_label(k)
-                rows.append(f"| {check_name} | {status_label(r['status'])} | {detail} |")
+                rows.append(f"| {_table_cell(check_name)} | {_table_cell(status_label(r['status']))} | {_table_cell(detail)} |")
         return "\n".join(rows)
 
     # ── 健康评分（优先使用 analyze 返回的 health_scores） ─────────────
@@ -1169,9 +1326,9 @@ def render_markdown(
     suggestion_rows = []
     for sug in suggestions:
         suggestion_rows.append(
-            f"| {sug.get('priority', '')} | {sug.get('check_name') or check_label(sug.get('check', ''))} | {_user_detail(sug.get('suggestion', ''))} |"
+            f"| {_table_cell(priority_label(sug.get('priority', '')))} | {_table_cell(sug.get('check_name') or check_label(sug.get('check', '')))} | {_table_cell(_user_detail(sug.get('suggestion', '')))} |"
         )
-    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无优化建议 |"
+    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无需要处理的异常项 |"
 
     # 设备中文名（从 devices.json 匹配，降级到设备 IP）
     device_host = meta.get("host", "?")
@@ -1203,7 +1360,7 @@ def render_markdown(
     has_anomaly = any(k in results and results[k]["status"] in ("fail", "warn") for k in all_keys)
     all_rows_text = all_check_rows()
     if all_rows_text:
-        check_detail_section = f"""| 检查项 | 状态 | 详情 |
+        check_detail_section = f"""| 检查项 | 状态 | 当前发现 |
 |--------|------|------|
 {all_rows_text}
 """
@@ -1215,13 +1372,14 @@ def render_markdown(
     return f"""## 巡检结论
 - 目标：{device_label} ({device_ip})
 - 场景：{meta.get("scene", "?")}
+- 总体状态：{overall_status()}
+- 综合评分：{score_icon} {overall}/100（{risk_label(overall)}）
+- 异常数量：{summary["fail"] + summary["warn"]} 项
 - 数据来源：设备巡检报告
 - 巡检时间：{check_time or "-"}
-- 综合评分：{overall}/100
-- 异常数量：{summary["fail"] + summary["warn"]}
 
 ## 分类统计
-| 类别 | 检查项 | 通过 | 异常 | 得分 |
+| 类别 | 覆盖项 | ✅ 正常 | ❌ 异常 | 得分 |
 | --- | ---: | ---: | ---: | ---: |
 | 功能 | {f["total"]} | {f["pass"]} | {f["fail"] + f["warn"]} | {score_cell(stability_score, f["total"])} |
 | 健康 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {score_cell(hardware_score, h["total"])} |
@@ -1229,7 +1387,7 @@ def render_markdown(
 
 ## 设备基本信息
 
-| 项目 | 值 |
+| 信息 | 内容 |
 |------|-----|
 | AD 版本 | {dev["version"]} |
 | 网关 ID | {dev["gateway_id"]} |
@@ -1241,18 +1399,18 @@ def render_markdown(
 
 ## 优化建议
 
-| 优先级 | 检查项 | 建议 |
+| 优先级 | 问题 | 处理建议 |
 |--------|--------|------|
 {suggestions_table}
 
 ## 健康评分
 
-| 项目 | 评分 |
-|------|------|
-| 系统稳定性 | {score_cell(stability_score, f["total"])} |
-| 硬件健康 | {score_cell(hardware_score, h["total"])} |
-| 安全配置 | {score_cell(security_score, s["total"])} |
-| **综合评分** | {score_icon} **{overall}/100** |
+| 维度 | 评分 | 风险 |
+|------|------:|------|
+| 系统稳定性 | {score_cell(stability_score, f["total"])} | {risk_cell(stability_score, f["total"])} |
+| 硬件健康 | {score_cell(hardware_score, h["total"])} | {risk_cell(hardware_score, h["total"])} |
+| 安全配置 | {score_cell(security_score, s["total"])} | {risk_cell(security_score, s["total"])} |
+| **综合评分** | {score_icon} **{overall}/100** | **{risk_label(overall)}** |
 
 **说明**: 以上结果全部来自设备巡检报告，严格按照巡检返回数据进行分析。
 """
