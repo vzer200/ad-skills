@@ -10,6 +10,7 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 - 硬性验收规则：查询类最终回答必须以 `## 查询结论` 开头，必须包含 `## 查询范围`、`## 查询结果`、`## 覆盖说明`。缺少任一标题即视为任务失败。
 - 最终回答必须复制 `overview.py --format markdown` 的正文输出。不要改写成自定义表格，不要只摘取 VS/Pool/证书数据，不要把脚本输出重新组织成自己的摘要。
 - 面向用户的正文不要展示“工具调用”、脚本名、退出码或 stdout/stderr 摘要；这些只供验收侧后台核验。
+- 最终正文的 `markdown-body` 只能从 `## 查询结论` 开始，到 `## 覆盖说明` 结束。禁止出现 `工具调用`、`执行过程`、`命令摘要`、`connect.py`、`overview.py`、`退出码`、`stdout`、`stderr`。
 - 工具面板里的真实命令必须先单独执行 `skills/ad-connect/scripts/connect.py`，再执行 `skills/ad-ops/scripts/overview.py`。不能把 `overview.py` stdout 中提到的 `connect.py` 当作连接预检。
 - 每一条新的用户查询都必须重新执行一次 `connect.py`。禁止复用上一轮 VS/Pool/证书查询里的连接预检结果。
 - 查询真实设备前必须先调用 `ad-connect`。

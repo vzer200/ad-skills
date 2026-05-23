@@ -17,6 +17,7 @@ description: 深信服 AD/ADC/SLB 配置 skill。用于根据用户参数生成�
 - 不要手写 API payload、batch JSON、apply.py 或回滚文件；必须由脚本生成。
 - 不要打开、粘贴、改写或解析生成的 `adops-bundle.yml`、`adops-plan.json`、`adops-batch.json`、`apply.py`。这些文件是机器产物。
 - 面向用户输出时，只使用脚本输出的短 JSON 摘要和 `summarize-plan` 的结果，但不要把“工具调用”、退出码、stdout/stderr 作为用户正文标题；这些只供验收侧后台核验。
+- 最终正文的 `markdown-body` 只能从 `## 配置结论` 开始，按固定输出模板结束。禁止出现 `工具调用`、`执行命令`、`命令摘要`、`退出码`、`stdout`、`stderr`、`init_env.py`、`ad_ops_flow.py`、`render_slb_bundle.py`、`plan-and-render`、`summarize-plan`、`preflight-slb-plan`、`apply-slb-plan`、`rollback-and-verify`。用户可见区域可以展示业务产物路径，例如 `apply.py`、`rollback_apply.py`、`adops-bundle.yml`、`adops-plan.json`。
 - 每个新任务先设置 `AD_OPS_WORKDIR`，然后运行 `init_env.py`。WorkBot 验收场景允许直接清理旧的 `adops-*` 生成文件。
 
 ```bash

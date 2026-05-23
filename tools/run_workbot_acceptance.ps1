@@ -16,7 +16,8 @@ param(
     [string]$CaseSuite = "fixed",
     [string]$Cases = "",
     [string]$R4Yaml = "test\fixtures\workbot\r4-slb-full.yml",
-    [int]$IdleAfterStopMs = 2000
+    [int]$IdleAfterStopMs = 2000,
+    [switch]$NoFreshAgent
 )
 
 $ErrorActionPreference = "Stop"
@@ -101,6 +102,9 @@ if (!$env:WORKBOT_PASSWORD) {
 
 Write-Host "[6/7] Running WorkBot acceptance"
 $workbotArgs = @("tools\workbot_acceptance.mjs", "--zip", $Package, "--python", $Python, "--r4-yaml", $R4Yaml, "--idle-after-stop-ms", "$IdleAfterStopMs")
+if (!$NoFreshAgent) {
+    $workbotArgs += "--fresh-agent"
+}
 if ($Cases) {
     $workbotArgs += @("--cases", $Cases)
 } else {

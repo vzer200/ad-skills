@@ -33,6 +33,16 @@ The automation runs tests, validates skills, runs an SLB bundle smoke test, comm
 
 Default WorkBot pacing waits 2 seconds after the stop button disappears before sending the next prompt.
 
+By default the one-click runner creates a temporary digital employee named `AD验收临时-*` and switches the conversation to that employee before cleanup/upload/install. This keeps acceptance runs out of the polluted default employee history. The runner deletes older `AD验收临时-*` employees first and refuses to create a new one if the account would still exceed the 5-employee limit. Pass `-NoFreshAgent` only when intentionally debugging the current default employee conversation.
+
+Every temporary employee is created with the operator-approved load-balancer O&M identity and the no-fake-tool-call behavior rules. After switching to it, the runner sends the required initialization prompt and verifies tool-call evidence before starting AD cleanup:
+
+```text
+你是一个通用智能体，现在需要你进行初始化。你需要阅读技能 “Self-Improving + Proactive Agent” 与技能 “Proactivity (Proactive Agent)”，并执行初始化流程。
+```
+
+Cleanup and install are hard gates: if either step needs a no-tool follow-up, misses the required tool commands, or leaks tool/command text in the visible answer, the automation stops before requirement cases. A stopped run is treated as failed even if a later follow-up could recover.
+
 The default `fixed` suite is the mainline gate. It uses only the agreed fixed prompts and covers the complete requirements flow in one WorkBot run: R1 standard/full/security on one device and all devices, R2 full/single-dimension/multi-device VS queries, R3 full/single-dimension perception analysis, and R4 script-only plus real delivery/rollback. HA is not part of the default run.
 
 Exploratory prompt variants are kept in a separate suite and must not be mixed into the mainline stability gate:

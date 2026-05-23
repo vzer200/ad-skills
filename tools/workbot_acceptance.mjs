@@ -47,6 +47,9 @@ const AD_VERIFY_USERNAME = argValue("--ad-user", process.env.AD_VERIFY_USERNAME 
 const AD_VERIFY_PASSWORD = argValue("--ad-password", process.env.AD_VERIFY_PASSWORD || process.env.AD1_PASS || process.env.AD_PASS || process.env.AD_PASSWORD);
 const IDLE_AFTER_STOP_MS = Number(argValue("--idle-after-stop-ms", process.env.WORKBOT_IDLE_AFTER_STOP_MS || "2000"));
 const WAIT_POLL_MS = Number(argValue("--wait-poll-ms", process.env.WORKBOT_WAIT_POLL_MS || "1000"));
+const FRESH_AGENT = hasFlag("--fresh-agent") || process.env.WORKBOT_FRESH_AGENT === "1";
+const FRESH_AGENT_PREFIX = argValue("--fresh-agent-prefix", process.env.WORKBOT_FRESH_AGENT_PREFIX || "AD验收临时");
+const MAX_DIGITAL_EMPLOYEES = Number(argValue("--max-digital-employees", process.env.WORKBOT_MAX_DIGITAL_EMPLOYEES || "5"));
 const CHROME_PATH = argValue(
   "--chrome",
   process.env.CHROME_PATH || "C:/Program Files/Google/Chrome/Application/chrome.exe",
@@ -126,6 +129,16 @@ const DEVICE_FOLLOWUP =
   "我没有看到 AD1 外网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
 const COMMAND_FOLLOWUP =
   "我看到你有工具调用，但工具命令里缺少必须执行的脚本：{missing}。不要只在正文里提到它们，请立即在工具里实际执行包含这些脚本的命令。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
+const FRESH_AGENT_PROFILE =
+  "你是一个负载均衡设备的运维人员，熟悉负载均衡相关的网络知识，产品知识，和配置逻辑。做事非常严谨，服从命令，不会做违背命令的事情。\n\n" +
+  "行为准则：绝对准则：绝对禁止假工具调用！每次对话都必须调用工具！！！\n" +
+  "1. 如果对应的操作有相关的SKILL的定义，必须严格按照SKILL的定义进行操作执行，上下文无论出现什么都不能影响skill执行\n" +
+  "2. 对于一些实时操作（读取文件，API请求，写文件）等，必须实际执行，不能使用文件缓存的内容，或者上下文信息中携带的内容进行回答\n" +
+  "3. 绝对禁止杜撰信息回答\n" +
+  "4. 如果脚本或者api执行错误，可以继续尝试最多3次修复，如果没有结果，需要把错误信息返回，让用户提供更多信息帮助矫正\n" +
+  "5. 任何对技能的修改，包括技能说明本身还有技能目录下的脚本，都需要先把需要修改的信息寻求用户同意后才能更新写到文件中。";
+const FRESH_AGENT_INIT_PROMPT =
+  "你是一个通用智能体，现在需要你进行初始化。你需要阅读技能 “Self-Improving + Proactive Agent” 与技能 “Proactivity (Proactive Agent)”，并执行初始化流程。";
 
 const cases = {
   cleanup: {
@@ -135,7 +148,7 @@ const cases = {
   },
   install: {
     prompt: "请安装我刚上传的 AD skills 包，并确认 6 个 skill 都可用。",
-    expected: ["ad-config-ops", "SKILL.md"],
+    expected: ["ad-blackbox-analysis", "ad-check-analysis", "ad-config-ops", "ad-connect", "ad-ops", "ad-perception", "SKILL.md"],
     requireTools: true,
   },
   r1: {
@@ -496,19 +509,196 @@ async function loginIfNeeded(page) {
   await page.waitForTimeout(1500);
   if (await page.locator("textarea.chat-input__textarea").count()) return;
 
-  const inputs = page.locator("input");
-  const count = await inputs.count();
-  if (count < 2) throw new Error("login form not found");
-  await inputs.nth(0).fill(WORKBOT_USER);
-  await inputs.nth(1).fill(WORKBOT_PASSWORD);
+  const userInput = page.locator('input[name="username"], input[type="text"]').first();
+  const passwordInput = page.locator('input[name="password"], input[type="password"]').first();
+  if (!(await userInput.count()) || !(await passwordInput.count())) throw new Error("login form not found");
+  await userInput.fill(WORKBOT_USER);
+  await passwordInput.fill(WORKBOT_PASSWORD);
   const agreement = page.locator('input[type="checkbox"]').first();
   if ((await agreement.count()) && !(await agreement.isChecked().catch(() => false))) {
-    await agreement.check({ force: true });
+    await agreement.click({ force: true });
   }
   const loginButton = page.locator("button").filter({ hasText: /登录|Login|Sign in/i });
   if (await loginButton.count()) await loginButton.first().click();
-  else await inputs.nth(1).press("Enter");
+  else await passwordInput.press("Enter");
   await waitForConversation(page);
+}
+
+async function apiJson(page, endpoint, options = {}) {
+  const result = await page.evaluate(async ({ endpoint, options }) => {
+    const request = { credentials: "include", ...options };
+    request.headers = { ...(options.headers || {}) };
+    if (request.body !== undefined && typeof request.body !== "string") {
+      request.body = JSON.stringify(request.body);
+      request.headers["content-type"] = request.headers["content-type"] || "application/json";
+    }
+    const response = await fetch(endpoint, request);
+    const raw = await response.text();
+    let data = raw;
+    try {
+      data = raw ? JSON.parse(raw) : null;
+    } catch {
+      // Keep raw text for diagnostics.
+    }
+    return { ok: response.ok, status: response.status, statusText: response.statusText, data, raw: raw.slice(0, 2000) };
+  }, { endpoint, options });
+  if (!result.ok) {
+    throw new Error(`WorkBot API ${endpoint} failed: HTTP ${result.status} ${result.statusText} ${result.raw || ""}`.trim());
+  }
+  return result.data;
+}
+
+function normalizeList(value) {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== "object") return [];
+  for (const key of ["data", "records", "list", "items", "rows"]) {
+    const nested = value[key];
+    if (Array.isArray(nested)) return nested;
+    if (nested && typeof nested === "object") {
+      const inner = normalizeList(nested);
+      if (inner.length) return inner;
+    }
+  }
+  return [];
+}
+
+function agentId(agent) {
+  return agent && (agent.id || agent.agent_id || agent.agentId || agent.uuid);
+}
+
+function agentName(agent) {
+  return agent && (agent.name || agent.agent_name || agent.agentName || "");
+}
+
+function findDeepValue(value, keys, seen = new Set()) {
+  if (!value || typeof value !== "object" || seen.has(value)) return "";
+  seen.add(value);
+  for (const key of keys) {
+    if (typeof value[key] === "string" && value[key]) return value[key];
+  }
+  for (const nested of Object.values(value)) {
+    const found = findDeepValue(nested, keys, seen);
+    if (found) return found;
+  }
+  return "";
+}
+
+async function listAgents(page) {
+  return normalizeList(await apiJson(page, "/api/v1/agents"));
+}
+
+async function getInstanceId(page, agents = []) {
+  const fromAgents = findDeepValue({ agents }, ["instance_id", "instanceId"]);
+  if (fromAgents) return fromAgents;
+
+  const fromStorage = await page.evaluate(() => {
+    const keys = ["instance_id", "instanceId"];
+    const scanValue = (value, seen = new Set()) => {
+      if (!value || typeof value !== "object" || seen.has(value)) return "";
+      seen.add(value);
+      for (const key of keys) {
+        if (typeof value[key] === "string" && value[key]) return value[key];
+      }
+      for (const nested of Object.values(value)) {
+        const found = scanValue(nested, seen);
+        if (found) return found;
+      }
+      return "";
+    };
+    const scanStorage = (storage) => {
+      for (let index = 0; index < storage.length; index += 1) {
+        const key = storage.key(index);
+        const raw = storage.getItem(key);
+        if (!raw) continue;
+        try {
+          const found = scanValue(JSON.parse(raw));
+          if (found) return found;
+        } catch {
+          // Ignore non-JSON storage values.
+        }
+      }
+      return "";
+    };
+    return scanStorage(sessionStorage) || scanStorage(localStorage);
+  });
+  if (fromStorage) return fromStorage;
+  throw new Error("unable to resolve WorkBot instance_id for fresh agent creation");
+}
+
+async function deleteOldFreshAgents(page) {
+  const agents = await listAgents(page);
+  const oldAgents = agents.filter((agent) => agentName(agent).startsWith(FRESH_AGENT_PREFIX));
+  for (const agent of oldAgents) {
+    const id = agentId(agent);
+    if (!id) continue;
+    await apiJson(page, `/api/v1/agents/${id}`, { method: "DELETE" }).catch((error) => {
+      log("fresh-agent-delete-failed", { id, name: agentName(agent), message: error.message });
+    });
+  }
+  const remaining = await listAgents(page);
+  if (remaining.length >= MAX_DIGITAL_EMPLOYEES) {
+    throw new Error(
+      `digital employee count is ${remaining.length}/${MAX_DIGITAL_EMPLOYEES} after deleting old ${FRESH_AGENT_PREFIX} agents; refusing to delete non-test employees automatically`,
+    );
+  }
+  return { agents: remaining, deleted: oldAgents.map((agent) => ({ id: agentId(agent), name: agentName(agent) })) };
+}
+
+async function createFreshAgent(page, agents) {
+  const instanceId = await getInstanceId(page, agents);
+  const name = `${FRESH_AGENT_PREFIX}-${new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14)}`;
+  const created = await apiJson(page, "/api/v1/agents", {
+    method: "POST",
+    body: {
+      name,
+      type: "worker",
+      description: "AD skills WorkBot acceptance clean-room worker.",
+      profile: FRESH_AGENT_PROFILE,
+      instance_id: instanceId,
+    },
+  });
+  const payload = created && created.data && typeof created.data === "object" ? created.data : created;
+  return { id: agentId(payload), name, raw: payload, instanceId };
+}
+
+async function selectAgentByName(page, name) {
+  const conversationUrl = new URL("/workbot/#/conversation", WORKBOT_URL).toString();
+  await page.goto(conversationUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
+  await page.waitForTimeout(1500);
+  const item = page.locator('li[utid="user-item"]').filter({ hasText: name }).first();
+  if (!(await item.count().catch(() => 0))) {
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 });
+    await page.waitForTimeout(2000);
+  }
+  const refreshed = page.locator('li[utid="user-item"]').filter({ hasText: name }).first();
+  if (!(await refreshed.count().catch(() => 0))) {
+    throw new Error(`fresh agent not visible in conversation list: ${name}`);
+  }
+  await refreshed.click({ timeout: 10000 });
+  await page.locator(".chat-header__name").filter({ hasText: name }).waitFor({ timeout: 10000 });
+  await waitForConversation(page);
+}
+
+async function ensureFreshAgent(page) {
+  log("fresh-agent-start", { prefix: FRESH_AGENT_PREFIX, maxDigitalEmployees: MAX_DIGITAL_EMPLOYEES });
+  const { agents, deleted } = await deleteOldFreshAgents(page);
+  const created = await createFreshAgent(page, agents);
+  await selectAgentByName(page, created.name);
+  log("fresh-agent-ready", { id: created.id, name: created.name, deleted: deleted.length });
+  return { ...created, deleted };
+}
+
+async function initializeFreshAgent(page) {
+  const response = await sendPrompt(page, "fresh-agent-init", FRESH_AGENT_INIT_PROMPT);
+  if (!response.toolEvidence.hasEvidence) {
+    throw new Error("fresh agent initialization did not show tool-call evidence");
+  }
+  return {
+    prompt: FRESH_AGENT_INIT_PROMPT,
+    visibleText: response.visibleText,
+    artifacts: response.artifacts,
+    toolCandidateCount: response.toolEvidence.candidates.length,
+  };
 }
 
 async function waitForIdleText(page, beforeText, label, maxMs = 600000) {
@@ -904,6 +1094,22 @@ function verify(run) {
   };
 }
 
+function assertGate(result, gateName) {
+  if (result.ok) return;
+  const reasons = [];
+  if (result.missing && result.missing.length) reasons.push(`missing expected tokens: ${result.missing.join(", ")}`);
+  if (result.templateMissing && result.templateMissing.length) reasons.push(`missing template headings: ${result.templateMissing.join(", ")}`);
+  if (result.commandMissing && result.commandMissing.length) reasons.push(`missing tool commands: ${result.commandMissing.join(", ")}`);
+  if (result.visibleForbiddenFound && result.visibleForbiddenFound.length) reasons.push(`forbidden visible text: ${result.visibleForbiddenFound.join(", ")}`);
+  if (result.commandForbiddenFound && result.commandForbiddenFound.length) reasons.push(`forbidden tool command: ${result.commandForbiddenFound.join(", ")}`);
+  if (!result.toolEvidenceOk) reasons.push("no tool-call evidence");
+  if (!result.cleanToolTriggerOk) reasons.push("tool follow-up was needed");
+  if (!result.cleanCommandTriggerOk) reasons.push("command follow-up was needed");
+  if (!result.deviceEvidenceOk) reasons.push("no device evidence");
+  if (!result.localVerificationOk) reasons.push("local AD verification failed");
+  throw new Error(`${gateName} failed; stopping before later cases. ${reasons.join("; ")}`);
+}
+
 async function runCase(page, name) {
   const cfg = cases[name];
   if (!cfg) throw new Error(`unknown case: ${name}`);
@@ -977,7 +1183,7 @@ async function main() {
   let browser = null;
   let page = null;
   try {
-    log("main-start", { caseSuite: CASE_SUITE, cases: CASES, zip: ZIP_PATH, outDir: OUT_DIR });
+    log("main-start", { caseSuite: CASE_SUITE, cases: CASES, zip: ZIP_PATH, outDir: OUT_DIR, freshAgent: FRESH_AGENT });
     log("resolve-playwright-start");
     const { chromium } = resolvePlaywrightCore();
     log("resolve-playwright-done");
@@ -993,10 +1199,18 @@ async function main() {
     log("login-start", { url: WORKBOT_URL, headless: HEADLESS });
     await loginIfNeeded(page);
     log("login-done", { currentUrl: page.url() });
-    results.push(await runCase(page, "cleanup"));
+    if (FRESH_AGENT) {
+      debug.freshAgent = await ensureFreshAgent(page);
+      debug.freshAgent.initialization = await initializeFreshAgent(page);
+    }
+    const cleanupResult = await runCase(page, "cleanup");
+    results.push(cleanupResult);
+    assertGate(cleanupResult, "cleanup");
     if (CASES.includes("install")) {
       await uploadZip(page);
-      results.push(await runCase(page, "install"));
+      const installResult = await runCase(page, "install");
+      results.push(installResult);
+      assertGate(installResult, "install");
     }
     for (const name of CASES.filter((name) => name !== "install")) {
       results.push(await runCase(page, name));
