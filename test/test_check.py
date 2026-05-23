@@ -221,6 +221,7 @@ class TestRenderMarkdown(unittest.TestCase):
             "unsafe_algorithm": True,
             "unsafe_protocol": True,
             "enable_iplimit": "false",
+            "dns_server_enabled": "",
         })
         output = render_markdown(analysis, {"host": "https://10.0.0.1", "scene": "标准巡检", "start_time": ""})
         self.assertIn("管理员角色未正确配置", output)
@@ -229,6 +230,7 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertIn("设备安全检查未开启", output)
         self.assertIn("存在不安全算法和不安全协议", output)
         self.assertIn("未启用管理登录 IP 限制", output)
+        self.assertIn("DNS 服务：未配置", output)
         self.assertNotIn("admin=", output)
         self.assertNotIn("heartbeat_state=", output)
         self.assertNotIn("shm_sem_state=", output)
@@ -236,6 +238,7 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertNotIn("algorithm=", output)
         self.assertNotIn("protocol=", output)
         self.assertNotIn("enable_iplimit=", output)
+        self.assertNotIn("dns_server_enabled=", output)
         self.assertNotIn("ad.json", output)
         self.assertNotIn("## 重点异常", output)
         self.assertNotIn("## 巡检过程", output)

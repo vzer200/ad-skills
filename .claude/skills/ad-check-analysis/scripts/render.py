@@ -142,7 +142,7 @@ def _user_detail(text: Any) -> str:
         label = _DETAIL_FIELD_LABELS.get(field, field.replace("_", " "))
         return "{}：{}".format(label, _friendly_detail_value(field, value))
 
-    detail = re.sub(r"\b([A-Za-z][A-Za-z0-9_]*|82599)=([^\s,|]+)", repl, detail)
+    detail = re.sub(r"\b([A-Za-z][A-Za-z0-9_]*|82599)=([^\s,|]*)", repl, detail)
     return detail.replace("`ad.json`", "设备巡检报告").replace("ad.json", "设备巡检报告")
 
 
