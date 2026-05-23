@@ -471,6 +471,32 @@ function hasDeviceEvidence(value) {
   return /(devices\.json|AD1|connect\.py|14\.18\.243\.211|192\.168\.8\.3[01]|认证|auth|reach|连接测试|连接正常)/i.test(value || "");
 }
 
+function extractToolCommands(responses) {
+  const commands = [];
+  const commandPattern = /"command"\s*:\s*"((?:\\.|[^"\\])*)"/g;
+  for (const response of responses || []) {
+    for (const candidate of (response.toolEvidence && response.toolEvidence.candidates) || []) {
+      const text = candidate.text || "";
+      for (const match of text.matchAll(commandPattern)) {
+        try {
+          commands.push(JSON.parse(`"${match[1]}"`));
+        } catch {
+          commands.push(match[1]);
+        }
+      }
+    }
+  }
+  return Array.from(new Set(commands));
+}
+
+function commandExpectedFor(name, cfg) {
+  if (cfg.commandExpected) return cfg.commandExpected;
+  if (name.startsWith("r1")) return ["connect.py", "check.py"];
+  if (name.startsWith("r2")) return ["connect.py", "overview.py"];
+  if (name.startsWith("r3")) return ["connect.py", "perception.py"];
+  return [];
+}
+
 function templateExpectedFor(name, cfg) {
   if (cfg.templateExpected) return cfg.templateExpected;
   if (name.startsWith("r1")) return ["巡检结论", "工具调用", "分类统计", "原始报告"];
@@ -619,6 +645,11 @@ function verify(run) {
   const templateExpected = templateExpectedFor(run.name, cfg);
   const templateFound = templateExpected.filter((token) => searchable.includes(token));
   const templateMissing = templateExpected.filter((token) => !searchable.includes(token));
+  const toolCommands = extractToolCommands(run.responses);
+  const toolCommandText = toolCommands.join("\n");
+  const commandExpected = commandExpectedFor(run.name, cfg);
+  const commandFound = commandExpected.filter((token) => toolCommandText.includes(token));
+  const commandMissing = commandExpected.filter((token) => !toolCommandText.includes(token));
   const forbidden = cfg.forbidExecute && /(^|\s)--execute(\s|$)/.test(searchable);
   const toolEvidenceOk = !cfg.requireTools || run.responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence);
   const deviceEvidenceOk = !cfg.requireDevice || hasDeviceEvidence(searchable);
@@ -632,13 +663,17 @@ function verify(run) {
     templateExpected,
     templateFound,
     templateMissing,
+    commandExpected,
+    commandFound,
+    commandMissing,
+    toolCommands,
     toolEvidenceOk,
     cleanToolTriggerOk,
     deviceEvidenceOk,
     localVerificationOk,
     toolFollowupUsed: Boolean(run.toolFollowupUsed),
     deviceFollowupUsed: Boolean(run.deviceFollowupUsed),
-    ok: missing.length === 0 && templateMissing.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && deviceEvidenceOk && localVerificationOk,
+    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && deviceEvidenceOk && localVerificationOk,
     forbidden_execute: forbidden,
   };
 }
