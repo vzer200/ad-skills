@@ -210,6 +210,7 @@ const cases = {
     ],
     expected: ["AD1", "标准巡检"],
     requireTools: true,
+    requireToolsEachStep: true,
     requireDevice: true,
   },
   "r1-full": {
@@ -220,6 +221,7 @@ const cases = {
     ],
     expected: ["AD1", "全量巡检"],
     requireTools: true,
+    requireToolsEachStep: true,
     requireDevice: true,
   },
   "r1-security": {
@@ -230,6 +232,7 @@ const cases = {
     ],
     expected: ["AD1", "安全巡检"],
     requireTools: true,
+    requireToolsEachStep: true,
     requireDevice: true,
   },
   "r1-all": {
@@ -240,6 +243,7 @@ const cases = {
     ],
     expected: ["devices.json", "标准巡检"],
     requireTools: true,
+    requireToolsEachStep: true,
     requireDevice: true,
   },
   "r1-all-full": {
@@ -250,6 +254,7 @@ const cases = {
     ],
     expected: ["devices.json", "全量巡检"],
     requireTools: true,
+    requireToolsEachStep: true,
     requireDevice: true,
   },
   "r1-all-security": {
@@ -260,6 +265,7 @@ const cases = {
     ],
     expected: ["devices.json", "安全巡检"],
     requireTools: true,
+    requireToolsEachStep: true,
     requireDevice: true,
   },
   r2: {
@@ -981,11 +987,19 @@ function stepRuleViolationsFor(name, cfg, responses) {
   const step2 = responses[1] || {};
   const step3 = responses[2] || {};
   const scene = (cfg.expected || []).find((token) => /巡检$/.test(token)) || "";
-  const earlyForbiddenCommands = [
+  const step1ForbiddenCommands = [
     "ad-connect/scripts/connect.py",
     "ad-perception/scripts/perception.py",
     "ad-ops/scripts/overview.py",
-    "ad-check-analysis/scripts/check.py",
+    "check.py history",
+    "check.py run",
+    "check.py progress",
+    "check.py wait",
+  ];
+  const step2RequiredCommands = ["connect.py", "check.py", "history"];
+  const step2ForbiddenCommands = [
+    "ad-perception/scripts/perception.py",
+    "ad-ops/scripts/overview.py",
     "check.py run",
     "check.py progress",
     "check.py wait",
@@ -1000,7 +1014,7 @@ function stepRuleViolationsFor(name, cfg, responses) {
   for (const token of earlyForbiddenVisible) {
     if (step1Visible.includes(token)) violations.push(`r1 step1 produced premature ${token}`);
   }
-  for (const token of earlyForbiddenCommands) {
+  for (const token of step1ForbiddenCommands) {
     if (step1Commands.includes(token)) violations.push(`r1 step1 executed premature command: ${token}`);
   }
   if (/ad-perception|perception\.py/.test(step1Commands) || step1Visible.includes("感知结论")) {
@@ -1012,16 +1026,22 @@ function stepRuleViolationsFor(name, cfg, responses) {
   if (!/(强制|继续|覆盖)/.test(step2Visible)) {
     violations.push("r1 step2 did not ask whether to force/continue");
   }
+  if (!/历史/.test(step2Visible)) {
+    violations.push("r1 step2 did not tell the user history was checked before force confirmation");
+  }
   for (const token of earlyForbiddenVisible) {
     if (step2Visible.includes(token)) violations.push(`r1 step2 produced premature ${token}`);
   }
-  for (const token of earlyForbiddenCommands) {
+  for (const token of step2RequiredCommands) {
+    if (!step2Commands.includes(token)) violations.push(`r1 step2 missing pre-confirmation command token: ${token}`);
+  }
+  for (const token of step2ForbiddenCommands) {
     if (step2Commands.includes(token)) violations.push(`r1 step2 executed before force confirmation: ${token}`);
   }
 
   const step3Visible = `${step3.visibleText || ""}\n${step3.visibleAgentText || ""}`;
   const step3Commands = extractStepToolCommands(step3).join("\n");
-  const requiredFinalCommands = ["connect.py", "check.py", "history", "run", "progress", "wait"];
+  const requiredFinalCommands = ["check.py", "run", "progress", "wait"];
   for (const token of requiredFinalCommands) {
     if (!step3Commands.includes(token)) violations.push(`r1 step3 missing command token: ${token}`);
   }
@@ -1047,7 +1067,7 @@ function commandExpectedFor(name, cfg) {
 
 function templateExpectedFor(name, cfg) {
   if (cfg.templateExpected) return cfg.templateExpected;
-  if (name.startsWith("r1")) return ["巡检结论", "巡检过程", "分类统计", "重点异常", "原始报告"];
+  if (name.startsWith("r1")) return ["巡检结论", "巡检过程", "分类统计", "原始报告"];
   if (name.startsWith("r2")) return ["查询结论", "查询范围", "查询结果", "覆盖说明"];
   if (name.startsWith("r3")) return ["感知结论", "分析结果", "结论边界"];
   if (name.startsWith("r4")) return ["配置结论", "执行摘要", "生成产物", "安全确认", "下一步"];
@@ -1253,6 +1273,7 @@ function verify(run) {
   ] : [];
   if (/^r1/.test(run.name)) {
     defaultVisibleForbidden.push(
+      "重点异常",
       "ad.json",
       "security_check_state=",
       "remote_mt=",
@@ -1268,11 +1289,26 @@ function verify(run) {
   }
   const visibleForbidden = cfg.visibleForbidden || defaultVisibleForbidden;
   const visibleForbiddenFound = visibleForbidden.filter((token) => visibleText.includes(token));
+  const visibleForbiddenRegexes = /^r1/.test(run.name)
+    ? [
+        { name: "internal CHECK id", regex: /\b[A-Z][A-Z0-9_]+_CHECK\b/ },
+        { name: "raw key=value device field", regex: /\b(?:[A-Za-z][A-Za-z0-9_]*|82599)=/ },
+        { name: "english thinking leaked", regex: /\b(?:According to the skill rules|The user|Let me start|I need to)\b/i },
+      ]
+    : [];
+  const visibleForbiddenRegexFound = visibleForbiddenRegexes
+    .filter((item) => item.regex.test(visibleText))
+    .map((item) => item.name);
   const forbiddenWorkBotDeviceHosts = /^r[1-4]/.test(run.name) ? WORKBOT_FORBIDDEN_DEVICE_HOSTS : [];
   const forbiddenWorkBotDeviceHostsFound = forbiddenWorkBotDeviceHosts.filter((token) => searchable.includes(token));
   const stepViolations = stepRuleViolationsFor(run.name, cfg, run.responses || []);
   const forbidden = cfg.forbidExecute && /(^|\s)--execute(\s|$)/.test(searchable);
   const toolEvidenceOk = !cfg.requireTools || run.responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence);
+  const perStepToolEvidenceMissing = cfg.requireToolsEachStep
+    ? (run.responses || [])
+        .filter((item) => !item.toolEvidence || !item.toolEvidence.hasEvidence)
+        .map((item) => item.name || "unnamed-step")
+    : [];
   const deviceEvidenceOk = !cfg.requireDevice || hasDeviceEvidence(searchable);
   const localVerificationOk = !run.localVerification || run.localVerification.status !== "fail";
   const cleanToolTriggerOk = !cfg.requireTools || !run.toolFollowupUsed;
@@ -1292,11 +1328,13 @@ function verify(run) {
     commandForbiddenFound,
     visibleForbidden,
     visibleForbiddenFound,
+    visibleForbiddenRegexFound,
     forbiddenWorkBotDeviceHosts,
     forbiddenWorkBotDeviceHostsFound,
     stepViolations,
     toolCommands,
     toolEvidenceOk,
+    perStepToolEvidenceMissing,
     cleanToolTriggerOk,
     cleanCommandTriggerOk,
     deviceEvidenceOk,
@@ -1304,7 +1342,7 @@ function verify(run) {
     toolFollowupUsed: Boolean(run.toolFollowupUsed),
     commandFollowupUsed: Boolean(run.commandFollowupUsed),
     deviceFollowupUsed: Boolean(run.deviceFollowupUsed),
-    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && commandForbiddenFound.length === 0 && visibleForbiddenFound.length === 0 && forbiddenWorkBotDeviceHostsFound.length === 0 && stepViolations.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk,
+    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && commandForbiddenFound.length === 0 && visibleForbiddenFound.length === 0 && visibleForbiddenRegexFound.length === 0 && forbiddenWorkBotDeviceHostsFound.length === 0 && stepViolations.length === 0 && perStepToolEvidenceMissing.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk,
     forbidden_execute: forbidden,
   };
 }
@@ -1316,10 +1354,12 @@ function assertGate(result, gateName) {
   if (result.templateMissing && result.templateMissing.length) reasons.push(`missing template headings: ${result.templateMissing.join(", ")}`);
   if (result.commandMissing && result.commandMissing.length) reasons.push(`missing tool commands: ${result.commandMissing.join(", ")}`);
   if (result.visibleForbiddenFound && result.visibleForbiddenFound.length) reasons.push(`forbidden visible text: ${result.visibleForbiddenFound.join(", ")}`);
+  if (result.visibleForbiddenRegexFound && result.visibleForbiddenRegexFound.length) reasons.push(`forbidden visible pattern: ${result.visibleForbiddenRegexFound.join(", ")}`);
   if (result.commandForbiddenFound && result.commandForbiddenFound.length) reasons.push(`forbidden tool command: ${result.commandForbiddenFound.join(", ")}`);
   if (result.forbiddenWorkBotDeviceHostsFound && result.forbiddenWorkBotDeviceHostsFound.length) reasons.push(`forbidden WorkBot device host: ${result.forbiddenWorkBotDeviceHostsFound.join(", ")}`);
   if (result.stepViolations && result.stepViolations.length) reasons.push(`step violations: ${result.stepViolations.join(" | ")}`);
   if (!result.toolEvidenceOk) reasons.push("no tool-call evidence");
+  if (result.perStepToolEvidenceMissing && result.perStepToolEvidenceMissing.length) reasons.push(`missing per-step tool evidence: ${result.perStepToolEvidenceMissing.join(", ")}`);
   if (!result.cleanToolTriggerOk) reasons.push("tool follow-up was needed");
   if (!result.cleanCommandTriggerOk) reasons.push("command follow-up was needed");
   if (!result.deviceEvidenceOk) reasons.push("no device evidence");

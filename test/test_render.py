@@ -294,6 +294,10 @@ class TestRenderMultiDeviceReport(unittest.TestCase):
         self.assertNotIn("algorithm=", output)
         self.assertNotIn("protocol=", output)
         self.assertNotIn("ad.json", output)
+        self.assertNotIn("## 重点异常", output)
+        self.assertNotRegex(output, r"\b(?:[A-Za-z][A-Za-z0-9_]*|82599)=")
+        self.assertNotIn("❌ 异常", output)
+        self.assertNotIn("⚠️ 异常", output)
 
 
 if __name__ == "__main__":

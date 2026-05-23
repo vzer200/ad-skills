@@ -115,6 +115,8 @@ _DETAIL_VALUE_REPLACEMENTS = {
 
 def _friendly_detail_value(field: str, raw_value: str) -> str:
     value = raw_value.strip().strip("\"'")
+    if value == "":
+        return "未配置"
     lower = value.lower()
     if lower in ("true", "false"):
         enabled_word = "已开启" if lower == "true" else "未开启"
@@ -149,13 +151,13 @@ def _device_summary_status(result: Dict[str, Any]) -> str:
     if "error" in result:
         err = result["error"]
         if any(kw in err for kw in ("Auth", "401", "认证")):
-            return "❌ 认证失败"
-        return "❌ 连接失败"
+            return "认证失败"
+        return "连接失败"
     analysis = result.get("analysis", {})
     summary = analysis.get("summary", {})
     if summary.get("fail", 0) > 0 or summary.get("warn", 0) > 0:
-        return "⚠️ 异常"
-    return "✅ 正常"
+        return "异常"
+    return "正常"
 
 
 def _render_device_detail_block(
@@ -218,9 +220,8 @@ def _render_device_detail_block(
         lines.append("| 检查项 | 状态 | 值 |")
         lines.append("|--------|------|-----|")
         for k, cr in abnormal:
-            lines.append("| {} | {} {} | {} |".format(
+            lines.append("| {} | {} | {} |".format(
                 _check_label(k, cr),
-                _check_icon(cr["status"]),
                 _status_label(cr["status"]),
                 _user_detail(cr.get("detail") or cr["value"]),
             ))
@@ -239,8 +240,8 @@ def _render_device_detail_block(
 
     lines.append("#### \U0001f4c8 统计汇总")
     lines.append("")
-    lines.append("| 类别 | 检查项数 | ✅ 通过 | ❌ 异常 | ⚠️ 警告 | 通过率 |")
-    lines.append("|------|----------|---------|---------|---------|--------|")
+    lines.append("| 类别 | 检查项数 | 通过 | 异常 | 通过率 |")
+    lines.append("|------|----------|------|------|--------|")
 
     for cat_key, cat_label in [
         ("feature", "功能巡检"),
@@ -255,7 +256,7 @@ def _render_device_detail_block(
         w = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "warn")
         t = p + f + w
         rate = round(p / max(t, 1) * 100)
-        lines.append("| {} | {} | {} | {} | {} | {}% |".format(cat_label, t, p, f, w, rate))
+        lines.append("| {} | {} | {} | {} | {}% |".format(cat_label, t, p, f + w, rate))
 
     lines.append("")
 
@@ -331,7 +332,7 @@ def _render_cross_device_comparison(
             s = statuses.get(host, {})
             status = s.get("status", "?")
             value = _user_detail(s.get("value", "?"))
-            row += " {} {} |".format(_check_icon(status), value)
+            row += " {}：{} |".format(_status_label(status), value)
             if status in ("fail", "warn"):
                 notes.append(_extract_ip(host))
         row += " {} |".format(", ".join(notes) if notes else "-")
@@ -470,10 +471,9 @@ def render_multi_device_report(
                 if not cr or cr.get("status") not in ("fail", "warn"):
                     continue
                 detail = _user_detail(cr.get("detail") or cr.get("value", ""))
-                abnormal_rows.append("| {} | {} | {} {} | {} |".format(
+                abnormal_rows.append("| {} | {} | {} | {} |".format(
                     d["name"],
                     cat_label,
-                    _check_icon(cr["status"]),
                     _check_label(key, cr),
                     detail,
                 ))
@@ -523,11 +523,6 @@ def render_multi_device_report(
     lines.append("")
     lines.append("> {} 台设备: {} 台正常, {} 台异常".format(total_devices, normal_count, device_abnormal_count))
 
-    lines.append("")
-    lines.append("## 重点异常")
-    lines.append("")
-    lines.append(abnormal_section)
-    lines.append("")
     lines.append("## 原始报告")
     lines.append("")
     lines.append("### 设备详情")

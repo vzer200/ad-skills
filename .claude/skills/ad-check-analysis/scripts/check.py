@@ -67,6 +67,22 @@ class CheckDownloadError(CheckError):
     pass
 
 
+def render_interaction_prompt(stage: str, target: str, scene: str = "标准巡检") -> str:
+    """Render user-visible interaction prompts so WorkBot does not improvise them."""
+    target = (target or "AD1").strip()
+    scene = (scene or "标准巡检").strip()
+    if stage == "scene":
+        return "\n".join([
+            f"请问你要对 {target} 执行哪种巡检？",
+            "标准巡检",
+            "全量巡检",
+            "安全巡检",
+        ])
+    if stage == "confirm":
+        return f"已检查历史巡检记录，是否确认对 {target} 强制继续{scene}？"
+    raise ValueError(f"unsupported prompt stage: {stage}")
+
+
 # ---------------------------------------------------------------------------
 # 巡检执行流程
 # ---------------------------------------------------------------------------
@@ -1042,6 +1058,8 @@ _DETAIL_VALUE_REPLACEMENTS = {
 
 def _friendly_detail_value(field: str, raw_value: str) -> str:
     value = raw_value.strip().strip("\"'")
+    if value == "":
+        return "未配置"
     lower = value.lower()
     if lower in ("true", "false"):
         enabled_word = "已开启" if lower == "true" else "未开启"
@@ -1084,9 +1102,6 @@ def render_markdown(
     health_keys = analysis.get("categories", {}).get("health", [])
     secure_keys = analysis.get("categories", {}).get("secure", [])
 
-    def icon(s: str) -> str:
-        return {"pass": "✅", "fail": "❌", "warn": "⚠️"}.get(s, s)
-
     def status_label(s: str) -> str:
         return {"pass": "正常", "fail": "异常", "warn": "异常"}.get(s, s)
 
@@ -1121,17 +1136,7 @@ def render_markdown(
                 r = results[k]
                 detail = _user_detail(r.get('detail') or r['value'])
                 check_name = r.get("name") or check_label(k)
-                rows.append(f"| {check_name} | {icon(r['status'])} {status_label(r['status'])} | {detail} |")
-        return "\n".join(rows)
-
-    def abnormal_rows() -> str:
-        rows = []
-        for k in all_keys:
-            if k in results and results[k]["status"] in ("fail", "warn"):
-                r = results[k]
-                detail = _user_detail(r.get("detail") or r["value"])
-                check_name = r.get("name") or check_label(k)
-                rows.append(f"| {check_name} | {icon(r['status'])} {status_label(r['status'])} | {detail} |")
+                rows.append(f"| {check_name} | {status_label(r['status'])} | {detail} |")
         return "\n".join(rows)
 
     # ── 健康评分（优先使用 analyze 返回的 health_scores） ─────────────
@@ -1194,15 +1199,6 @@ def render_markdown(
     else:
         check_detail_section = "> 本次报告未包含可分析检查项。\n"
 
-    abnormal_rows_text = abnormal_rows()
-    if abnormal_rows_text:
-        abnormal_section = f"""| 检查项 | 状态 | 详情 |
-|--------|------|------|
-{abnormal_rows_text}
-"""
-    else:
-        abnormal_section = "无。"
-
     return f"""## 巡检结论
 - 目标：{device_label} ({meta.get("host", "?")})
 - 场景：{meta.get("scene", "?")}
@@ -1223,9 +1219,6 @@ def render_markdown(
 | 功能 | {f["total"]} | {f["pass"]} | {f["fail"] + f["warn"]} | {score_cell(stability_score, f["total"])} |
 | 健康 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {score_cell(hardware_score, h["total"])} |
 | 安全 | {s["total"]} | {s["pass"]} | {s["fail"] + s["warn"]} | {score_cell(security_score, s["total"])} |
-
-## 重点异常
-{abnormal_section}
 
 ## 原始报告
 
@@ -1405,7 +1398,8 @@ def _wait_one(
 
 
 def main() -> None:
-    sys.stdout.reconfigure(encoding='utf-8')
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description="AD 设备巡检工具")
     sub = parser.add_subparsers(dest="command", help="子命令")
 
@@ -1414,6 +1408,12 @@ def main() -> None:
     p_scenes.add_argument("--host", required=True)
     p_scenes.add_argument("--username", default="admin")
     p_scenes.add_argument("--password", default="")
+
+    # prompt
+    p_prompt = sub.add_parser("prompt", help="输出固定交互提示词")
+    p_prompt.add_argument("--stage", required=True, choices=["scene", "confirm"])
+    p_prompt.add_argument("--target", default="AD1")
+    p_prompt.add_argument("--scene", default="标准巡检")
 
     # run — 步骤 1-3：场景确认 + 上限检查 + 启动
     # 单设备 / --no-wait: 启动后立即退出
@@ -1479,7 +1479,10 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    if args.command == "scenes":
+    if args.command == "prompt":
+        print(render_interaction_prompt(args.stage, args.target, args.scene))
+
+    elif args.command == "scenes":
         password = args.password or os.environ.get("AD_PASS", "")
         if not password:
             print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
@@ -1568,6 +1571,21 @@ def main() -> None:
                 verbose=args.verbose,
                 _timeout=min(max(args.timeout + 15, 30), 75),
             )
+            wait_errors = [
+                str(v.get("error", ""))
+                for v in results.values()
+                if isinstance(v, dict)
+                and "error" in v
+                and (
+                    "CheckTimeoutError" in str(v.get("error", ""))
+                    or "未检测到本次巡检的完成报告" in str(v.get("error", ""))
+                    or "_meta.json" in str(v.get("error", ""))
+                )
+            ]
+            if wait_errors:
+                for err in wait_errors:
+                    print(f"❌ {err}", file=sys.stderr)
+                sys.exit(5 if any("CheckTimeoutError" in e or "未检测到本次巡检的完成报告" in e for e in wait_errors) else 4)
             if len(devices) == 1:
                 only = next(iter(results.values()))
                 if "error" not in only and only.get("markdown"):

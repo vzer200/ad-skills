@@ -8,11 +8,13 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "
 import json
 import unittest
 import tempfile
+from contextlib import redirect_stderr, redirect_stdout
+from io import StringIO
 from unittest.mock import patch, MagicMock
 
 from check import (
     start_check, analyze, render_markdown,
-    _SUGGESTION_MAP,
+    render_interaction_prompt, _SUGGESTION_MAP,
 )
 from ad_api import ADAuthError, ADConnectionError
 
@@ -161,6 +163,16 @@ class TestAnalyze(unittest.TestCase):
         self.assertNotIn("algorithm=", rendered_values)
         self.assertNotIn("enable_iplimit=", rendered_values)
 
+    def test_interaction_prompt_requires_history_before_force(self):
+        self.assertEqual(
+            render_interaction_prompt("scene", "AD1"),
+            "请问你要对 AD1 执行哪种巡检？\n标准巡检\n全量巡检\n安全巡检",
+        )
+        self.assertEqual(
+            render_interaction_prompt("confirm", "AD1", "全量巡检"),
+            "已检查历史巡检记录，是否确认对 AD1 强制继续全量巡检？",
+        )
+
 
 class TestRenderMarkdown(unittest.TestCase):
     """Test render_markdown output structure."""
@@ -222,6 +234,36 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertNotIn("protocol=", output)
         self.assertNotIn("enable_iplimit=", output)
         self.assertNotIn("ad.json", output)
+        self.assertNotIn("## 重点异常", output)
+        self.assertNotRegex(output, r"\b(?:[A-Za-z][A-Za-z0-9_]*|82599)=")
+        self.assertNotIn("❌ 异常", output)
+        self.assertNotIn("⚠️ 异常", output)
+        self.assertIn("| 设备安全状态检查 | 异常 | 设备安全检查未开启 |", output)
+
+    def test_wait_devices_timeout_does_not_render_report(self):
+        from check import main
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False) as f:
+            json.dump({
+                "devices": [
+                    {"name": "AD1", "host": "https://10.0.0.1", "user": "admin", "password": "pw"}
+                ]
+            }, f)
+            devices_path = f.name
+        stdout = StringIO()
+        stderr = StringIO()
+        try:
+            argv = ["check.py", "wait", "--devices", devices_path, "--device", "AD1"]
+            with patch("sys.argv", argv), patch("check.run_multi", return_value={
+                "https://10.0.0.1": {"error": "CheckTimeoutError: 未检测到本次巡检的完成报告"}
+            }):
+                with self.assertRaises(SystemExit) as cm, redirect_stdout(stdout), redirect_stderr(stderr):
+                    main()
+            self.assertEqual(cm.exception.code, 5)
+            self.assertNotIn("## 巡检结论", stdout.getvalue())
+            self.assertNotIn("## 原始报告", stdout.getvalue())
+            self.assertIn("CheckTimeoutError", stderr.getvalue())
+        finally:
+            os.unlink(devices_path)
 
 
 class TestExitCodes(unittest.TestCase):

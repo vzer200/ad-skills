@@ -99,7 +99,7 @@ If a real-device case has tool calls but no AD 内网设备资源验证, send th
 Every requirement run must use the corresponding skill output template. Missing template headings fail the run even if the script tokens are present.
 
 ```text
-R1: 巡检结论 / 巡检过程 / 分类统计 / 重点异常 / 原始报告
+R1: 巡检结论 / 巡检过程 / 分类统计 / 原始报告
 R2: 查询结论 / 查询范围 / 查询结果 / 覆盖说明
 R3: 感知结论 / 分析结果 / 结论边界
 R4: 配置结论 / 执行摘要 / 生成产物 / 安全确认
@@ -145,7 +145,7 @@ Expected human replies:
 强制
 ```
 
-If the first user prompt already includes a scene such as `请对 AD1 做一次标准巡检。`, WorkBot must not ask for the scene again. It should only ask for force/continue if needed.
+If the first user prompt already includes a scene such as `请对 AD1 做一次标准巡检。`, WorkBot must not ask for the scene again. It must still run `connect.py` and `check.py history`, then ask for force/continue.
 
 
 Expected tool calls:
@@ -162,17 +162,18 @@ Pass criteria:
 
 - Tool calls include the expected scripts in order.
 - WorkBot commands must not combine waiting and polling in one shell command. `sleep && check.py progress` is a failed run; each `progress` must be its own tool call.
-- The interactive steps are gated independently: the first prompt must only ask for `标准巡检 / 全量巡检 / 安全巡检`; the scene reply must only ask whether to force/continue; no report or device command may appear before the final `强制` reply.
-- A later successful report does not mask a bad earlier step. If the first step routes to `ad-perception`/`ad-ops`, outputs `感知结论`/`查询结论`/`巡检结论`, or the second step runs `check.py run/wait` before force confirmation, the case fails immediately.
+- The interactive steps are gated independently: the first prompt must only ask for `标准巡检 / 全量巡检 / 安全巡检`; the scene reply must run `connect.py` and `check.py history`, then only ask whether to force/continue; no report may appear before the final `强制` reply.
+- A later successful report does not mask a bad earlier step. If the first step routes to `ad-perception`/`ad-ops`, outputs `感知结论`/`查询结论`/`巡检结论`, or the second step runs `check.py run/progress/wait` before force confirmation, the case fails immediately.
 - `connect.py` validates the AD1 target from `devices.json` before inspection, including AD 内网设备资源 reachability/auth evidence.
 - All-device inspection uses `devices.json` without `--device AD1` and produces multi-device evidence.
-- All-device inspection follows the same human interaction as single-device inspection: ask scene, ask force/continue, then run `history -> run -> progress -> wait`.
+- All-device inspection follows the same human interaction as single-device inspection: ask scene, run `connect.py` and `history`, ask force/continue, then run `run -> progress -> wait`.
 - `check.py run --wait` must not be used in WorkBot acceptance; it can exceed the platform's 60-second tool timeout.
 - The final report comes from `check.py wait` / downloaded report stdout, after `progress` confirms completion.
 - The final answer does not add model-written inspection findings, wrapper phrases, or skill-policy explanations.
 - The final visible answer starts at `## 巡检结论` and must not append a second execution table or any phrase such as `工具调用`, `退出码`, `stdout`, `上方 stdout`, `connect.py`, or `check.py`.
 - The final visible answer must not include phrases such as `根据技能`, `技能规则`, `根据 ad-check-analysis`, `下面汇总展示`, or `报告均已获取成功`.
 - The final visible answer must not include raw device field syntax such as `security_check_state=`, `remote_mt=`, `ssh_authority=`, `algorithm=`, `protocol=`, or `enable_iplimit=`; these must be rendered as Chinese operator-facing descriptions. It must also not mention internal report file names such as `ad.json`.
+- The final visible answer must not include `## 重点异常`; inspection details are carried under `## 原始报告`. Check item status cells must only use `正常` or `异常`.
 - Acceptance artifacts are redacted before saving; credential fields, tokens, cookies, and known runtime passwords must not be persisted in WorkBot result files.
 - WorkBot commands must not use `2>&1` for the final `wait` command. If stderr is needed for debugging, it stays inside tool evidence and is not copied into the user-visible answer.
 - Check items in final answers use Chinese labels, not internal IDs such as `DEVICE_SAFE_CHECK`.
