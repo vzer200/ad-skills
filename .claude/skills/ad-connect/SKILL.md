@@ -10,6 +10,7 @@ description: 深信服 AD 设备连接预检 skill。用于在巡检、查询、
 - 连接状态必须由脚本判断，禁止模型凭经验判断设备是否可达。
 - 其他 AD skill 在连接真实设备前必须先运行本 skill。
 - 如果连接或认证失败，停止后续设备操作，并原样展示脚本 stdout/stderr。
+- 本 skill 只能作为连接预检或其他 skill 的前置步骤。用户说“AD1 现在啥情况 / 当前情况 / 设备概况 / 查询 / 查看 / 配置 / VS / Pool / 证书 / 流量 / 状态”等运维查询意图时，禁止只执行 `connect.py` 后反问；连接成功后必须继续按 `ad-ops` 规则运行 `overview.py`。没有明确维度时默认 `overview.py config`。
 - 支持 `devices.json`。在 WorkBot 上传包中，设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-connect/devices.json` 或 `.claude/skills/ad-connect/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
 - shell 命令禁止使用 `2>&1` 合并 stderr/stdout；工具平台会单独保留 stderr，其他 skill 的验收会拒绝包含 `2>&1` 的工具命令。
 
