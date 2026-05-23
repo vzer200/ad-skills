@@ -922,7 +922,7 @@ class TestState3Sigma(unittest.TestCase):
                 'anomalies': [{
                     'ts': int(datetime.now().timestamp()) - 60,
                     'vs': 'test',
-                    'metric': 'connection-rate',
+                    'metric': 'general_throughput',
                     'value': 0.0,
                     'baseline_mean': 100.0,
                     'z': 4.0,
@@ -934,6 +934,8 @@ class TestState3Sigma(unittest.TestCase):
 
         self.assertIn('状态：⚠️ 需关注', output)
         self.assertIn('| 虚拟服务 | 指标 | 时间 | 当前值 | 基线值 | 变化比例 |', output)
+        self.assertIn('总吞吐量', output)
+        self.assertNotIn('general_throughput', output)
         self.assertIn('下降 100.0%', output)
         self.assertNotIn('风险', output)
         self.assertNotIn('轻微', output)

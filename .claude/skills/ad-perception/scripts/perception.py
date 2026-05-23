@@ -895,7 +895,10 @@ _METRIC_LABELS = {
     'interface': '接口',
     'system': '系统',
     'connection': '当前连接数',
+    'connection-rate': '新建速率',
     'connection_rate': '新建速率',
+    'general-throughput': '总吞吐量',
+    'general_throughput': '总吞吐量',
     'throughput': '吞吐量',
 }
 

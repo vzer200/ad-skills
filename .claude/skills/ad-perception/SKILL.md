@@ -14,6 +14,7 @@ description: 深信服 AD 感知分析 skill。用于分析 VS 流量异常、CP
 - 脚本输出是唯一事实来源。禁止模型自行推断根因、编造异常、补充未由脚本返回的设备状态。
 - 面向用户的正文不要展示“工具调用”、脚本名、退出码或 stdout/stderr 摘要；这些只供验收侧后台核验。
 - 最终正文的 `markdown-body` 只能从 `## 感知结论` 开始，到 `## 结论边界` 结束。禁止出现 `工具调用`、`执行过程`、`命令摘要`、`connect.py`、`perception.py`、`collector.py`、`退出码`、`stdout`、`stderr`。
+- 最终正文必须直接保留 `perception.py` 输出中从 `## 感知结论` 到 `## 结论边界` 的完整内容，不要二次改写、压缩、改标题、改表头、合并表格或新增结论边界条目。
 - 用户要求全量感知分析时，必须使用 `perception.py analyze`。
 - 用户要求虚拟服务流量趋势分析时，必须先运行 `collector.py collect --collect-only` 写入 SQLite 历史库，再运行 `perception.py traffic --require-db` 查询数据库；禁止只用实时 API 或模型记忆回答趋势。
 - 用户指定 AD1/AD2 时，连接预检和分析命令都必须用 `--device` 限定单台设备。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-perception/devices.json` 或 `.claude/skills/ad-perception/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。

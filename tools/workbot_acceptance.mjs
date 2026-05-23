@@ -446,7 +446,7 @@ const cases = {
     prompt: "对 AD2 设备的 test 虚拟服务进行流量趋势分析。",
     expected: ["connect.py", "AD2", "collector.py", "collect", "perception.py", "traffic", "test"],
     commandExpected: ["connect.py", "collector.py", "collect", "--collect-only", "perception.py", "traffic", "--vs", "test", "--require-db"],
-    visibleForbidden: ["| 风险 |", "ℹ️ 轻微", "⚠️ 明显", "❌ 严重"],
+    visibleForbidden: ["| 风险 |", "ℹ️ 轻微", "⚠️ 明显", "❌ 严重", "大幅偏离", "连接数约为基线", "三项核心指标", "降至 0", "general_throughput"],
     requireTools: true,
     requireDevice: true,
   },
