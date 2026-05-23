@@ -8,6 +8,7 @@ param(
     [switch]$CommitAndPush,
     [switch]$SkipWorkBot,
     [switch]$VerifyAD,
+    [switch]$InjectDevicePasswords,
     [string]$ADBaseUrl = "https://14.18.243.211:21044",
     [string]$ADUser = "admin",
     [string]$Cases = "install,r1,r1-full,r1-security,r1-all,r1-all-full,r1-all-security,r2,r2-vs,r2-node,r2-pool,r2-cert,r2-traffic,r2-status,r2-ha,r2-hardware,r3,r3-traffic,r3-state,r3-conflict,r3-logs,r4-script",
@@ -75,7 +76,11 @@ if ($CommitAndPush) {
 }
 
 Write-Host "[5/7] Packaging AD skills"
-& $Python "tools\package_ad_skills.py" --out $Package
+$packageArgs = @("tools\package_ad_skills.py", "--out", $Package)
+if ($InjectDevicePasswords) {
+    $packageArgs += "--inject-device-passwords"
+}
+& $Python @packageArgs
 
 if ($SkipWorkBot) {
     Write-Host "[6/7] Skipping WorkBot"

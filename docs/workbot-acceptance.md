@@ -31,6 +31,15 @@ $env:AD1_PASS = "<operator-provided AD1 password>"
 
 The automation runs tests, validates skills, runs an SLB bundle smoke test, commits and pushes, packages `dist/ad-skills-workbot.zip`, uploads it to WorkBot, sends the acceptance prompts, and writes a JSON evidence report under `workbot-results/`.
 
+If WorkBot cannot see local environment variables such as `AD1_PASS`, build the upload-only package with runtime credential injection:
+
+```powershell
+$env:AD1_PASS = "<operator-provided AD1 password>"
+.\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD -InjectDevicePasswords
+```
+
+This replaces `password_from` with `password` only inside the ignored zip artifact; source `devices.json` and the package manifest do not store password values.
+
 Before every upload, clear old AD skills and memory with this short prompt:
 
 ```text

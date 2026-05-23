@@ -9,7 +9,7 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 
 - 查询真实设备前必须先调用 `ad-connect`。
 - 用户要“配置、流量、状态、证书”整体视图时，必须使用 `overview.py all`。
-- 用户要特定维度时，使用 `overview.py vs|pool|cert|hardware|ha|traffic` 或 `ad_api.py` 对应子命令。
+- 用户要特定维度时，必须先用 `connect.py` 验证目标设备，再使用 `overview.py vs|pool|cert|hardware|ha|traffic`；不要直接调用 `ad_api.py` 给用户生成查询结果。
 - 输出必须来自脚本 stdout。禁止模型自己拼接 VS、Pool、证书或状态表。
 - 支持 `devices.json` 中的 AD1/AD2；密码从 `AD1_PASS`、`AD2_PASS` 环境变量读取。用户指定 AD1/AD2 时必须用 `--device` 限定单台设备。
 - 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动使用 `devices.json --device AD1`。
