@@ -696,18 +696,33 @@ async function selectAgentByName(page, name) {
   const conversationUrl = new URL("/workbot/#/conversation", WORKBOT_URL).toString();
   await page.goto(conversationUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
   await page.waitForTimeout(1500);
-  const item = page.locator('li[utid="user-item"]').filter({ hasText: name }).first();
-  if (!(await item.count().catch(() => 0))) {
-    await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 });
-    await page.waitForTimeout(2000);
+  const deadline = Date.now() + 180000;
+  let lastState = "";
+  while (Date.now() < deadline) {
+    const item = page.locator('li[utid="user-item"]').filter({ hasText: name }).first();
+    if (await item.count().catch(() => 0)) {
+      await item.click({ timeout: 10000 }).catch(() => {});
+      const state = await page.evaluate((agentName) => {
+        const activeName = document.querySelector('li.user-item--active .user-item__name')?.textContent || "";
+        const body = document.body?.innerText || "";
+        const textarea = document.querySelector("textarea.chat-input__textarea");
+        return {
+          active: activeName.includes(agentName),
+          ready: Boolean(textarea) && !body.includes("正在部署中") && !body.includes("请稍后再试"),
+          bodyTail: body.slice(-200),
+        };
+      }, name).catch(() => ({ active: false, ready: false, bodyTail: "" }));
+      lastState = JSON.stringify(state);
+      if (state.active && state.ready) {
+        await waitForConversation(page);
+        return;
+      }
+    }
+    await page.waitForTimeout(3000);
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+    await page.waitForTimeout(1000);
   }
-  const refreshed = page.locator('li[utid="user-item"]').filter({ hasText: name }).first();
-  if (!(await refreshed.count().catch(() => 0))) {
-    throw new Error(`fresh agent not visible in conversation list: ${name}`);
-  }
-  await refreshed.click({ timeout: 10000 });
-  await page.locator(".chat-header__name").filter({ hasText: name }).waitFor({ timeout: 10000 });
-  await waitForConversation(page);
+  throw new Error(`fresh agent not ready in conversation list: ${name}; lastState=${lastState}`);
 }
 
 async function ensureFreshAgent(page) {
