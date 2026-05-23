@@ -162,6 +162,8 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 
 必须按阶段使用下面的精简模板，不要额外发挥。每次 R4 对用户可见正文必须包含且只围绕 `## 配置结论`、`## 产出物`、`## 下一步` 这三个标题组织。禁止输出 `操作计划`、`计划摘要`、`执行摘要`、`安全确认` 这类长区块；不要列 YAML 字段说明表、字段示例表或“其余字段可按需填写”这类展开说明，字段补齐由 YAML 产物承接；不要列 `batch`、`effective_plan`、`post_apply`、`post_rollback`、`rollback_compare` 等内部文件，除非用户明确要求排障细节。
 
+阶段 A 的可见正文尤其要短：禁止出现 `字段` 表头、`当前占位值`、`TODO_`，也不要逐行列 `name`、`vips`、`vports`、`pool`、`http_profile`、`pre_rules`。只告诉用户“下载 YAML，填写必要内容后上传，并回复我写完了 YAML”。
+
 ### 阶段 A：YAML 待填写
 
 ```markdown
@@ -179,7 +181,7 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 下载 YAML，填写必要内容后上传，并回复“我写完了 YAML”。
 ```
 
-阶段 A 必须在这一步停止，不要继续列 `name/vips/vports/pool/pre_rules/http_profile` 等字段清单或示例。
+阶段 A 必须在这一步停止，不要继续列 `name/vips/vports/pool/pre_rules/http_profile` 等字段清单、占位值或示例。
 
 ### 阶段 B：YAML 已确认，等待选择
 

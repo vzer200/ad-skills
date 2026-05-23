@@ -1605,9 +1605,18 @@ function verify(run) {
       "模板中你需要填写",
       "字段\t说明",
       "字段 说明",
+      "当前占位值",
+      "占位字段",
+      "TODO_",
       "其余字段",
       "可按需填写",
       "留空会自动忽略",
+      "name\t",
+      "vips\t",
+      "vports\t",
+      "pool\t",
+      "http_profile\t",
+      "pre_rules\t",
       "name —",
       "vips —",
       "vports —",
@@ -1634,6 +1643,12 @@ function verify(run) {
     visibleForbiddenRegexes.push({
       name: "r3 anomaly status contradiction",
       regex: /状态[：:]\s*(?:✅\s*)?未发现明显异常[\s\S]*(?:\b(?:ALERT|ERROR)\b|(?:上升|下降)\s+\d+(?:\.\d+)?%|(?:轻微|明显|严重))/,
+    });
+  }
+  if (/^r4/.test(run.name)) {
+    visibleForbiddenRegexes.push({
+      name: "r4 visible yaml field table",
+      regex: /(?:^|\n)\s*字段\s+(?:当前占位值|说明|示例)/,
     });
   }
   const visibleForbiddenRegexFound = visibleForbiddenRegexes
