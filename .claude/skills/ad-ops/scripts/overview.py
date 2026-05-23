@@ -146,6 +146,7 @@ def build_overview(client: ADClient, subcommand: str = "all") -> Dict[str, Any]:
     api_types = API_GROUPS.get(subcommand, [subcommand])
 
     overview: Dict[str, Any] = {
+        "query": subcommand,
         "device": {"host": client.host},
         "virtual_services": [],
         "certificates": [],
@@ -380,10 +381,26 @@ def render_markdown(overview: Dict[str, Any]) -> str:
     """Render the overview dictionary as a Markdown string."""
     lines: List[str] = []
     api_errors = overview.get("api_errors", {})
+    query = overview.get("query", "all")
+    failed = {k: v for k, v in api_errors.items() if v}
 
     def a(e: str) -> None:
         lines.append(e)
 
+    a("## 查询结论")
+    a(f"- 目标：{overview.get('device', {}).get('host', '')}")
+    a(f"- 维度：{query}")
+    a("- 结果来源：overview.py stdout")
+    a(f"- 状态：{'失败' if failed else '成功'}")
+    a("")
+
+    a("## 工具调用")
+    a("- connect.py：必须在 overview.py 前执行连接预检，结果以 WorkBot 工具调用面板为准")
+    a(f"- overview.py {query}：stdout 如下")
+    a("")
+
+    a("## 查询结果")
+    a("")
     a("# AD Device Overview")
     a("")
 
@@ -485,6 +502,15 @@ def render_markdown(overview: Dict[str, Any]) -> str:
                 hw_row(f"Power: {p.get('name', '')}", p.get("status", ""), p.get("level", "ok"))
             for i in hw.get("interfaces", []):
                 hw_row(f"Interface: {i.get('name', '')}", i.get("status", ""), i.get("level", "ok"))
+    a("")
+
+    a("## 覆盖说明")
+    if query == "all":
+        a("- all：覆盖配置、流量、设备状态、SSL 证书。")
+    else:
+        a(f"- 单项查询：仅展示 {query} 维度。")
+    if failed:
+        a(f"- 部分数据源失败：{', '.join(failed.keys())}。")
     a("")
 
     return "\n".join(lines)

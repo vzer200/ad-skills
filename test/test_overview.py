@@ -248,6 +248,10 @@ class TestOverviewAPI(unittest.TestCase):
         md = render_markdown(overview)
 
         # Section headers
+        self.assertIn("查询结论", md)
+        self.assertIn("工具调用", md)
+        self.assertIn("查询结果", md)
+        self.assertIn("覆盖说明", md)
         self.assertIn("AD Device Overview", md)
         self.assertIn("Device Info", md)
         self.assertIn("Virtual Services", md)
