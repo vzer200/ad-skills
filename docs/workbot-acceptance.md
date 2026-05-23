@@ -174,6 +174,8 @@ check.py wait --timeout 55
 Pass criteria:
 
 - Tool calls include the expected scripts in order.
+- The interactive steps are gated independently: the first prompt must only ask for `标准巡检 / 全量巡检 / 安全巡检`; the scene reply must only ask whether to force/continue; no report or device command may appear before the final `强制` reply.
+- A later successful report does not mask a bad earlier step. If the first step routes to `ad-perception`/`ad-ops`, outputs `感知结论`/`查询结论`/`巡检结论`, or the second step runs `check.py run/wait` before force confirmation, the case fails immediately.
 - `connect.py` validates the AD1 target from `devices.json` before inspection, including AD 内网设备资源 reachability/auth evidence.
 - All-device inspection uses `devices.json` without `--device AD1` and produces multi-device evidence.
 - All-device inspection follows the same human interaction as single-device inspection: ask scene, ask force/continue, then run `history -> run -> progress -> wait`.

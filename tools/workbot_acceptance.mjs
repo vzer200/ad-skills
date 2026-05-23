@@ -911,6 +911,78 @@ function extractToolCommands(responses) {
   return Array.from(new Set(commands));
 }
 
+function textOfResponse(response) {
+  return [
+    response && response.visibleText,
+    response && response.visibleAgentText,
+    response && response.text,
+    response && response.agentText,
+  ].filter(Boolean).join("\n");
+}
+
+function stepRuleViolationsFor(name, cfg, responses) {
+  if (!name.startsWith("r1") || !cfg.steps) return [];
+  const violations = [];
+  const step1 = responses[0] || {};
+  const step2 = responses[1] || {};
+  const step3 = responses[2] || {};
+  const scene = (cfg.expected || []).find((token) => /巡检$/.test(token)) || "";
+  const earlyForbiddenCommands = [
+    "ad-connect/scripts/connect.py",
+    "ad-perception/scripts/perception.py",
+    "ad-ops/scripts/overview.py",
+    "ad-check-analysis/scripts/check.py",
+    "check.py run",
+    "check.py progress",
+    "check.py wait",
+  ];
+  const earlyForbiddenVisible = ["巡检结论", "感知结论", "查询结论"];
+
+  const step1Visible = `${step1.visibleText || ""}\n${step1.visibleAgentText || ""}`;
+  const step1Commands = extractToolCommands([step1]).join("\n");
+  if (!/标准巡检/.test(step1Visible) || !/全量巡检/.test(step1Visible) || !/安全巡检/.test(step1Visible)) {
+    violations.push("r1 step1 did not ask the user to choose 标准巡检/全量巡检/安全巡检");
+  }
+  for (const token of earlyForbiddenVisible) {
+    if (step1Visible.includes(token)) violations.push(`r1 step1 produced premature ${token}`);
+  }
+  for (const token of earlyForbiddenCommands) {
+    if (step1Commands.includes(token)) violations.push(`r1 step1 executed premature command: ${token}`);
+  }
+  if (/ad-perception|perception\.py/.test(step1Commands) || step1Visible.includes("感知结论")) {
+    violations.push("r1 step1 routed inspection prompt to ad-perception");
+  }
+
+  const step2Visible = `${step2.visibleText || ""}\n${step2.visibleAgentText || ""}`;
+  const step2Commands = extractToolCommands([step2]).join("\n");
+  if (!/(强制|继续|覆盖)/.test(step2Visible)) {
+    violations.push("r1 step2 did not ask whether to force/continue");
+  }
+  for (const token of earlyForbiddenVisible) {
+    if (step2Visible.includes(token)) violations.push(`r1 step2 produced premature ${token}`);
+  }
+  for (const token of earlyForbiddenCommands) {
+    if (step2Commands.includes(token)) violations.push(`r1 step2 executed before force confirmation: ${token}`);
+  }
+
+  const step3Visible = `${step3.visibleText || ""}\n${step3.visibleAgentText || ""}`;
+  const step3Commands = extractToolCommands([step3]).join("\n");
+  const requiredFinalCommands = ["connect.py", "check.py", "history", "run", "progress", "wait"];
+  for (const token of requiredFinalCommands) {
+    if (!step3Commands.includes(token)) violations.push(`r1 step3 missing command token: ${token}`);
+  }
+  for (const token of ["perception.py", "overview.py", "2>&1"]) {
+    if (step3Commands.includes(token)) violations.push(`r1 step3 used forbidden command token: ${token}`);
+  }
+  if (!step3Visible.includes("巡检结论")) {
+    violations.push("r1 step3 did not produce 巡检结论 report");
+  }
+  if (scene && !step3Visible.includes(scene)) {
+    violations.push(`r1 step3 report did not contain expected scene: ${scene}`);
+  }
+  return violations;
+}
+
 function commandExpectedFor(name, cfg) {
   if (cfg.commandExpected) return cfg.commandExpected;
   if (name.startsWith("r1")) return ["connect.py", "check.py", "history", "run", "progress", "wait"];
@@ -1115,6 +1187,7 @@ function verify(run) {
   const visibleForbiddenFound = visibleForbidden.filter((token) => visibleText.includes(token));
   const forbiddenWorkBotDeviceHosts = /^r[1-4]/.test(run.name) ? WORKBOT_FORBIDDEN_DEVICE_HOSTS : [];
   const forbiddenWorkBotDeviceHostsFound = forbiddenWorkBotDeviceHosts.filter((token) => searchable.includes(token));
+  const stepViolations = stepRuleViolationsFor(run.name, cfg, run.responses || []);
   const forbidden = cfg.forbidExecute && /(^|\s)--execute(\s|$)/.test(searchable);
   const toolEvidenceOk = !cfg.requireTools || run.responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence);
   const deviceEvidenceOk = !cfg.requireDevice || hasDeviceEvidence(searchable);
@@ -1138,6 +1211,7 @@ function verify(run) {
     visibleForbiddenFound,
     forbiddenWorkBotDeviceHosts,
     forbiddenWorkBotDeviceHostsFound,
+    stepViolations,
     toolCommands,
     toolEvidenceOk,
     cleanToolTriggerOk,
@@ -1147,7 +1221,7 @@ function verify(run) {
     toolFollowupUsed: Boolean(run.toolFollowupUsed),
     commandFollowupUsed: Boolean(run.commandFollowupUsed),
     deviceFollowupUsed: Boolean(run.deviceFollowupUsed),
-    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && commandForbiddenFound.length === 0 && visibleForbiddenFound.length === 0 && forbiddenWorkBotDeviceHostsFound.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk,
+    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && commandForbiddenFound.length === 0 && visibleForbiddenFound.length === 0 && forbiddenWorkBotDeviceHostsFound.length === 0 && stepViolations.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk,
     forbidden_execute: forbidden,
   };
 }
@@ -1161,6 +1235,7 @@ function assertGate(result, gateName) {
   if (result.visibleForbiddenFound && result.visibleForbiddenFound.length) reasons.push(`forbidden visible text: ${result.visibleForbiddenFound.join(", ")}`);
   if (result.commandForbiddenFound && result.commandForbiddenFound.length) reasons.push(`forbidden tool command: ${result.commandForbiddenFound.join(", ")}`);
   if (result.forbiddenWorkBotDeviceHostsFound && result.forbiddenWorkBotDeviceHostsFound.length) reasons.push(`forbidden WorkBot device host: ${result.forbiddenWorkBotDeviceHostsFound.join(", ")}`);
+  if (result.stepViolations && result.stepViolations.length) reasons.push(`step violations: ${result.stepViolations.join(" | ")}`);
   if (!result.toolEvidenceOk) reasons.push("no tool-call evidence");
   if (!result.cleanToolTriggerOk) reasons.push("tool follow-up was needed");
   if (!result.cleanCommandTriggerOk) reasons.push("command follow-up was needed");
@@ -1188,6 +1263,8 @@ async function runCase(page, name) {
       throw new Error(`unsupported step for ${name}: ${JSON.stringify(step)}`);
     }
   }
+  const stepViolationsBeforeRecovery = stepRuleViolationsFor(name, cfg, responses);
+  const skipRecoveryFollowups = stepViolationsBeforeRecovery.length > 0;
   let combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
 
   if (!cfg.steps && cfg.params && asksForParameters(combinedText)) {
@@ -1195,14 +1272,14 @@ async function runCase(page, name) {
     combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
   }
 
-  if (cfg.requireTools && !responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence)) {
+  if (!skipRecoveryFollowups && cfg.requireTools && !responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence)) {
     toolFollowupUsed = true;
     responses.push(await sendPrompt(page, `${name}-tool-followup`, NO_TOOL_FOLLOWUP));
     combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
   }
 
   const commandExpected = commandExpectedFor(name, cfg);
-  if (cfg.requireTools && commandExpected.length) {
+  if (!skipRecoveryFollowups && cfg.requireTools && commandExpected.length) {
     const commandText = extractToolCommands(responses).join("\n");
     const commandMissing = commandExpected.filter((token) => !commandText.includes(token));
     if (commandMissing.length) {
@@ -1212,12 +1289,12 @@ async function runCase(page, name) {
     }
   }
 
-  if (cfg.requireDevice && !hasDeviceEvidence(combinedText)) {
+  if (!skipRecoveryFollowups && cfg.requireDevice && !hasDeviceEvidence(combinedText)) {
     deviceFollowupUsed = true;
     responses.push(await sendPrompt(page, `${name}-device-followup`, DEVICE_FOLLOWUP));
     combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
   }
-  const localVerification = VERIFY_AD && (cfg.requireDevice || cfg.verifyPresent || cfg.verifyAbsent) ? runLocalAdVerification(name, cfg) : { status: "disabled" };
+  const localVerification = !skipRecoveryFollowups && VERIFY_AD && (cfg.requireDevice || cfg.verifyPresent || cfg.verifyAbsent) ? runLocalAdVerification(name, cfg) : { status: "disabled" };
 
   return verify({
     name,
@@ -1272,7 +1349,9 @@ async function main() {
       assertGate(installResult, "install");
     }
     for (const name of CASES.filter((name) => name !== "install")) {
-      results.push(await runCase(page, name));
+      const result = await runCase(page, name);
+      results.push(result);
+      assertGate(result, name);
     }
   } catch (error) {
     failure = error;

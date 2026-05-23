@@ -7,6 +7,7 @@ description: 深信服 AD 感知分析 skill。用于分析 VS 流量异常、CP
 
 ## 强制规则
 
+- 路由硬隔离：只要用户文本或当前任务包含 `巡检`、`标准巡检`、`全量巡检`、`安全巡检`、`健康检查`、`巡检报告`，必须交给 `ad-check-analysis`。本 skill 禁止执行 `perception.py`、`connect.py` 或输出 `感知结论` 来回答巡检任务。
 - 分析真实设备前必须先调用 `ad-connect`。
 - 所有分析必须由 `skills/ad-perception/scripts/perception.py` 或 `collector.py` 生成。
 - 脚本输出是唯一事实来源。禁止模型自行推断根因、编造异常、补充未由脚本返回的设备状态。

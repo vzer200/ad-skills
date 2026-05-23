@@ -9,10 +9,13 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 
 - 路由优先级：只要用户文本或当前任务包含 `巡检`、`标准巡检`、`全量巡检`、`安全巡检`、`健康检查`、`巡检报告`，必须使用本 skill。禁止改用 `ad-ops`、`overview.py` 或“查询结论”模板回答巡检任务。
 - 场景未确定前只允许读取技能说明、设备清单或做必要的轻量确认；禁止提前连接设备、执行 `overview.py` 或产出查询结果。用户补充场景并确认强制继续后，才执行 `connect.py -> check.py history -> run -> progress -> wait`。
+- 交互硬停规则：用户只说“请对 AD1 做一次巡检”或“请对 AD 所有设备做一次巡检”时，最终正文只能询问巡检场景并列出 `标准巡检 / 全量巡检 / 安全巡检`，禁止执行 `connect.py`、`check.py`、`perception.py`、`overview.py`，禁止输出巡检/感知/查询报告。
+- 交互硬停规则：用户只回复 `标准巡检`、`全量巡检` 或 `安全巡检` 时，最终正文只能询问是否强制继续，禁止执行 `connect.py`、`check.py run`、`check.py progress`、`check.py wait`，禁止输出报告。只有用户随后明确回复 `强制`、`继续` 或 `强制继续` 后，才允许执行设备脚本。
 - 巡检前必须先调用 `ad-connect` 做连接预检。
 - 所有业务逻辑必须由 `skills/ad-check-analysis/scripts/check.py` 执行。
 - 必须先查 `history`，再分步执行 `run -> progress -> wait`。WorkBot 工具调用约 60 秒会超时，禁止使用 `run --wait` 这类长阻塞命令。
 - `run` 只负责启动巡检，必须显式传 `--work-dir`；`progress` 每次只轮询一次，可重复调用；确认完成后再用 `wait --timeout 55 --poll-interval 5` 下载和分析报告。
+- 不要把 `sleep` 和 `progress` 拼到同一条 shell 命令里；每次工具调用只执行一次 `progress`，如仍是 WAITING/RUNNING，再发起下一次独立工具调用，避免 WorkBot 单次工具调用接近 60 秒超时。
 - 脚本输出是唯一事实来源。禁止模型自行生成巡检结论、风险项、分数或报告内容。
 - 如果用户指定 AD1/AD2，优先使用设备清单中的主机和密码。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-check-analysis/devices.json` 或 `.claude/skills/ad-check-analysis/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
 - 验收交互必须像真实人工：不要要求用户补充命令参数。用户只说“请对 AD1 做一次巡检”时，先用短问题让用户选择场景；用户回答“标准巡检/全量巡检/安全巡检”后，再确认是否继续/强制；用户回答“强制”后执行脚本并加 `--force`。
