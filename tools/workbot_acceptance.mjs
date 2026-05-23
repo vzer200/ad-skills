@@ -340,7 +340,7 @@ async function loginIfNeeded(page) {
   await waitForConversation(page);
 }
 
-async function waitForIdleText(page, beforeText, label, maxMs = 300000) {
+async function waitForIdleText(page, beforeText, label, maxMs = 600000) {
   const start = Date.now();
   let last = beforeText;
   let lastChanged = Date.now();
@@ -352,17 +352,19 @@ async function waitForIdleText(page, beforeText, label, maxMs = 300000) {
       last = current;
       lastChanged = Date.now();
     }
-    const sendEnabled = await page.locator('button[utid="send-btn"]').isEnabled().catch(() => false);
+    const stopVisible = await page.locator('button[utid="stop-btn"]').isVisible().catch(() => false);
+    const sendVisible = await page.locator('button[utid="send-btn"]').isVisible().catch(() => false);
+    const sendEnabled = sendVisible && await page.locator('button[utid="send-btn"]').isEnabled().catch(() => false);
     const elapsedMs = Date.now() - start;
     if (elapsedMs - lastLog > 30000) {
-      log("wait", { label, elapsedMs, textLength: current.length, sendEnabled });
+      log("wait", { label, elapsedMs, textLength: current.length, sendVisible, sendEnabled, stopVisible });
       lastLog = elapsedMs;
     }
-    if (current !== beforeText && Date.now() - lastChanged > 20000) {
-      log("wait-stable", { label, elapsedMs, textLength: current.length, sendEnabled });
+    if (current !== beforeText && !stopVisible && Date.now() - lastChanged > 20000) {
+      log("wait-stable", { label, elapsedMs, textLength: current.length, sendVisible, sendEnabled, stopVisible });
       return current;
     }
-    if (sendEnabled && Date.now() - lastChanged > 12000) return current;
+    if (current !== beforeText && sendEnabled && !stopVisible && Date.now() - lastChanged > 12000) return current;
   }
   log("wait-timeout", { label, maxMs });
   return text(page);
