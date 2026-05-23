@@ -73,3 +73,7 @@ $env:PYTHONPATH=".claude\skills\ad-config-ops\scripts\_vendor"
 ## WorkBot Acceptance
 
 See `docs/workbot-acceptance.md` for the fixed prompts, upload flow, and tool-call verification checklist.
+
+## Codex Operating Memory
+
+Before modifying, committing, pushing, packaging, or running WorkBot acceptance, read `docs/codex-operating-memory.md`. It records the project-local Git connection, commit, test, package, and WorkBot runbook.
