@@ -295,6 +295,79 @@ _SUGGESTION_MAP = {
     "MEMORY_LEAK_CHECK": "共享内存/信号量异常，可能存在内存泄漏",
 }
 
+_CHECK_LABELS = {
+    "APP_VERSION_CHECK": "应用版本检查",
+    "ADMIN_ROLE_CHECK": "管理员角色检查",
+    "DEVICE_SAFE_CHECK": "设备安全状态检查",
+    "DNS_DETECT_CHECK": "DNS 探测配置检查",
+    "DNAT_CHECK": "DNAT 配置检查",
+    "HEARTBEAT_CHECK": "心跳状态检查",
+    "STATIC_IP_CHECK": "静态 IP 配置检查",
+    "CLUSTER_STATE_CHECK": "集群状态检查",
+    "VIRTUAL_MAC_CHECK": "虚拟 MAC 检查",
+    "DUAL_STATE_CHECK": "双机状态检查",
+    "POOL_PERSIST_CHECK": "节点池会话保持检查",
+    "STATIC_ROUTE_CHECK": "静态路由检查",
+    "POOL_HEALTH_CHECK": "节点池健康检查",
+    "RS_LEVEL_CHECK": "真实服务器状态检查",
+    "APP_GROUP_CHECK": "应用组状态检查",
+    "DNS_SERVER_STATE_CHECK": "DNS 服务状态检查",
+    "LINK_HEALTH_CHECK": "链路健康检查",
+    "STATIC_PROXIMITY_CHECK": "静态就近性检查",
+    "DNS64_CHECK": "DNS64 配置检查",
+    "POLICY_ROUTE_CHECK": "策略路由检查",
+    "MANAGE_IP_CHECK": "管理 IP 检查",
+    "SNMP_TRAPS_CHECK": "SNMP Trap 检查",
+    "DNS_REFLECT_CHECK": "DNS 反射配置检查",
+    "DNS_SERVER_CHECK": "DNS 服务器检查",
+    "DNAT_PORT_CHECK": "DNAT 端口检查",
+    "SESSION_SYNC_CHECK": "会话同步检查",
+    "MAIL_WARN_CHECK": "邮件告警检查",
+    "VIP_POOL_CHECK": "虚拟服务和节点池绑定检查",
+    "PROXY_POLICY_CHECK": "代理策略检查",
+    "DNS_MAP_PS_CHECK": "DNS 映射策略检查",
+    "WAN_BANDWIDTH_CHECK": "出口带宽检查",
+    "FAULT_SWITCH_CHECK": "故障切换检查",
+    "SYSLOG_CHECK": "Syslog 配置检查",
+    "AUTO_UPDATE_CHECK": "自动更新检查",
+    "CPU_CHECK": "CPU 使用率检查",
+    "LOG_CHECK": "日志状态检查",
+    "DEVICE_RUN_TIME": "设备运行时间检查",
+    "DEVICE_FILE_CHECK": "设备文件检查",
+    "NIC_STATE_CHECK": "网卡状态检查",
+    "CORE_PROCESS_CHECK": "核心进程检查",
+    "KERNEL_LOG_CHECK": "内核日志检查",
+    "REMOTE_MAINTAIN_CHECK": "远程维护检查",
+    "BLACK_BOX_CHECK": "黑匣子日志检查",
+    "DMESG_DATA_CHECK": "内核启动日志检查",
+    "DISK_CHECK": "磁盘使用率检查",
+    "CRASH_LOG_CHECK": "崩溃日志检查",
+    "MEMORY_CHECK": "内存使用率检查",
+    "SPEED_CARD_CHECK": "加速卡状态检查",
+    "FAN_STATE_CHECK": "风扇状态检查",
+    "POWER_STATE_CHECK": "电源状态检查",
+    "BIOS_VERSION_CHECK": "BIOS 版本检查",
+    "WARN_LOG_CHECK": "告警日志检查",
+    "MEMORY_LEAK_CHECK": "内存泄漏风险检查",
+    "DEVICE_CONNECTION_CHECK": "设备连接检查",
+    "COREDUMP_INFO_CHECK": "Core Dump 检查",
+    "CONFIG_ID_CONFLICT_CHECK": "配置 ID 冲突检查",
+    "NIC_HEALTH_CHECK": "网卡健康检查",
+    "SNAT_SPORT_EXHAUSTION_CHECK": "SNAT 源端口耗尽检查",
+    "SSH_API_CHECK": "SSH/API 访问控制检查",
+    "PATCH_INFO_CHECK": "补丁信息检查",
+    "REPORT_CHECK": "报表任务检查",
+    "WEAK_PASSWORD_CHECK": "弱密码检查",
+    "SSL_POLICY_CHECK": "SSL 安全策略检查",
+    "IP_LIMIT_CHECK": "管理登录 IP 限制检查",
+    "OPEN_PORT_CHECK": "开放端口检查",
+}
+
+
+def check_label(key: str) -> str:
+    """Return a user-facing Chinese label for a check id."""
+    return _CHECK_LABELS.get(key, key.replace("_CHECK", "").replace("_", " ").title())
+
 
 def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -321,7 +394,12 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         return any(k in data_keys for k in keys)
 
     def check(name: str, status: str, value: str = "", detail: str = "") -> None:
-        check_results[name] = {"status": status, "value": str(value), "detail": detail}
+        check_results[name] = {
+            "name": check_label(name),
+            "status": status,
+            "value": str(value),
+            "detail": detail,
+        }
 
     # ─────────────────────────────────────────────────────────────────────
     # 逐字段分析（ad.json 有什么就分析什么，字段不存在则跳过）
@@ -862,10 +940,12 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     suggestions = []
     for key, result in check_results.items():
         if result["status"] in ("fail", "warn"):
+            check_name = check_label(key)
             entry = {
                 "check": key,
+                "check_name": check_name,
                 "priority": "高" if result["status"] == "fail" else "中",
-                "suggestion": _SUGGESTION_MAP.get(key, f"检查项 {key} 状态为 {result['status']}，建议进一步排查"),
+                "suggestion": _SUGGESTION_MAP.get(key, f"{check_name} 状态异常，建议进一步排查"),
             }
             suggestions.append(entry)
 
@@ -953,7 +1033,18 @@ def render_markdown(
             if k in results:
                 r = results[k]
                 detail = r.get('detail') or r['value']
-                rows.append(f"| {k} | {icon(r['status'])} {status_label(r['status'])} | {detail.replace(chr(10), ' ')} |")
+                check_name = r.get("name") or check_label(k)
+                rows.append(f"| {check_name} | {icon(r['status'])} {status_label(r['status'])} | {detail.replace(chr(10), ' ')} |")
+        return "\n".join(rows)
+
+    def abnormal_rows() -> str:
+        rows = []
+        for k in all_keys:
+            if k in results and results[k]["status"] in ("fail", "warn"):
+                r = results[k]
+                detail = r.get("detail") or r["value"]
+                check_name = r.get("name") or check_label(k)
+                rows.append(f"| {check_name} | {icon(r['status'])} {status_label(r['status'])} | {detail.replace(chr(10), ' ')} |")
         return "\n".join(rows)
 
     # ── 健康评分（优先使用 analyze 返回的 health_scores） ─────────────
@@ -975,9 +1066,9 @@ def render_markdown(
     suggestion_rows = []
     for sug in suggestions:
         suggestion_rows.append(
-            f"| {sug.get('priority', '')} | {sug.get('suggestion', '')} |"
+            f"| {sug.get('priority', '')} | {sug.get('check_name') or check_label(sug.get('check', ''))} | {sug.get('suggestion', '')} |"
         )
-    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | 暂无优化建议 |"
+    suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无优化建议 |"
 
     # 设备中文名（从 devices.json 匹配，降级到 host URL）
     device_label = meta.get("host", "?")
@@ -1003,27 +1094,55 @@ def render_markdown(
     else:
         check_time = raw_time
 
-    # ── 检查项详情渲染（全量展示正常+异常） ────────
+    # ── 检查项详情渲染（单设备全量展示正常+异常） ────────
     has_anomaly = any(k in results and results[k]["status"] in ("fail", "warn") for k in all_keys)
-    if not has_anomaly:
-        check_detail_section = "> 所有检查项通过，无异常。\n"
-    else:
-        all_rows_text = all_check_rows()
+    all_rows_text = all_check_rows()
+    if all_rows_text:
         check_detail_section = f"""| 检查项 | 状态 | 详情 |
 |--------|------|------|
 {all_rows_text}
 """
+        if not has_anomaly:
+            check_detail_section = "> 所有检查项通过，无异常。\n\n" + check_detail_section
+    else:
+        check_detail_section = "> 本次报告未包含可分析检查项。\n"
 
-    return f"""## ✅ AD 巡检分析报告
+    abnormal_rows_text = abnormal_rows()
+    if abnormal_rows_text:
+        abnormal_section = f"""| 检查项 | 状态 | 详情 |
+|--------|------|------|
+{abnormal_rows_text}
+"""
+    else:
+        abnormal_section = "无。"
 
-**设备**: {device_label} ({meta.get("host", "?")})
-**巡检时间**: {check_time}
-**巡检场景**: {meta.get("scene", "?")}
-**检查项**: {summary["total"]} 项
+    return f"""## 巡检结论
+- 目标：{device_label} ({meta.get("host", "?")})
+- 场景：{meta.get("scene", "?")}
+- 数据来源：设备巡检报告
+- 巡检时间：{check_time or "-"}
+- 综合评分：{overall}/100
+- 异常数量：{summary["fail"] + summary["warn"]}
 
----
+## 巡检过程
+- 连接校验：已完成前置校验
+- 历史记录：已确认生成本次巡检报告
+- 进度轮询：完成
+- 报告获取：成功
 
-### 📊 设备基本信息
+## 分类统计
+| 类别 | 检查项 | 通过 | 异常 | 得分 |
+| --- | ---: | ---: | ---: | ---: |
+| 功能 | {f["total"]} | {f["pass"]} | {f["fail"] + f["warn"]} | {score_cell(stability_score, f["total"])} |
+| 健康 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {score_cell(hardware_score, h["total"])} |
+| 安全 | {s["total"]} | {s["pass"]} | {s["fail"] + s["warn"]} | {score_cell(security_score, s["total"])} |
+
+## 重点异常
+{abnormal_section}
+
+## 原始报告
+
+### 设备基本信息
 
 | 项目 | 值 |
 |------|-----|
@@ -1031,33 +1150,17 @@ def render_markdown(
 | 网关 ID | {dev["gateway_id"]} |
 | 运行时间 | {dev["runtime"]} |
 
----
-
-### 🔍 巡检结果详情
+### 检查项明细
 
 {check_detail_section}
 
----
+### 优化建议
 
-### 📈 统计汇总
-
-| 类别 | 检查项数 | 通过 | 异常 | 通过率 |
-|------|----------|------|------|--------|
-| 功能巡检 | {f["total"]} | {f["pass"]} | {f["fail"] + f["warn"]} | {rate_cell(f)} |
-| 健康巡检 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {rate_cell(h)} |
-| 安全巡检 | {s["total"]} | {s["pass"]} | {s["fail"] + s["warn"]} | {rate_cell(s)} |
-
----
-
-### 💡 优化建议
-
-| 优先级 | 建议 |
-|--------|------|
+| 优先级 | 检查项 | 建议 |
+|--------|--------|------|
 {suggestions_table}
 
----
-
-### ✅ 健康评分
+### 健康评分
 
 | 项目 | 评分 |
 |------|------|
@@ -1065,8 +1168,6 @@ def render_markdown(
 | 硬件健康 | {score_cell(hardware_score, h["total"])} |
 | 安全配置 | {score_cell(security_score, s["total"])} |
 | **综合评分** | {score_icon} **{overall}/100** |
-
----
 
 **说明**: 以上结果全部来自巡检报告文件 `ad.json`，严格按照巡检返回数据进行分析。
 """
@@ -1335,7 +1436,11 @@ def main() -> None:
             print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
             sys.exit(4)
         client = ADClient(args.host, args.username, password)
-        work_dir = args.work_dir or f"/tmp/ad_check_{int(time.time())}"
+        if args.work_dir:
+            work_dir = args.work_dir
+        else:
+            import tempfile
+            work_dir = os.path.join(tempfile.gettempdir(), f"ad_check_{host_slug(args.host)}")
         try:
             if args.wait:
                 result = _check_one(client, scene=args.scene, force=args.force, work_dir=work_dir)

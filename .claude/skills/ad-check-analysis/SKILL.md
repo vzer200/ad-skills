@@ -18,6 +18,8 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 - 用户说“AD 所有设备/全部 AD 设备”时，使用设备清单批量巡检，不要加 `--device AD1`。
 - 评分准则：pass 按 1 分，warn 按 0.5 分，fail 按 0 分；综合评分只平均当前报告中实际出现的维度，不能让空的健康/安全/功能维度拉低分数。
 - 用户要求标准巡检、全量巡检、安全巡检时，分别使用用户确认的场景名传给 `--scene`。
+- 面向用户的最终答案只展示巡检模板和脚本报告内容，不展示“工具调用”、脚本名、命令、退出码、stdout/stderr。工具调用证据只供后台验收查看。
+- 检查项必须显示中文名称，例如“设备安全状态检查”，不要在用户答案中显示 `DEVICE_SAFE_CHECK` 这类内部 ID。
 
 ## 标准巡检工作流
 
@@ -47,6 +49,8 @@ python3 skills/ad-check-analysis/scripts/check.py progress --devices skills/ad-c
 python3 skills/ad-check-analysis/scripts/check.py wait --devices skills/ad-check-analysis/devices.json --poll-interval 5 --timeout 55
 ```
 
+批量巡检交互流程与单设备一致：先问场景，再问是否强制继续；用户回复“强制”后执行。不要为多设备设计额外复杂分支。
+
 ## 输出模板
 
 ```text
@@ -74,5 +78,12 @@ python3 skills/ad-check-analysis/scripts/check.py wait --devices skills/ad-check
 <只摘录脚本输出中的 fail/warn；没有则写“无”。>
 
 ## 原始报告
-<原样展示巡检报告输出；不要自行补充>
+<展示脚本报告中用户需要看的内容；不要自行补充>
 ```
+
+模板要求：
+
+- 单设备巡检：`原始报告/检查项明细` 可以列出全部检查项，包含正常项和异常项。
+- 多设备巡检：保持同样的 `巡检结论 / 巡检过程 / 分类统计 / 重点异常 / 原始报告` 顶层结构，但设备详情只列异常项；全部正常时写“所有检查项通过，无异常”，不要展开所有正常检查项。
+- `重点异常` 只摘录脚本报告中的 fail/warn；没有异常写“无”。
+- 不要在最终答案中写 `connect.py`、`check.py`、命令、退出码、stdout/stderr 或工具调用面板内容。

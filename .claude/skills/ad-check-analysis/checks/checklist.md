@@ -1,5 +1,5 @@
 <!-- 关联: check.py render_markdown() -->
-<!-- 最后验证: 2026-05-21 -->
+<!-- 最后验证: 2026-05-23 -->
 <!-- 如果 render_markdown() 被修改，必须同步更新本清单中受影响的项目 -->
 
 # AD 巡检分析 - 回归检查清单
@@ -36,14 +36,14 @@
 
 - [ ] 6. 报告下载与分析（wait 命令）
   运行: `python scripts/check.py wait --host TEST_IP --password TEST_PASS --work-dir /tmp/ad_check_test --timeout 600`
-  验证: stdout 包含 `## AD 巡检分析报告`
-        包含 `### 📊 设备基本信息`、`#### 功能巡检`、`#### 健康巡检`、`#### 安全巡检`
-        包含 `### 📈 统计汇总`、`### 💡 优化建议`、`### ✅ 健康评分`
+  验证: stdout 包含 `## 巡检结论`、`## 巡检过程`、`## 分类统计`、`## 重点异常`、`## 原始报告`
+        包含 `### 设备基本信息`、`### 检查项明细`、`### 优化建议`、`### 健康评分`
+        检查项显示中文名称，用户正文不包含工具调用、脚本名、退出码、stdout/stderr
         exit code 0
 
 - [ ] 7. 本地报告分析
   运行: `python scripts/check.py analyze --path /path/to/unzipped/report`
-  验证: stdout 包含 `## AD 巡检分析报告`
+  验证: stdout 包含 `## 巡检结论`
         所有 section 标题与 live 巡检输出一致
         exit code 0
 

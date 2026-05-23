@@ -768,6 +768,8 @@ async function sendPrompt(page, name, prompt) {
   await page.locator('button[utid="send-btn"]').click();
   log("prompt-sent", { name, beforeLength: before.length, beforeAgentCount });
   const after = await waitForIdleText(page, before, name);
+  const visibleDelta = after.startsWith(before) ? after.slice(before.length) : after;
+  const visibleAgentText = await lastAgentText(page);
   await expandToolCalls(page);
   const expanded = await text(page);
   const delta = expanded.startsWith(before) ? expanded.slice(before.length) : expanded;
@@ -779,12 +781,23 @@ async function sendPrompt(page, name, prompt) {
     afterLength: after.length,
     expandedLength: expanded.length,
     deltaLength: delta.length,
+    visibleDeltaLength: visibleDelta.length,
+    visibleAgentLength: visibleAgentText.length,
     agentLength: agentText.length,
     toolEvidence: toolEvidence.hasEvidence,
     toolCandidateCount: toolEvidence.candidates.length,
     artifacts,
   });
-  return { name, prompt, text: delta.slice(-12000), agentText: agentText.slice(-12000), toolEvidence, artifacts };
+  return {
+    name,
+    prompt,
+    text: delta.slice(-12000),
+    agentText: agentText.slice(-12000),
+    visibleText: visibleDelta.slice(-12000),
+    visibleAgentText: visibleAgentText.slice(-12000),
+    toolEvidence,
+    artifacts,
+  };
 }
 
 async function uploadFile(page, filePath, name = "upload") {
@@ -795,7 +808,7 @@ async function uploadFile(page, filePath, name = "upload") {
   await page.waitForTimeout(2000);
   const artifacts = await savePageArtifacts(page, name);
   log("upload-done", { name, artifacts });
-  return { name, upload: filePath, text: "", agentText: "", toolEvidence: { hasEvidence: false, candidates: [] }, artifacts };
+  return { name, upload: filePath, text: "", agentText: "", visibleText: "", visibleAgentText: "", toolEvidence: { hasEvidence: false, candidates: [] }, artifacts };
 }
 
 async function uploadZip(page) {
@@ -811,8 +824,9 @@ function verify(run) {
     .flatMap((item) => (item.toolEvidence && item.toolEvidence.candidates) || [])
     .map((item) => item.text || "")
     .join("\n");
-  const visibleText = `${run.text || ""}\n${run.agentText || ""}`;
-  const searchable = `${visibleText}\n${toolCommandText}\n${toolCandidateText}`;
+  const visibleText = `${run.visibleText || ""}\n${run.visibleAgentText || ""}`;
+  const expandedText = `${run.text || ""}\n${run.agentText || ""}`;
+  const searchable = `${visibleText}\n${expandedText}\n${toolCommandText}\n${toolCandidateText}`;
   const found = tokens.filter((token) => searchable.includes(token));
   const missing = tokens.filter((token) => !searchable.includes(token));
   const templateExpected = templateExpectedFor(run.name, cfg);
@@ -823,7 +837,24 @@ function verify(run) {
   const commandMissing = commandExpected.filter((token) => !toolCommandText.includes(token));
   const commandForbidden = cfg.commandForbidden || [];
   const commandForbiddenFound = commandForbidden.filter((token) => toolCommandText.includes(token));
-  const visibleForbidden = cfg.visibleForbidden || (/^r[1-4]/.test(run.name) ? ["工具调用", "退出码", "stdout", "stderr"] : []);
+  const visibleForbidden = cfg.visibleForbidden || (/^r[1-4]/.test(run.name) ? [
+    "工具调用",
+    "退出码",
+    "stdout",
+    "stderr",
+    "connect.py",
+    "check.py",
+    "overview.py",
+    "perception.py",
+    "init_env.py",
+    "ad_ops_flow.py",
+    "render_slb_bundle.py",
+    "plan-and-render",
+    "summarize-plan",
+    "preflight-slb-plan",
+    "apply-slb-plan",
+    "rollback-and-verify",
+  ] : []);
   const visibleForbiddenFound = visibleForbidden.filter((token) => visibleText.includes(token));
   const forbidden = cfg.forbidExecute && /(^|\s)--execute(\s|$)/.test(searchable);
   const toolEvidenceOk = !cfg.requireTools || run.responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence);
@@ -915,6 +946,8 @@ async function runCase(page, name) {
     prompt: prompts.map((item) => (typeof item === "string" ? item : `[upload] ${item.upload}`)).join("\n\n"),
     text: responses.map((item) => item.text).join("\n\n").slice(-20000),
     agentText: responses.map((item) => item.agentText).join("\n\n").slice(-20000),
+    visibleText: responses.map((item) => item.visibleText ?? item.text).join("\n\n").slice(-20000),
+    visibleAgentText: responses.map((item) => item.visibleAgentText ?? item.agentText).join("\n\n").slice(-20000),
     responses,
     localVerification,
     toolFollowupUsed,

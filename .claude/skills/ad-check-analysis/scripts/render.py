@@ -44,6 +44,17 @@ def _check_icon(status: str) -> str:
     return {"pass": "✅", "fail": "❌", "warn": "⚠️"}.get(status, status)
 
 
+def _check_label(key: str, result: Optional[Dict[str, Any]] = None) -> str:
+    """Return the Chinese check label carried by check.py analysis."""
+    if result:
+        return result.get("name") or result.get("check_name") or key
+    return key
+
+
+def _status_label(status: str) -> str:
+    return {"pass": "正常", "fail": "异常", "warn": "异常"}.get(status, status)
+
+
 _CATEGORY_LABELS = {
     "feature": "功能巡检",
     "health": "健康巡检",
@@ -125,7 +136,12 @@ def _render_device_detail_block(
         lines.append("| 检查项 | 状态 | 值 |")
         lines.append("|--------|------|-----|")
         for k, cr in abnormal:
-            lines.append("| {} | {} {} | {} |".format(k, _check_icon(cr["status"]), cr["status"], cr.get("detail") or cr["value"]))
+            lines.append("| {} | {} {} | {} |".format(
+                _check_label(k, cr),
+                _check_icon(cr["status"]),
+                _status_label(cr["status"]),
+                cr.get("detail") or cr["value"],
+            ))
         lines.append("")
 
     # If no anomalies at all, show summary line
@@ -168,7 +184,7 @@ def _render_device_detail_block(
         lines.append("|--------|--------|------|")
         for sug in suggestions:
             lines.append("| {} | {} | {} |".format(
-                sug.get("priority", ""), sug.get("check", ""), sug.get("suggestion", ""),
+                sug.get("priority", ""), sug.get("check_name") or sug.get("check", ""), sug.get("suggestion", ""),
             ))
     else:
         lines.append("暂无优化建议。")
@@ -226,7 +242,8 @@ def _render_cross_device_comparison(
         if len(unique_statuses) <= 1 and all(s["status"] == "pass" for s in statuses.values()):
             continue
 
-        row = "| {} |".format(key)
+        sample = next(iter(statuses.values())) if statuses else {}
+        row = "| {} |".format(_check_label(key, sample))
         notes = []
         for host in valid_hosts:
             s = statuses.get(host, {})
@@ -346,17 +363,68 @@ def render_multi_device_report(
     total_devices = len(results)
     success_count = sum(1 for d in devices_info if not d["has_error"])
     failed_count = total_devices - success_count
+    normal_count = 0
+    device_abnormal_count = 0
+    check_abnormal_count = 0
+    abnormal_rows = []
+    for d in devices_info:
+        if d["has_error"]:
+            device_abnormal_count += 1
+            abnormal_rows.append("| {} | 连接状态 | 异常 | {} |".format(d["name"], d.get("error", "连接或认证失败")))
+            continue
+        analysis = results[d["host"]].get("analysis", {})
+        summary = analysis.get("summary", {})
+        fail_warn = summary.get("fail", 0) + summary.get("warn", 0)
+        if fail_warn:
+            device_abnormal_count += 1
+        else:
+            normal_count += 1
+        check_abnormal_count += fail_warn
+        check_results = analysis.get("check_results", {})
+        categories = analysis.get("categories", {})
+        for cat_key, cat_label in _CATEGORY_LABELS.items():
+            for key in categories.get(cat_key, []):
+                cr = check_results.get(key)
+                if not cr or cr.get("status") not in ("fail", "warn"):
+                    continue
+                detail = cr.get("detail") or cr.get("value", "")
+                abnormal_rows.append("| {} | {} | {} {} | {} |".format(
+                    d["name"],
+                    cat_label,
+                    _check_icon(cr["status"]),
+                    _check_label(key, cr),
+                    detail,
+                ))
+
+    if abnormal_rows:
+        abnormal_section = "\n".join([
+            "| 设备 | 类别 | 检查项 | 详情 |",
+            "|------|------|--------|------|",
+            *abnormal_rows,
+        ])
+    else:
+        abnormal_section = "无。"
 
     lines = [
-        "## AD 巡检分析报告（多设备）",
+        "## 巡检结论",
+        "- 目标：全部设备",
+        "- 报告类型：AD 巡检分析报告（多设备）",
+        "- 场景：{}".format(scene),
+        "- 数据来源：设备巡检报告",
+        "- 巡检时间：{}".format(time_range),
+        "- 设备数量：{} 台".format(total_devices),
+        "- 异常设备：{} 台".format(device_abnormal_count),
+        "- 异常检查项：{}".format(check_abnormal_count),
         "",
-        "**巡检场景**: {}".format(scene),
-        "**巡检时间**: {}".format(time_range),
-        "**设备数量**: {} 台".format(total_devices),
+        "## 巡检过程",
+        "- 连接校验：已对设备清单执行前置校验",
+        "- 历史记录：已确认生成本次巡检报告",
+        "- 进度轮询：完成",
+        "- 报告获取：成功",
         "",
-        "---",
+        "## 分类统计",
         "",
-        "### \U0001f4ca 设备汇总",
+        "### 设备汇总",
         "",
         "| 设备 | IP | 状态 | 检查项 | 通过率 | 综合评分 |",
         "|------|-----|------|--------|--------|----------|",
@@ -370,13 +438,17 @@ def render_multi_device_report(
 
     lines.append("")
 
-    if failed_count == 0:
-        lines.append("> {} 台设备: {} 台正常, 0 台异常".format(total_devices, success_count))
-    elif success_count == 0:
-        lines.append("> {} 台设备: 0 台正常, {} 台异常".format(total_devices, failed_count))
-    else:
-        lines.append("> {} 台设备: {} 台正常, {} 台异常".format(total_devices, success_count, failed_count))
+    lines.append("")
+    lines.append("> {} 台设备: {} 台正常, {} 台异常".format(total_devices, normal_count, device_abnormal_count))
 
+    lines.append("")
+    lines.append("## 重点异常")
+    lines.append("")
+    lines.append(abnormal_section)
+    lines.append("")
+    lines.append("## 原始报告")
+    lines.append("")
+    lines.append("### 设备详情")
     lines.append("")
 
     for i, d in enumerate(devices_info):

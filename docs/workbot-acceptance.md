@@ -104,7 +104,7 @@ R3: 感知结论 / 分析结果 / 结论边界
 R4: 配置结论 / 执行摘要 / 生成产物 / 安全确认
 ```
 
-User-facing answers must not expose `工具调用` as a heading, nor list command exit codes/stdout/stderr. Tool names and command strings are verified from WorkBot's tool-call panels by the automation, not shown as the main answer to the operator.
+User-facing answers must not expose `工具调用` as a heading, nor list command exit codes/stdout/stderr, script names, or command strings. Tool names and command strings are verified from WorkBot's tool-call panels by the automation, not shown as the main answer to the operator.
 
 ## Requirement 1: Inspection
 
@@ -162,9 +162,12 @@ Pass criteria:
 - Tool calls include the expected scripts in order.
 - `connect.py` validates the AD1 target from `devices.json` before inspection, including AD 外网设备资源 reachability/auth evidence.
 - All-device inspection uses `devices.json` without `--device AD1` and produces multi-device evidence.
+- All-device inspection follows the same human interaction as single-device inspection: ask scene, ask force/continue, then run `history -> run -> progress -> wait`.
 - `check.py run --wait` must not be used in WorkBot acceptance; it can exceed the platform's 60-second tool timeout.
 - The final report comes from `check.py wait` / downloaded report stdout, after `progress` confirms completion.
 - The final answer does not add model-written inspection findings.
+- Check items in final answers use Chinese labels, not internal IDs such as `DEVICE_SAFE_CHECK`.
+- Single-device reports may list all check items. Multi-device reports use the same top-level headings but only expand abnormal items per device to avoid oversized output.
 - Acceptance prompts must stay short. Do not use detailed parameter-fill prompts for R1.
 - Scoring rule: pass = 1, warn = 0.5, fail = 0. Empty dimensions must not pull down the overall score; the overall score averages only dimensions that appear in the current report.
 
