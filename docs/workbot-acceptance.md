@@ -1,6 +1,6 @@
 # WorkBot Acceptance Prompts
 
-This document records the WorkBot upload, cleanup, automation, and short-prompt acceptance flow for AD requirements 1-4. The flow intentionally starts with realistic short prompts, then uses interactive follow-ups only when WorkBot asks for parameters or fails to call tools.
+This document records the WorkBot upload, automation, and short-prompt acceptance flow for AD requirements 1-4. The flow intentionally starts with realistic short prompts, then uses interactive follow-ups only when WorkBot asks for parameters or fails to call tools. Cleanup is only used when reusing an existing digital employee.
 
 Do not store WorkBot or AD device passwords in this repository. Use the operator-provided credentials at runtime.
 
@@ -34,15 +34,15 @@ The automation runs tests, validates skills, runs an SLB bundle smoke test, comm
 
 Default WorkBot pacing waits 2 seconds after the stop button disappears before sending the next prompt.
 
-By default the one-click runner creates a temporary digital employee named `AD验收临时-*` and switches the conversation to that employee before cleanup/upload/install. This keeps acceptance runs out of the polluted default employee history. The runner deletes older `AD验收临时-*` employees first and refuses to create a new one if the account would still exceed the 5-employee limit. Pass `-NoFreshAgent` only when intentionally debugging the current default employee conversation.
+By default the one-click runner creates a temporary digital employee named `AD验收临时-*` and switches the conversation to that employee before upload/install. This keeps acceptance runs out of the polluted default employee history. The runner deletes older `AD验收临时-*` employees first and refuses to create a new one if the account would still exceed the 5-employee limit. Pass `-NoFreshAgent` only when intentionally debugging the current default employee conversation.
 
-Every temporary employee is created through the same WorkBot API used by the web UI (`/workbot/api/v1/agents`): `description` is the UI's 身份设定 field and `profile` is the UI's 行为准则 field. The runner reads the employee back after creation and verifies both fields before switching to it. After switching, it sends the required initialization prompt and verifies tool-call evidence before starting AD cleanup:
+Every temporary employee is created through the same WorkBot API used by the web UI (`/workbot/api/v1/agents`): `description` is the UI's 身份设定 field and `profile` is the UI's 行为准则 field. The runner reads the employee back after creation and verifies both fields before switching to it. After switching, it sends the required initialization prompt and verifies tool-call evidence before uploading AD skills:
 
 ```text
 你是一个通用智能体，现在需要你进行初始化。你需要阅读技能 “Self-Improving + Proactive Agent” 与技能 “Proactivity (Proactive Agent)”，并执行初始化流程。
 ```
 
-Cleanup and install are hard gates: if either step needs a no-tool follow-up, misses the required tool commands, or leaks tool/command text in the visible answer, the automation stops before requirement cases. A stopped run is treated as failed even if a later follow-up could recover.
+Fresh-agent runs skip cleanup because the employee has empty AD-skill context. Cleanup remains a hard gate only when `-NoFreshAgent` is used or the `cleanup` case is explicitly requested. Install is always a hard gate: if it needs a no-tool follow-up, misses required tool commands, or leaks tool/command text in the visible answer, the automation stops before requirement cases.
 
 The default `fixed` suite is the mainline gate. It uses only the agreed fixed prompts and covers the complete requirements flow in one WorkBot run: R1 standard/full/security on one device and all devices, R2 full/single-dimension/multi-device VS queries, R3 full/single-dimension perception analysis, and R4 script-only plus real delivery/rollback. HA is not part of the default run.
 
@@ -66,7 +66,7 @@ $env:AD2_HOST = "https://192.168.8.31"
 
 This replaces `password_from` with `password` and, when requested, applies `AD1_HOST`/`AD1_USER` style overrides only inside the ignored zip artifact; source `devices.json` and the package manifest do not store password values. The packager writes the rendered device file to `devices.json`, `skills/devices.json`, and each `skills/<skill>/devices.json` so WorkBot can still find it when the installer copies only skill directories.
 
-Before every upload, clear old AD skills and memory with this short prompt:
+Only when reusing an existing employee, clear old AD skills and memory with this short prompt:
 
 ```text
 请实际调用工具清理旧的 AD skills 和相关记忆。必须用 shell 检查并删除 skills/ad-*，用 cron_list 检查定时任务，用 memory_export/memory_purge 清理记忆；最终正文只回答清理完成，不要列工具、命令、退出码或 stdout/stderr。
@@ -174,6 +174,7 @@ check.py wait --timeout 55
 Pass criteria:
 
 - Tool calls include the expected scripts in order.
+- WorkBot commands must not combine waiting and polling in one shell command. `sleep && check.py progress` is a failed run; each `progress` must be its own tool call.
 - The interactive steps are gated independently: the first prompt must only ask for `标准巡检 / 全量巡检 / 安全巡检`; the scene reply must only ask whether to force/continue; no report or device command may appear before the final `强制` reply.
 - A later successful report does not mask a bad earlier step. If the first step routes to `ad-perception`/`ad-ops`, outputs `感知结论`/`查询结论`/`巡检结论`, or the second step runs `check.py run/wait` before force confirmation, the case fails immediately.
 - `connect.py` validates the AD1 target from `devices.json` before inspection, including AD 内网设备资源 reachability/auth evidence.
@@ -181,8 +182,10 @@ Pass criteria:
 - All-device inspection follows the same human interaction as single-device inspection: ask scene, ask force/continue, then run `history -> run -> progress -> wait`.
 - `check.py run --wait` must not be used in WorkBot acceptance; it can exceed the platform's 60-second tool timeout.
 - The final report comes from `check.py wait` / downloaded report stdout, after `progress` confirms completion.
-- The final answer does not add model-written inspection findings.
+- The final answer does not add model-written inspection findings, wrapper phrases, or skill-policy explanations.
 - The final visible answer starts at `## 巡检结论` and must not append a second execution table or any phrase such as `工具调用`, `退出码`, `stdout`, `上方 stdout`, `connect.py`, or `check.py`.
+- The final visible answer must not include phrases such as `根据技能`, `技能规则`, `根据 ad-check-analysis`, `下面汇总展示`, or `报告均已获取成功`.
+- The final visible answer must not include raw device field syntax such as `security_check_state=`, `remote_mt=`, `ssh_authority=`, `algorithm=`, `protocol=`, or `enable_iplimit=`; these must be rendered as Chinese operator-facing descriptions.
 - WorkBot commands must not use `2>&1` for the final `wait` command. If stderr is needed for debugging, it stays inside tool evidence and is not copied into the user-visible answer.
 - Check items in final answers use Chinese labels, not internal IDs such as `DEVICE_SAFE_CHECK`.
 - Single-device reports may list all check items. Multi-device reports use the same top-level headings but only expand abnormal items per device to avoid oversized output.

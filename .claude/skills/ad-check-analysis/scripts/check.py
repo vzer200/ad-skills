@@ -427,7 +427,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         sec_state = data.get("security_check_state", False)
         check("DEVICE_SAFE_CHECK",
               "pass" if sec_state else "fail",
-              f"security_check_state={sec_state}")
+              "安全检查已开启" if sec_state else "设备安全检查未开启")
 
     if has("dns_proxy_enabled"):
         # 5. DNS_DETECT_CHECK
@@ -689,7 +689,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         rm = data.get("remote_mt", "")
         check("REMOTE_MAINTAIN_CHECK",
               "pass" if rm == "true" else "warn",
-              f"remote_mt={rm}")
+              "远程维护已开启" if rm == "true" else "远程维护未开启")
 
     if has("base_blackbox_state"):
         # 45. BLACK_BOX_CHECK
@@ -808,7 +808,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         # 61. SSH_API_CHECK
         ssh = data.get("ssh_authority", False)
         check("SSH_API_CHECK", "pass" if ssh else "fail",
-              f"ssh_authority={ssh}")
+              "SSH/API 访问控制已开启" if ssh else "SSH/API 访问控制未开启")
 
     if has("patch_info"):
         # 62. PATCH_INFO_CHECK
@@ -821,7 +821,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         # 63. REPORT_CHECK
         br = data.get("base_report_stab", False)
         check("REPORT_CHECK", "pass" if br else "fail",
-              f"base_report_stab={br}")
+              "报表服务状态正常" if br else "报表服务状态异常")
 
     if has("weak_pwd"):
         # 64. WEAK_PASSWORD_CHECK
@@ -833,16 +833,23 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         # 65. SSL_POLICY_CHECK
         ua = data.get("unsafe_algorithm", False)
         up = data.get("unsafe_protocol", False)
+        ssl_detail = "未发现不安全算法或协议"
+        if ua and up:
+            ssl_detail = "存在不安全算法和不安全协议"
+        elif ua:
+            ssl_detail = "存在不安全算法"
+        elif up:
+            ssl_detail = "存在不安全协议"
         check("SSL_POLICY_CHECK",
               "pass" if not ua and not up else "fail",
-              f"algorithm={ua} protocol={up}")
+              ssl_detail)
 
     if has("enable_iplimit"):
         # 66. IP_LIMIT_CHECK
         ipl = data.get("enable_iplimit", "")
         check("IP_LIMIT_CHECK",
               "pass" if ipl == "true" else "fail",
-              f"enable_iplimit={ipl}")
+              "已启用管理登录 IP 限制" if ipl == "true" else "未启用管理登录 IP 限制")
 
     if has("dangerous_port"):
         # 67. OPEN_PORT_CHECK

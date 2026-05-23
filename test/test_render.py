@@ -238,6 +238,30 @@ class TestRenderMultiDeviceReport(unittest.TestCase):
         output = render_multi_device_report(results)
         self.assertIn("跨设备对比", output)
 
+    def test_device_summary_uses_overall_health_score(self):
+        results = {
+            "https://dev1.com": {
+                "meta": {"host": "https://dev1.com", "start_time": "20260520120000"},
+                "analysis": _make_analysis(
+                    check_results={
+                        "A_CHECK": {"status": "pass", "value": "ok"},
+                        "B_CHECK": {"status": "warn", "value": "warn"},
+                    },
+                    categories={"feature": ["A_CHECK"], "health": ["B_CHECK"], "secure": []},
+                    summary={"total": 2, "pass": 1, "fail": 0, "warn": 1, "score": 76},
+                    health_scores={
+                        "feature": {"pass": 1, "total": 1, "score": 100},
+                        "health": {"pass": 0, "total": 1, "score": 18},
+                        "secure": {"pass": 0, "total": 0, "score": 0},
+                        "overall": 59,
+                    },
+                ),
+            },
+        }
+        output = render_multi_device_report(results, device_names={"https://dev1.com": "AD1"})
+        self.assertIn("59/100", output)
+        self.assertNotIn("76/100", output)
+
 
 if __name__ == "__main__":
     unittest.main()

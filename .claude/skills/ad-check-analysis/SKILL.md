@@ -11,11 +11,12 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 - 场景未确定前只允许读取技能说明、设备清单或做必要的轻量确认；禁止提前连接设备、执行 `overview.py` 或产出查询结果。用户补充场景并确认强制继续后，才执行 `connect.py -> check.py history -> run -> progress -> wait`。
 - 交互硬停规则：用户只说“请对 AD1 做一次巡检”或“请对 AD 所有设备做一次巡检”时，最终正文只能询问巡检场景并列出 `标准巡检 / 全量巡检 / 安全巡检`，禁止执行 `connect.py`、`check.py`、`perception.py`、`overview.py`，禁止输出巡检/感知/查询报告。
 - 交互硬停规则：用户只回复 `标准巡检`、`全量巡检` 或 `安全巡检` 时，最终正文只能询问是否强制继续，禁止执行 `connect.py`、`check.py run`、`check.py progress`、`check.py wait`，禁止输出报告。只有用户随后明确回复 `强制`、`继续` 或 `强制继续` 后，才允许执行设备脚本。
+- 用户可见正文不能解释“根据技能规则/根据 ad-check-analysis/我需要遵守规则”，也不能写“下面汇总展示/报告均已获取成功”这类过程说明。交互阶段只给用户需要回答的问题；报告阶段只给报告本身。
 - 巡检前必须先调用 `ad-connect` 做连接预检。
 - 所有业务逻辑必须由 `skills/ad-check-analysis/scripts/check.py` 执行。
 - 必须先查 `history`，再分步执行 `run -> progress -> wait`。WorkBot 工具调用约 60 秒会超时，禁止使用 `run --wait` 这类长阻塞命令。
 - `run` 只负责启动巡检，必须显式传 `--work-dir`；`progress` 每次只轮询一次，可重复调用；确认完成后再用 `wait --timeout 55 --poll-interval 5` 下载和分析报告。
-- 不要把 `sleep` 和 `progress` 拼到同一条 shell 命令里；每次工具调用只执行一次 `progress`，如仍是 WAITING/RUNNING，再发起下一次独立工具调用，避免 WorkBot 单次工具调用接近 60 秒超时。
+- 不要把 `sleep` 和 `progress` 拼到同一条 shell 命令里；工具命令中禁止出现 `sleep && python3 ... progress`。每次工具调用只执行一次 `progress`，如仍是 WAITING/RUNNING，等待一小段时间后再发起下一次独立工具调用，避免 WorkBot 单次工具调用接近 60 秒超时。
 - 脚本输出是唯一事实来源。禁止模型自行生成巡检结论、风险项、分数或报告内容。
 - 如果用户指定 AD1/AD2，优先使用设备清单中的主机和密码。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-check-analysis/devices.json` 或 `.claude/skills/ad-check-analysis/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
 - 验收交互必须像真实人工：不要要求用户补充命令参数。用户只说“请对 AD1 做一次巡检”时，先用短问题让用户选择场景；用户回答“标准巡检/全量巡检/安全巡检”后，再确认是否继续/强制；用户回答“强制”后执行脚本并加 `--force`。
@@ -26,6 +27,7 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 - 面向用户的最终答案只展示巡检模板和脚本报告内容，不展示“工具调用”、脚本名、命令、退出码、stdout/stderr。工具调用证据只供后台验收查看。
 - 检查项必须显示中文名称，例如“设备安全状态检查”，不要在用户答案中显示 `DEVICE_SAFE_CHECK` 这类内部 ID。
 - 最终答复必须从脚本输出的 `## 巡检结论` 开始，到脚本报告结束为止原样展示；不要在报告前后追加执行表、工具调用摘要、命令摘要、`上方 stdout 已展示` 这类说明。
+- 最终答复必须直接复制 `check.py wait` 最后一次成功输出的报告，不要自己重写、合并或改写分数、异常数量、设备汇总和建议。如果前一次 `wait` 因工作目录错误显示失败，不能把失败报告混入最终答案；应使用 `run` 返回的实际 `work_dir=` 再执行一次 `wait`，只输出成功报告。
 - 最终正文的 `markdown-body` 是用户可见报告区，禁止出现 `## 工具调用`、`执行过程`、`命令摘要`、`connect.py`、`check.py`、`退出码`、`stdout`、`stderr`。如果需要说明过程，只能使用脚本报告里的 `## 巡检过程` 四行固定内容。
 - 不要把工具面板内容重新整理成用户正文。正确做法是直接粘贴 `check.py wait` 输出中从 `## 巡检结论` 到报告结束的内容。
 - shell 命令不要加 `2>&1`，不要把 stderr 合并到 stdout；`wait` 默认只输出最终报告，需要排障时才加 `--verbose`，但排障日志也不能进入用户最终答案。
@@ -38,7 +40,7 @@ python3 skills/ad-connect/scripts/connect.py --devices skills/ad-check-analysis/
 python3 skills/ad-check-analysis/scripts/check.py history --devices skills/ad-check-analysis/devices.json --device AD1
 python3 skills/ad-check-analysis/scripts/check.py run --devices skills/ad-check-analysis/devices.json --device AD1 --scene "标准巡检" --force --work-dir "$AD_CHECK_WORKDIR"
 python3 skills/ad-check-analysis/scripts/check.py progress --devices skills/ad-check-analysis/devices.json --device AD1
-# 若 progress 仍是 WAITING/RUNNING，间隔 10-15 秒后再次调用 progress。不要用一个长命令阻塞等待。
+# 若 progress 仍是 WAITING/RUNNING，等待 10-15 秒后再次发起独立工具调用。不要把 sleep 和 progress 写进同一条命令。
 python3 skills/ad-check-analysis/scripts/check.py wait --devices skills/ad-check-analysis/devices.json --device AD1 --work-dir "$AD_CHECK_WORKDIR" --poll-interval 5 --timeout 55
 ```
 
@@ -54,7 +56,7 @@ python3 skills/ad-connect/scripts/connect.py --devices skills/ad-check-analysis/
 python3 skills/ad-check-analysis/scripts/check.py history --devices skills/ad-check-analysis/devices.json
 python3 skills/ad-check-analysis/scripts/check.py run --devices skills/ad-check-analysis/devices.json --scene "标准巡检" --force
 python3 skills/ad-check-analysis/scripts/check.py progress --devices skills/ad-check-analysis/devices.json
-# 若任一设备仍是 WAITING/RUNNING，间隔 10-15 秒后再次调用 progress。
+# 若任一设备仍是 WAITING/RUNNING，等待 10-15 秒后再次发起独立工具调用。
 python3 skills/ad-check-analysis/scripts/check.py wait --devices skills/ad-check-analysis/devices.json --poll-interval 5 --timeout 55
 ```
 

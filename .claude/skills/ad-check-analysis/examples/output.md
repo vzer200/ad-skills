@@ -30,8 +30,8 @@
 ## 重点异常
 | 检查项 | 状态 | 详情 |
 |--------|------|------|
-| 设备安全状态检查 | ❌ 异常 | security_check_state=False |
-| SSL 安全策略检查 | ❌ 异常 | algorithm=True protocol=True |
+| 设备安全状态检查 | ❌ 异常 | 设备安全检查未开启 |
+| SSL 安全策略检查 | ❌ 异常 | 存在不安全算法和不安全协议 |
 | 开放端口检查 | ⚠️ 异常 | 2 个风险端口 |
 
 ## 原始报告
@@ -52,9 +52,9 @@
 |--------|------|------|
 | 应用版本检查 | ✅ 正常 | 7.0.26R3 |
 | 管理员角色检查 | ✅ 正常 | admin=true |
-| 设备安全状态检查 | ❌ 异常 | security_check_state=False |
+| 设备安全状态检查 | ❌ 异常 | 设备安全检查未开启 |
 | CPU 使用率检查 | ✅ 正常 | max=17% |
-| SSL 安全策略检查 | ❌ 异常 | algorithm=True protocol=True |
+| SSL 安全策略检查 | ❌ 异常 | 存在不安全算法和不安全协议 |
 
 ### 优化建议
 
@@ -94,3 +94,5 @@
 | 命令结果字段 | `退出码`、`stdout`、`stderr` |
 | 内部脚本名 | `connect.py`、`check.py` |
 | 内部检查项 ID | `DEVICE_SAFE_CHECK`、`CPU_CHECK` |
+| 技能/策略说明 | `根据技能`、`技能规则`、`根据 ad-check-analysis` |
+| 原始字段表达 | `security_check_state=`、`algorithm=`、`protocol=`、`enable_iplimit=` |

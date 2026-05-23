@@ -144,6 +144,23 @@ class TestAnalyze(unittest.TestCase):
         self.assertEqual(hs["overall"], 50)
         self.assertEqual(result["summary"]["score"], 50)
 
+    def test_security_details_are_user_facing(self):
+        result = analyze({
+            "security_check_state": False,
+            "unsafe_algorithm": True,
+            "unsafe_protocol": True,
+            "enable_iplimit": "false",
+            "ssh_authority": False,
+        })
+        rendered_values = "\n".join(item["value"] for item in result["check_results"].values())
+        self.assertIn("设备安全检查未开启", rendered_values)
+        self.assertIn("存在不安全算法和不安全协议", rendered_values)
+        self.assertIn("未启用管理登录 IP 限制", rendered_values)
+        self.assertIn("SSH/API 访问控制未开启", rendered_values)
+        self.assertNotIn("security_check_state=", rendered_values)
+        self.assertNotIn("algorithm=", rendered_values)
+        self.assertNotIn("enable_iplimit=", rendered_values)
+
 
 class TestRenderMarkdown(unittest.TestCase):
     """Test render_markdown output structure."""

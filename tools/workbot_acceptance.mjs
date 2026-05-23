@@ -1163,7 +1163,7 @@ function verify(run) {
   const commandExpected = commandExpectedFor(run.name, cfg);
   const commandFound = commandExpected.filter((token) => toolCommandText.includes(token));
   const commandMissing = commandExpected.filter((token) => !toolCommandText.includes(token));
-  const defaultCommandForbidden = /^r[1-4]/.test(run.name) ? ["2>&1"] : [];
+  const defaultCommandForbidden = /^r[1-4]/.test(run.name) ? ["2>&1", "sleep"] : [];
   const commandForbidden = [...defaultCommandForbidden, ...(cfg.commandForbidden || [])];
   const commandForbiddenFound = commandForbidden.filter((token) => toolCommandText.includes(token));
   const visibleForbidden = cfg.visibleForbidden || (/^r[1-4]/.test(run.name) ? [
@@ -1183,6 +1183,19 @@ function verify(run) {
     "preflight-slb-plan",
     "apply-slb-plan",
     "rollback-and-verify",
+    "根据技能",
+    "技能规则",
+    "根据 ad-check-analysis",
+    "根据ad-check-analysis",
+    "下面汇总展示",
+    "报告均已获取成功",
+    "security_check_state=",
+    "remote_mt=",
+    "ssh_authority=",
+    "base_report_stab=",
+    "algorithm=",
+    "protocol=",
+    "enable_iplimit=",
   ] : []);
   const visibleForbiddenFound = visibleForbidden.filter((token) => visibleText.includes(token));
   const forbiddenWorkBotDeviceHosts = /^r[1-4]/.test(run.name) ? WORKBOT_FORBIDDEN_DEVICE_HOSTS : [];
@@ -1339,9 +1352,11 @@ async function main() {
       debug.freshAgent = await ensureFreshAgent(page);
       debug.freshAgent.initialization = await initializeFreshAgent(page);
     }
-    const cleanupResult = await runCase(page, "cleanup");
-    results.push(cleanupResult);
-    assertGate(cleanupResult, "cleanup");
+    if (!FRESH_AGENT || CASES.includes("cleanup")) {
+      const cleanupResult = await runCase(page, "cleanup");
+      results.push(cleanupResult);
+      assertGate(cleanupResult, "cleanup");
+    }
     const needsInstalledSkills = CASES.some((name) => name !== "install" && name !== "cleanup") || CASES.includes("install");
     if (needsInstalledSkills) {
       await uploadZip(page);
@@ -1349,7 +1364,7 @@ async function main() {
       results.push(installResult);
       assertGate(installResult, "install");
     }
-    for (const name of CASES.filter((name) => name !== "install")) {
+    for (const name of CASES.filter((name) => name !== "install" && name !== "cleanup")) {
       const result = await runCase(page, name);
       results.push(result);
       assertGate(result, name);

@@ -44,6 +44,14 @@ def _check_icon(status: str) -> str:
     return {"pass": "✅", "fail": "❌", "warn": "⚠️"}.get(status, status)
 
 
+def _overall_score(analysis: Dict[str, Any]) -> int:
+    """Return the same overall score used by the single-device report."""
+    health_scores = analysis.get("health_scores", {})
+    if isinstance(health_scores, dict) and "overall" in health_scores:
+        return int(health_scores.get("overall") or 0)
+    return int(analysis.get("summary", {}).get("score", 0) or 0)
+
+
 def _check_label(key: str, result: Optional[Dict[str, Any]] = None) -> str:
     """Return the Chinese check label carried by check.py analysis."""
     if result:
@@ -190,7 +198,7 @@ def _render_device_detail_block(
         lines.append("暂无优化建议。")
     lines.append("")
 
-    overall = health_scores.get("overall", analysis.get("summary", {}).get("score", 0))
+    overall = _overall_score(analysis)
     lines.append("#### ✅ 健康评分")
     lines.append("")
     lines.append("| 项目 | 评分 |")
@@ -330,7 +338,7 @@ def render_multi_device_report(
             summary = analysis.get("summary", {})
             total = summary.get("total", 0)
             pass_count = summary.get("pass", 0)
-            score = summary.get("score", 0)
+            score = _overall_score(analysis)
             rate = round(pass_count / max(total, 1) * 100) if total else 0
 
             devices_info.append({
