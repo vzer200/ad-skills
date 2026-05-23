@@ -876,6 +876,25 @@ async function expandToolCalls(page) {
     }
   }
   await page.waitForTimeout(300);
+  for (let pass = 0; pass < 5; pass += 1) {
+    const clicked = await root.evaluate((node) => {
+      let total = 0;
+      const headers = Array.from(node.querySelectorAll('[utid="tool-call-toggle"], .tool-call-card__header, .tool-call-header'));
+      for (const header of headers) {
+        const card = header.closest(".tool-call-card") || header.parentElement;
+        const arrowClass = header.querySelector('[class*="arrow"]')?.getAttribute("class") || "";
+        const detail = card && card.querySelector(".tool-call-card__detail");
+        const closed = !detail || /arrow-down|down/i.test(arrowClass);
+        if (!closed) continue;
+        header.scrollIntoView({ block: "center", inline: "nearest" });
+        header.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+        total += 1;
+      }
+      return total;
+    }).catch(() => 0);
+    if (!clicked) break;
+    await page.waitForTimeout(700);
+  }
   const toolHeaders = root.locator('[utid="tool-call-toggle"], .tool-call-card__header, .tool-call-header');
   const count = Math.min(await toolHeaders.count().catch(() => 0), 60);
   for (let i = 0; i < count; i += 1) {
