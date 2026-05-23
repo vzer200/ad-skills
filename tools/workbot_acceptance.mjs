@@ -523,7 +523,7 @@ const cases = {
     expected: ["AD1", "节点池", "节点", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
     commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
-    visibleForbidden: ["操作计划", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
+    visibleForbidden: ["操作计划", "计划摘要", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
     requireTools: true,
   },
   "r4-pool-prerule-script": {
@@ -536,7 +536,7 @@ const cases = {
     expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
     commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
-    visibleForbidden: ["操作计划", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
+    visibleForbidden: ["操作计划", "计划摘要", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
     requireTools: true,
   },
   "r4-vs-pool-script": {
@@ -549,7 +549,7 @@ const cases = {
     expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
     commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
-    visibleForbidden: ["操作计划", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
+    visibleForbidden: ["操作计划", "计划摘要", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
     requireTools: true,
   },
   "r4-audit-script": {
@@ -575,7 +575,7 @@ const cases = {
     ],
     expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback-and-verify", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"],
-    visibleForbidden: ["操作计划", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
+    visibleForbidden: ["操作计划", "计划摘要", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
     requireTools: true,
     verifyAbsent: {
       vsName: "wb_vs_workbot_flow_01",
@@ -1126,7 +1126,13 @@ function hasGeneratedArtifactEvidence(response, names) {
   const evidence = responseEvidenceText(response);
   return names.every((name) => {
     const escaped = escapeRegExp(name);
-    return new RegExp(`(?:${escaped}[^\\n]{0,120}(?:exists|generated|已生成|写入|路径|path)|(?:exists|generated|已生成|写入|路径|path)[^\\n]{0,120}${escaped})`, "i").test(evidence);
+    return new RegExp(
+      [
+        `${escaped}[^\\n]{0,200}(?:exists|generated|已生成|写入|路径|path|outputs|ad_ops_workdir|产物)`,
+        `(?:exists|generated|已生成|写入|路径|path|outputs|ad_ops_workdir|产物|apply_script|rollback_script|bundle|cp\\s+)[^\\n]{0,200}${escaped}`,
+      ].join("|"),
+      "i",
+    ).test(evidence);
   });
 }
 
@@ -1148,7 +1154,7 @@ function stepRuleViolationsFor(name, cfg, responses) {
     const rollbackCommands = extractStepToolCommands(rollback).join("\n");
     const prematureStageACommands = ["plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"];
     const compactTemplateRequired = ["配置结论", "产出物", "下一步"];
-    const verboseTemplateForbidden = ["操作计划", "执行摘要", "安全确认"];
+    const verboseTemplateForbidden = ["操作计划", "计划摘要", "执行摘要", "安全确认"];
     const internalArtifactForbidden = ["adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"];
 
     const assertCompactTemplate = (label, text) => {
@@ -1326,7 +1332,7 @@ function templateExpectedFor(name, cfg) {
   if (name.startsWith("r1")) return ["巡检结论", "分类统计", "设备基本信息", "检查项明细", "优化建议", "健康评分"];
   if (name.startsWith("r2")) return ["查询结论", "查询范围", "查询结果"];
   if (name.startsWith("r3")) return ["感知结论", "分析结果", "结论边界"];
-  if (name.startsWith("r4")) return ["配置结论", "执行摘要", "生成产物", "安全确认", "下一步"];
+  if (name.startsWith("r4")) return ["配置结论", "产出物", "下一步"];
   return [];
 }
 

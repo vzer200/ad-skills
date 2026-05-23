@@ -103,10 +103,10 @@ R1 单设备: 巡检结论 / 分类统计 / 设备基本信息 / 检查项明细
 R1 多设备: 巡检结论 / 设备概览 / 全局共性问题
 R2: 查询结论 / 查询范围 / 查询结果
 R3: 感知结论 / 分析结果 / 结论边界
-R4: 配置结论 / 执行摘要 / 生成产物 / 安全确认
+R4: 配置结论 / 产出物 / 下一步
 ```
 
-User-facing answers must not expose `工具调用` as a heading, nor list command exit codes/stdout/stderr, script names, or command strings. Tool names and command strings are verified from WorkBot's tool-call panels by the automation, not shown as the main answer to the operator.
+User-facing answers must not expose `工具调用` as a heading, nor list command exit codes/stdout/stderr or command strings. Tool names and command strings are verified from WorkBot's tool-call panels by the automation, not shown as the main answer to the operator. R4 is the exception for script filenames: `apply.py` and `rollback_apply.py` must be listed as user deliverables under `产出物`.
 
 ## Requirement 1: Inspection
 
@@ -444,7 +444,7 @@ Visible-output template criteria:
 - Stage A `产出物` lists only the YAML template artifact.
 - After YAML completion, script-only, delivery, and rollback answers must list both `apply.py` and `rollback_apply.py` prominently under `产出物`; a run fails if either script is missing from the visible answer.
 - Tool evidence must prove the artifacts were actually generated. Stage A must show evidence for `adops-bundle.yml`; after YAML completion and every later R4 answer must show evidence for both `apply.py` and `rollback_apply.py` through tool stdout/artifact output or visible file links.
-- User-visible R4 output must not include long internal sections such as `操作计划`, `执行摘要`, or `安全确认`.
+- User-visible R4 output must not include long internal sections such as `操作计划`, `计划摘要`, `执行摘要`, or `安全确认`.
 - User-visible R4 output must not list internal files such as `adops-batch.json`, `adops-effective-plan.json`, `adops-post-apply.json`, `adops-post-rollback.json`, or `adops-rollback-compare.json` unless the user explicitly asks for troubleshooting details.
 
 Expected tool calls:

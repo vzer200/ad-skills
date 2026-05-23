@@ -160,7 +160,7 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 
 ## 固定输出模板
 
-必须按阶段使用下面的精简模板，不要额外发挥。禁止输出 `操作计划`、`执行摘要`、`安全确认` 这类长区块；不要列 `batch`、`effective_plan`、`post_apply`、`post_rollback`、`rollback_compare` 等内部文件，除非用户明确要求排障细节。
+必须按阶段使用下面的精简模板，不要额外发挥。每次 R4 对用户可见正文必须包含且只围绕 `## 配置结论`、`## 产出物`、`## 下一步` 这三个标题组织。禁止输出 `操作计划`、`计划摘要`、`执行摘要`、`安全确认` 这类长区块；不要列 `batch`、`effective_plan`、`post_apply`、`post_rollback`、`rollback_compare` 等内部文件，除非用户明确要求排障细节。
 
 ### 阶段 A：YAML 待填写
 
@@ -196,6 +196,27 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 
 ## 下一步
 回复“真实下发”执行到设备验证；回复“直接给出脚本”或“不需要下发”则只保留脚本结束。
+```
+
+如果用户选择“直接给出脚本”“不需要下发”“先不下发”等脚本模式，也必须使用同样三个标题结束，不要新增“使用方式”标题：
+
+```markdown
+## 配置结论
+- 设备：AD1
+- 阶段：脚本已生成，不下发
+- 内容：<一句话概括本次会创建或复用的 SLB 资源>
+
+## 产出物
+| 产物 | 路径 |
+| --- | --- |
+| 正向脚本 | <apply.py 路径> |
+| 回滚脚本 | <rollback_apply.py 路径> |
+| YAML | <adops-bundle.yml 路径> |
+
+## 下一步
+- 人工下发时运行 `apply.py`。
+- 需要回滚时运行 `rollback_apply.py`。
+- 流程结束。后续要调整配置，请重新提交 YAML。
 ```
 
 ### 阶段 C：已下发，等待人工确认
