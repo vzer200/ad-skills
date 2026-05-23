@@ -35,7 +35,7 @@ Default WorkBot pacing waits 2 seconds after the stop button disappears before s
 
 By default the one-click runner creates a temporary digital employee named `AD验收临时-*` and switches the conversation to that employee before cleanup/upload/install. This keeps acceptance runs out of the polluted default employee history. The runner deletes older `AD验收临时-*` employees first and refuses to create a new one if the account would still exceed the 5-employee limit. Pass `-NoFreshAgent` only when intentionally debugging the current default employee conversation.
 
-Every temporary employee is created with the operator-approved load-balancer O&M identity and the no-fake-tool-call behavior rules. After switching to it, the runner sends the required initialization prompt and verifies tool-call evidence before starting AD cleanup:
+Every temporary employee is created through the same WorkBot API used by the web UI (`/workbot/api/v1/agents`): `description` is the UI's 身份设定 field and `profile` is the UI's 行为准则 field. The runner reads the employee back after creation and verifies both fields before switching to it. After switching, it sends the required initialization prompt and verifies tool-call evidence before starting AD cleanup:
 
 ```text
 你是一个通用智能体，现在需要你进行初始化。你需要阅读技能 “Self-Improving + Proactive Agent” 与技能 “Proactivity (Proactive Agent)”，并执行初始化流程。

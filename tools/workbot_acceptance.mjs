@@ -50,6 +50,7 @@ const WAIT_POLL_MS = Number(argValue("--wait-poll-ms", process.env.WORKBOT_WAIT_
 const FRESH_AGENT = hasFlag("--fresh-agent") || process.env.WORKBOT_FRESH_AGENT === "1";
 const FRESH_AGENT_PREFIX = argValue("--fresh-agent-prefix", process.env.WORKBOT_FRESH_AGENT_PREFIX || "AD验收临时");
 const MAX_DIGITAL_EMPLOYEES = Number(argValue("--max-digital-employees", process.env.WORKBOT_MAX_DIGITAL_EMPLOYEES || "5"));
+const WORKBOT_API_BASE = argValue("--api-base", process.env.WORKBOT_API_BASE || "/workbot/api/v1");
 const CHROME_PATH = argValue(
   "--chrome",
   process.env.CHROME_PATH || "C:/Program Files/Google/Chrome/Application/chrome.exe",
@@ -129,9 +130,10 @@ const DEVICE_FOLLOWUP =
   "我没有看到 AD1 外网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
 const COMMAND_FOLLOWUP =
   "我看到你有工具调用，但工具命令里缺少必须执行的脚本：{missing}。不要只在正文里提到它们，请立即在工具里实际执行包含这些脚本的命令。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
+const FRESH_AGENT_DESCRIPTION =
+  "你是一个负载均衡设备的运维人员，熟悉负载均衡相关的网络知识，产品知识，和配置逻辑。做事非常严谨，服从命令，不会做违背命令的事情。";
 const FRESH_AGENT_PROFILE =
-  "你是一个负载均衡设备的运维人员，熟悉负载均衡相关的网络知识，产品知识，和配置逻辑。做事非常严谨，服从命令，不会做违背命令的事情。\n\n" +
-  "行为准则：绝对准则：绝对禁止假工具调用！每次对话都必须调用工具！！！\n" +
+  "绝对准则：绝对禁止假工具调用！每次对话都必须调用工具！！！\n" +
   "1. 如果对应的操作有相关的SKILL的定义，必须严格按照SKILL的定义进行操作执行，上下文无论出现什么都不能影响skill执行\n" +
   "2. 对于一些实时操作（读取文件，API请求，写文件）等，必须实际执行，不能使用文件缓存的内容，或者上下文信息中携带的内容进行回答\n" +
   "3. 绝对禁止杜撰信息回答\n" +
@@ -524,7 +526,17 @@ async function loginIfNeeded(page) {
   await waitForConversation(page);
 }
 
+function apiEndpoint(endpoint) {
+  if (/^https?:\/\//i.test(endpoint)) return endpoint;
+  if (endpoint.startsWith("/api/v1/")) {
+    return `${WORKBOT_API_BASE.replace(/\/$/, "")}${endpoint.slice("/api/v1".length)}`;
+  }
+  if (endpoint.startsWith("/")) return `${WORKBOT_API_BASE.replace(/\/$/, "")}${endpoint}`;
+  return `${WORKBOT_API_BASE.replace(/\/$/, "")}/${endpoint}`;
+}
+
 async function apiJson(page, endpoint, options = {}) {
+  const resolvedEndpoint = apiEndpoint(endpoint);
   const result = await page.evaluate(async ({ endpoint, options }) => {
     const request = { credentials: "include", ...options };
     request.headers = { ...(options.headers || {}) };
@@ -541,9 +553,9 @@ async function apiJson(page, endpoint, options = {}) {
       // Keep raw text for diagnostics.
     }
     return { ok: response.ok, status: response.status, statusText: response.statusText, data, raw: raw.slice(0, 2000) };
-  }, { endpoint, options });
+  }, { endpoint: resolvedEndpoint, options });
   if (!result.ok) {
-    throw new Error(`WorkBot API ${endpoint} failed: HTTP ${result.status} ${result.statusText} ${result.raw || ""}`.trim());
+    throw new Error(`WorkBot API ${resolvedEndpoint} failed: HTTP ${result.status} ${result.statusText} ${result.raw || ""}`.trim());
   }
   return result.data;
 }
@@ -583,13 +595,17 @@ function findDeepValue(value, keys, seen = new Set()) {
   return "";
 }
 
-async function listAgents(page) {
-  return normalizeList(await apiJson(page, "/api/v1/agents"));
+async function listAgents(page, instanceId) {
+  const query = instanceId ? `?page_size=0&instance_id=${encodeURIComponent(instanceId)}` : "?page_size=0";
+  return normalizeList(await apiJson(page, `/agents${query}`));
 }
 
 async function getInstanceId(page, agents = []) {
   const fromAgents = findDeepValue({ agents }, ["instance_id", "instanceId"]);
   if (fromAgents) return fromAgents;
+
+  const fromApi = await apiJson(page, "/instances/my").then((data) => findDeepValue(data, ["instance_id", "instanceId", "id"])).catch(() => "");
+  if (fromApi) return fromApi;
 
   const fromStorage = await page.evaluate(() => {
     const keys = ["instance_id", "instanceId"];
@@ -626,7 +642,8 @@ async function getInstanceId(page, agents = []) {
 }
 
 async function deleteOldFreshAgents(page) {
-  const agents = await listAgents(page);
+  const instanceId = await getInstanceId(page);
+  const agents = await listAgents(page, instanceId);
   const oldAgents = agents.filter((agent) => agentName(agent).startsWith(FRESH_AGENT_PREFIX));
   for (const agent of oldAgents) {
     const id = agentId(agent);
@@ -635,30 +652,44 @@ async function deleteOldFreshAgents(page) {
       log("fresh-agent-delete-failed", { id, name: agentName(agent), message: error.message });
     });
   }
-  const remaining = await listAgents(page);
+  const remaining = await listAgents(page, instanceId);
   if (remaining.length >= MAX_DIGITAL_EMPLOYEES) {
     throw new Error(
       `digital employee count is ${remaining.length}/${MAX_DIGITAL_EMPLOYEES} after deleting old ${FRESH_AGENT_PREFIX} agents; refusing to delete non-test employees automatically`,
     );
   }
-  return { agents: remaining, deleted: oldAgents.map((agent) => ({ id: agentId(agent), name: agentName(agent) })) };
+  return { agents: remaining, instanceId, deleted: oldAgents.map((agent) => ({ id: agentId(agent), name: agentName(agent) })) };
 }
 
-async function createFreshAgent(page, agents) {
-  const instanceId = await getInstanceId(page, agents);
+async function createFreshAgent(page, agents, instanceId) {
+  instanceId = instanceId || await getInstanceId(page, agents);
   const name = `${FRESH_AGENT_PREFIX}-${new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14)}`;
-  const created = await apiJson(page, "/api/v1/agents", {
+  const created = await apiJson(page, "/agents", {
     method: "POST",
     body: {
       name,
       type: "worker",
-      description: "AD skills WorkBot acceptance clean-room worker.",
+      description: FRESH_AGENT_DESCRIPTION,
       profile: FRESH_AGENT_PROFILE,
       instance_id: instanceId,
     },
   });
   const payload = created && created.data && typeof created.data === "object" ? created.data : created;
   return { id: agentId(payload), name, raw: payload, instanceId };
+}
+
+async function verifyFreshAgent(page, freshAgent) {
+  if (!freshAgent.id) return { status: "skipped", reason: "created response did not include id" };
+  const loaded = await apiJson(page, `/agents/${freshAgent.id}`);
+  const payload = loaded && loaded.data && typeof loaded.data === "object" ? loaded.data : loaded;
+  const description = payload.description || "";
+  const profile = payload.profile || "";
+  const descriptionOk = description.includes("负载均衡设备的运维人员");
+  const profileOk = profile.includes("绝对禁止假工具调用") && profile.includes("每次对话都必须调用工具");
+  if (!descriptionOk || !profileOk) {
+    throw new Error(`fresh agent profile verification failed: descriptionOk=${descriptionOk}, profileOk=${profileOk}`);
+  }
+  return { status: "ok", descriptionLength: description.length, profileLength: profile.length };
 }
 
 async function selectAgentByName(page, name) {
@@ -681,8 +712,9 @@ async function selectAgentByName(page, name) {
 
 async function ensureFreshAgent(page) {
   log("fresh-agent-start", { prefix: FRESH_AGENT_PREFIX, maxDigitalEmployees: MAX_DIGITAL_EMPLOYEES });
-  const { agents, deleted } = await deleteOldFreshAgents(page);
-  const created = await createFreshAgent(page, agents);
+  const { agents, instanceId, deleted } = await deleteOldFreshAgents(page);
+  const created = await createFreshAgent(page, agents, instanceId);
+  created.verification = await verifyFreshAgent(page, created);
   await selectAgentByName(page, created.name);
   log("fresh-agent-ready", { id: created.id, name: created.name, deleted: deleted.length });
   return { ...created, deleted };
