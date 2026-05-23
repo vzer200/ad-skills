@@ -38,7 +38,7 @@ $env:AD1_PASS = "<operator-provided AD1 password>"
 .\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD -InjectDevicePasswords
 ```
 
-This replaces `password_from` with `password` only inside the ignored zip artifact; source `devices.json` and the package manifest do not store password values.
+This replaces `password_from` with `password` only inside the ignored zip artifact; source `devices.json` and the package manifest do not store password values. The packager writes the rendered device file to `devices.json`, `skills/devices.json`, and each `skills/<skill>/devices.json` so WorkBot can still find it when the installer copies only skill directories.
 
 Before every upload, clear old AD skills and memory with this short prompt:
 

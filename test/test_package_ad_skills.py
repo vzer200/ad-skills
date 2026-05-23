@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from tools.package_ad_skills import render_devices_json
+from tools.package_ad_skills import devices_arc_names, render_devices_json
 
 
 class TestPackageAdSkills(unittest.TestCase):
@@ -60,6 +60,19 @@ class TestPackageAdSkills(unittest.TestCase):
         self.assertEqual(injected, ["AD1"])
         self.assertEqual(data["devices"][0]["password"], "secret")
         self.assertNotIn("password_from", data["devices"][0])
+
+    def test_devices_arc_names_include_root_shared_and_skill_copies(self):
+        names = [item.as_posix() for item in devices_arc_names(["ad-connect", "ad-ops"])]
+
+        self.assertEqual(
+            names,
+            [
+                "devices.json",
+                "skills/devices.json",
+                "skills/ad-connect/devices.json",
+                "skills/ad-ops/devices.json",
+            ],
+        )
 
 
 if __name__ == "__main__":

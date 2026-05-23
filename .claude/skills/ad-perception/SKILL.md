@@ -12,26 +12,26 @@ description: 深信服 AD 感知分析 skill。用于分析 VS 流量异常、CP
 - 脚本 stdout 是唯一事实来源。禁止模型自行推断根因、编造异常、补充未由脚本返回的设备状态。
 - 用户要求全量感知分析时，必须使用 `perception.py analyze`。
 - 用户要求趋势基线采集时，才运行 `collector.py collect`。
-- 用户指定 AD1/AD2 时，连接预检必须用 `--device` 限定单台设备；分析命令使用对应设备地址和环境变量密码。
+- 用户指定 AD1/AD2 时，连接预检和分析命令都必须用 `--device` 限定单台设备。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-perception/devices.json` 或 `.claude/skills/ad-perception/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
 - 如果历史基线数据不足，脚本会输出实时/降级分析；最终结论只能照脚本 stdout 表达，不能补充 3σ、日志根因或趋势结论。
-- 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动先用 `devices.json --device AD1` 做连接预检。
+- 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动先用设备清单加 `--device AD1` 做连接预检。
 - “流量异常/流量分析”映射到 `perception.py traffic`；“设备资源/状态异常”映射到 `perception.py state`；“地址冲突/冲突分析”映射到 `perception.py conflict`；综合感知分析映射到 `perception.py analyze`。
 - “服务日志/日志线索”映射到 `perception.py logs`。
 
 ## 全量感知分析
 
 ```bash
-python3 skills/ad-connect/scripts/connect.py --devices devices.json --device AD1 --format json
-python3 skills/ad-perception/scripts/perception.py analyze --host "${AD1_HOST:-https://14.18.243.211:21044}" --user admin --password "$AD1_PASS" --format markdown
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-perception/devices.json --device AD1 --format json
+python3 skills/ad-perception/scripts/perception.py analyze --devices skills/ad-perception/devices.json --device AD1 --format markdown
 ```
 
 ## 分项分析
 
 ```bash
-python3 skills/ad-perception/scripts/perception.py traffic --host "${AD1_HOST:-https://14.18.243.211:21044}" --user admin --password "$AD1_PASS" --format markdown
-python3 skills/ad-perception/scripts/perception.py state --host "${AD1_HOST:-https://14.18.243.211:21044}" --user admin --password "$AD1_PASS" --format markdown
-python3 skills/ad-perception/scripts/perception.py conflict --host "${AD1_HOST:-https://14.18.243.211:21044}" --user admin --password "$AD1_PASS" --format markdown
-python3 skills/ad-perception/scripts/perception.py logs --host "${AD1_HOST:-https://14.18.243.211:21044}" --user admin --password "$AD1_PASS" --format markdown
+python3 skills/ad-perception/scripts/perception.py traffic --devices skills/ad-perception/devices.json --device AD1 --format markdown
+python3 skills/ad-perception/scripts/perception.py state --devices skills/ad-perception/devices.json --device AD1 --format markdown
+python3 skills/ad-perception/scripts/perception.py conflict --devices skills/ad-perception/devices.json --device AD1 --format markdown
+python3 skills/ad-perception/scripts/perception.py logs --devices skills/ad-perception/devices.json --device AD1 --format markdown
 ```
 
 ## 输出模板

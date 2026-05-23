@@ -69,6 +69,12 @@ def render_devices_json(path: Path, inject_passwords: bool) -> tuple[str, list[s
     return json.dumps(data, ensure_ascii=False, indent=2) + "\n", injected
 
 
+def devices_arc_names(skill_names: list[str]) -> list[Path]:
+    names = [Path("devices.json"), Path("skills/devices.json")]
+    names.extend(Path("skills") / skill_name / "devices.json" for skill_name in skill_names)
+    return names
+
+
 def main() -> int:
     args = parse_args()
     repo = args.repo_root.resolve()
@@ -80,26 +86,32 @@ def main() -> int:
     manifest_out = (repo / args.manifest_out).resolve() if not args.manifest_out.is_absolute() else args.manifest_out
     out.parent.mkdir(parents=True, exist_ok=True)
 
+    skill_names = sorted(path.name for path in skills_root.iterdir() if path.is_dir())
     entries: list[str] = []
     injected_devices: list[str] = []
+    device_file_entries: list[str] = []
     with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         entries.extend(add_tree(zf, skills_root, Path("skills")))
-        for root_file in ("devices.json", "CLAUDE.md", "docs/workbot-acceptance.md"):
+        devices_path = repo / "devices.json"
+        if devices_path.exists() and devices_path.is_file():
+            rendered, injected_devices = render_devices_json(devices_path, args.inject_device_passwords)
+            for arcname in devices_arc_names(skill_names):
+                zf.writestr(arcname.as_posix(), rendered)
+                entries.append(arcname.as_posix())
+                device_file_entries.append(arcname.as_posix())
+        for root_file in ("CLAUDE.md", "docs/workbot-acceptance.md"):
             path = repo / root_file
             if path.exists() and path.is_file():
-                if root_file == "devices.json":
-                    rendered, injected_devices = render_devices_json(path, args.inject_device_passwords)
-                    zf.writestr(Path(root_file).as_posix(), rendered)
-                else:
-                    zf.write(path, Path(root_file).as_posix())
+                zf.write(path, Path(root_file).as_posix())
                 entries.append(Path(root_file).as_posix())
 
     manifest = {
         "ok": True,
         "zip": str(out),
         "entry_count": len(entries),
-        "skills": sorted(path.name for path in skills_root.iterdir() if path.is_dir()),
+        "skills": skill_names,
         "device_passwords_injected": injected_devices,
+        "device_file_entries": device_file_entries,
     }
     manifest_out.parent.mkdir(parents=True, exist_ok=True)
     manifest_out.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

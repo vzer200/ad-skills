@@ -1009,6 +1009,7 @@ def main() -> None:
         p.add_argument("--host", default="", help="AD device URL (e.g. https://x.x.x.x)")
         p.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
         p.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
+        p.add_argument("--device", default="", help="从 --devices 中选择单台设备名称，如 AD1")
         p.add_argument("--user", default="admin", help="Username (default: admin)")
         p.add_argument("--password", default="", help="Password (falls back to AD_PASS env var)")
         p.add_argument("--db", default="", help="SQLite database path")
@@ -1048,7 +1049,7 @@ def main() -> None:
         if args.hosts:
             devices = parse_hosts_arg(args.hosts, args.user, args.password)
         else:
-            devices = load_devices_json(args.devices)
+            devices = load_devices_json(args.devices, args.device)
 
         if not devices:
             print("错误: 设备列表为空", file=sys.stderr)
