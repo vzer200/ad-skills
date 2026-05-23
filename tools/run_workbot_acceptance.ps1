@@ -90,6 +90,31 @@ if ($InjectDeviceOverrides) {
 }
 & $Python @packageArgs
 
+Write-Host "[5/7] Verifying packaged device hosts"
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$zipPath = Resolve-Path $Package
+$zip = [System.IO.Compression.ZipFile]::OpenRead($zipPath)
+try {
+    $entry = $zip.GetEntry("devices.json")
+    if ($null -eq $entry) {
+        throw "devices.json missing from WorkBot package"
+    }
+    $reader = New-Object System.IO.StreamReader($entry.Open(), [Text.Encoding]::UTF8)
+    try {
+        $deviceText = $reader.ReadToEnd()
+    } finally {
+        $reader.Dispose()
+    }
+    if ($deviceText -match "14\.18\.243\.211:210(44|39)") {
+        throw "WorkBot package still contains public AD gateway hosts; expected intranet hosts 192.168.8.30/31"
+    }
+    if ($deviceText -notmatch "192\.168\.8\.30" -or $deviceText -notmatch "192\.168\.8\.31") {
+        throw "WorkBot package does not contain both intranet AD hosts 192.168.8.30 and 192.168.8.31"
+    }
+} finally {
+    $zip.Dispose()
+}
+
 if ($SkipWorkBot) {
     Write-Host "[6/7] Skipping WorkBot"
     Write-Host "[7/7] Done"

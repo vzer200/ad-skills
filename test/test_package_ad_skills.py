@@ -9,6 +9,13 @@ from tools.package_ad_skills import devices_arc_names, render_devices_json
 
 
 class TestPackageAdSkills(unittest.TestCase):
+    def test_source_devices_use_workbot_intranet_hosts(self):
+        data = json.loads(Path("devices.json").read_text(encoding="utf-8"))
+        hosts = {device["name"]: device["host"] for device in data["devices"]}
+
+        self.assertEqual(hosts["AD1"], "https://192.168.8.30")
+        self.assertEqual(hosts["AD2"], "https://192.168.8.31")
+
     def test_render_devices_json_keeps_password_from_by_default(self):
         with tempfile.TemporaryDirectory() as tmp:
             devices = Path(tmp) / "devices.json"

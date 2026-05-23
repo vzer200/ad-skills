@@ -7,6 +7,8 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 
 ## 强制规则
 
+- 路由优先级：只要用户文本或当前任务包含 `巡检`、`标准巡检`、`全量巡检`、`安全巡检`、`健康检查`、`巡检报告`，必须使用本 skill。禁止改用 `ad-ops`、`overview.py` 或“查询结论”模板回答巡检任务。
+- 场景未确定前只允许读取技能说明、设备清单或做必要的轻量确认；禁止提前连接设备、执行 `overview.py` 或产出查询结果。用户补充场景并确认强制继续后，才执行 `connect.py -> check.py history -> run -> progress -> wait`。
 - 巡检前必须先调用 `ad-connect` 做连接预检。
 - 所有业务逻辑必须由 `skills/ad-check-analysis/scripts/check.py` 执行。
 - 必须先查 `history`，再分步执行 `run -> progress -> wait`。WorkBot 工具调用约 60 秒会超时，禁止使用 `run --wait` 这类长阻塞命令。

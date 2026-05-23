@@ -45,6 +45,13 @@ const PYTHON = argValue("--python", process.env.PYTHON || "python");
 const AD_VERIFY_BASE_URL = argValue("--ad-base-url", process.env.AD_VERIFY_BASE_URL || process.env.AD1_PUBLIC_URL || "https://14.18.243.211:21044");
 const AD_VERIFY_USERNAME = argValue("--ad-user", process.env.AD_VERIFY_USERNAME || process.env.AD1_USER || "admin");
 const AD_VERIFY_PASSWORD = argValue("--ad-password", process.env.AD_VERIFY_PASSWORD || process.env.AD1_PASS || process.env.AD_PASS || process.env.AD_PASSWORD);
+const WORKBOT_FORBIDDEN_DEVICE_HOSTS = (argValue(
+  "--forbidden-workbot-device-hosts",
+  process.env.WORKBOT_FORBIDDEN_DEVICE_HOSTS || "14.18.243.211:21044,14.18.243.211:21039",
+) || "")
+  .split(/[,\s]+/)
+  .map((item) => item.trim())
+  .filter(Boolean);
 const IDLE_AFTER_STOP_MS = Number(argValue("--idle-after-stop-ms", process.env.WORKBOT_IDLE_AFTER_STOP_MS || "2000"));
 const WAIT_POLL_MS = Number(argValue("--wait-poll-ms", process.env.WORKBOT_WAIT_POLL_MS || "1000"));
 const FRESH_AGENT = hasFlag("--fresh-agent") || process.env.WORKBOT_FRESH_AGENT === "1";
@@ -127,7 +134,7 @@ if (CASES.some((name) => name.startsWith("r4-")) && !fs.existsSync(R4_YAML_PATH)
 const NO_TOOL_FOLLOWUP =
   "我没有看到工具调用记录。为什么没有调用工具？请说明原因，然后不要凭记忆回答，立即实际调用工具完成刚才的任务。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
 const DEVICE_FOLLOWUP =
-  "我没有看到 AD1 外网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
+  "我没有看到 AD1 内网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本，并确认使用 192.168.8.30。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
 const COMMAND_FOLLOWUP =
   "我看到你有工具调用，但工具命令里缺少必须执行的脚本：{missing}。不要只在正文里提到它们，请立即在工具里实际执行包含这些脚本的命令。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
 const FRESH_AGENT_DESCRIPTION =
@@ -883,7 +890,7 @@ function asksForParameters(value) {
 }
 
 function hasDeviceEvidence(value) {
-  return /(devices\.json|AD1|connect\.py|14\.18\.243\.211|192\.168\.8\.3[01]|认证|auth|reach|连接测试|连接正常)/i.test(value || "");
+  return /connect\.py/i.test(value || "") && /(devices\.json|192\.168\.8\.3[01]|认证|auth|reach|连接测试|连接正常)/i.test(value || "");
 }
 
 function extractToolCommands(responses) {
@@ -1106,6 +1113,8 @@ function verify(run) {
     "rollback-and-verify",
   ] : []);
   const visibleForbiddenFound = visibleForbidden.filter((token) => visibleText.includes(token));
+  const forbiddenWorkBotDeviceHosts = /^r[1-4]/.test(run.name) ? WORKBOT_FORBIDDEN_DEVICE_HOSTS : [];
+  const forbiddenWorkBotDeviceHostsFound = forbiddenWorkBotDeviceHosts.filter((token) => searchable.includes(token));
   const forbidden = cfg.forbidExecute && /(^|\s)--execute(\s|$)/.test(searchable);
   const toolEvidenceOk = !cfg.requireTools || run.responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence);
   const deviceEvidenceOk = !cfg.requireDevice || hasDeviceEvidence(searchable);
@@ -1127,6 +1136,8 @@ function verify(run) {
     commandForbiddenFound,
     visibleForbidden,
     visibleForbiddenFound,
+    forbiddenWorkBotDeviceHosts,
+    forbiddenWorkBotDeviceHostsFound,
     toolCommands,
     toolEvidenceOk,
     cleanToolTriggerOk,
@@ -1136,7 +1147,7 @@ function verify(run) {
     toolFollowupUsed: Boolean(run.toolFollowupUsed),
     commandFollowupUsed: Boolean(run.commandFollowupUsed),
     deviceFollowupUsed: Boolean(run.deviceFollowupUsed),
-    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && commandForbiddenFound.length === 0 && visibleForbiddenFound.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk,
+    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && commandForbiddenFound.length === 0 && visibleForbiddenFound.length === 0 && forbiddenWorkBotDeviceHostsFound.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk,
     forbidden_execute: forbidden,
   };
 }
@@ -1149,6 +1160,7 @@ function assertGate(result, gateName) {
   if (result.commandMissing && result.commandMissing.length) reasons.push(`missing tool commands: ${result.commandMissing.join(", ")}`);
   if (result.visibleForbiddenFound && result.visibleForbiddenFound.length) reasons.push(`forbidden visible text: ${result.visibleForbiddenFound.join(", ")}`);
   if (result.commandForbiddenFound && result.commandForbiddenFound.length) reasons.push(`forbidden tool command: ${result.commandForbiddenFound.join(", ")}`);
+  if (result.forbiddenWorkBotDeviceHostsFound && result.forbiddenWorkBotDeviceHostsFound.length) reasons.push(`forbidden WorkBot device host: ${result.forbiddenWorkBotDeviceHostsFound.join(", ")}`);
   if (!result.toolEvidenceOk) reasons.push("no tool-call evidence");
   if (!result.cleanToolTriggerOk) reasons.push("tool follow-up was needed");
   if (!result.cleanCommandTriggerOk) reasons.push("command follow-up was needed");

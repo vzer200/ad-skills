@@ -26,10 +26,11 @@ Automated release flow:
 ```powershell
 $env:WORKBOT_PASSWORD = "<operator-provided password>"
 $env:AD1_PASS = "<operator-provided AD1 password>"
-.\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD
+$env:AD2_PASS = "<operator-provided AD2 password>"
+.\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD -InjectDevicePasswords
 ```
 
-The automation runs tests, validates skills, runs an SLB bundle smoke test, commits and pushes, packages `dist/ad-skills-workbot.zip`, uploads it to WorkBot, sends the fixed acceptance prompts, and writes a JSON evidence report under `workbot-results/`.
+The automation runs tests, validates skills, runs an SLB bundle smoke test, commits and pushes, packages `dist/ad-skills-workbot.zip`, uploads it to WorkBot, sends the fixed acceptance prompts, and writes a JSON evidence report under `workbot-results/`. The source `devices.json` is the WorkBot-facing authority and must use the intranet management addresses `https://192.168.8.30` and `https://192.168.8.31`; local Codex-side AD verification can still use the public gateway through `-ADBaseUrl`.
 
 Default WorkBot pacing waits 2 seconds after the stop button disappears before sending the next prompt.
 
@@ -53,15 +54,17 @@ Exploratory prompt variants are kept in a separate suite and must not be mixed i
 
 Use `-Cases "case1,case2"` only for temporary debugging of a specific failure.
 
-If WorkBot cannot see local environment variables such as `AD1_PASS`, build the upload-only package with runtime credential injection:
+Build the upload-only package with runtime credential injection. Use host overrides only when the WorkBot-side device addresses need to be changed for a specific environment:
 
 ```powershell
 $env:AD1_PASS = "<operator-provided AD1 password>"
+$env:AD2_PASS = "<operator-provided AD2 password>"
 $env:AD1_HOST = "https://192.168.8.30"
+$env:AD2_HOST = "https://192.168.8.31"
 .\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD -InjectDevicePasswords -InjectDeviceOverrides
 ```
 
-This replaces `password_from` with `password` and applies `AD1_HOST`/`AD1_USER` style overrides only inside the ignored zip artifact; source `devices.json` and the package manifest do not store password values. The packager writes the rendered device file to `devices.json`, `skills/devices.json`, and each `skills/<skill>/devices.json` so WorkBot can still find it when the installer copies only skill directories.
+This replaces `password_from` with `password` and, when requested, applies `AD1_HOST`/`AD1_USER` style overrides only inside the ignored zip artifact; source `devices.json` and the package manifest do not store password values. The packager writes the rendered device file to `devices.json`, `skills/devices.json`, and each `skills/<skill>/devices.json` so WorkBot can still find it when the installer copies only skill directories.
 
 Before every upload, clear old AD skills and memory with this short prompt:
 
@@ -98,10 +101,10 @@ Start each case with the short prompt. If WorkBot asks for missing parameters, a
 
 The automation records `toolFollowupUsed=true` and marks the case as failed for stability, even if the follow-up eventually triggers tools.
 
-If a real-device case has tool calls but no AD 外网设备资源验证, send this follow-up:
+If a real-device case has tool calls but no AD 内网设备资源验证, send this follow-up:
 
 ```text
-我没有看到 AD1 外网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。
+我没有看到 AD1 内网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本，并确认使用 192.168.8.30。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。
 ```
 
 ## Output Template Gate
@@ -171,7 +174,7 @@ check.py wait --timeout 55
 Pass criteria:
 
 - Tool calls include the expected scripts in order.
-- `connect.py` validates the AD1 target from `devices.json` before inspection, including AD 外网设备资源 reachability/auth evidence.
+- `connect.py` validates the AD1 target from `devices.json` before inspection, including AD 内网设备资源 reachability/auth evidence.
 - All-device inspection uses `devices.json` without `--device AD1` and produces multi-device evidence.
 - All-device inspection follows the same human interaction as single-device inspection: ask scene, ask force/continue, then run `history -> run -> progress -> wait`.
 - `check.py run --wait` must not be used in WorkBot acceptance; it can exceed the platform's 60-second tool timeout.
@@ -269,7 +272,7 @@ Pass criteria:
 - Device/hardware status query calls `overview.py hardware`.
 - Multi-device VS prompts must call `overview.py vs --devices ...` and must not fall back to `--device AD1` or `--device AD2`.
 - HA can be tested manually when needed, but is intentionally skipped in the default acceptance batch.
-- `connect.py` validates the AD1 target from `devices.json`, including AD 外网设备资源 reachability/auth evidence.
+- `connect.py` validates the AD1 target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
 - The answer includes VS, Pool/config, traffic/status, and certificate sections only if returned by the script.
 - Acceptance prompts must not include parameter-fill follow-ups for R2.
 
@@ -328,7 +331,7 @@ perception.py analyze
 
 Pass criteria:
 
-- `connect.py` validates the AD1 target from `devices.json`, including AD 外网设备资源 reachability/auth evidence.
+- `connect.py` validates the AD1 target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
 - The final conclusion is backed by `perception.py` output.
 - Single-dimension prompts call `perception.py traffic|state|conflict|logs` respectively.
 - No root cause, anomaly, or trend is invented outside script stdout.
@@ -433,7 +436,8 @@ For every acceptance run:
 - Verify the command string matches the expected script path.
 - Verify the command actually ran and has an exit code/stdout/stderr.
 - Verify stdout contains the expected script JSON/Markdown, not a model-only answer.
-- For real-device cases, verify AD 外网设备资源 validation: `connect.py` uses `devices.json` AD1, reaches the target, authenticates, and the follow-on script output is real device data.
+- For real-device cases, verify AD 内网设备资源 validation: `connect.py` uses `devices.json` AD1, reaches the target, authenticates, and the follow-on script output is real device data.
+- In WorkBot tool calls, `devices.json` must resolve AD1/AD2 to the intranet management addresses `192.168.8.30/192.168.8.31`. Seeing `14.18.243.211:21044` or `14.18.243.211:21039` inside WorkBot tool evidence is a failed package/run and the automation stops.
 - For Requirement 4, verify the staged sequence: YAML generation, `plan-and-render`, `summarize-plan`, `preflight-slb-plan`, optional `apply-slb-plan`, and optional `rollback-and-verify`.
 
 Stability target:
