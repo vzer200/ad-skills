@@ -34,7 +34,7 @@ import math
 import statistics
 import sqlite3
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 
@@ -1046,21 +1046,15 @@ def render_markdown(results: Dict[str, Any]) -> str:
             if state_anomalies:
                 lines.append('**趋势异常检测**')
                 lines.append('')
-                lines.append('| 指标 | 时间 | 当前值 | 基线值 | 偏离幅度 | 方向 | 风险 |')
-                lines.append('|---|---|---:|---:|---:|---|---|')
+                lines.append('| 指标 | 时间 | 当前值 | 基线值 | 变化比例 |')
+                lines.append('|---|---|---:|---:|---|')
                 for a in state_anomalies:
                     ts_str = datetime.fromtimestamp(a['ts']).strftime('%m-%d %H:%M') if a.get('ts') else 'N/A'
                     baseline = a['baseline_mean']
                     value = a['value']
                     pct = ((value - baseline) / baseline * 100) if baseline != 0 else 0
-                    z = a['z']
-                    if z > 10:
-                        severity = '❌ 严重'
-                    elif z > 5:
-                        severity = '⚠️ 明显'
-                    else:
-                        severity = 'ℹ️ 轻微'
-                    lines.append(f"| {_metric_label(a['metric'])} | {ts_str} | {value:.1f} | {baseline:.1f} | {pct:+.1f}% | {a['direction']} | {severity} |")
+                    change_label = f"{a['direction']} {abs(pct):.1f}%"
+                    lines.append(f"| {_metric_label(a['metric'])} | {ts_str} | {value:.1f} | {baseline:.1f} | {change_label} |")
                 lines.append('')
 
             non_ok = [i for i in items if i.get('level') not in ('ok', None)]
@@ -1150,6 +1144,46 @@ def render_markdown(results: Dict[str, Any]) -> str:
 def render_json(results: Dict[str, Any]) -> str:
     """将结果渲染为 JSON 字符串。"""
     return json.dumps(results, ensure_ascii=False, indent=2, default=str)
+
+
+def _render_multi_markdown(
+    results: Dict[str, Dict[str, Any]],
+    title: str,
+    renderer: Callable[[str, Dict[str, Any]], str],
+) -> str:
+    """Render one selected device as a clean final block; keep summaries only for true multi-device output."""
+    if len(results) == 1:
+        host, result = next(iter(results.items()))
+        if "error" in result:
+            return f"## {host}\n> 错误: {result['error']}"
+        return renderer(host, result)
+
+    lines = [render_multi_summary(results, title), "---"]
+    for host, result in results.items():
+        if "error" in result:
+            lines.append(f"## {host}")
+            lines.append(f"> 错误: {result['error']}")
+        else:
+            lines.append(renderer(host, result))
+        lines.append("")
+    return "\n".join(lines)
+
+
+def _render_logs_multi_result(host: str, result: Dict[str, Any]) -> str:
+    wrapped = {
+        'device': result.get('host', host),
+        'logs': {
+            'status': result.get('status', 'ok'),
+            'entries': result.get('entries', []),
+            'total': result.get('total'),
+            'shown': result.get('shown'),
+            'limit': result.get('limit'),
+            'range': result.get('range'),
+            'levels': result.get('levels'),
+        },
+        '_scope': 'logs',
+    }
+    return render_markdown(wrapped)
 
 
 def analyze_full(client: Any, db_path: Optional[str] = None, disk_source: Optional[str] = None) -> Dict[str, Any]:
@@ -1398,29 +1432,7 @@ def main() -> None:
                 }
                 print(render_json(output))
             else:
-                lines = [render_multi_summary(results, "AD 服务日志 — 多设备")]
-                lines.append("---")
-                for host, result in results.items():
-                    if "error" in result:
-                        lines.append(f"## {host}")
-                        lines.append(f"> 错误: {result['error']}")
-                    else:
-                        wrapped = {
-                            'device': result.get('host', host),
-                            'logs': {
-                                'status': result.get('status', 'ok'),
-                                'entries': result.get('entries', []),
-                                'total': result.get('total'),
-                                'shown': result.get('shown'),
-                                'limit': result.get('limit'),
-                                'range': result.get('range'),
-                                'levels': result.get('levels'),
-                            },
-                            '_scope': 'logs',
-                        }
-                        lines.append(render_markdown(wrapped))
-                    lines.append("")
-                print("\n".join(lines))
+                print(_render_multi_markdown(results, "AD 服务日志 — 多设备", _render_logs_multi_result))
             sys.exit(_compute_perception_multi_exit_code(results))
         elif cmd == "traffic":
             vs_name = args.vs if hasattr(args, 'vs') and args.vs else None
@@ -1442,16 +1454,7 @@ def main() -> None:
                 }
                 print(render_json(output))
             else:
-                lines = [render_multi_summary(results, "AD 流量趋势分析 — 多设备")]
-                lines.append("---")
-                for host, result in results.items():
-                    if "error" in result:
-                        lines.append(f"## {host}")
-                        lines.append(f"> 错误: {result['error']}")
-                    else:
-                        lines.append(render_markdown(result))
-                    lines.append("")
-                print("\n".join(lines))
+                print(_render_multi_markdown(results, "AD 流量趋势分析 — 多设备", lambda _host, result: render_markdown(result)))
             sys.exit(_compute_perception_multi_exit_code(results))
         elif cmd == "state":
             disk_src = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
@@ -1466,16 +1469,7 @@ def main() -> None:
                 }
                 print(render_json(output))
             else:
-                lines = [render_multi_summary(results, "AD 设备资源分析 — 多设备")]
-                lines.append("---")
-                for host, result in results.items():
-                    if "error" in result:
-                        lines.append(f"## {host}")
-                        lines.append(f"> 错误: {result['error']}")
-                    else:
-                        lines.append(render_markdown(result))
-                    lines.append("")
-                print("\n".join(lines))
+                print(_render_multi_markdown(results, "AD 设备资源分析 — 多设备", lambda _host, result: render_markdown(result)))
             sys.exit(_compute_perception_multi_exit_code(results))
         elif cmd == "conflict":
             results = run_multi(devices, _conflict_one)
@@ -1489,16 +1483,7 @@ def main() -> None:
                 }
                 print(render_json(output))
             else:
-                lines = [render_multi_summary(results, "AD 地址冲突分析 — 多设备")]
-                lines.append("---")
-                for host, result in results.items():
-                    if "error" in result:
-                        lines.append(f"## {host}")
-                        lines.append(f"> 错误: {result['error']}")
-                    else:
-                        lines.append(render_markdown(result))
-                    lines.append("")
-                print("\n".join(lines))
+                print(_render_multi_markdown(results, "AD 地址冲突分析 — 多设备", lambda _host, result: render_markdown(result)))
             sys.exit(_compute_perception_multi_exit_code(results))
         else:
             disk_src = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
@@ -1513,16 +1498,7 @@ def main() -> None:
                 }
                 print(render_json(output))
             else:
-                lines = [render_multi_summary(results, "AD 感知分析报告 — 多设备")]
-                lines.append("---")
-                for host, result in results.items():
-                    if "error" in result:
-                        lines.append(f"## {host}")
-                        lines.append(f"> 错误: {result['error']}")
-                    else:
-                        lines.append(render_markdown(result))
-                    lines.append("")
-                print("\n".join(lines))
+                print(_render_multi_markdown(results, "AD 感知分析报告 — 多设备", lambda _host, result: render_markdown(result)))
             sys.exit(_compute_perception_multi_exit_code(results))
 
     # Single-device mode

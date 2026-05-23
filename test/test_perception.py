@@ -872,7 +872,10 @@ class TestState3Sigma(unittest.TestCase):
         output = render_markdown(results)
         self.assertIn('趋势异常检测', output)
         self.assertIn('CPU', output)
-        self.assertIn('❌ 严重', output)
+        self.assertIn('| 指标 | 时间 | 当前值 | 基线值 | 变化比例 |', output)
+        self.assertIn('上升 275.0%', output)
+        self.assertNotIn('| 指标 | 时间 | 当前值 | 基线值 | 偏离幅度 | 方向 | 风险 |', output)
+        self.assertNotIn('❌ 严重', output)
 
     def test_render_markdown_scoped_logs_uses_perception_template(self):
         output = render_markdown({
