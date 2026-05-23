@@ -835,7 +835,8 @@ function verify(run) {
   const commandExpected = commandExpectedFor(run.name, cfg);
   const commandFound = commandExpected.filter((token) => toolCommandText.includes(token));
   const commandMissing = commandExpected.filter((token) => !toolCommandText.includes(token));
-  const commandForbidden = cfg.commandForbidden || [];
+  const defaultCommandForbidden = /^r[1-4]/.test(run.name) ? ["2>&1"] : [];
+  const commandForbidden = [...defaultCommandForbidden, ...(cfg.commandForbidden || [])];
   const commandForbiddenFound = commandForbidden.filter((token) => toolCommandText.includes(token));
   const visibleForbidden = cfg.visibleForbidden || (/^r[1-4]/.test(run.name) ? [
     "工具调用",

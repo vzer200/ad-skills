@@ -166,6 +166,8 @@ Pass criteria:
 - `check.py run --wait` must not be used in WorkBot acceptance; it can exceed the platform's 60-second tool timeout.
 - The final report comes from `check.py wait` / downloaded report stdout, after `progress` confirms completion.
 - The final answer does not add model-written inspection findings.
+- The final visible answer starts at `## 巡检结论` and must not append a second execution table or any phrase such as `工具调用`, `退出码`, `stdout`, `上方 stdout`, `connect.py`, or `check.py`.
+- WorkBot commands must not use `2>&1` for the final `wait` command. If stderr is needed for debugging, it stays inside tool evidence and is not copied into the user-visible answer.
 - Check items in final answers use Chinese labels, not internal IDs such as `DEVICE_SAFE_CHECK`.
 - Single-device reports may list all check items. Multi-device reports use the same top-level headings but only expand abnormal items per device to avoid oversized output.
 - Acceptance prompts must stay short. Do not use detailed parameter-fill prompts for R1.

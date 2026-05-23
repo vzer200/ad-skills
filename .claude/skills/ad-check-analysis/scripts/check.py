@@ -147,6 +147,7 @@ def wait_and_download(
     poll_interval: int = 10,
     timeout: int = 600,
     max_attempts: int = 60,
+    verbose: bool = False,
 ) -> Dict[str, Any]:
     """
     步骤 4-6：轮询历史记录确认新报告生成 → 下载报告 → 解压保存元数据
@@ -172,7 +173,11 @@ def wait_and_download(
         )
 
     # ── 步骤 4: 轮询历史记录，等待新报告生成 ─────────────────────────
-    print(f"[步骤 4] 轮询历史等待新报告 (interval={poll_interval}s, timeout={timeout}s)", file=sys.stderr)
+    def log(message: str) -> None:
+        if verbose:
+            print(message, file=sys.stderr)
+
+    log(f"[步骤 4] 轮询历史等待新报告 (interval={poll_interval}s, timeout={timeout}s)")
     deadline = time.time() + timeout
     latest = None
     attempt = 0
@@ -195,12 +200,12 @@ def wait_and_download(
             is_finished = bool(top_end)
             state = "FINISHED" if is_finished else "RUNNING"
             tag = "✓ 新报告" if is_new else "× 旧报告"
-            print(f"         [{attempt}] {tag} {state} name={top_name} start={top_start}", file=sys.stderr)
+            log(f"         [{attempt}] {tag} {state} name={top_name} start={top_start}")
             if is_new and is_finished:
                 latest = top
                 break
         else:
-            print(f"         [{attempt}] 历史为空", file=sys.stderr)
+            log(f"         [{attempt}] 历史为空")
         time.sleep(poll_interval)
 
     if latest is None:
@@ -210,11 +215,11 @@ def wait_and_download(
         )
 
     # ── 步骤 5: 下载报告 ─────────────────────────────────────────────
-    print("[步骤 5] 下载巡检报告…", file=sys.stderr)
+    log("[步骤 5] 下载巡检报告…")
     report_name = latest["name"]
     report_scene = latest.get("scene", scene)
     start_time = latest.get("start_time", "")
-    print(f"         报告: {report_name}", file=sys.stderr)
+    log(f"         报告: {report_name}")
 
     try:
         token_resp = client._request(
@@ -235,10 +240,10 @@ def wait_and_download(
     os.makedirs(os.path.dirname(zip_path) or ".", exist_ok=True)
     with open(zip_path, "wb") as f:
         f.write(data)
-    print(f"         下载: {zip_path} ({os.path.getsize(zip_path)} bytes)", file=sys.stderr)
+    log(f"         下载: {zip_path} ({os.path.getsize(zip_path)} bytes)")
 
     # ── 步骤 6: 解压并更新元数据 ────────────────────────────────────
-    print("[步骤 6] 解压并保存元数据…", file=sys.stderr)
+    log("[步骤 6] 解压并保存元数据…")
     with zipfile.ZipFile(zip_path) as zf:
         zf.extractall(work_dir)
 
@@ -262,8 +267,8 @@ def wait_and_download(
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
 
-    print(f"         ad.json: {ad_json_path} ({os.path.getsize(ad_json_path)} bytes)", file=sys.stderr)
-    print("✅ 下载完成", file=sys.stderr)
+    log(f"         ad.json: {ad_json_path} ({os.path.getsize(ad_json_path)} bytes)")
+    log("✅ 下载完成")
 
     return meta
 
@@ -876,7 +881,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         "version", "gateway_id", "dst_ip",
     }
     _unmapped = data_keys - _checked_fields
-    if _unmapped:
+    if _unmapped and os.environ.get("AD_CHECK_DEBUG_UNMAPPED") == "1":
         print(f"[analyze] 未映射的 ad.json 字段 ({len(_unmapped)}): {sorted(_unmapped)}", file=sys.stderr)
 
     # ─────────────────────────────────────────────────────────────────────
@@ -1290,6 +1295,7 @@ def _wait_one(
     work_dir: Optional[str] = None,
     poll_interval: int = 5,
     timeout: int = 55,
+    verbose: bool = False,
     **kw: Any,
 ) -> Dict[str, Any]:
     """Download and analyze a finished check report for one device."""
@@ -1303,6 +1309,7 @@ def _wait_one(
         work_dir=work_dir,
         poll_interval=poll_interval,
         timeout=timeout,
+        verbose=verbose,
     )
     with open(meta["ad_json_path"], encoding="utf-8") as f:
         data = json.load(f)
@@ -1356,6 +1363,8 @@ def main() -> None:
                         help="轮询间隔秒数，默认 5")
     p_wait.add_argument("--timeout", type=int, default=55,
                         help="最长等待秒数，默认 55，避免 WorkBot 工具调用超时")
+    p_wait.add_argument("--verbose", action="store_true",
+                        help="输出下载和轮询过程日志；默认只输出最终巡检报告")
 
     # history
     p_hist = sub.add_parser("history", help="查看历史巡检记录")
@@ -1474,6 +1483,7 @@ def main() -> None:
                 work_dir=args.work_dir or None,
                 poll_interval=args.poll_interval,
                 timeout=args.timeout,
+                verbose=args.verbose,
                 _timeout=min(max(args.timeout + 15, 30), 75),
             )
             device_names = {d["host"]: d["name"] for d in devices if d.get("name")}
@@ -1494,6 +1504,7 @@ def main() -> None:
                 work_dir=args.work_dir or None,
                 poll_interval=args.poll_interval,
                 timeout=args.timeout,
+                verbose=args.verbose,
             )
             print("\n" + result["markdown"])
         except CheckTimeoutError as e:
