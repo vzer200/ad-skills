@@ -197,8 +197,12 @@ def build_overview(client: ADClient, subcommand: str = "all") -> Dict[str, Any]:
     if sys_data:
         overview["device"]["version"] = sys_data.get("version", "")
         overview["device"]["uptime"] = sys_data.get("uptime", "")
-        overview["device"]["cpu"] = _extract_value(sys_data.get("cpu_usage"))
-        overview["device"]["memory"] = _extract_value(sys_data.get("memory_usage"))
+        cpu_value = _extract_optional_value(sys_data.get("cpu_usage"))
+        mem_value = _extract_optional_value(sys_data.get("memory_usage"))
+        if cpu_value is not None:
+            overview["device"]["cpu"] = cpu_value
+        if mem_value is not None:
+            overview["device"]["memory"] = mem_value
 
     # ---------- Virtual Services ---------------------------------------------
     vs_data = raw.get("vs")
@@ -310,10 +314,19 @@ def _extract_value(field: Any) -> Any:
     return field if field is not None else 0
 
 
+def _extract_optional_value(field: Any) -> Any:
+    """Extract a metric where missing means unknown, not zero."""
+    if isinstance(field, dict):
+        return field.get("value")
+    if isinstance(field, list):
+        return field[0] if field else None
+    return field
+
+
 def _process_hardware(sys_data: Dict[str, Any]) -> Dict[str, Any]:
     """Transform system data into the hardware detail section."""
-    cpu_val = _extract_value(sys_data.get("cpu_usage"))
-    mem_val = _extract_value(sys_data.get("memory_usage"))
+    cpu_val = _extract_optional_value(sys_data.get("cpu_usage"))
+    mem_val = _extract_optional_value(sys_data.get("memory_usage"))
 
     def _level_numeric(v: Any, warn: float = 80, crit: float = 90) -> str:
         if v is None:
@@ -367,14 +380,19 @@ def _process_hardware(sys_data: Dict[str, Any]) -> Dict[str, Any]:
                 "level": interface_level(i.get("status", "unknown")),
             })
 
-    return {
-        "cpu": {"value": cpu_val, "level": _level_numeric(cpu_val)},
-        "memory": {"value": mem_val, "level": _level_numeric(mem_val)},
-        "temperature": {"value": _extract_value(sys_data.get("temperature")), "level": "ok"},
+    hardware = {
         "fans": fans,
         "power": power,
         "interfaces": interfaces,
     }
+    if cpu_val is not None:
+        hardware["cpu"] = {"value": cpu_val, "level": _level_numeric(cpu_val)}
+    if mem_val is not None:
+        hardware["memory"] = {"value": mem_val, "level": _level_numeric(mem_val)}
+    temp_val = _extract_optional_value(sys_data.get("temperature"))
+    if temp_val is not None:
+        hardware["temperature"] = {"value": temp_val, "level": "ok"}
+    return hardware
 
 
 # =============================================================================

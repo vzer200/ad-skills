@@ -497,6 +497,22 @@ class TestOverviewAPI(unittest.TestCase):
         self.assertNotIn("CPU 使用率：0%", md)
         self.assertNotIn("内存使用率：0%", md)
 
+    def test_partial_hardware_payload_does_not_render_fake_zero_usage(self):
+        """Missing CPU/memory fields in a partial payload must stay unknown."""
+        self.client.get_sys_system.return_value = {
+            "power_supply": [{"name": "psu1", "status": "normal"}],
+            "interface": {"plug": {"in": ["eth0"], "out": []}},
+        }
+
+        overview = build_overview(self.client, "hardware")
+        md = render_markdown(overview)
+
+        self.assertNotIn("CPU 使用率：0%", md)
+        self.assertNotIn("内存使用率：0%", md)
+        self.assertNotIn("| CPU 使用率 | 0% |", md)
+        self.assertNotIn("| 内存使用率 | 0% |", md)
+        self.assertIn("电源：psu1", md)
+
     # ------------------------------------------------------------------
     # Test 15: Parameter error → exit code 4
     # ------------------------------------------------------------------
