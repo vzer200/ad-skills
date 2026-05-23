@@ -288,6 +288,7 @@ Pass criteria:
 - Traffic query calls `overview.py traffic`.
 - Device/hardware status query calls `overview.py hardware`.
 - Multi-device VS/Pool/cert/traffic/status/hardware prompts must call `overview.py <dimension> --devices ...` and must not fall back to `--device AD1` or `--device AD2`.
+- Tool commands must not use `2>&1`; stderr must stay separate from stdout so the visible report remains script-controlled.
 - HA can be tested manually when needed, but is intentionally skipped in the default acceptance batch.
 - `connect.py` validates the AD1 target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
 - The answer includes VS, Pool/config, traffic/status, and certificate sections only if returned by the script.
