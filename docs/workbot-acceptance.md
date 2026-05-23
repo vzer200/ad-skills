@@ -44,7 +44,7 @@ Every temporary employee is created through the same WorkBot API used by the web
 
 Fresh-agent runs skip cleanup because the employee has empty AD-skill context. Cleanup is not part of the main orchestration and runs only when the `cleanup` case is explicitly requested for debugging an existing employee. Install is always a hard gate: if it needs a no-tool follow-up, misses required tool commands, or leaks tool/command text in the visible answer, the automation stops before requirement cases.
 
-The default `fixed` suite is the mainline gate. It uses only the agreed fixed prompts and covers the complete requirements flow in one WorkBot run: R1 standard/full/security on one device and all devices, R2 full/single-dimension/multi-device VS queries, R3 full/single-dimension perception analysis, and R4 script-only plus real delivery/rollback. HA is not part of the default run.
+The default `fixed` suite is the mainline gate. It uses only the agreed fixed prompts and covers the complete requirements flow in one WorkBot run: R1 standard/full/security on one device and all devices, R2 full/single-dimension/multi-device queries, R3 full/single-dimension perception analysis, and R4 script-only plus real delivery/rollback. HA is not part of the default run.
 
 Exploratory prompt variants are kept in a separate suite and must not be mixed into the mainline stability gate:
 
@@ -190,14 +190,10 @@ Full overview prompt:
 帮我查一下 AD1 的配置、流量、设备状态和 SSL 证书到期时间。
 ```
 
-Fixed single-dimension prompts:
+Fixed single-device prompts:
 
 ```text
 帮我查一下 AD1 的虚拟服务配置。
-```
-
-```text
-帮我查一下所有 AD 设备的虚拟服务配置。
 ```
 
 ```text
@@ -222,6 +218,32 @@ Fixed single-dimension prompts:
 
 ```text
 帮我查一下 AD1 的硬件状态。
+```
+
+Fixed multi-device prompts:
+
+```text
+帮我查一下所有 AD 设备的虚拟服务配置。
+```
+
+```text
+帮我查一下所有 AD 设备的节点池配置。
+```
+
+```text
+帮我查一下所有 AD 设备的 SSL 证书到期时间。
+```
+
+```text
+帮我查一下所有 AD 设备的流量情况。
+```
+
+```text
+帮我查一下所有 AD 设备的设备状态。
+```
+
+```text
+帮我查一下所有 AD 设备的硬件状态。
 ```
 
 Extended suite prompts, not part of the fixed mainline gate:
@@ -265,7 +287,7 @@ Pass criteria:
 - SSL certificate query calls `overview.py cert`.
 - Traffic query calls `overview.py traffic`.
 - Device/hardware status query calls `overview.py hardware`.
-- Multi-device VS prompts must call `overview.py vs --devices ...` and must not fall back to `--device AD1` or `--device AD2`.
+- Multi-device VS/Pool/cert/traffic/status/hardware prompts must call `overview.py <dimension> --devices ...` and must not fall back to `--device AD1` or `--device AD2`.
 - HA can be tested manually when needed, but is intentionally skipped in the default acceptance batch.
 - `connect.py` validates the AD1 target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
 - The answer includes VS, Pool/config, traffic/status, and certificate sections only if returned by the script.
