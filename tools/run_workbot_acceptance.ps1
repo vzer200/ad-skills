@@ -10,7 +10,7 @@ param(
     [switch]$VerifyAD,
     [string]$ADBaseUrl = "https://14.18.243.211:21044",
     [string]$ADUser = "admin",
-    [string]$Cases = "install,r1,r1-all,r2,r2-vs,r2-node,r3,r3-traffic,r3-state,r3-conflict,r4-script",
+    [string]$Cases = "install,r1,r1-full,r1-security,r1-all,r1-all-full,r1-all-security,r2,r2-vs,r2-node,r2-pool,r2-cert,r2-traffic,r2-status,r2-ha,r2-hardware,r3,r3-traffic,r3-state,r3-conflict,r3-logs,r4-script",
     [string]$R4Yaml = "test\fixtures\workbot\r4-slb-full.yml"
 )
 

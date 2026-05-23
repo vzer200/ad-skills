@@ -16,6 +16,7 @@ description: 深信服 AD 感知分析 skill。用于分析 VS 流量异常、CP
 - 如果历史基线数据不足，脚本会输出实时/降级分析；最终结论只能照脚本 stdout 表达，不能补充 3σ、日志根因或趋势结论。
 - 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动先用 `devices.json --device AD1` 做连接预检。
 - “流量异常/流量分析”映射到 `perception.py traffic`；“设备资源/状态异常”映射到 `perception.py state`；“地址冲突/冲突分析”映射到 `perception.py conflict`；综合感知分析映射到 `perception.py analyze`。
+- “服务日志/日志线索”映射到 `perception.py logs`。
 
 ## 全量感知分析
 
@@ -36,13 +37,20 @@ python3 skills/ad-perception/scripts/perception.py logs --host "${AD1_HOST:-http
 ## 输出模板
 
 ```text
-## 分析目标
-<设备和分析维度>
+## 感知结论
+- 目标：<AD1>
+- 维度：<analyze/traffic/state/conflict/logs>
+- 结果来源：perception.py stdout
+- 状态：<正常/发现异常/数据不足/失败>
 
 ## 工具调用
-- connect.py: <exit code/摘要>
-- perception.py: <exit code/摘要>
+- connect.py：<成功/失败>，<目标和认证摘要>
+- perception.py <维度>：<成功/失败>，<退出码/stdout 摘要>
 
 ## 分析结果
 <原样展示 perception.py stdout；不要自行补充>
+
+## 结论边界
+- 只复述脚本返回的异常、冲突、日志线索或数据不足。
+- 不输出未由脚本返回的根因、趋势判断或处置建议。
 ```

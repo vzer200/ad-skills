@@ -60,13 +60,26 @@ Pass criteria:
 Start each case with the short prompt. If WorkBot asks for missing parameters, answer only the requested values. If the first response has no visible tool-call panels, send this follow-up and mark the previous attempt failed:
 
 ```text
-我没有看到工具调用记录。请不要凭记忆回答；请实际调用工具完成刚才的任务，并在结果里列出调用过的工具、命令、退出码和 stdout/stderr 摘要。
+我没有看到工具调用记录。为什么没有调用工具？请说明原因，然后不要凭记忆回答，立即实际调用工具完成刚才的任务，并列出工具、命令、退出码和 stdout/stderr 摘要。
 ```
+
+The automation records `toolFollowupUsed=true` and marks the case as failed for stability, even if the follow-up eventually triggers tools.
 
 If a real-device case has tool calls but no AD 外网设备资源验证, send this follow-up:
 
 ```text
 我没有看到 AD1 外网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本，并展示连接目标、退出码和脚本 stdout。
+```
+
+## Output Template Gate
+
+Every requirement run must use the corresponding skill output template. Missing template headings fail the run even if the script tokens are present.
+
+```text
+R1: 巡检结论 / 工具调用 / 分类统计 / 原始报告
+R2: 查询结论 / 工具调用 / 查询结果
+R3: 感知结论 / 工具调用 / 分析结果
+R4: 配置结论 / 工具调用 / 生成产物 / 安全确认
 ```
 
 ## Requirement 1: Inspection
@@ -77,10 +90,29 @@ Single-device prompt:
 请对 AD1 做一次标准巡检。
 ```
 
+Additional single-device scene prompts:
+
+```text
+请对 AD1 做一次全量巡检。
+```
+
+```text
+请对 AD1 做一次安全巡检。
+```
+
 Expected human replies:
 
 ```text
+标准巡检 case:
 标准巡检
+继续
+
+全量巡检 case:
+全量巡检
+继续
+
+安全巡检 case:
+安全巡检
 继续
 ```
 
@@ -90,10 +122,20 @@ All-device prompt:
 请对 AD 所有设备做一次标准巡检。
 ```
 
+Additional all-device scene prompts:
+
+```text
+请对 AD 所有设备做一次全量巡检。
+```
+
+```text
+请对 AD 所有设备做一次安全巡检。
+```
+
 Expected human replies:
 
 ```text
-标准巡检
+标准巡检 / 全量巡检 / 安全巡检
 继续
 ```
 
@@ -113,6 +155,7 @@ Pass criteria:
 - `check.py run --wait` or `check.py analyze` stdout is the source of the final report.
 - The final answer does not add model-written inspection findings.
 - Acceptance prompts must stay short. Do not use detailed parameter-fill prompts for R1.
+- Scoring rule: pass = 1, warn = 0.5, fail = 0. Empty dimensions must not pull down the overall score; the overall score averages only dimensions that appear in the current report.
 
 ## Requirement 2: Query Overview
 
@@ -132,6 +175,30 @@ Single-dimension prompts:
 帮我查一下 AD1 的节点配置。
 ```
 
+```text
+帮我查一下 AD1 的节点池配置。
+```
+
+```text
+帮我查一下 AD1 的 SSL 证书到期时间。
+```
+
+```text
+帮我查一下 AD1 的流量情况。
+```
+
+```text
+帮我查一下 AD1 的设备状态。
+```
+
+```text
+帮我查一下 AD1 的 HA 状态。
+```
+
+```text
+帮我查一下 AD1 的硬件状态。
+```
+
 Expected tool calls:
 
 ```text
@@ -144,6 +211,10 @@ Pass criteria:
 - `overview.py all` is called, not separate model-written summaries.
 - Single-dimension VS query calls `overview.py vs`.
 - Single-dimension node/pool query calls `overview.py pool`.
+- SSL certificate query calls `overview.py cert`.
+- Traffic query calls `overview.py traffic`.
+- HA query calls `overview.py ha`.
+- Device/hardware status query calls `overview.py hardware`.
 - `connect.py` validates the AD1 target from `devices.json`, including AD 外网设备资源 reachability/auth evidence.
 - The answer includes VS, Pool/config, traffic/status, and certificate sections only if returned by the script.
 - Acceptance prompts must not include parameter-fill follow-ups for R2.
@@ -170,6 +241,10 @@ Single-dimension prompts:
 帮我分析一下 AD1 有没有地址冲突。
 ```
 
+```text
+帮我看一下 AD1 的服务日志线索。
+```
+
 Expected tool calls:
 
 ```text
@@ -181,7 +256,7 @@ Pass criteria:
 
 - `connect.py` validates the AD1 target from `devices.json`, including AD 外网设备资源 reachability/auth evidence.
 - The final conclusion is backed by `perception.py` output.
-- Single-dimension prompts call `perception.py traffic|state|conflict` respectively.
+- Single-dimension prompts call `perception.py traffic|state|conflict|logs` respectively.
 - No root cause, anomaly, or trend is invented outside script stdout.
 - Acceptance prompts must not include parameter-fill follow-ups for R3.
 

@@ -163,33 +163,45 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 必须按这个模板输出，不要额外发挥：
 
 ```text
-## 目标
-<一句话说明用户要生成什么>
+## 配置结论
+- 目标：<一句话说明用户要生成什么>
+- 阶段：<YAML 待填写/脚本已生成/已下发待回滚/已回滚>
+- 结果来源：ad-config-ops 脚本 stdout
+- 设备：<AD1/未下发>
 
 ## 工具调用
-- <脚本名>: <成功/失败>，<关键 stdout 摘要>
+- init_env.py：<成功/失败>，<清理摘要>
+- ad_ops_flow.py：<成功/失败>，<plan/preflight/apply/rollback 摘要>
+- verify_slb_resource.py：<成功/失败/未执行>，<设备验证摘要>
 
 ## 生成产物
-- bundle: <路径>
-- plan: <路径>
-- batch: <路径>
-- apply_script: <路径>
-- rollback_script: <路径>
-- rollback: <路径>
-- execute_result: <路径>
-- preflight: <路径>
-- post_apply: <路径>
-- post_rollback: <路径>
-- rollback_compare: <路径>
+| 产物 | 路径 |
+| --- | --- |
+| YAML/bundle | <路径> |
+| plan | <路径> |
+| effective_plan | <路径> |
+| batch | <路径> |
+| 正向脚本 apply.py | <路径> |
+| 回滚脚本 rollback_apply.py | <路径> |
+| preflight GET | <路径> |
+| execute_result | <路径/未执行> |
+| post_apply GET | <路径/未执行> |
+| rollback manifest | <路径/未执行> |
+| post_rollback GET | <路径/未执行> |
+| rollback_compare | <路径/未执行> |
 
 ## 操作计划
 - <method> <path> (<operation id>)
 
-## 下发状态
-已下发/未下发：<状态>
-设备验证：<apply-slb-plan/verify_slb_resource.py stdout 摘要>
-人工检查：<等待用户检查/已检查>
-回滚：<未执行/已执行>；回滚后 GET 与下发前 baseline 是否一致：<是/否/未执行>
+## 安全确认
+- 同名资源复用：<无/有，列出 reused_count 和 warning_count>
+- 下发状态：<未下发/已下发>
+- 设备验证：<未执行/通过/失败>
+- 回滚状态：<未执行/已执行>
+- 回滚后 GET 与下发前 baseline：<一致/不一致/未执行>
+
+## 下一步
+<等待填写 YAML/等待选择“真实下发”或“直接给出脚本”/等待用户决定是否回滚/流程结束>
 ```
 
 ## 通用模板流程

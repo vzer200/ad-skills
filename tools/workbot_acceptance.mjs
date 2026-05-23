@@ -49,7 +49,12 @@ const CHROME_PATH = argValue(
   "--chrome",
   process.env.CHROME_PATH || "C:/Program Files/Google/Chrome/Application/chrome.exe",
 );
-const CASES = (argValue("--cases", "install,r1,r1-all,r2,r2-vs,r2-node,r3,r3-traffic,r3-state,r3-conflict,r4-script") || "")
+const CASES = (
+  argValue(
+    "--cases",
+    "install,r1,r1-full,r1-security,r1-all,r1-all-full,r1-all-security,r2,r2-vs,r2-node,r2-pool,r2-cert,r2-traffic,r2-status,r2-ha,r2-hardware,r3,r3-traffic,r3-state,r3-conflict,r3-logs,r4-script",
+  ) || ""
+)
   .split(",")
   .map((item) => item.trim())
   .filter(Boolean);
@@ -65,7 +70,7 @@ if (CASES.some((name) => name.startsWith("r4-")) && !fs.existsSync(R4_YAML_PATH)
 }
 
 const NO_TOOL_FOLLOWUP =
-  "我没有看到工具调用记录。请不要凭记忆回答；请实际调用工具完成刚才的任务，并在结果里列出调用过的工具、命令、退出码和 stdout/stderr 摘要。";
+  "我没有看到工具调用记录。为什么没有调用工具？请说明原因，然后不要凭记忆回答，立即实际调用工具完成刚才的任务，并列出工具、命令、退出码和 stdout/stderr 摘要。";
 const DEVICE_FOLLOWUP =
   "我没有看到 AD1 外网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本，并展示连接目标、退出码和脚本 stdout。";
 
@@ -90,6 +95,26 @@ const cases = {
     requireTools: true,
     requireDevice: true,
   },
+  "r1-full": {
+    steps: [
+      "请对 AD1 做一次全量巡检。",
+      "全量巡检",
+      "继续",
+    ],
+    expected: ["connect.py", "AD1", "check.py", "history", "run", "--wait", "全量巡检"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r1-security": {
+    steps: [
+      "请对 AD1 做一次安全巡检。",
+      "安全巡检",
+      "继续",
+    ],
+    expected: ["connect.py", "AD1", "check.py", "history", "run", "--wait", "安全巡检"],
+    requireTools: true,
+    requireDevice: true,
+  },
   "r1-all": {
     steps: [
       "请对 AD 所有设备做一次标准巡检。",
@@ -97,6 +122,26 @@ const cases = {
       "继续",
     ],
     expected: ["connect.py", "devices.json", "check.py", "run", "--wait"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r1-all-full": {
+    steps: [
+      "请对 AD 所有设备做一次全量巡检。",
+      "全量巡检",
+      "继续",
+    ],
+    expected: ["connect.py", "devices.json", "check.py", "run", "--wait", "全量巡检"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r1-all-security": {
+    steps: [
+      "请对 AD 所有设备做一次安全巡检。",
+      "安全巡检",
+      "继续",
+    ],
+    expected: ["connect.py", "devices.json", "check.py", "run", "--wait", "安全巡检"],
     requireTools: true,
     requireDevice: true,
   },
@@ -115,6 +160,42 @@ const cases = {
   "r2-node": {
     prompt: "帮我查一下 AD1 的节点配置。",
     expected: ["connect.py", "AD1", "overview.py", "pool"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-pool": {
+    prompt: "帮我查一下 AD1 的节点池配置。",
+    expected: ["connect.py", "AD1", "overview.py", "pool"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-cert": {
+    prompt: "帮我查一下 AD1 的 SSL 证书到期时间。",
+    expected: ["connect.py", "AD1", "overview.py", "cert"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-traffic": {
+    prompt: "帮我查一下 AD1 的流量情况。",
+    expected: ["connect.py", "AD1", "overview.py", "traffic"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-status": {
+    prompt: "帮我查一下 AD1 的设备状态。",
+    expected: ["connect.py", "AD1", "overview.py", "hardware"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-ha": {
+    prompt: "帮我查一下 AD1 的 HA 状态。",
+    expected: ["connect.py", "AD1", "overview.py", "ha"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-hardware": {
+    prompt: "帮我查一下 AD1 的硬件状态。",
+    expected: ["connect.py", "AD1", "overview.py", "hardware"],
     requireTools: true,
     requireDevice: true,
   },
@@ -139,6 +220,12 @@ const cases = {
   "r3-conflict": {
     prompt: "帮我分析一下 AD1 有没有地址冲突。",
     expected: ["connect.py", "AD1", "perception.py", "conflict"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r3-logs": {
+    prompt: "帮我看一下 AD1 的服务日志线索。",
+    expected: ["connect.py", "AD1", "perception.py", "logs"],
     requireTools: true,
     requireDevice: true,
   },
@@ -351,6 +438,15 @@ function hasDeviceEvidence(value) {
   return /(devices\.json|AD1|connect\.py|14\.18\.243\.211|192\.168\.8\.3[01]|认证|auth|reach|连接测试|连接正常)/i.test(value || "");
 }
 
+function templateExpectedFor(name, cfg) {
+  if (cfg.templateExpected) return cfg.templateExpected;
+  if (name.startsWith("r1")) return ["巡检结论", "工具调用", "分类统计", "原始报告"];
+  if (name.startsWith("r2")) return ["查询结论", "工具调用", "查询结果"];
+  if (name.startsWith("r3")) return ["感知结论", "工具调用", "分析结果"];
+  if (name.startsWith("r4")) return ["配置结论", "工具调用", "生成产物", "安全确认"];
+  return [];
+}
+
 function runLocalAdVerification(name, cfg) {
   if (!VERIFY_AD) return { status: "disabled" };
   if (!AD_VERIFY_PASSWORD) {
@@ -487,19 +583,29 @@ function verify(run) {
   const searchable = `${run.text || ""}\n${run.agentText || ""}`;
   const found = tokens.filter((token) => searchable.includes(token));
   const missing = tokens.filter((token) => !searchable.includes(token));
+  const templateExpected = templateExpectedFor(run.name, cfg);
+  const templateFound = templateExpected.filter((token) => searchable.includes(token));
+  const templateMissing = templateExpected.filter((token) => !searchable.includes(token));
   const forbidden = cfg.forbidExecute && /(^|\s)--execute(\s|$)/.test(searchable);
   const toolEvidenceOk = !cfg.requireTools || run.responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence);
   const deviceEvidenceOk = !cfg.requireDevice || hasDeviceEvidence(searchable);
   const localVerificationOk = !run.localVerification || run.localVerification.status !== "fail";
+  const cleanToolTriggerOk = !cfg.requireTools || !run.toolFollowupUsed;
   return {
     ...run,
     expected: tokens,
     found,
     missing,
+    templateExpected,
+    templateFound,
+    templateMissing,
     toolEvidenceOk,
+    cleanToolTriggerOk,
     deviceEvidenceOk,
     localVerificationOk,
-    ok: missing.length === 0 && !forbidden && toolEvidenceOk && deviceEvidenceOk && localVerificationOk,
+    toolFollowupUsed: Boolean(run.toolFollowupUsed),
+    deviceFollowupUsed: Boolean(run.deviceFollowupUsed),
+    ok: missing.length === 0 && templateMissing.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && deviceEvidenceOk && localVerificationOk,
     forbidden_execute: forbidden,
   };
 }
@@ -508,6 +614,8 @@ async function runCase(page, name) {
   const cfg = cases[name];
   if (!cfg) throw new Error(`unknown case: ${name}`);
   const responses = [];
+  let toolFollowupUsed = false;
+  let deviceFollowupUsed = false;
   const prompts = cfg.steps || [cfg.prompt];
   for (let index = 0; index < prompts.length; index += 1) {
     const step = prompts[index];
@@ -528,11 +636,13 @@ async function runCase(page, name) {
   }
 
   if (cfg.requireTools && !responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence)) {
+    toolFollowupUsed = true;
     responses.push(await sendPrompt(page, `${name}-tool-followup`, NO_TOOL_FOLLOWUP));
     combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
   }
 
   if (cfg.requireDevice && !hasDeviceEvidence(combinedText)) {
+    deviceFollowupUsed = true;
     responses.push(await sendPrompt(page, `${name}-device-followup`, DEVICE_FOLLOWUP));
     combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
   }
@@ -545,6 +655,8 @@ async function runCase(page, name) {
     agentText: responses.map((item) => item.agentText).join("\n\n").slice(-20000),
     responses,
     localVerification,
+    toolFollowupUsed,
+    deviceFollowupUsed,
   });
 }
 

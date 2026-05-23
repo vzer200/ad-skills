@@ -847,14 +847,16 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     # ── 计算各维度健康评分 ─────────────────────────────────────────────
     def _dimension_scores(keys: List[str]) -> Dict[str, int]:
         p = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "pass")
+        w = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "warn")
         t = len(keys)
-        s = round(p / max(t, 1) * 100)
+        s = round((p + w * 0.5) / t * 100) if t else 0
         return {"pass": p, "total": t, "score": s}
 
     f_score = _dimension_scores(feature_keys)
     h_score = _dimension_scores(health_keys)
     s_score = _dimension_scores(secure_keys)
-    overall = round((f_score["score"] + h_score["score"] + s_score["score"]) / 3)
+    active_scores = [item["score"] for item in (f_score, h_score, s_score) if item["total"] > 0]
+    overall = round(sum(active_scores) / len(active_scores)) if active_scores else 0
 
     # ── 生成优化建议 ───────────────────────────────────────────────────
     suggestions = []
@@ -923,6 +925,12 @@ def render_markdown(
 
     def score_icon_for(val: Union[int, float]) -> str:
         return "🟢" if val >= 90 else ("🟡" if val >= 70 else "🔴")
+
+    def rate_cell(cat: Dict[str, int]) -> str:
+        return f"{cat['rate']}%" if cat["total"] else "未覆盖"
+
+    def score_cell(score: Union[int, float], total: int) -> str:
+        return f"{score_icon_for(score)} {score}/100" if total else "未覆盖"
 
     def cat_summary(keys: List[str]) -> Dict[str, int]:
         p = sum(1 for k in keys if k in results and results[k]["status"] == "pass")
@@ -1035,9 +1043,9 @@ def render_markdown(
 
 | 类别 | 检查项数 | 通过 | 异常 | 通过率 |
 |------|----------|------|------|--------|
-| 功能巡检 | {f["total"]} | {f["pass"]} | {f["fail"] + f["warn"]} | {f["rate"]}% |
-| 健康巡检 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {h["rate"]}% |
-| 安全巡检 | {s["total"]} | {s["pass"]} | {s["fail"] + s["warn"]} | {s["rate"]}% |
+| 功能巡检 | {f["total"]} | {f["pass"]} | {f["fail"] + f["warn"]} | {rate_cell(f)} |
+| 健康巡检 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {rate_cell(h)} |
+| 安全巡检 | {s["total"]} | {s["pass"]} | {s["fail"] + s["warn"]} | {rate_cell(s)} |
 
 ---
 
@@ -1053,9 +1061,9 @@ def render_markdown(
 
 | 项目 | 评分 |
 |------|------|
-| 系统稳定性 | {score_icon_for(stability_score)} {stability_score}/100 |
-| 硬件健康 | {score_icon_for(hardware_score)} {hardware_score}/100 |
-| 安全配置 | {score_icon_for(security_score)} {security_score}/100 |
+| 系统稳定性 | {score_cell(stability_score, f["total"])} |
+| 硬件健康 | {score_cell(hardware_score, h["total"])} |
+| 安全配置 | {score_cell(security_score, s["total"])} |
 | **综合评分** | {score_icon} **{overall}/100** |
 
 ---

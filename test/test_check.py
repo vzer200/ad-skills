@@ -127,6 +127,23 @@ class TestAnalyze(unittest.TestCase):
         suggestions = result.get("suggestions", [])
         self.assertEqual(len(suggestions), 0)
 
+    def test_overall_score_ignores_empty_dimensions(self):
+        result = analyze({"ad_appversion": "AD-1.0"})
+        hs = result["health_scores"]
+        self.assertEqual(hs["feature"]["score"], 100)
+        self.assertEqual(hs["health"]["total"], 0)
+        self.assertEqual(hs["secure"]["total"], 0)
+        self.assertEqual(hs["overall"], 100)
+        self.assertEqual(result["summary"]["score"], 100)
+
+    def test_dimension_score_counts_warn_as_half_credit(self):
+        result = analyze({"base_log_error_exist": 1})
+        hs = result["health_scores"]
+        self.assertEqual(hs["health"]["total"], 1)
+        self.assertEqual(hs["health"]["score"], 50)
+        self.assertEqual(hs["overall"], 50)
+        self.assertEqual(result["summary"]["score"], 50)
+
 
 class TestRenderMarkdown(unittest.TestCase):
     """Test render_markdown output structure."""
@@ -155,6 +172,13 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertIn("优化建议", output)
         self.assertIn("健康评分", output)
         self.assertIn("100", output)
+
+    def test_render_marks_empty_dimensions_as_not_covered(self):
+        analysis = analyze({"ad_appversion": "AD-1.0"})
+        output = render_markdown(analysis, {"host": "https://10.0.0.1", "scene": "标准巡检", "start_time": ""})
+        self.assertIn("未覆盖", output)
+        self.assertIn("**100/100**", output)
+        self.assertNotIn("硬件健康 | 🔴 0/100", output)
 
 
 class TestExitCodes(unittest.TestCase):

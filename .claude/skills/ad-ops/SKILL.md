@@ -14,6 +14,7 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 - 支持 `devices.json` 中的 AD1/AD2；密码从 `AD1_PASS`、`AD2_PASS` 环境变量读取。用户指定 AD1/AD2 时必须用 `--device` 限定单台设备。
 - 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动使用 `devices.json --device AD1`。
 - “虚拟服务配置/VS 配置”映射到 `overview.py vs`；“节点配置/节点池/Pool 配置”映射到 `overview.py pool`；整体配置、流量、状态、证书查询映射到 `overview.py all`。
+- “SSL 证书/证书到期”映射到 `overview.py cert`；“流量情况”映射到 `overview.py traffic`；“HA 状态”映射到 `overview.py ha`；“设备状态/硬件状态”映射到 `overview.py hardware`。
 
 ## 总览查询
 
@@ -29,18 +30,27 @@ python3 skills/ad-ops/scripts/overview.py vs --devices devices.json --device AD1
 python3 skills/ad-ops/scripts/overview.py pool --devices devices.json --device AD1 --format markdown
 python3 skills/ad-ops/scripts/overview.py cert --devices devices.json --device AD1 --format markdown
 python3 skills/ad-ops/scripts/overview.py traffic --devices devices.json --device AD1 --format markdown
+python3 skills/ad-ops/scripts/overview.py hardware --devices devices.json --device AD1 --format markdown
+python3 skills/ad-ops/scripts/overview.py ha --devices devices.json --device AD1 --format markdown
 ```
 
 ## 输出模板
 
 ```text
-## 查询目标
-<设备和维度>
+## 查询结论
+- 目标：<AD1>
+- 维度：<all/vs/pool/cert/traffic/hardware/ha>
+- 结果来源：overview.py stdout
+- 状态：<成功/失败>
 
 ## 工具调用
-- connect.py: <exit code/摘要>
-- overview.py: <exit code/摘要>
+- connect.py：<成功/失败>，<目标和认证摘要>
+- overview.py <维度>：<成功/失败>，<退出码/stdout 摘要>
 
 ## 查询结果
 <原样展示 overview.py stdout；不要自行补充>
+
+## 覆盖说明
+- 若为 all：必须覆盖配置、流量、设备状态、SSL 证书。
+- 若为单项：只展示用户请求的维度，避免混入模型自行整理的额外结论。
 ```
