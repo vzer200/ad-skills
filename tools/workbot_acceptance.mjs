@@ -45,6 +45,8 @@ const PYTHON = argValue("--python", process.env.PYTHON || "python");
 const AD_VERIFY_BASE_URL = argValue("--ad-base-url", process.env.AD_VERIFY_BASE_URL || process.env.AD1_PUBLIC_URL || "https://14.18.243.211:21044");
 const AD_VERIFY_USERNAME = argValue("--ad-user", process.env.AD_VERIFY_USERNAME || process.env.AD1_USER || "admin");
 const AD_VERIFY_PASSWORD = argValue("--ad-password", process.env.AD_VERIFY_PASSWORD || process.env.AD1_PASS || process.env.AD_PASS);
+const IDLE_AFTER_STOP_MS = Number(argValue("--idle-after-stop-ms", process.env.WORKBOT_IDLE_AFTER_STOP_MS || "5000"));
+const WAIT_POLL_MS = Number(argValue("--wait-poll-ms", process.env.WORKBOT_WAIT_POLL_MS || "1000"));
 const CHROME_PATH = argValue(
   "--chrome",
   process.env.CHROME_PATH || "C:/Program Files/Google/Chrome/Application/chrome.exe",
@@ -73,6 +75,8 @@ const NO_TOOL_FOLLOWUP =
   "我没有看到工具调用记录。为什么没有调用工具？请说明原因，然后不要凭记忆回答，立即实际调用工具完成刚才的任务，并列出工具、命令、退出码和 stdout/stderr 摘要。";
 const DEVICE_FOLLOWUP =
   "我没有看到 AD1 外网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本，并展示连接目标、退出码和脚本 stdout。";
+const COMMAND_FOLLOWUP =
+  "我看到你有工具调用，但工具命令里缺少必须执行的脚本：{missing}。不要只在正文里提到它们，请立即在工具里实际执行包含这些脚本的命令，并列出命令、退出码和 stdout/stderr 摘要。";
 
 const cases = {
   cleanup: {
@@ -344,9 +348,10 @@ async function waitForIdleText(page, beforeText, label, maxMs = 600000) {
   const start = Date.now();
   let last = beforeText;
   let lastChanged = Date.now();
+  let stopHiddenSince = null;
   let lastLog = 0;
   while (Date.now() - start < maxMs) {
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(WAIT_POLL_MS);
     const current = await text(page);
     if (current !== last) {
       last = current;
@@ -356,23 +361,30 @@ async function waitForIdleText(page, beforeText, label, maxMs = 600000) {
     const sendVisible = await page.locator('button[utid="send-btn"]').isVisible().catch(() => false);
     const sendEnabled = sendVisible && await page.locator('button[utid="send-btn"]').isEnabled().catch(() => false);
     const elapsedMs = Date.now() - start;
+    if (current !== beforeText && !stopVisible) {
+      if (stopHiddenSince === null) stopHiddenSince = Date.now();
+    } else {
+      stopHiddenSince = null;
+    }
     if (elapsedMs - lastLog > 30000) {
-      log("wait", { label, elapsedMs, textLength: current.length, sendVisible, sendEnabled, stopVisible });
+      log("wait", { label, elapsedMs, textLength: current.length, sendVisible, sendEnabled, stopVisible, idleAfterStopMs: IDLE_AFTER_STOP_MS });
       lastLog = elapsedMs;
     }
-    if (current !== beforeText && !stopVisible && Date.now() - lastChanged > 20000) {
+    if (current !== beforeText && !stopVisible && stopHiddenSince !== null && Date.now() - stopHiddenSince > IDLE_AFTER_STOP_MS) {
       log("wait-stable", { label, elapsedMs, textLength: current.length, sendVisible, sendEnabled, stopVisible });
       return current;
     }
-    if (current !== beforeText && sendEnabled && !stopVisible && Date.now() - lastChanged > 12000) return current;
+    if (current !== beforeText && sendEnabled && !stopVisible && Date.now() - lastChanged > IDLE_AFTER_STOP_MS) return current;
   }
   log("wait-timeout", { label, maxMs });
   return text(page);
 }
 
 async function expandToolCalls(page) {
+  const agent = await lastAgent(page);
+  const root = agent || page;
   const openToggle = async (selector, blockSelector, contentSelector) => {
-    const locator = page.locator(selector);
+    const locator = root.locator(selector);
     const count = Math.min(await locator.count().catch(() => 0), 20);
     for (let i = 0; i < count; i += 1) {
       const toggle = locator.nth(i);
@@ -398,25 +410,24 @@ async function expandToolCalls(page) {
     '.ant-collapse-header',
   ];
   for (const selector of fallbackSelectors) {
-    const locator = page.locator(selector);
+    const locator = root.locator(selector);
     const count = Math.min(await locator.count().catch(() => 0), 10);
     for (let i = 0; i < count; i += 1) {
       await locator.nth(i).click({ timeout: 1000 }).catch(() => {});
     }
   }
   await page.waitForTimeout(300);
-  const toolHeaders = page.locator('[utid="tool-call-toggle"], .tool-call-header');
+  const toolHeaders = root.locator('[utid="tool-call-toggle"], .tool-call-card__header, .tool-call-header');
   const count = Math.min(await toolHeaders.count().catch(() => 0), 60);
   for (let i = 0; i < count; i += 1) {
     const header = toolHeaders.nth(i);
     const isClosed = await header.evaluate((node) => {
-      const text = node.textContent || "";
       const card = node.closest(".tool-call-card") || node.parentElement;
       const hasRenderedDetail = Boolean(
         card && card.querySelector('pre, code, textarea, [class*="content" i], [class*="body" i], [class*="result" i]'),
       );
       const arrowDown = Boolean(node.querySelector('[class*="arrow-down"], [class*="down"]'));
-      return !hasRenderedDetail || arrowDown || /shell|python|bash|cmd|powershell/i.test(text);
+      return !hasRenderedDetail || arrowDown;
     }).catch(() => true);
     if (isClosed) await header.click({ timeout: 1000 }).catch(() => {});
   }
@@ -655,6 +666,7 @@ function verify(run) {
   const deviceEvidenceOk = !cfg.requireDevice || hasDeviceEvidence(searchable);
   const localVerificationOk = !run.localVerification || run.localVerification.status !== "fail";
   const cleanToolTriggerOk = !cfg.requireTools || !run.toolFollowupUsed;
+  const cleanCommandTriggerOk = !cfg.requireTools || !run.commandFollowupUsed;
   return {
     ...run,
     expected: tokens,
@@ -669,11 +681,13 @@ function verify(run) {
     toolCommands,
     toolEvidenceOk,
     cleanToolTriggerOk,
+    cleanCommandTriggerOk,
     deviceEvidenceOk,
     localVerificationOk,
     toolFollowupUsed: Boolean(run.toolFollowupUsed),
+    commandFollowupUsed: Boolean(run.commandFollowupUsed),
     deviceFollowupUsed: Boolean(run.deviceFollowupUsed),
-    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && deviceEvidenceOk && localVerificationOk,
+    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk,
     forbidden_execute: forbidden,
   };
 }
@@ -683,6 +697,7 @@ async function runCase(page, name) {
   if (!cfg) throw new Error(`unknown case: ${name}`);
   const responses = [];
   let toolFollowupUsed = false;
+  let commandFollowupUsed = false;
   let deviceFollowupUsed = false;
   const prompts = cfg.steps || [cfg.prompt];
   for (let index = 0; index < prompts.length; index += 1) {
@@ -709,6 +724,17 @@ async function runCase(page, name) {
     combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
   }
 
+  const commandExpected = commandExpectedFor(name, cfg);
+  if (cfg.requireTools && commandExpected.length) {
+    const commandText = extractToolCommands(responses).join("\n");
+    const commandMissing = commandExpected.filter((token) => !commandText.includes(token));
+    if (commandMissing.length) {
+      commandFollowupUsed = true;
+      responses.push(await sendPrompt(page, `${name}-command-followup`, COMMAND_FOLLOWUP.replace("{missing}", commandMissing.join(", "))));
+      combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
+    }
+  }
+
   if (cfg.requireDevice && !hasDeviceEvidence(combinedText)) {
     deviceFollowupUsed = true;
     responses.push(await sendPrompt(page, `${name}-device-followup`, DEVICE_FOLLOWUP));
@@ -724,6 +750,7 @@ async function runCase(page, name) {
     responses,
     localVerification,
     toolFollowupUsed,
+    commandFollowupUsed,
     deviceFollowupUsed,
   });
 }

@@ -13,7 +13,8 @@ param(
     [string]$ADBaseUrl = "https://14.18.243.211:21044",
     [string]$ADUser = "admin",
     [string]$Cases = "install,r1,r1-full,r1-security,r1-all,r1-all-full,r1-all-security,r2,r2-vs,r2-node,r2-pool,r2-cert,r2-traffic,r2-status,r2-ha,r2-hardware,r3,r3-traffic,r3-state,r3-conflict,r3-logs,r4-script",
-    [string]$R4Yaml = "test\fixtures\workbot\r4-slb-full.yml"
+    [string]$R4Yaml = "test\fixtures\workbot\r4-slb-full.yml",
+    [int]$IdleAfterStopMs = 5000
 )
 
 $ErrorActionPreference = "Stop"
@@ -97,7 +98,7 @@ if (!$env:WORKBOT_PASSWORD) {
 }
 
 Write-Host "[6/7] Running WorkBot acceptance"
-$workbotArgs = @("tools\workbot_acceptance.mjs", "--zip", $Package, "--cases", $Cases, "--python", $Python, "--r4-yaml", $R4Yaml)
+$workbotArgs = @("tools\workbot_acceptance.mjs", "--zip", $Package, "--cases", $Cases, "--python", $Python, "--r4-yaml", $R4Yaml, "--idle-after-stop-ms", "$IdleAfterStopMs")
 if ($VerifyAD) {
     $workbotArgs += @("--verify-ad", "--ad-base-url", $ADBaseUrl, "--ad-user", $ADUser)
 }
