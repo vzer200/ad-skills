@@ -1487,6 +1487,15 @@ function verify(run) {
   const tokens = cfg.expected || [];
   const toolCommands = extractToolCommands(run.responses, { includePageText: false });
   const toolCommandText = toolCommands.join("\n");
+  const workBotResponses = (run.responses || []).filter((item) => !item.localVerification);
+  const workBotToolCommandText = extractToolCommands(workBotResponses, { includePageText: false }).join("\n");
+  const workBotToolCandidateText = workBotResponses
+    .flatMap((item) => (item.toolEvidence && item.toolEvidence.candidates) || [])
+    .map((item) => item.text || "")
+    .join("\n");
+  const workBotResponseText = workBotResponses
+    .map((item) => `${item.visibleText || ""}\n${item.visibleAgentText || ""}\n${item.text || ""}\n${item.agentText || ""}`)
+    .join("\n");
   const toolCandidateText = (run.responses || [])
     .flatMap((item) => (item.toolEvidence && item.toolEvidence.candidates) || [])
     .map((item) => item.text || "")
@@ -1616,7 +1625,8 @@ function verify(run) {
     .filter((item) => item.regex.test(visibleText))
     .map((item) => item.name);
   const forbiddenWorkBotDeviceHosts = /^r[1-4]/.test(run.name) ? WORKBOT_FORBIDDEN_DEVICE_HOSTS : [];
-  const forbiddenWorkBotDeviceHostsFound = forbiddenWorkBotDeviceHosts.filter((token) => searchable.includes(token));
+  const workBotSearchable = `${workBotResponseText}\n${workBotToolCommandText}\n${workBotToolCandidateText}`;
+  const forbiddenWorkBotDeviceHostsFound = forbiddenWorkBotDeviceHosts.filter((token) => workBotSearchable.includes(token));
   const stepViolations = stepRuleViolationsFor(run.name, cfg, run.responses || []);
   const forbidden = cfg.forbidExecute && /(^|\s)--execute(\s|$)/.test(searchable);
   const toolEvidenceOk = !cfg.requireTools || run.responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence);
