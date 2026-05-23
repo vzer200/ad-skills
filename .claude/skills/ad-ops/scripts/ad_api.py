@@ -16,7 +16,7 @@ import time
 import urllib.request
 import urllib.error
 import urllib.parse
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 # Multi-device support (deferred import in multi_device.py avoids circular dependency)
 from multi_device import (
@@ -103,7 +103,7 @@ class ADClient:
         """
         url = f"{self.host}/api/lb/current-version{endpoint}"
         if params:
-            qs = urllib.parse.urlencode(params)
+            qs = urllib.parse.urlencode(params, doseq=True)
             url = f"{url}?{qs}" if '?' not in url else f"{url}&{qs}"
         # 所有请求强制带 all_properties=true（已含则跳过）
         if 'all_properties' not in url:
@@ -339,14 +339,37 @@ class ADClient:
     # -------------------------------------------------------------------------
     # 服务日志
     # -------------------------------------------------------------------------
-    def get_service_log(self, limit: int = 10) -> Dict[str, Any]:
+    def get_service_log(
+        self,
+        limit: int = 20,
+        from_time: Optional[str] = None,
+        to_time: Optional[str] = None,
+        levels: Optional[List[str]] = None,
+        modules: Optional[List[str]] = None,
+        skip: int = 0,
+    ) -> Dict[str, Any]:
         """
         查询服务日志
 
         Args:
-            limit: 返回条数，默认10条（获取最新的）
+            limit: 返回条数，默认20条（获取最新的）
+            from_time: 开始时间，格式 YYYY-MM-DD HH:MM:SS
+            to_time: 结束时间，格式 YYYY-MM-DD HH:MM:SS
+            levels: 日志级别，如 ["ALERT", "ERROR"]
+            modules: 日志模块过滤
+            skip: 分页偏移
         """
-        result = self._request("GET", "/log/service-log")
+        params: Dict[str, Any] = {"top": max(1, int(limit)), "skip": max(0, int(skip))}
+        if from_time:
+            params["from"] = from_time
+        if to_time:
+            params["to"] = to_time
+        if levels:
+            params["level"] = [str(level).upper() for level in levels if str(level).strip()]
+        if modules:
+            params["module"] = [str(module) for module in modules if str(module).strip()]
+
+        result = self._request("GET", "/log/service-log", params=params)
         items = result.get("items", [])
         # 按时间倒序，取最新 limit 条
         items.sort(key=lambda x: f"{x.get('date', '')} {x.get('time', '')}", reverse=True)
@@ -519,7 +542,16 @@ def _execute_command(client, args):
 
     elif args.command == "log":
         if args.subcommand == "service":
-            return client.get_service_log(limit=args.limit)
+            levels = [p.strip() for p in args.levels.split(",") if p.strip()] if args.levels else None
+            modules = [p.strip() for p in args.modules.split(",") if p.strip()] if args.modules else None
+            return client.get_service_log(
+                limit=args.limit,
+                from_time=args.from_time,
+                to_time=args.to_time,
+                levels=levels,
+                modules=modules,
+                skip=args.skip,
+            )
 
     elif args.command == "ha":
         if args.subcommand == "status":
@@ -638,7 +670,12 @@ def main():
     log_parser = subparsers.add_parser("log", help="日志查询")
     log_sub = log_parser.add_subparsers(dest="subcommand", help="子命令")
     log_service = log_sub.add_parser("service", help="查询服务日志")
-    log_service.add_argument("--limit", type=int, default=10, help="返回条数 (默认10)")
+    log_service.add_argument("--limit", type=int, default=20, help="返回条数 (默认20)")
+    log_service.add_argument("--skip", type=int, default=0, help="分页偏移 (默认0)")
+    log_service.add_argument("--from-time", default="", help="开始时间，格式 YYYY-MM-DD HH:MM:SS")
+    log_service.add_argument("--to-time", default="", help="结束时间，格式 YYYY-MM-DD HH:MM:SS")
+    log_service.add_argument("--levels", default="", help="逗号分隔的日志级别，如 ALERT,ERROR")
+    log_service.add_argument("--modules", default="", help="逗号分隔的日志模块")
 
     # ha 命令
     ha_parser = subparsers.add_parser("ha", help="高可用性")

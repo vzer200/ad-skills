@@ -155,10 +155,10 @@ def collect_system_once(client: Any, db_path: str) -> int:
 
 
 def _inject_trend_into_db(db_path: str, vs_name: str, trend_data: Dict[str, Any]) -> int:
-    """将趋势 API ``last-hour`` 数据注入 SQLite，并合成时间戳。
+    """将趋势 API ``last-hour`` 数据注入 SQLite。
 
-    趋势 API 返回不带时间戳的扁平数组(每指标约 60 个值)。
-    时间戳合成为 ``ts = now - (n - i) * 60``，其中 i=0 最旧，i=n-1 最新。
+    趋势 API 返回每个指标的扁平数组，并携带 ``start_time`` 与 ``step_time``。
+    时间戳按 ``ts = start_time + i * step_time`` 写入，其中 i=0 最旧。
     使用 ``INSERT OR REPLACE`` 实现幂等写入，依赖 UNIQUE(ts, vs_name, metric) 约束。
 
     Args:
@@ -540,6 +540,7 @@ def _add_common_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--host", default="", help="AD device address (e.g. https://10.74.27.42)")
     p.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
     p.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
+    p.add_argument("--device", default="", help="从 --devices 中选择单台设备名称，如 AD1")
     p.add_argument("--user", default="admin", help="AD username (default: admin)")
     p.add_argument("--password", default="", help="AD password (env AD_PASS overrides if --password not given)")
     p.add_argument("--db", default="", help="SQLite database path (default: ./vs_samples_<host>.db)")
@@ -564,6 +565,7 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         "collect", help="One-shot: fetch trend API last-hour data, inject into SQLite, run 3σ analysis"
     )
     _add_common_args(collect_p)
+    collect_p.add_argument("--collect-only", action="store_true", help="只采集写库，不渲染分析报告")
 
     daemon_p = subparsers.add_parser(
         "daemon", help="Deprecated compatibility mode: collect VS stat samples in a loop"
@@ -581,6 +583,14 @@ def _collect_and_analyze_one(client: Any, db_path: str) -> Dict[str, Any]:
     return collect_and_analyze(client, db_path)
 
 
+def _collect_only_one(client: Any, db_path: str) -> Dict[str, Any]:
+    """单设备只采集写库，不渲染感知报告。"""
+    if not db_path:
+        db_path = _derive_db_path(client.host)
+    rows = collect_once(client, db_path)
+    return {"rows_injected": rows, "db_path": db_path}
+
+
 def _run_collect(args: argparse.Namespace) -> None:
     """运行一次性采集+分析 (单设备或多设备)。"""
     from multi_device import run_multi, parse_hosts_arg, load_devices_json, compute_multi_exit_code
@@ -594,21 +604,23 @@ def _run_collect(args: argparse.Namespace) -> None:
         if args.hosts:
             devices = parse_hosts_arg(args.hosts, args.user, args.password)
         else:
-            devices = load_devices_json(args.devices)
+            devices = load_devices_json(args.devices, args.device)
 
         if not devices:
             print("错误: 设备列表为空", file=sys.stderr)
             sys.exit(4)
 
-        results = run_multi(devices, _collect_and_analyze_one, db_path=args.db or "")
+        worker = _collect_only_one if getattr(args, "collect_only", False) else _collect_and_analyze_one
+        results = run_multi(devices, worker, db_path=args.db or "")
         for host, result in results.items():
             if "error" in result:
                 print(f"\n## {host}\n> 错误: {result['error']}")
             else:
                 print(f"\n## {host}")
                 print(f"注入行数: {result.get('rows_injected', 0)}")
-                print(f"异常数: {len(result.get('anomalies', []))}")
-                if result.get('report'):
+                if not getattr(args, "collect_only", False):
+                    print(f"异常数: {len(result.get('anomalies', []))}")
+                if result.get('report') and not getattr(args, "collect_only", False):
                     print(result['report'])
         sys.exit(compute_multi_exit_code(results))
 
@@ -627,6 +639,12 @@ def _run_collect(args: argparse.Namespace) -> None:
     except Exception as e:
         print(f"错误: 无法连接设备: {e}", file=sys.stderr)
         sys.exit(1)
+
+    if getattr(args, "collect_only", False):
+        rows = collect_once(client, db_path)
+        print(f"数据库路径: {db_path}")
+        print(f"注入行数: {rows}")
+        sys.exit(0 if rows > 0 else 1)
 
     try:
         result = collect_and_analyze(client, db_path)

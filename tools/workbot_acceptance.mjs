@@ -88,6 +88,7 @@ const FIXED_CASES = [
   "r2-hardware-all",
   "r3-traffic-vs",
   "r3-logs",
+  "r3-logs-5d",
   "r4-script",
   "r4-delivery",
 ].join(",");
@@ -442,9 +443,9 @@ const cases = {
     requireDevice: true,
   },
   "r3-traffic-vs": {
-    prompt: "对 AD1 设备的 vs_real 虚拟服务进行流量趋势分析。",
-    expected: ["connect.py", "AD1", "perception.py", "traffic", "vs_real"],
-    commandExpected: ["connect.py", "perception.py", "traffic", "--vs", "vs_real"],
+    prompt: "对 AD2 设备的 test 虚拟服务进行流量趋势分析。",
+    expected: ["connect.py", "AD2", "collector.py", "collect", "perception.py", "traffic", "test"],
+    commandExpected: ["connect.py", "collector.py", "collect", "--collect-only", "perception.py", "traffic", "--vs", "test", "--require-db"],
     requireTools: true,
     requireDevice: true,
   },
@@ -463,7 +464,15 @@ const cases = {
   },
   "r3-logs": {
     prompt: "对 AD1 设备的日志进行分析。",
-    expected: ["connect.py", "AD1", "perception.py", "logs"],
+    expected: ["connect.py", "AD1", "perception.py", "logs", "ALERT", "ERROR"],
+    commandExpected: ["connect.py", "perception.py", "logs", "--limit", "20", "--levels", "ALERT,ERROR"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r3-logs-5d": {
+    prompt: "对 AD1 设备近 5 天的日志进行分析。",
+    expected: ["connect.py", "AD1", "perception.py", "logs", "5", "ALERT", "ERROR"],
+    commandExpected: ["connect.py", "perception.py", "logs", "--days", "5", "--limit", "20", "--levels", "ALERT,ERROR"],
     requireTools: true,
     requireDevice: true,
   },

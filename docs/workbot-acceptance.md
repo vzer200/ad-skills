@@ -304,7 +304,7 @@ Pass criteria:
 - Visible R2 answers must use Chinese section titles and table headers. English template leftovers such as `AD Device Overview`, `Device Info`, `Virtual Services`, `SSL Certificates`, `Hardware Status`, `Connections`, and `Rate` fail acceptance.
 - VS configuration queries must not show traffic/status metrics such as connection count, new connection rate, or throughput. Those fields belong only to `overview.py traffic` / traffic prompts.
 - HA can be tested manually when needed, but is intentionally skipped in the default acceptance batch.
-- `connect.py` validates the AD1 target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
+- `connect.py` validates the requested target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
 - The answer includes VS, Pool/config, traffic/status, and certificate sections only if returned by the script.
 - Acceptance prompts must not include parameter-fill follow-ups for R2.
 
@@ -316,8 +316,9 @@ Fixed mainline prompts:
 
 | Case | Prompt | Expected command |
 | --- | --- | --- |
-| `r3-traffic-vs` | `对 AD1 设备的 vs_real 虚拟服务进行流量趋势分析。` | `perception.py traffic --vs vs_real` |
-| `r3-logs` | `对 AD1 设备的日志进行分析。` | `perception.py logs` |
+| `r3-traffic-vs` | `对 AD2 设备的 test 虚拟服务进行流量趋势分析。` | `collector.py collect --collect-only` then `perception.py traffic --vs test --require-db` |
+| `r3-logs` | `对 AD1 设备的日志进行分析。` | `perception.py logs --levels ALERT,ERROR --limit 20` |
+| `r3-logs-5d` | `对 AD1 设备近 5 天的日志进行分析。` | `perception.py logs --days 5 --levels ALERT,ERROR --limit 20` |
 
 Avoid vague R3 prompts such as `AD1 做个感知分析` or `AD1 有没有异常`. They are too broad for a stable mainline gate and can collide with R2 query routing.
 
@@ -345,16 +346,18 @@ Expected tool calls:
 
 ```text
 connect.py
-perception.py traffic --vs vs_real
-perception.py logs
+collector.py collect --collect-only
+perception.py traffic --vs test --require-db
+perception.py logs --levels ALERT,ERROR --limit 20
 ```
 
 Pass criteria:
 
-- `connect.py` validates the AD1 target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
+- `connect.py` validates the requested target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
 - The final conclusion is backed by `perception.py` output.
-- The VS traffic trend prompt must call `perception.py traffic` with `--vs vs_real`; it must not broaden to all VS unless the user omitted a VS name.
-- The log prompt must call `perception.py logs`.
+- The VS traffic trend prompt uses AD2/192.168.8.31 `test`, must run `collector.py collect --collect-only` first, then call `perception.py traffic --vs test --require-db`. It must prove a database query path and must not answer from realtime API fallback or model memory.
+- The log prompt must call `perception.py logs`, default to recent 24 hours, query both `ALERT` and `ERROR`, and cap visible output to the newest 20 rows sorted by time descending.
+- If the user gives a log window such as recent 5 days or 7 days, WorkBot must pass that range through with `--days N`.
 - R3 final answers use `感知结论 / 分析结果 / 结论边界`; subcommand outputs must not bypass the perception template.
 - R2/R3 boundary: `设备状态/硬件状态/资源状态查询` belongs to R2; R3 only owns prompts that explicitly ask for analysis, trend, log, conflict, or perception.
 - No root cause, anomaly, or trend is invented outside script stdout.

@@ -25,7 +25,7 @@ except ImportError as e:
 from db_schema import VS_SAMPLES_DDL, COLUMNS
 from multi_device import (
     run_multi, parse_hosts_arg, load_devices_json,
-    compute_multi_exit_code, render_multi_summary, host_slug,
+    render_multi_summary,
 )
 
 import argparse
@@ -122,6 +122,15 @@ def query_traffic_db(db_path: str, vs_name: Optional[str] = None, days: int = 7)
         return rows
     except Exception:
         return None
+
+
+def _analyze_traffic_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Group SQLite rows and run 3σ analysis."""
+    groups: Dict[Tuple[str, str], List[Dict[str, Any]]] = {}
+    for row in rows:
+        key = (row['vs_name'], row['metric'])
+        groups.setdefault(key, []).append(row)
+    return _run_3sigma_on_vs_group(groups)
 
 
 def query_device_state_db(db_path: str, metric: Optional[str] = None, days: int = 7) -> Optional[List[Dict[str, Any]]]:
@@ -240,16 +249,33 @@ def _extract_metric_values(item: Dict[str, Any]) -> List[float]:
     return [float(v) for v in vals if isinstance(v, (int, float)) and math.isfinite(v)]
 
 
-def traffic_analysis(client: Any, db_path: Optional[str] = None, vs_name: Optional[str] = None) -> Dict[str, Any]:
+def traffic_analysis(
+    client: Any,
+    db_path: Optional[str] = None,
+    vs_name: Optional[str] = None,
+    days: int = 7,
+    require_db: bool = False,
+) -> Dict[str, Any]:
     """
-    流量分析: 优先使用 SQLite 数据，回退到 API。
+    流量分析: 默认优先使用 SQLite 数据，必要时回退到 API。
+    require_db=True 时必须从 SQLite 得到结果，禁止实时 API 回退。
 
     返回字典包含:
         status: 'ok' | 'insufficient_data' | 'error'
         anomalies: 异常字典列表 (当 status == 'ok' 时)
         error: 错误信息或 None
     """
-    result = {'status': 'ok', 'anomalies': [], 'error': None, 'source': 'sqlite'}
+    result = {
+        'status': 'ok',
+        'anomalies': [],
+        'error': None,
+        'source': 'sqlite',
+        'days': max(1, int(days or 7)),
+        'vs': vs_name,
+        'db_queried': False,
+        'db_path': db_path,
+        'sample_count': 0,
+    }
 
     # Auto-derive DB path from client host if not explicitly provided
     if not db_path and client is not None and hasattr(client, 'host'):
@@ -258,25 +284,32 @@ def traffic_analysis(client: Any, db_path: Optional[str] = None, vs_name: Option
             import re
             safe = re.sub(r'[^a-zA-Z0-9._-]', '_', host)
             db_path = f"vs_samples_{safe}.db"
+            result['db_path'] = db_path
 
     # Try SQLite
     rows = None
     if db_path and os.path.isfile(db_path):
-        rows = query_traffic_db(db_path, vs_name)
+        rows = query_traffic_db(db_path, vs_name, days=result['days'])
+        result['db_queried'] = rows is not None
+        result['sample_count'] = len(rows or [])
+    elif require_db:
+        result['status'] = 'error'
+        result['source'] = 'sqlite'
+        result['error'] = f"历史流量库不存在，无法进行数据库趋势分析：{db_path or '未指定'}"
+        return result
 
     if rows is not None and len(rows) >= 100:
         # Enough data for 3σ analysis
-        # Group by (vs_name, metric)
-        groups = {}
-        for row in rows:
-            key = (row['vs_name'], row['metric'])
-            if key not in groups:
-                groups[key] = []
-            groups[key].append(row)
-
-        anomalies = _run_3sigma_on_vs_group(groups)
-        result['anomalies'] = anomalies
+        result['anomalies'] = _analyze_traffic_rows(rows)
         result['source'] = 'sqlite'
+    elif require_db:
+        result['status'] = 'insufficient_data' if rows else 'error'
+        result['source'] = 'sqlite'
+        if rows:
+            result['error'] = None
+        else:
+            result['error'] = f"历史流量库中未查询到 {vs_name or '目标虚拟服务'} 最近 {result['days']} 天的数据"
+        return result
     else:
         # Injection branch: try to seed SQLite with trend API last-hour data
         if client is not None and db_path:
@@ -287,16 +320,11 @@ def traffic_analysis(client: Any, db_path: Optional[str] = None, vs_name: Option
             else:
                 injected = collect_once(client, db_path)
                 if injected > 0:
-                    rows = query_traffic_db(db_path, vs_name)
+                    rows = query_traffic_db(db_path, vs_name, days=result['days'])
+                    result['db_queried'] = rows is not None
+                    result['sample_count'] = len(rows or [])
                     if rows is not None and len(rows) >= 100:
-                        groups = {}
-                        for row in rows:
-                            key = (row['vs_name'], row['metric'])
-                            if key not in groups:
-                                groups[key] = []
-                            groups[key].append(row)
-                        anomalies = _run_3sigma_on_vs_group(groups)
-                        result['anomalies'] = anomalies
+                        result['anomalies'] = _analyze_traffic_rows(rows)
                         result['source'] = 'sqlite_injected'
                         return result
 
@@ -697,7 +725,61 @@ def log_correlation(client: Any, anomalies: List[Dict[str, Any]], limit: int = 2
         return {'status': 'no_match', 'entries': []}
 
 
-def fetch_service_logs(client: Any, limit: int = 50) -> List[Dict[str, Any]]:
+def _normalize_log_limit(limit: int = 20) -> int:
+    return min(max(int(limit or 20), 1), 20)
+
+
+def parse_log_levels(value: Optional[str] = None) -> List[str]:
+    """Parse comma-separated log levels, defaulting to ALERT + ERROR."""
+    raw = value or "ALERT,ERROR"
+    levels = [part.strip().upper() for part in raw.split(",") if part.strip()]
+    return levels or ["ALERT", "ERROR"]
+
+
+def build_log_window(
+    days: int = 0,
+    hours: int = 24,
+    from_time: str = "",
+    to_time: str = "",
+) -> Tuple[str, str, str]:
+    """Build AD service-log query window and a user-facing range label."""
+    now = datetime.now()
+    end = to_time or now.strftime("%Y-%m-%d %H:%M:%S")
+    if from_time:
+        return from_time, end, f"{from_time} 至 {end}"
+    if days and int(days) > 0:
+        start_dt = now - timedelta(days=int(days))
+        return start_dt.strftime("%Y-%m-%d %H:%M:%S"), end, f"最近 {int(days)} 天"
+    safe_hours = max(1, int(hours or 24))
+    start_dt = now - timedelta(hours=safe_hours)
+    return start_dt.strftime("%Y-%m-%d %H:%M:%S"), end, f"最近 {safe_hours} 小时"
+
+
+def _fetch_service_log_data(
+    client: Any,
+    limit: int = 20,
+    from_time: str = "",
+    to_time: str = "",
+    levels: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    kwargs: Dict[str, Any] = {"limit": _normalize_log_limit(limit)}
+    if from_time:
+        kwargs["from_time"] = from_time
+    if to_time:
+        kwargs["to_time"] = to_time
+    if levels:
+        kwargs["levels"] = levels
+    data = client.get_service_log(**kwargs)
+    return data if isinstance(data, dict) else {"items": []}
+
+
+def fetch_service_logs(
+    client: Any,
+    limit: int = 50,
+    from_time: str = "",
+    to_time: str = "",
+    levels: Optional[List[str]] = None,
+) -> List[Dict[str, Any]]:
     """
     从设备获取服务日志。
 
@@ -708,11 +790,57 @@ def fetch_service_logs(client: Any, limit: int = 50) -> List[Dict[str, Any]]:
     Returns:
         按日期+时间降序排列的日志条目字典列表
     """
-    data = client.get_service_log(limit=limit)
-    if not isinstance(data, dict):
-        return []
-    items = data.get('items', [])
-    return items
+    data = _fetch_service_log_data(
+        client,
+        limit=limit,
+        from_time=from_time,
+        to_time=to_time,
+        levels=levels,
+    )
+    return data.get('items', [])
+
+
+def fetch_service_log_result(
+    client: Any,
+    limit: int = 20,
+    from_time: str = "",
+    to_time: str = "",
+    levels: Optional[List[str]] = None,
+    range_label: str = "",
+) -> Dict[str, Any]:
+    """Fetch service logs with metadata used by the user-facing template."""
+    data = _fetch_service_log_data(
+        client,
+        limit=limit,
+        from_time=from_time,
+        to_time=to_time,
+        levels=levels,
+    )
+    entries = data.get('items', [])
+    total = data.get('total') or data.get('count') or len(entries)
+    return {
+        'status': 'ok',
+        'entries': entries,
+        'total': total,
+        'shown': len(entries),
+        'limit': _normalize_log_limit(limit),
+        'range': range_label,
+        'from_time': from_time,
+        'to_time': to_time,
+        'levels': levels or ["ALERT", "ERROR"],
+    }
+
+
+def _log_time_display(entry: Dict[str, Any]) -> str:
+    date_str = str(entry.get('date', '') or '').strip()
+    time_str = str(entry.get('time', '') or '').strip()
+    if date_str and time_str and not time_str.startswith(date_str):
+        return f"{date_str} {time_str}"
+    return time_str or date_str or str(entry.get('timestamp', '') or '')
+
+
+def _md_cell(value: Any) -> str:
+    return str(value if value is not None else '').replace('\n', ' ').replace('|', '\\|')
 
 
 def render_logs_markdown(entries: List[Dict[str, Any]], host: str) -> str:
@@ -732,11 +860,8 @@ def render_logs_markdown(entries: List[Dict[str, Any]], host: str) -> str:
     lines.append('| 时间 | 级别 | 模块 | 详情 |')
     lines.append('|---|---|---|---|')
     for e in entries:
-        date_str = e.get('date', '')
-        time_str = e.get('time', '')
-        time_display = f'{date_str} {time_str}' if date_str and time_str else ''
         lines.append(
-            f"| {time_display} | {e.get('level', '')} | {e.get('module', '')} | {e.get('detail', '')} |"
+            f"| {_md_cell(_log_time_display(e))} | {_md_cell(e.get('level', ''))} | {_md_cell(e.get('module', ''))} | {_md_cell(e.get('detail', ''))} |"
         )
     return '\n'.join(lines)
 
@@ -802,7 +927,7 @@ def _analysis_status_badge(statuses: List[str]) -> str:
 def _scope_label(scope: str) -> str:
     labels = {
         'analyze': '流量异常、资源状态、地址冲突、日志线索',
-        'traffic': '流量异常',
+        'traffic': '流量趋势分析',
         'state': '设备资源状态异常',
         'conflict': '地址冲突',
         'logs': '服务日志线索',
@@ -840,7 +965,12 @@ def render_markdown(results: Dict[str, Any]) -> str:
     lines.append('## 感知结论')
     lines.append(f'- 目标设备：{device}')
     lines.append(f'- 分析范围：📌 {_scope_label(scope)}')
-    lines.append('- 数据来源：📡 设备实时分析')
+    source_label = '📡 设备实时分析'
+    if show_traffic and traffic.get('source') in ('sqlite', 'sqlite_injected'):
+        source_label = '📊 历史流量库'
+    if scope == 'logs':
+        source_label = '📄 设备日志接口'
+    lines.append(f'- 数据来源：{source_label}')
     lines.append(f'- 状态：{status_text}')
     lines.append('')
     lines.append('## 分析结果')
@@ -848,6 +978,13 @@ def render_markdown(results: Dict[str, Any]) -> str:
 
     if show_traffic:
         lines.append('## 流量分析')
+        days_label = traffic.get('days', 7)
+        vs_label = traffic.get('vs') or '全部虚拟服务'
+        if traffic.get('db_queried') or traffic.get('source') in ('sqlite', 'sqlite_injected'):
+            lines.append(f"- 分析对象：{vs_label}")
+            lines.append(f"- 历史范围：最近 {days_label} 天")
+            lines.append(f"- 数据样本：{traffic.get('sample_count', 0)} 条")
+            lines.append('')
         if traffic.get('status') == 'ok':
             anomalies = traffic.get('anomalies', [])
             if anomalies:
@@ -867,9 +1004,13 @@ def render_markdown(results: Dict[str, Any]) -> str:
                         severity = 'ℹ️ 轻微'
                     lines.append(f"| {a['vs']} | {_metric_label(a['metric'])} | {ts_str} | {value:.1f} | {baseline:.1f} | {pct:+.1f}% | {a['direction']} | {severity} |")
             else:
-                lines.append('✅ 过去 7 天内未检测到流量异常。')
+                lines.append(f'✅ 最近 {days_label} 天内未检测到流量异常。')
         elif traffic.get('status') == 'insufficient_data':
-            lines.append('⚠️ 历史样本不足，已回退到设备实时趋势。')
+            if traffic.get('source') == 'sqlite':
+                lines.append('⚠️ 已完成数据库查询，但历史样本不足，暂不输出趋势判断。')
+                lines.append('ℹ️ 为避免误判，本次没有回退到实时 API 生成趋势结论。')
+            else:
+                lines.append('⚠️ 历史样本不足，已回退到设备实时趋势。')
             raw_trends = traffic.get('raw_trends', [])
             if raw_trends:
                 lines.append('')
@@ -946,16 +1087,22 @@ def render_markdown(results: Dict[str, Any]) -> str:
         lines.append('## 日志线索')
         if logs.get('status') == 'ok':
             entries = logs.get('entries', [])
+            levels = logs.get('levels') or []
+            if logs.get('range'):
+                lines.append(f"- 查询范围：{logs.get('range')}")
+            if levels:
+                lines.append(f"- 日志级别：{'、'.join(levels)}")
+            if 'total' in logs or 'shown' in logs:
+                lines.append(f"- 输出数量：最新 {logs.get('shown', len(entries))} 条（上限 {logs.get('limit', 20)} 条）")
+            if entries:
+                lines.append('')
             if entries:
                 lines.append('| 时间 | 级别 | 模块 | 详情 |')
                 lines.append('|---|---|---|---|')
                 for e in entries:
-                    time_display = e.get('time', '')
-                    if not time_display and (e.get('date') or e.get('time')):
-                        time_display = f"{e.get('date', '')} {e.get('time', '')}".strip()
-                    lines.append(f"| {time_display} | {e.get('level', '')} | {e.get('module', '')} | {e.get('detail', '')} |")
+                    lines.append(f"| {_md_cell(_log_time_display(e))} | {_md_cell(e.get('level', ''))} | {_md_cell(e.get('module', ''))} | {_md_cell(e.get('detail', ''))} |")
             else:
-                lines.append('ℹ️ 未查询到服务日志。')
+                lines.append('ℹ️ 查询范围内未发现告警或错误日志。')
         elif logs.get('status') == 'no_anomaly':
             lines.append('✅ 未发现需关联日志的异常事件。')
         elif logs.get('status') == 'no_match':
@@ -1082,6 +1229,30 @@ def _compute_exit_code(results: Dict[str, Any]) -> int:
     return 0  # all success
 
 
+def _perception_result_failed(result: Dict[str, Any]) -> bool:
+    """Return True when a run_multi result contains a scoped analysis failure."""
+    if "error" in result:
+        return True
+    for key in ('traffic', 'state', 'conflicts', 'logs'):
+        dim = result.get(key, {})
+        if isinstance(dim, dict) and dim.get('status') == 'error':
+            return True
+    return False
+
+
+def _compute_perception_multi_exit_code(results: Dict[str, Any]) -> int:
+    """Multi-device exit code that respects nested perception status fields."""
+    total = len(results)
+    if total == 0:
+        return 4
+    failed_count = sum(1 for result in results.values() if _perception_result_failed(result))
+    if failed_count == 0:
+        return 0
+    if failed_count == total:
+        return 1
+    return 7
+
+
 def _analyze_one(client: Any, db_path: Optional[str] = None, disk_source: Optional[str] = None) -> Dict[str, Any]:
     """单设备分析，供 ThreadPoolExecutor 调用。"""
     result = analyze_full(client, db_path=db_path, disk_source=disk_source)
@@ -1089,14 +1260,51 @@ def _analyze_one(client: Any, db_path: Optional[str] = None, disk_source: Option
     return result
 
 
-def _logs_one(client: Any, limit: int = 50) -> Dict[str, Any]:
+def _traffic_one(
+    client: Any,
+    db_path: Optional[str] = None,
+    vs_name: Optional[str] = None,
+    days: int = 7,
+    require_db: bool = False,
+) -> Dict[str, Any]:
+    traffic_result = traffic_analysis(
+        client,
+        db_path=db_path,
+        vs_name=vs_name,
+        days=days,
+        require_db=require_db,
+    )
+    return {'device': client.host, 'traffic': traffic_result, '_scope': 'traffic'}
+
+
+def _state_one(client: Any, db_path: Optional[str] = None, disk_source: Optional[str] = None) -> Dict[str, Any]:
+    state_result = state_analysis(client, disk_source=disk_source, db_path=db_path)
+    return {'device': client.host, 'state': state_result, '_scope': 'state'}
+
+
+def _conflict_one(client: Any) -> Dict[str, Any]:
+    conflict_result = conflict_analysis(client)
+    return {'device': client.host, 'conflicts': conflict_result, '_scope': 'conflict'}
+
+
+def _logs_one(
+    client: Any,
+    limit: int = 20,
+    from_time: str = "",
+    to_time: str = "",
+    levels: Optional[List[str]] = None,
+    range_label: str = "",
+) -> Dict[str, Any]:
     """单设备日志获取，供 ThreadPoolExecutor / run_multi 调用。"""
-    entries = fetch_service_logs(client, limit=limit)
-    return {
-        'host': client.host,
-        'entries': entries,
-        'total': len(entries),
-    }
+    log_result = fetch_service_log_result(
+        client,
+        limit=limit,
+        from_time=from_time,
+        to_time=to_time,
+        levels=levels,
+        range_label=range_label,
+    )
+    return {'host': client.host, **log_result}
 
 
 def main() -> None:
@@ -1121,14 +1329,22 @@ def main() -> None:
     _add_common_args(analyze_p)
     analyze_p.add_argument("--disk-source", default="", help="Check report directory with ad.json")
     traffic_p = subparsers.add_parser("traffic", help="Flow anomaly detection")
-    _add_common_args(traffic_p); traffic_p.add_argument("--vs", default="", help="VS name filter")
+    _add_common_args(traffic_p)
+    traffic_p.add_argument("--vs", default="", help="VS name filter")
+    traffic_p.add_argument("--days", type=int, default=7, help="历史流量库回溯天数 (默认7)")
+    traffic_p.add_argument("--require-db", action="store_true", help="必须使用 SQLite 历史库，禁止实时 API 回退")
     state_p = subparsers.add_parser("state", help="Device state anomaly detection")
     _add_common_args(state_p); state_p.add_argument("--disk-source", default="", help="Check report directory with ad.json")
     conflict_p = subparsers.add_parser("conflict", help="Address conflict detection")
     _add_common_args(conflict_p)
     logs_p = subparsers.add_parser("logs", help="服务日志查询")
     _add_common_args(logs_p)
-    logs_p.add_argument("--limit", type=int, default=50, help="返回条数 (default: 50)")
+    logs_p.add_argument("--limit", type=int, default=20, help="输出条数，上限20 (default: 20)")
+    logs_p.add_argument("--days", type=int, default=0, help="最近 N 天日志；未指定时默认最近24小时")
+    logs_p.add_argument("--hours", type=int, default=24, help="最近 N 小时日志 (default: 24)")
+    logs_p.add_argument("--from-time", default="", help="开始时间，格式 YYYY-MM-DD HH:MM:SS")
+    logs_p.add_argument("--to-time", default="", help="结束时间，格式 YYYY-MM-DD HH:MM:SS")
+    logs_p.add_argument("--levels", default="ALERT,ERROR", help="逗号分隔日志级别 (default: ALERT,ERROR)")
 
     args = parser.parse_args()
     cmd = args.command or "analyze"
@@ -1139,6 +1355,21 @@ def main() -> None:
 
     db_path = os.path.abspath(args.db) if args.db else None
     output_format = args.format
+
+    def _log_options_from_args(a: argparse.Namespace) -> Dict[str, Any]:
+        from_time, to_time, range_label = build_log_window(
+            days=getattr(a, 'days', 0),
+            hours=getattr(a, 'hours', 24),
+            from_time=getattr(a, 'from_time', ''),
+            to_time=getattr(a, 'to_time', ''),
+        )
+        return {
+            'limit': _normalize_log_limit(getattr(a, 'limit', 20)),
+            'from_time': from_time,
+            'to_time': to_time,
+            'levels': parse_log_levels(getattr(a, 'levels', 'ALERT,ERROR')),
+            'range_label': range_label,
+        }
 
     # Multi-device mode
     if args.hosts or args.devices:
@@ -1154,8 +1385,8 @@ def main() -> None:
             sys.exit(4)
 
         if cmd == "logs":
-            limit = args.limit if hasattr(args, 'limit') else 50
-            results = run_multi(devices, _logs_one, limit=limit)
+            log_options = _log_options_from_args(args)
+            results = run_multi(devices, _logs_one, **log_options)
 
             if output_format == "json":
                 output = {
@@ -1175,13 +1406,99 @@ def main() -> None:
                     else:
                         wrapped = {
                             'device': result.get('host', host),
-                            'logs': {'status': 'ok', 'entries': result.get('entries', [])},
+                            'logs': {
+                                'status': result.get('status', 'ok'),
+                                'entries': result.get('entries', []),
+                                'total': result.get('total'),
+                                'shown': result.get('shown'),
+                                'limit': result.get('limit'),
+                                'range': result.get('range'),
+                                'levels': result.get('levels'),
+                            },
                             '_scope': 'logs',
                         }
                         lines.append(render_markdown(wrapped))
                     lines.append("")
                 print("\n".join(lines))
-            sys.exit(compute_multi_exit_code(results))
+            sys.exit(_compute_perception_multi_exit_code(results))
+        elif cmd == "traffic":
+            vs_name = args.vs if hasattr(args, 'vs') and args.vs else None
+            results = run_multi(
+                devices,
+                _traffic_one,
+                db_path=db_path,
+                vs_name=vs_name,
+                days=getattr(args, 'days', 7),
+                require_db=getattr(args, 'require_db', False),
+            )
+
+            if output_format == "json":
+                output = {
+                    "mode": "multi",
+                    "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v),
+                               "failed": sum(1 for v in results.values() if "error" in v)},
+                    "results": results,
+                }
+                print(render_json(output))
+            else:
+                lines = [render_multi_summary(results, "AD 流量趋势分析 — 多设备")]
+                lines.append("---")
+                for host, result in results.items():
+                    if "error" in result:
+                        lines.append(f"## {host}")
+                        lines.append(f"> 错误: {result['error']}")
+                    else:
+                        lines.append(render_markdown(result))
+                    lines.append("")
+                print("\n".join(lines))
+            sys.exit(_compute_perception_multi_exit_code(results))
+        elif cmd == "state":
+            disk_src = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
+            results = run_multi(devices, _state_one, db_path=db_path, disk_source=disk_src)
+
+            if output_format == "json":
+                output = {
+                    "mode": "multi",
+                    "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v),
+                               "failed": sum(1 for v in results.values() if "error" in v)},
+                    "results": results,
+                }
+                print(render_json(output))
+            else:
+                lines = [render_multi_summary(results, "AD 设备资源分析 — 多设备")]
+                lines.append("---")
+                for host, result in results.items():
+                    if "error" in result:
+                        lines.append(f"## {host}")
+                        lines.append(f"> 错误: {result['error']}")
+                    else:
+                        lines.append(render_markdown(result))
+                    lines.append("")
+                print("\n".join(lines))
+            sys.exit(_compute_perception_multi_exit_code(results))
+        elif cmd == "conflict":
+            results = run_multi(devices, _conflict_one)
+
+            if output_format == "json":
+                output = {
+                    "mode": "multi",
+                    "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v),
+                               "failed": sum(1 for v in results.values() if "error" in v)},
+                    "results": results,
+                }
+                print(render_json(output))
+            else:
+                lines = [render_multi_summary(results, "AD 地址冲突分析 — 多设备")]
+                lines.append("---")
+                for host, result in results.items():
+                    if "error" in result:
+                        lines.append(f"## {host}")
+                        lines.append(f"> 错误: {result['error']}")
+                    else:
+                        lines.append(render_markdown(result))
+                    lines.append("")
+                print("\n".join(lines))
+            sys.exit(_compute_perception_multi_exit_code(results))
         else:
             disk_src = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
             results = run_multi(devices, _analyze_one, db_path=db_path, disk_source=disk_src)
@@ -1205,7 +1522,7 @@ def main() -> None:
                         lines.append(render_markdown(result))
                     lines.append("")
                 print("\n".join(lines))
-            sys.exit(compute_multi_exit_code(results))
+            sys.exit(_compute_perception_multi_exit_code(results))
 
     # Single-device mode
     if not host:
@@ -1220,7 +1537,13 @@ def main() -> None:
 
         if cmd == "traffic":
             vs_name = args.vs if hasattr(args, 'vs') and args.vs else None
-            traffic_result = traffic_analysis(client, db_path=db_path, vs_name=vs_name)
+            traffic_result = traffic_analysis(
+                client,
+                db_path=db_path,
+                vs_name=vs_name,
+                days=getattr(args, 'days', 7),
+                require_db=getattr(args, 'require_db', False),
+            )
             result = {'device': host, 'traffic': traffic_result, '_scope': 'traffic'}
             _print_result(result, output_format)
             sys.exit(0 if traffic_result.get('status') != 'error' else 1)
@@ -1239,13 +1562,13 @@ def main() -> None:
             sys.exit(0 if conflict_result.get('status') != 'error' else 1)
 
         elif cmd == "logs":
-            limit = args.limit if hasattr(args, 'limit') else 50
-            entries = fetch_service_logs(client, limit=limit)
+            log_options = _log_options_from_args(args)
+            log_result = fetch_service_log_result(client, **log_options)
             if output_format == "json":
-                result = {'host': host, 'entries': entries, 'total': len(entries)}
+                result = {'host': host, **log_result}
                 print(render_json(result))
             else:
-                result = {'device': host, 'logs': {'status': 'ok', 'entries': entries}, '_scope': 'logs'}
+                result = {'device': host, 'logs': log_result, '_scope': 'logs'}
                 print(render_markdown(result))
             sys.exit(0)
 

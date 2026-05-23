@@ -8,6 +8,7 @@ import unittest
 import json
 import urllib.request
 import urllib.error
+import urllib.parse
 from unittest.mock import patch, MagicMock
 from io import BytesIO
 
@@ -100,6 +101,14 @@ class TestADClientHTTP(unittest.TestCase):
         self.assertIn("type=history", req.full_url)
 
     @patch("urllib.request.urlopen")
+    def test_list_params_use_repeated_query_keys(self, mock_urlopen):
+        mock_urlopen.return_value = _FakeResponse()
+        self.client._request("GET", "/log/service-log", params={"level": ["ALERT", "ERROR"]})
+        req = mock_urlopen.call_args[0][0]
+        parsed = urllib.parse.parse_qs(urllib.parse.urlparse(req.full_url).query)
+        self.assertEqual(parsed["level"], ["ALERT", "ERROR"])
+
+    @patch("urllib.request.urlopen")
     def test_params_merged_with_existing_query(self, mock_urlopen):
         mock_urlopen.return_value = _FakeResponse()
         self.client._request("GET", "/endpoint?existing=1", params={"new": "2"})
@@ -157,6 +166,29 @@ class TestADClientHTTP(unittest.TestCase):
         err = ADConnectionError("connection failed", original=orig)
         self.assertEqual(err.original, orig)
         self.assertIn("connection failed", str(err))
+
+    @patch("urllib.request.urlopen")
+    def test_get_service_log_filters_and_sorts_latest(self, mock_urlopen):
+        mock_urlopen.return_value = _FakeResponse({
+            "items": [
+                {"date": "2026-05-20", "time": "10:00:00", "level": "ALERT"},
+                {"date": "2026-05-21", "time": "09:00:00", "level": "ERROR"},
+            ],
+            "total": 2,
+        })
+        result = self.client.get_service_log(
+            limit=20,
+            from_time="2026-05-20 00:00:00",
+            to_time="2026-05-21 23:59:59",
+            levels=["ALERT", "ERROR"],
+        )
+        req = mock_urlopen.call_args[0][0]
+        parsed = urllib.parse.parse_qs(urllib.parse.urlparse(req.full_url).query)
+        self.assertEqual(parsed["top"], ["20"])
+        self.assertEqual(parsed["from"], ["2026-05-20 00:00:00"])
+        self.assertEqual(parsed["to"], ["2026-05-21 23:59:59"])
+        self.assertEqual(parsed["level"], ["ALERT", "ERROR"])
+        self.assertEqual(result["items"][0]["date"], "2026-05-21")
 
 
 class TestADClientInstance(unittest.TestCase):

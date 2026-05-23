@@ -15,15 +15,15 @@ description: 深信服 AD 感知分析 skill。用于分析 VS 流量异常、CP
 - 面向用户的正文不要展示“工具调用”、脚本名、退出码或 stdout/stderr 摘要；这些只供验收侧后台核验。
 - 最终正文的 `markdown-body` 只能从 `## 感知结论` 开始，到 `## 结论边界` 结束。禁止出现 `工具调用`、`执行过程`、`命令摘要`、`connect.py`、`perception.py`、`collector.py`、`退出码`、`stdout`、`stderr`。
 - 用户要求全量感知分析时，必须使用 `perception.py analyze`。
-- 用户要求趋势基线采集时，才运行 `collector.py collect`。
+- 用户要求虚拟服务流量趋势分析时，必须先运行 `collector.py collect --collect-only` 写入 SQLite 历史库，再运行 `perception.py traffic --require-db` 查询数据库；禁止只用实时 API 或模型记忆回答趋势。
 - 用户指定 AD1/AD2 时，连接预检和分析命令都必须用 `--device` 限定单台设备。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-perception/devices.json` 或 `.claude/skills/ad-perception/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
-- 如果历史基线数据不足，脚本会输出实时/降级分析；最终结论只能照脚本结果表达，不能补充 3σ、日志根因或趋势结论。
+- 如果 `perception.py traffic --require-db` 返回历史样本不足，最终结论只能说明数据库样本不足；禁止回退到实时 API 编造趋势结论。
 - 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动先用设备清单加 `--device AD1` 做连接预检。
 - 每一条新的感知分析都必须重新执行一次 `connect.py`，包括 traffic/state/conflict/logs 分项分析。禁止复用上一轮查询或感知里的连接结果。
-- “流量趋势分析/流量分析/流量走势”映射到 `perception.py traffic`。如果用户明确指定某个虚拟服务名称（例如 `vs_real 虚拟服务`），必须加 `--vs vs_real`，不要扩大到全部虚拟服务。
+- “流量趋势分析/流量分析/流量走势”映射到 `collector.py collect --collect-only` + `perception.py traffic --require-db`。如果用户明确指定某个虚拟服务名称（例如 `test 虚拟服务`），必须加 `--vs test`，不要扩大到全部虚拟服务。8.31 设备上的 `test` 虚拟服务是主线验收样例。
 - “设备资源分析/资源状态异常/状态趋势/状态告警”映射到 `perception.py state`；只说“设备状态/硬件状态/资源状态查一下”仍属于 `ad-ops` 查询。
 - “地址冲突/地址端口冲突/冲突分析”映射到 `perception.py conflict`；冲突结论只能复述脚本返回的 `vs_overlaps` / `pool_overlaps`，没有冲突时明确说未发现冲突，不要编造正例。
-- “日志分析/服务日志/日志线索”映射到 `perception.py logs`。
+- “日志分析/服务日志/日志线索”映射到 `perception.py logs`。默认查最近 24 小时的 `ALERT,ERROR`，必须加 `--levels ALERT,ERROR --limit 20`；用户明确说近 5 天/7 天等范围时加 `--days N`。输出只展示按时间倒序的最新 20 条，避免上下文过长。
 
 ## 全量感知分析
 
@@ -35,8 +35,9 @@ python3 skills/ad-perception/scripts/perception.py analyze --devices skills/ad-p
 ## 分项分析
 
 ```bash
-python3 skills/ad-connect/scripts/connect.py --devices skills/ad-perception/devices.json --device AD1 --format json
-python3 skills/ad-perception/scripts/perception.py traffic --devices skills/ad-perception/devices.json --device AD1 --vs vs_real --format markdown
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-perception/devices.json --device AD2 --format json
+python3 skills/ad-perception/scripts/collector.py collect --devices skills/ad-perception/devices.json --device AD2 --collect-only
+python3 skills/ad-perception/scripts/perception.py traffic --devices skills/ad-perception/devices.json --device AD2 --vs test --days 7 --require-db --format markdown
 
 python3 skills/ad-connect/scripts/connect.py --devices skills/ad-perception/devices.json --device AD1 --format json
 python3 skills/ad-perception/scripts/perception.py state --devices skills/ad-perception/devices.json --device AD1 --format markdown
@@ -45,7 +46,10 @@ python3 skills/ad-connect/scripts/connect.py --devices skills/ad-perception/devi
 python3 skills/ad-perception/scripts/perception.py conflict --devices skills/ad-perception/devices.json --device AD1 --format markdown
 
 python3 skills/ad-connect/scripts/connect.py --devices skills/ad-perception/devices.json --device AD1 --format json
-python3 skills/ad-perception/scripts/perception.py logs --devices skills/ad-perception/devices.json --device AD1 --format markdown
+python3 skills/ad-perception/scripts/perception.py logs --devices skills/ad-perception/devices.json --device AD1 --levels ALERT,ERROR --limit 20 --format markdown
+
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-perception/devices.json --device AD1 --format json
+python3 skills/ad-perception/scripts/perception.py logs --devices skills/ad-perception/devices.json --device AD1 --days 5 --levels ALERT,ERROR --limit 20 --format markdown
 ```
 
 ## 输出模板

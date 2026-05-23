@@ -21,6 +21,7 @@ from perception import (
     conflict_analysis,
     log_correlation,
     fetch_service_logs,
+    fetch_service_log_result,
     render_logs_markdown,
     _logs_one,
     render_markdown,
@@ -298,6 +299,29 @@ class TestDBFallback(unittest.TestCase):
 
             self.assertEqual(result['status'], 'insufficient_data')
             self.assertEqual(result['source'], 'api_fallback')
+        finally:
+            if os.path.isfile(db_path):
+                os.unlink(db_path)
+
+    def test_require_db_missing_does_not_call_api(self):
+        """--require-db must not fall back to realtime trend API when DB is missing."""
+        missing_path = os.path.join(tempfile.gettempdir(), f"missing_{time.time_ns()}.db")
+        result = traffic_analysis(self.client, db_path=missing_path, vs_name="vs_test", require_db=True)
+        self.assertEqual(result['status'], 'error')
+        self.assertEqual(result['source'], 'sqlite')
+        self.assertFalse(result['db_queried'])
+        self.client.get_vs_trend_by_name.assert_not_called()
+
+    def test_require_db_insufficient_does_not_call_api(self):
+        """--require-db reports DB sample shortage instead of realtime fallback."""
+        db_path = self._create_db_file(50)
+        try:
+            result = traffic_analysis(self.client, db_path=db_path, vs_name="vs_test", require_db=True)
+            self.assertEqual(result['status'], 'insufficient_data')
+            self.assertEqual(result['source'], 'sqlite')
+            self.assertTrue(result['db_queried'])
+            self.assertEqual(result['sample_count'], 50)
+            self.client.get_vs_trend_by_name.assert_not_called()
         finally:
             if os.path.isfile(db_path):
                 os.unlink(db_path)
@@ -682,12 +706,32 @@ class TestServiceLogs(unittest.TestCase):
 
     def test_fetch_service_logs_returns_sorted(self):
         """fetch_service_logs should return entries sorted by date+time descending."""
-        entries = fetch_service_logs(self.client, limit=50)
-        self.client.get_service_log.assert_called_once_with(limit=50)
+        entries = fetch_service_logs(self.client, limit=20)
+        self.client.get_service_log.assert_called_once_with(limit=20)
         self.assertIsInstance(entries, list)
         self.assertEqual(len(entries), 2)
         # First entry should be the most recent (23:50:15)
         self.assertIn('23:50:15', entries[0]['time'])
+
+    def test_fetch_service_log_result_passes_alert_error_window(self):
+        """Service log result should preserve levels, range, and 20-row cap metadata."""
+        result = fetch_service_log_result(
+            self.client,
+            limit=20,
+            from_time='2026-05-20 00:00:00',
+            to_time='2026-05-21 00:00:00',
+            levels=['ALERT', 'ERROR'],
+            range_label='最近 24 小时',
+        )
+        self.client.get_service_log.assert_called_with(
+            limit=20,
+            from_time='2026-05-20 00:00:00',
+            to_time='2026-05-21 00:00:00',
+            levels=['ALERT', 'ERROR'],
+        )
+        self.assertEqual(result['levels'], ['ALERT', 'ERROR'])
+        self.assertEqual(result['limit'], 20)
+        self.assertEqual(result['range'], '最近 24 小时')
 
     def test_render_logs_markdown_output(self):
         """render_logs_markdown should output the expected markdown table format."""
@@ -841,6 +885,27 @@ class TestState3Sigma(unittest.TestCase):
         self.assertIn('## 日志线索', output)
         self.assertIn('虚拟服务恢复', output)
         self.assertIn('## 结论边界', output)
+
+    def test_render_markdown_scoped_logs_shows_range_and_limit(self):
+        output = render_markdown({
+            'device': 'https://10.0.0.1',
+            'logs': {
+                'status': 'ok',
+                'entries': [
+                    {'date': '2026-05-20', 'time': '23:50:15', 'level': 'ERROR', 'module': 'APPD', 'detail': '服务异常'}
+                ],
+                'range': '最近 5 天',
+                'levels': ['ALERT', 'ERROR'],
+                'shown': 1,
+                'limit': 20,
+            },
+            '_scope': 'logs',
+        })
+
+        self.assertIn('查询范围：最近 5 天', output)
+        self.assertIn('日志级别：ALERT、ERROR', output)
+        self.assertIn('输出数量：最新 1 条（上限 20 条）', output)
+        self.assertIn('2026-05-20 23:50:15', output)
 
     def test_state_analysis_missing_cpu_memory_not_fake_zero(self):
         client = MagicMock()
