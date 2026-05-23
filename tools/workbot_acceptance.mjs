@@ -45,16 +45,52 @@ const PYTHON = argValue("--python", process.env.PYTHON || "python");
 const AD_VERIFY_BASE_URL = argValue("--ad-base-url", process.env.AD_VERIFY_BASE_URL || process.env.AD1_PUBLIC_URL || "https://14.18.243.211:21044");
 const AD_VERIFY_USERNAME = argValue("--ad-user", process.env.AD_VERIFY_USERNAME || process.env.AD1_USER || "admin");
 const AD_VERIFY_PASSWORD = argValue("--ad-password", process.env.AD_VERIFY_PASSWORD || process.env.AD1_PASS || process.env.AD_PASS);
-const IDLE_AFTER_STOP_MS = Number(argValue("--idle-after-stop-ms", process.env.WORKBOT_IDLE_AFTER_STOP_MS || "5000"));
+const IDLE_AFTER_STOP_MS = Number(argValue("--idle-after-stop-ms", process.env.WORKBOT_IDLE_AFTER_STOP_MS || "2000"));
 const WAIT_POLL_MS = Number(argValue("--wait-poll-ms", process.env.WORKBOT_WAIT_POLL_MS || "1000"));
 const CHROME_PATH = argValue(
   "--chrome",
   process.env.CHROME_PATH || "C:/Program Files/Google/Chrome/Application/chrome.exe",
 );
+const DEFAULT_CASES = [
+  "install",
+  "r1",
+  "r1-full",
+  "r1-security",
+  "r1-all",
+  "r1-all-full",
+  "r1-all-security",
+  "r2",
+  "r2-short",
+  "r2-vs",
+  "r2-vs-alt",
+  "r2-vs-all",
+  "r2-vs-all-short",
+  "r2-node",
+  "r2-pool",
+  "r2-pool-node",
+  "r2-cert",
+  "r2-cert-alt",
+  "r2-traffic",
+  "r2-status",
+  "r2-resource-alt",
+  "r2-hardware",
+  "r3",
+  "r3-short",
+  "r3-abnormal",
+  "r3-traffic",
+  "r3-state",
+  "r3-resource-short",
+  "r3-conflict",
+  "r3-conflict-port",
+  "r3-logs",
+  "r4-script",
+  "r4-vs-pool-script",
+  "r4-audit-script",
+].join(",");
 const CASES = (
   argValue(
     "--cases",
-    "install,r1,r1-full,r1-security,r1-all,r1-all-full,r1-all-security,r2,r2-vs,r2-vs-alt,r2-vs-all,r2-node,r2-pool,r2-cert,r2-traffic,r2-status,r2-hardware,r3,r3-traffic,r3-state,r3-conflict,r3-logs,r4-script",
+    DEFAULT_CASES,
   ) || ""
 )
   .split(",")
@@ -155,6 +191,13 @@ const cases = {
     requireTools: true,
     requireDevice: true,
   },
+  "r2-short": {
+    prompt: "AD1 现在啥情况？",
+    expected: ["connect.py", "AD1", "overview.py", "all"],
+    commandExpected: ["connect.py", "overview.py", "all"],
+    requireTools: true,
+    requireDevice: true,
+  },
   "r2-vs": {
     prompt: "帮我查一下 AD1 的虚拟服务配置。",
     expected: ["connect.py", "AD1", "overview.py", "vs"],
@@ -175,6 +218,14 @@ const cases = {
     requireTools: true,
     requireDevice: true,
   },
+  "r2-vs-all-short": {
+    prompt: "所有 AD 的虚拟服务配置看下。",
+    expected: ["connect.py", "devices.json", "overview.py", "vs"],
+    commandExpected: ["connect.py", "overview.py", "--devices"],
+    commandForbidden: ["--device AD1", "--device AD2"],
+    requireTools: true,
+    requireDevice: true,
+  },
   "r2-node": {
     prompt: "帮我查一下 AD1 的节点配置。",
     expected: ["connect.py", "AD1", "overview.py", "pool"],
@@ -187,9 +238,23 @@ const cases = {
     requireTools: true,
     requireDevice: true,
   },
+  "r2-pool-node": {
+    prompt: "AD1 节点池和节点发我。",
+    expected: ["connect.py", "AD1", "overview.py", "pool"],
+    commandExpected: ["connect.py", "overview.py", "pool"],
+    requireTools: true,
+    requireDevice: true,
+  },
   "r2-cert": {
     prompt: "帮我查一下 AD1 的 SSL 证书到期时间。",
     expected: ["connect.py", "AD1", "overview.py", "cert"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-cert-alt": {
+    prompt: "AD1 证书有没有快过期？",
+    expected: ["connect.py", "AD1", "overview.py", "cert"],
+    commandExpected: ["connect.py", "overview.py", "cert"],
     requireTools: true,
     requireDevice: true,
   },
@@ -202,6 +267,13 @@ const cases = {
   "r2-status": {
     prompt: "帮我查一下 AD1 的设备状态。",
     expected: ["connect.py", "AD1", "overview.py", "hardware"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-resource-alt": {
+    prompt: "AD1 设备资源状态查一下。",
+    expected: ["connect.py", "AD1", "overview.py", "hardware"],
+    commandExpected: ["connect.py", "overview.py", "hardware"],
     requireTools: true,
     requireDevice: true,
   },
@@ -223,6 +295,20 @@ const cases = {
     requireTools: true,
     requireDevice: true,
   },
+  "r3-short": {
+    prompt: "AD1 做个感知分析。",
+    expected: ["connect.py", "AD1", "perception.py", "analyze"],
+    commandExpected: ["connect.py", "perception.py", "analyze"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r3-abnormal": {
+    prompt: "AD1 有没有异常？",
+    expected: ["connect.py", "AD1", "perception.py", "analyze"],
+    commandExpected: ["connect.py", "perception.py", "analyze"],
+    requireTools: true,
+    requireDevice: true,
+  },
   "r3-traffic": {
     prompt: "帮我分析一下 AD1 的流量异常。",
     expected: ["connect.py", "AD1", "perception.py", "traffic"],
@@ -235,9 +321,23 @@ const cases = {
     requireTools: true,
     requireDevice: true,
   },
+  "r3-resource-short": {
+    prompt: "AD1 CPU/内存/磁盘看下。",
+    expected: ["connect.py", "AD1", "perception.py", "state"],
+    commandExpected: ["connect.py", "perception.py", "state"],
+    requireTools: true,
+    requireDevice: true,
+  },
   "r3-conflict": {
     prompt: "帮我分析一下 AD1 有没有地址冲突。",
     expected: ["connect.py", "AD1", "perception.py", "conflict"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r3-conflict-port": {
+    prompt: "AD1 有没有地址端口冲突？",
+    expected: ["connect.py", "AD1", "perception.py", "conflict"],
+    commandExpected: ["connect.py", "perception.py", "conflict"],
     requireTools: true,
     requireDevice: true,
   },
@@ -255,6 +355,32 @@ const cases = {
       "直接给出脚本。",
     ],
     expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
+    commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
+    commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
+    requireTools: true,
+  },
+  "r4-vs-pool-script": {
+    steps: [
+      "帮我建个 VS，挂已有 Pool。",
+      { upload: R4_YAML_PATH, name: "r4-yaml" },
+      "我写完了 YAML。",
+      "直接给出脚本。",
+    ],
+    expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
+    commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
+    commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
+    requireTools: true,
+  },
+  "r4-audit-script": {
+    steps: [
+      "这份 VS 配置会不会撞现网？",
+      { upload: R4_YAML_PATH, name: "r4-yaml" },
+      "我写完了 YAML。",
+      "只审不下发。",
+    ],
+    expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
+    commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
+    commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
     requireTools: true,
   },
   "r4-delivery": {

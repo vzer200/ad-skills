@@ -12,9 +12,9 @@ param(
     [switch]$InjectDeviceOverrides,
     [string]$ADBaseUrl = "https://14.18.243.211:21044",
     [string]$ADUser = "admin",
-    [string]$Cases = "install,r1,r1-full,r1-security,r1-all,r1-all-full,r1-all-security,r2,r2-vs,r2-vs-alt,r2-vs-all,r2-node,r2-pool,r2-cert,r2-traffic,r2-status,r2-hardware,r3,r3-traffic,r3-state,r3-conflict,r3-logs,r4-script",
+    [string]$Cases = "install,r1,r1-full,r1-security,r1-all,r1-all-full,r1-all-security,r2,r2-short,r2-vs,r2-vs-alt,r2-vs-all,r2-vs-all-short,r2-node,r2-pool,r2-pool-node,r2-cert,r2-cert-alt,r2-traffic,r2-status,r2-resource-alt,r2-hardware,r3,r3-short,r3-abnormal,r3-traffic,r3-state,r3-resource-short,r3-conflict,r3-conflict-port,r3-logs,r4-script,r4-vs-pool-script,r4-audit-script",
     [string]$R4Yaml = "test\fixtures\workbot\r4-slb-full.yml",
-    [int]$IdleAfterStopMs = 5000
+    [int]$IdleAfterStopMs = 2000
 )
 
 $ErrorActionPreference = "Stop"

@@ -31,6 +31,8 @@ $env:AD1_PASS = "<operator-provided AD1 password>"
 
 The automation runs tests, validates skills, runs an SLB bundle smoke test, commits and pushes, packages `dist/ad-skills-workbot.zip`, uploads it to WorkBot, sends the acceptance prompts, and writes a JSON evidence report under `workbot-results/`.
 
+Default WorkBot pacing waits 2 seconds after the stop button disappears before sending the next prompt. The default case list is intentionally broad: it covers R1 standard/full/security on one device and all devices, R2 full/single-dimension/multi-device VS short prompts, R3 full/single-dimension perception prompts, and R4 script-only/audit-only SLB prompts. HA is not part of the default run.
+
 If WorkBot cannot see local environment variables such as `AD1_PASS`, build the upload-only package with runtime credential injection:
 
 ```powershell
@@ -182,6 +184,18 @@ Single-dimension prompts:
 ```
 
 ```text
+AD1 现在啥情况？
+```
+
+```text
+看下 AD1 上有哪些 VS。
+```
+
+```text
+所有 AD 的虚拟服务配置看下。
+```
+
+```text
 帮我查一下 AD1 的节点配置。
 ```
 
@@ -190,7 +204,15 @@ Single-dimension prompts:
 ```
 
 ```text
+AD1 节点池和节点发我。
+```
+
+```text
 帮我查一下 AD1 的 SSL 证书到期时间。
+```
+
+```text
+AD1 证书有没有快过期？
 ```
 
 ```text
@@ -202,7 +224,7 @@ Single-dimension prompts:
 ```
 
 ```text
-帮我查一下 AD1 的 HA 状态。
+AD1 设备资源状态查一下。
 ```
 
 ```text
@@ -223,8 +245,9 @@ Pass criteria:
 - Single-dimension node/pool query calls `overview.py pool`.
 - SSL certificate query calls `overview.py cert`.
 - Traffic query calls `overview.py traffic`.
-- HA query calls `overview.py ha`.
 - Device/hardware status query calls `overview.py hardware`.
+- Multi-device VS prompts must call `overview.py vs --devices ...` and must not fall back to `--device AD1` or `--device AD2`.
+- HA can be tested manually when needed, but is intentionally skipped in the default acceptance batch.
 - `connect.py` validates the AD1 target from `devices.json`, including AD 外网设备资源 reachability/auth evidence.
 - The answer includes VS, Pool/config, traffic/status, and certificate sections only if returned by the script.
 - Acceptance prompts must not include parameter-fill follow-ups for R2.
@@ -235,6 +258,16 @@ Full analysis prompt:
 
 ```text
 请对 AD1 做一次感知分析，重点看流量、资源、冲突和日志线索。
+```
+
+Short analysis prompts:
+
+```text
+AD1 做个感知分析。
+```
+
+```text
+AD1 有没有异常？
 ```
 
 Single-dimension prompts:
@@ -248,7 +281,15 @@ Single-dimension prompts:
 ```
 
 ```text
+AD1 CPU/内存/磁盘看下。
+```
+
+```text
 帮我分析一下 AD1 有没有地址冲突。
+```
+
+```text
+AD1 有没有地址端口冲突？
 ```
 
 ```text
@@ -280,6 +321,16 @@ Stage A prompt:
 
 ```text
 帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。
+```
+
+Additional short Stage A prompts:
+
+```text
+帮我建个 VS，挂已有 Pool。
+```
+
+```text
+这份 VS 配置会不会撞现网？
 ```
 
 Human uploads a filled YAML, then replies:
