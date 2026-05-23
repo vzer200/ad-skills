@@ -719,7 +719,9 @@ class TestServiceLogs(unittest.TestCase):
             'logs': {'status': 'no_anomaly', 'entries': []},
             'conflicts': {'status': 'ok', 'vs_overlaps': [], 'pool_overlaps': []},
         })
-        self.assertIn('AD 感知分析报告', full_output)
+        self.assertIn('## 感知结论', full_output)
+        self.assertIn('## 分析结果', full_output)
+        self.assertIn('## 结论边界', full_output)
         self.assertNotIn('## 服务日志', full_output)  # render_markdown has '## 日志关联' not '## 服务日志'
 
     def test_logs_one_returns_correct_structure(self):
@@ -822,9 +824,37 @@ class TestState3Sigma(unittest.TestCase):
             'conflicts': {'status': 'ok', 'vs_overlaps': [], 'pool_overlaps': []},
         }
         output = render_markdown(results)
-        self.assertIn('3σ 异常检测', output)
-        self.assertIn('cpu', output)
-        self.assertIn('🔴 严重', output)
+        self.assertIn('趋势异常检测', output)
+        self.assertIn('CPU', output)
+        self.assertIn('❌ 严重', output)
+
+    def test_render_markdown_scoped_logs_uses_perception_template(self):
+        output = render_markdown({
+            'device': 'https://10.0.0.1',
+            'logs': {'status': 'ok', 'entries': [
+                {'time': '2026-05-20 23:50:15', 'level': 'ALERT', 'module': 'APPD', 'detail': '虚拟服务恢复'}
+            ]},
+            '_scope': 'logs',
+        })
+
+        self.assertIn('## 感知结论', output)
+        self.assertIn('## 日志线索', output)
+        self.assertIn('虚拟服务恢复', output)
+        self.assertIn('## 结论边界', output)
+
+    def test_state_analysis_missing_cpu_memory_not_fake_zero(self):
+        client = MagicMock()
+        client.get_sys_system.return_value = {
+            'power_supply': 'normal',
+            'interface': {'plug': {'in': ['eth1'], 'out': []}},
+        }
+
+        result = state_analysis(client)
+        output = render_markdown({'device': 'https://10.0.0.1', 'state': result, '_scope': 'state'})
+
+        self.assertNotIn('CPU 使用率：0%', output)
+        self.assertNotIn('内存使用率：0%', output)
+        self.assertIn('设备未返回 CPU/内存使用率', output)
 
 
 class TestComputeExitCode(unittest.TestCase):

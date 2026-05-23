@@ -310,6 +310,18 @@ Pass criteria:
 
 ## Requirement 3: Perception Analysis
 
+R3 is perception/abnormality analysis, not a plain current-state query. R2 already covers current device status and hardware/resource values through `overview.py hardware`; R3 still needs to validate analysis-oriented prompts that call `perception.py`.
+
+Fixed mainline prompts:
+
+| Case | Prompt | Expected command |
+| --- | --- | --- |
+| `r3` | `请对 AD1 做一次感知分析，重点看流量、资源、冲突和日志线索。` | `perception.py analyze` |
+| `r3-traffic` | `帮我分析一下 AD1 的流量异常。` | `perception.py traffic` |
+| `r3-state` | `帮我分析一下 AD1 的设备资源状态异常。` | `perception.py state` |
+| `r3-conflict` | `帮我分析一下 AD1 有没有地址冲突。` | `perception.py conflict` |
+| `r3-logs` | `帮我看一下 AD1 的服务日志线索。` | `perception.py logs` |
+
 Full analysis prompt:
 
 ```text
@@ -366,6 +378,8 @@ Pass criteria:
 - `connect.py` validates the AD1 target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
 - The final conclusion is backed by `perception.py` output.
 - Single-dimension prompts call `perception.py traffic|state|conflict|logs` respectively.
+- R3 final answers use `感知结论 / 分析结果 / 结论边界`; subcommand outputs must not bypass the perception template.
+- R2/R3 boundary: `设备状态/硬件状态/资源状态查询` belongs to R2, while `设备资源状态异常/异常分析/趋势` belongs to R3.
 - No root cause, anomaly, or trend is invented outside script stdout.
 - Acceptance prompts must not include parameter-fill follow-ups for R3.
 

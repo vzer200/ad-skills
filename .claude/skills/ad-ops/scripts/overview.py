@@ -437,9 +437,39 @@ _STATE_CN_MAP = {
 }
 
 
+_STATE_ICON_MAP = {
+    "启用": "✅",
+    "正常": "✅",
+    "主用": "✅",
+    "备用": "✅",
+    "停用": "⏸️",
+    "异常": "⚠️",
+    "未接入": "⚠️",
+    "故障": "❌",
+    "不支持": "⚠️",
+    "-": "—",
+}
+
+
+_LEVEL_ICON_MAP = {
+    "critical": "❌",
+    "warning": "⚠️",
+    "info": "ℹ️",
+    "ok": "✅",
+    "unknown": "❔",
+}
+
+
 def _level_cn(level: str) -> str:
     """Map English level to Chinese label."""
     return _LEVEL_CN_MAP.get(level, level)
+
+
+def _level_badge(level: str) -> str:
+    """Return a compact user-facing level with an icon."""
+    cn = _level_cn(level)
+    icon = _LEVEL_ICON_MAP.get(level, "")
+    return f"{icon} {cn}".strip()
 
 
 def _query_label(query: str) -> str:
@@ -453,6 +483,30 @@ def _status_cn(status: Any) -> str:
         return "-"
     raw = str(status)
     return _STATE_CN_MAP.get(raw.strip().lower(), raw)
+
+
+def _status_badge(status: Any) -> str:
+    """Return a compact user-facing status with an icon."""
+    cn = _status_cn(status)
+    if cn == "-":
+        return cn
+    icon = _STATE_ICON_MAP.get(cn, "")
+    return f"{icon} {cn}".strip()
+
+
+def _usage_badge(value: Any) -> str:
+    """Return a CPU/memory value with a simple health icon."""
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return _fmt_value(value, "%")
+    if numeric >= 90:
+        icon = "❌"
+    elif numeric >= 80:
+        icon = "⚠️"
+    else:
+        icon = "✅"
+    return f"{icon} {_fmt_value(value, '%')}"
 
 
 def _fmt_value(value: Any, suffix: str = "") -> str:
@@ -489,17 +543,17 @@ def render_markdown(overview: Dict[str, Any]) -> str:
 
     a("## 查询结论")
     a(f"- 目标设备：{_display_device(overview.get('device', {}))}")
-    a(f"- 维度：{_query_label(query)}")
-    a("- 数据来源：设备实时查询")
-    a(f"- 状态：{'失败' if failed else '成功'}")
+    a(f"- 维度：📌 {_query_label(query)}")
+    a("- 数据来源：📡 设备实时查询")
+    a(f"- 状态：{'❌ 失败' if failed else '✅ 成功'}")
     a("")
 
     a("## 查询范围")
     if query == "all":
-        a("- 本次覆盖配置、流量、设备状态和 SSL 证书。")
+        a("- 展示范围：配置、流量、设备状态和 SSL 证书。")
     else:
-        a(f"- 本次只展示{_query_label(query)}。")
-    a("- 连接校验和设备读取已完成。")
+        a(f"- 展示范围：仅{_query_label(query)}。")
+    a("- 校验结果：✅ 连接校验和设备读取已完成。")
     a("")
 
     a("## 查询结果")
@@ -514,27 +568,27 @@ def render_markdown(overview: Dict[str, Any]) -> str:
             a(f"- 运行时间：{dev['uptime']}")
         if dev.get("ha_role") or dev.get("ha_status"):
             role = _status_cn(dev.get("ha_role", ""))
-            ha_status = _status_cn(dev.get("ha_status", ""))
+            ha_status = _status_badge(dev.get("ha_status", ""))
             a(f"- HA：{role}（{ha_status}）")
         if "cpu" in dev:
             cpu_display = _extract_value(dev.get("cpu"))
-            a(f"- CPU 使用率：{cpu_display}%")
+            a(f"- CPU 使用率：{_usage_badge(cpu_display)}")
         if "memory" in dev:
             mem_display = _extract_value(dev.get("memory"))
-            a(f"- 内存使用率：{mem_display}%")
+            a(f"- 内存使用率：{_usage_badge(mem_display)}")
         if not any(k in dev and dev.get(k) not in (None, "") for k in ("version", "uptime", "ha_role", "ha_status", "cpu", "memory")):
-            a("- 暂无设备状态摘要。")
+            a("- ℹ️ 暂无设备状态摘要。")
         a("")
 
     if query in ("all", "config", "vs"):
         a("### 虚拟服务配置")
         vs_error = api_errors.get("vs")
         if vs_error:
-            a(f"> 获取失败：{vs_error}")
+            a(f"> ❌ 获取失败：{vs_error}")
         else:
             vs_list = overview.get("virtual_services", [])
             if not vs_list:
-                a("暂无虚拟服务配置。")
+                a("ℹ️ 暂无虚拟服务配置。")
             else:
                 a("| 虚拟服务 | VIP/端口 | 引用节点池 | 是否启用 |")
                 a("| --- | --- | --- | --- |")
@@ -542,7 +596,7 @@ def render_markdown(overview: Dict[str, Any]) -> str:
                     name = vs.get("name", "")
                     vip_ports = ", ".join(vs.get("vip_ports", [])) or "-"
                     pool = vs.get("pool", "") or "-"
-                    status = _status_cn(vs.get("status", ""))
+                    status = _status_badge(vs.get("status", ""))
                     a(f"| {name} | {vip_ports} | {pool} | {status} |")
         a("")
 
@@ -550,11 +604,11 @@ def render_markdown(overview: Dict[str, Any]) -> str:
         a("### 节点池配置")
         pool_error = api_errors.get("pool")
         if pool_error:
-            a(f"> 获取失败：{pool_error}")
+            a(f"> ❌ 获取失败：{pool_error}")
         else:
             pools = overview.get("pools", [])
             if not pools:
-                a("暂无节点池配置。")
+                a("ℹ️ 暂无节点池配置。")
             else:
                 a("| 节点池 | 是否启用 | 节点数 | 节点明细 |")
                 a("| --- | --- | ---: | --- |")
@@ -567,7 +621,7 @@ def render_markdown(overview: Dict[str, Any]) -> str:
                         members.append(f"{member.get('name') or endpoint}（{endpoint}{weight_text}）")
                     member_text = "<br>".join(members) if members else "-"
                     a(
-                        f"| {pool.get('name', '')} | {_status_cn(pool.get('status'))} | "
+                        f"| {pool.get('name', '')} | {_status_badge(pool.get('status'))} | "
                         f"{pool.get('total', 0)} | {member_text} |"
                     )
         a("")
@@ -576,11 +630,11 @@ def render_markdown(overview: Dict[str, Any]) -> str:
         a("### 流量状态")
         traffic_error = api_errors.get("traffic")
         if traffic_error:
-            a(f"> 获取失败：{traffic_error}")
+            a(f"> ❌ 获取失败：{traffic_error}")
         else:
             traffic = overview.get("traffic", [])
             if not traffic:
-                a("暂无流量数据。")
+                a("ℹ️ 暂无流量数据。")
             else:
                 a("| 虚拟服务 | 当前连接数 | 新建速率 | 吞吐量 |")
                 a("| --- | ---: | ---: | ---: |")
@@ -596,16 +650,16 @@ def render_markdown(overview: Dict[str, Any]) -> str:
         a("### SSL 证书")
         cert_error = api_errors.get("cert")
         if cert_error:
-            a(f"> 获取失败：{cert_error}")
+            a(f"> ❌ 获取失败：{cert_error}")
         else:
             cert_list = overview.get("certificates", [])
             if not cert_list:
-                a("暂无 SSL 证书。")
+                a("ℹ️ 暂无 SSL 证书。")
             else:
                 a("| 证书 | 到期时间 | 剩余天数 | 风险级别 |")
                 a("| --- | --- | ---: | --- |")
                 for c in cert_list:
-                    cn = _level_cn(c.get("level", "ok"))
+                    cn = _level_badge(c.get("level", "ok"))
                     a(f"| {c.get('name', '')} | {c.get('expiry', '')} | {c.get('days_left', '')} | {cn} |")
         a("")
 
@@ -613,17 +667,17 @@ def render_markdown(overview: Dict[str, Any]) -> str:
         a("### 硬件状态")
         hw_error = api_errors.get("hardware")
         if hw_error:
-            a(f"> 获取失败：{hw_error}")
+            a(f"> ❌ 获取失败：{hw_error}")
         else:
             hw = overview.get("hardware", {})
             if not hw:
-                a("暂无硬件信息。")
+                a("ℹ️ 暂无硬件信息。")
             else:
                 a("| 项目 | 当前值 | 状态 |")
                 a("| --- | --- | --- |")
 
                 def hw_row(label: str, value_str: str, level: str) -> None:
-                    cn = _level_cn(level)
+                    cn = _level_badge(level)
                     a(f"| {label} | {value_str} | {cn} |")
 
                 if "cpu" in hw:
@@ -637,11 +691,11 @@ def render_markdown(overview: Dict[str, Any]) -> str:
                     hw_row("温度", f"{temp_val}C", hw["temperature"].get("level", "ok"))
 
                 for f in hw.get("fans", []):
-                    hw_row(f"风扇：{f.get('name', '')}", _status_cn(f.get("status", "")), f.get("level", "ok"))
+                    hw_row(f"风扇：{f.get('name', '')}", _status_badge(f.get("status", "")), f.get("level", "ok"))
                 for p in hw.get("power", []):
-                    hw_row(f"电源：{p.get('name', '')}", _status_cn(p.get("status", "")), p.get("level", "ok"))
+                    hw_row(f"电源：{p.get('name', '')}", _status_badge(p.get("status", "")), p.get("level", "ok"))
                 for i in hw.get("interfaces", []):
-                    hw_row(f"接口：{i.get('name', '')}", _status_cn(i.get("status", "")), i.get("level", "ok"))
+                    hw_row(f"接口：{i.get('name', '')}", _status_badge(i.get("status", "")), i.get("level", "ok"))
         a("")
 
     return "\n".join(lines)

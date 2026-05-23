@@ -35,6 +35,7 @@ import statistics
 import sqlite3
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urlparse
 
 
 def detect_anomaly_3sigma(points: List[Dict[str, Any]], window_seconds: int = 21600, z_threshold: int = 3, min_window: int = 30) -> List[Dict[str, Any]]:
@@ -360,37 +361,37 @@ def state_analysis(client: Any, disk_source: Optional[str] = None, db_path: Opti
             'disk': disk_info,
         }
 
-    # Helper to extract value from API dict {"value": N, ...} or raw number
-    def _val(field: Any, default: Any = 0) -> Any:
+    # Helper to extract value from API dict {"value": N, ...} or raw number.
+    # Missing CPU/memory means unknown; it must not be rendered as 0%.
+    def _val(field: Any, default: Any = None) -> Any:
         if isinstance(field, dict):
             return field.get('value', default)
         return field if field is not None else default
 
-    # CPU check
-    cpu = _val(sys_data.get('cpu_usage'))
-    if cpu >= 90:
-        level = 'critical'
-        has_critical = True
-    elif cpu >= 80:
-        level = 'warn'
-        has_warn = True
-    else:
-        level = 'ok'
-    items.append({'metric': 'cpu', 'value': cpu, 'level': level,
-                  'message': f'CPU 使用率: {cpu}%'})
+    def _append_usage(metric: str, label: str, value: Any) -> None:
+        nonlocal has_warn, has_critical
+        if value is None:
+            return
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError):
+            has_warn = True
+            items.append({'metric': metric, 'value': value, 'level': 'warn',
+                          'message': f'{label}: {value}'})
+            return
+        if numeric >= 90:
+            level = 'critical'
+            has_critical = True
+        elif numeric >= 80:
+            level = 'warn'
+            has_warn = True
+        else:
+            level = 'ok'
+        items.append({'metric': metric, 'value': value, 'level': level,
+                      'message': f'{label}: {value}%'})
 
-    # Memory check
-    mem = _val(sys_data.get('memory_usage'))
-    if mem >= 90:
-        level = 'critical'
-        has_critical = True
-    elif mem >= 80:
-        level = 'warn'
-        has_warn = True
-    else:
-        level = 'ok'
-    items.append({'metric': 'memory', 'value': mem, 'level': level,
-                  'message': f'内存使用率: {mem}%'})
+    _append_usage('cpu', 'CPU 使用率', _val(sys_data.get('cpu_usage')))
+    _append_usage('memory', '内存使用率', _val(sys_data.get('memory_usage')))
 
     # Fan check — API returns "fan": [] (list of dicts) or empty list
     fan_list = sys_data.get('fan') or []
@@ -740,191 +741,259 @@ def render_logs_markdown(entries: List[Dict[str, Any]], host: str) -> str:
     return '\n'.join(lines)
 
 
+_STATUS_BADGES = {
+    '失败': '❌ 失败',
+    '需关注': '⚠️ 需关注',
+    '未发现明显异常': '✅ 未发现明显异常',
+}
+
+
+_LEVEL_BADGES = {
+    'critical': '❌ 严重',
+    'warn': '⚠️ 警告',
+    'warning': '⚠️ 警告',
+    'ok': '✅ 正常',
+    'error': '❌ 失败',
+}
+
+
+_METRIC_LABELS = {
+    'cpu': 'CPU',
+    'memory': '内存',
+    'disk': '磁盘',
+    'fan': '风扇',
+    'power': '电源',
+    'interface': '接口',
+    'system': '系统',
+    'connection': '当前连接数',
+    'connection_rate': '新建速率',
+    'throughput': '吞吐量',
+}
+
+
+def _display_device_ref(device: Any) -> str:
+    """Return a compact device label without leaking URL schemes."""
+    raw = str(device or '').strip()
+    parsed = urlparse(raw)
+    return parsed.hostname or raw or 'Unknown'
+
+
+def _level_badge(level: Any) -> str:
+    """Return a Chinese level label with a small status icon."""
+    raw = str(level or '').strip().lower()
+    return _LEVEL_BADGES.get(raw, str(level or '-'))
+
+
+def _metric_label(metric: Any) -> str:
+    """Return a user-facing metric label."""
+    raw = str(metric or '')
+    return _METRIC_LABELS.get(raw, raw)
+
+
+def _analysis_status_badge(statuses: List[str]) -> str:
+    """Summarize scoped perception dimensions into one user-facing status."""
+    if any(status == 'error' for status in statuses):
+        return _STATUS_BADGES['失败']
+    if any(status in ('critical', 'warning', 'warn', 'conflict_found', 'insufficient_data', 'no_match') for status in statuses):
+        return _STATUS_BADGES['需关注']
+    return _STATUS_BADGES['未发现明显异常']
+
+
+def _scope_label(scope: str) -> str:
+    labels = {
+        'analyze': '流量异常、资源状态、地址冲突、日志线索',
+        'traffic': '流量异常',
+        'state': '设备资源状态异常',
+        'conflict': '地址冲突',
+        'logs': '服务日志线索',
+    }
+    return labels.get(scope, labels['analyze'])
+
+
 def render_markdown(results: Dict[str, Any]) -> str:
     """将结果渲染为 markdown 字符串。"""
     lines = []
 
-    # Device header
-    device = results.get('device', '')
-    if not device:
-        device = results.get('_device', 'Unknown')
-    statuses = [
-        value.get('status')
-        for value in (
-            results.get('traffic', {}),
-            results.get('state', {}),
-            results.get('logs', {}),
-            results.get('conflicts', {}),
-        )
-        if isinstance(value, dict) and value.get('status')
-    ]
-    if any(status == 'error' for status in statuses):
-        status_text = '失败'
-    elif any(status in ('conflict_found', 'insufficient_data', 'no_match') for status in statuses):
-        status_text = '需关注'
-    else:
-        status_text = '未发现明显异常'
+    device = _display_device_ref(results.get('device') or results.get('_device') or results.get('host'))
+    scope = results.get('_scope', 'analyze')
+    traffic = results.get('traffic', {}) if isinstance(results.get('traffic', {}), dict) else {}
+    state = results.get('state', {}) if isinstance(results.get('state', {}), dict) else {}
+    logs = results.get('logs', {}) if isinstance(results.get('logs', {}), dict) else {}
+    conflicts = results.get('conflicts', {}) if isinstance(results.get('conflicts', {}), dict) else {}
+
+    show_traffic = scope in ('analyze', 'traffic') and traffic
+    show_state = scope in ('analyze', 'state') and state
+    show_logs = scope == 'logs' or (scope == 'analyze' and logs and logs.get('status') not in ('no_anomaly', None))
+    show_conflicts = scope in ('analyze', 'conflict') and conflicts
+
+    scoped_statuses = []
+    if show_traffic:
+        scoped_statuses.append(traffic.get('status', ''))
+    if show_state:
+        scoped_statuses.append(state.get('status', ''))
+    if show_logs:
+        scoped_statuses.append(logs.get('status', ''))
+    if show_conflicts:
+        scoped_statuses.append(conflicts.get('status', ''))
+    status_text = _analysis_status_badge(scoped_statuses)
 
     lines.append('## 感知结论')
-    lines.append(f'- 目标：{device}')
-    lines.append('- 数据来源：设备实时分析')
+    lines.append(f'- 目标设备：{device}')
+    lines.append(f'- 分析范围：📌 {_scope_label(scope)}')
+    lines.append('- 数据来源：📡 设备实时分析')
     lines.append(f'- 状态：{status_text}')
     lines.append('')
     lines.append('## 分析结果')
     lines.append('')
-    lines.append(f'# AD 感知分析报告')
-    lines.append(f'**设备**: {device}')
-    lines.append('')
 
-    # Traffic section
-    traffic = results.get('traffic', {})
-    lines.append('## 流量分析')
-    if traffic.get('status') == 'ok':
-        anomalies = traffic.get('anomalies', [])
-        if anomalies:
-            lines.append('| VS | 指标 | 时间 | 当前值 | 正常范围 | 偏离幅度 | 方向 | 严重程度 |')
-            lines.append('|---|---|---|---|---|---|---|---|')
-            for a in anomalies:
-                from datetime import datetime
-                ts_str = datetime.fromtimestamp(a['ts']).strftime('%m-%d %H:%M') if a.get('ts') else 'N/A'
-                baseline = a['baseline_mean']
-                value = a['value']
-                pct = ((value - baseline) / baseline * 100) if baseline != 0 else 0
-                z = a['z']
-                if z > 10:
-                    severity = '🔴 严重'
-                elif z > 5:
-                    severity = '🟡 明显'
-                else:
-                    severity = '🟠 轻微'
-                lines.append(f"| {a['vs']} | {a['metric']} | {ts_str} | {value:.1f} | {baseline:.1f} | {pct:+.1f}% | {a['direction']} | {severity} |")
+    if show_traffic:
+        lines.append('## 流量分析')
+        if traffic.get('status') == 'ok':
+            anomalies = traffic.get('anomalies', [])
+            if anomalies:
+                lines.append('| 虚拟服务 | 指标 | 时间 | 当前值 | 基线值 | 偏离幅度 | 方向 | 风险 |')
+                lines.append('|---|---|---|---:|---:|---:|---|---|')
+                for a in anomalies:
+                    ts_str = datetime.fromtimestamp(a['ts']).strftime('%m-%d %H:%M') if a.get('ts') else 'N/A'
+                    baseline = a['baseline_mean']
+                    value = a['value']
+                    pct = ((value - baseline) / baseline * 100) if baseline != 0 else 0
+                    z = a['z']
+                    if z > 10:
+                        severity = '❌ 严重'
+                    elif z > 5:
+                        severity = '⚠️ 明显'
+                    else:
+                        severity = 'ℹ️ 轻微'
+                    lines.append(f"| {a['vs']} | {_metric_label(a['metric'])} | {ts_str} | {value:.1f} | {baseline:.1f} | {pct:+.1f}% | {a['direction']} | {severity} |")
+            else:
+                lines.append('✅ 过去 7 天内未检测到流量异常。')
+        elif traffic.get('status') == 'insufficient_data':
+            lines.append('⚠️ 历史样本不足，已回退到设备实时趋势。')
+            raw_trends = traffic.get('raw_trends', [])
+            if raw_trends:
+                lines.append('')
+                lines.append('**实时趋势参考**')
+                lines.append('| 虚拟服务 | 指标 | 周期 | 均值 | 峰值 |')
+                lines.append('|---|---|---|---:|---:|')
+                for t in raw_trends:
+                    lines.append(f"| {t['vs']} | {_metric_label(t['metric'])} | {t['trend']} | {t['mean']:.1f} | {t['max']:.1f} |")
+            lines.append('')
+            lines.append('⚠️ 当前样本不足，无法形成稳定的 3σ 趋势判断。')
+        elif traffic.get('status') == 'error':
+            lines.append(f'❌ 流量分析失败：{traffic.get("error", "未知错误")}')
+        lines.append('')
+
+    if show_state:
+        lines.append('## 设备资源分析')
+        if state.get('status') == 'error':
+            lines.append(f'❌ 设备资源状态获取失败：{state.get("error", "未知错误")}')
         else:
-            lines.append('✅ 过去 7 天内未检测到流量异常。')
-    elif traffic.get('status') == 'insufficient_data':
-        lines.append('⚠️ 数据库数据不足，回退到 API 实时趋势查询。')
-        raw_trends = traffic.get('raw_trends', [])
-        if raw_trends:
+            items = state.get('items', [])
+            cpu_item = next((i for i in items if i.get('metric') == 'cpu'), None)
+            mem_item = next((i for i in items if i.get('metric') == 'memory'), None)
+            if cpu_item:
+                lines.append(f"- CPU 使用率：{_level_badge(cpu_item.get('level'))}，当前 {cpu_item.get('value')}%")
+            if mem_item:
+                lines.append(f"- 内存使用率：{_level_badge(mem_item.get('level'))}，当前 {mem_item.get('value')}%")
+            if not cpu_item and not mem_item:
+                lines.append('- ℹ️ 设备未返回 CPU/内存使用率。')
             lines.append('')
-            lines.append('**API 原始趋势数据:**')
-            lines.append('| VS | 指标 | 趋势周期 | 均值 | 最大值 |')
-            lines.append('|---|---|---|---|---|')
-            for t in raw_trends:
-                lines.append(f"| {t['vs']} | {t['metric']} | {t['trend']} | {t['mean']:.1f} | {t['max']:.1f} |")
+
+            state_anomalies = state.get('anomalies', [])
+            if state_anomalies:
+                lines.append('**趋势异常检测**')
+                lines.append('')
+                lines.append('| 指标 | 时间 | 当前值 | 基线值 | 偏离幅度 | 方向 | 风险 |')
+                lines.append('|---|---|---:|---:|---:|---|---|')
+                for a in state_anomalies:
+                    ts_str = datetime.fromtimestamp(a['ts']).strftime('%m-%d %H:%M') if a.get('ts') else 'N/A'
+                    baseline = a['baseline_mean']
+                    value = a['value']
+                    pct = ((value - baseline) / baseline * 100) if baseline != 0 else 0
+                    z = a['z']
+                    if z > 10:
+                        severity = '❌ 严重'
+                    elif z > 5:
+                        severity = '⚠️ 明显'
+                    else:
+                        severity = 'ℹ️ 轻微'
+                    lines.append(f"| {_metric_label(a['metric'])} | {ts_str} | {value:.1f} | {baseline:.1f} | {pct:+.1f}% | {a['direction']} | {severity} |")
+                lines.append('')
+
+            non_ok = [i for i in items if i.get('level') not in ('ok', None)]
+            if non_ok:
+                lines.append('| 指标 | 当前值 | 风险 | 说明 |')
+                lines.append('|---|---:|---|---|')
+                for i in non_ok:
+                    lines.append(f"| {_metric_label(i.get('metric'))} | {i.get('value', '-')} | {_level_badge(i.get('level'))} | {i.get('message', '-')} |")
+            elif items:
+                lines.append('✅ 资源阈值检查未发现异常。')
+
+            disk = state.get('disk', {})
+            disk_source = disk.get('source', 'none')
+            if disk_source == 'none':
+                lines.append('ℹ️ 磁盘：未提供巡检数据。')
+            elif disk_source == 'error':
+                lines.append('⚠️ 磁盘：巡检报告损坏。')
+            elif disk_source == 'ad.json' and not disk.get('available'):
+                lines.append('ℹ️ 磁盘：巡检报告不可用。')
+            elif disk.get('available'):
+                lines.append(f"✅ 磁盘：{disk.get('value', 'N/A')}")
         lines.append('')
-        lines.append('⚠️ 数据不足，无法进行 3σ 异常检测。')
-    elif traffic.get('status') == 'error':
-        lines.append(f'❌ 流量分析失败: {traffic.get("error", "未知错误")}')
-    lines.append('')
 
-    # State section
-    state = results.get('state', {})
-    lines.append('## 设备状态')
-    if state.get('status') == 'error':
-        lines.append(f'❌ 设备状态获取失败: {state.get("error", "未知错误")}')
-    else:
-        items = state.get('items', [])
-        # Check if all ok
-        # Show OK summary line first
-        cpu_item = next((i for i in items if i['metric'] == 'cpu'), None)
-        mem_item = next((i for i in items if i['metric'] == 'memory'), None)
-        cpu_val = cpu_item['value'] if cpu_item else '?'
-        mem_val = mem_item['value'] if mem_item else '?'
-        lines.append(f'CPU: {cpu_val}%, 内存: {mem_val}%')
-        lines.append('')
-
-        # 3σ anomalies table (same format as traffic section)
-        state_anomalies = state.get('anomalies', [])
-        if state_anomalies:
-            from datetime import datetime as dt_mod
-            lines.append('**3σ 异常检测:**')
-            lines.append('')
-            lines.append('| 指标 | 时间 | 当前值 | 正常范围 | 偏离幅度 | 方向 | 严重程度 |')
-            lines.append('|---|---|---|---|---|---|---|')
-            for a in state_anomalies:
-                ts_str = dt_mod.fromtimestamp(a['ts']).strftime('%m-%d %H:%M') if a.get('ts') else 'N/A'
-                baseline = a['baseline_mean']
-                value = a['value']
-                pct = ((value - baseline) / baseline * 100) if baseline != 0 else 0
-                z = a['z']
-                if z > 10:
-                    severity = '🔴 严重'
-                elif z > 5:
-                    severity = '🟡 明显'
-                else:
-                    severity = '🟠 轻微'
-                lines.append(f"| {a['metric']} | {ts_str} | {value:.1f} | {baseline:.1f} | {pct:+.1f}% | {a['direction']} | {severity} |")
-            lines.append('')
-
-        non_ok = [i for i in items if i.get('level') not in ('ok', None)]
-        if non_ok:
-            lines.append('| 指标 | 当前值 | 级别 | 描述 |')
-            lines.append('|---|---|---|---|')
-            for i in non_ok:
-                level_icon = {'warn': '⚠️', 'critical': '🔴'}.get(i['level'], '')
-                lines.append(f"| {i['metric']} | {i['value']} | {level_icon} {i['level']} | {i['message']} |")
-
-        disk = state.get('disk', {})
-        disk_source = disk.get('source', 'none')
-        if disk_source == 'none':
-            lines.append('磁盘: 未提供巡检数据')
-        elif disk_source == 'error':
-            lines.append('磁盘: 巡检报告损坏')
-        elif disk_source == 'ad.json' and not disk.get('available'):
-            lines.append('磁盘: 巡检报告不可用')
-        elif disk.get('available'):
-            lines.append(f"磁盘: {disk.get('value', 'N/A')}")
-    lines.append('')
-
-    # Logs section — only show if there are anomalies to correlate
-    logs = results.get('logs', {})
-    if logs and logs.get('status') not in ('no_anomaly', None):
-        lines.append('## 日志关联')
+    if show_logs:
+        lines.append('## 日志线索')
         if logs.get('status') == 'ok':
             entries = logs.get('entries', [])
             if entries:
                 lines.append('| 时间 | 级别 | 模块 | 详情 |')
                 lines.append('|---|---|---|---|')
                 for e in entries:
-                    lines.append(f"| {e.get('time', '')} | {e.get('level', '')} | {e.get('module', '')} | {e.get('detail', '')} |")
+                    time_display = e.get('time', '')
+                    if not time_display and (e.get('date') or e.get('time')):
+                        time_display = f"{e.get('date', '')} {e.get('time', '')}".strip()
+                    lines.append(f"| {time_display} | {e.get('level', '')} | {e.get('module', '')} | {e.get('detail', '')} |")
             else:
-                lines.append('未在异常时间点附近找到关联日志条目。')
+                lines.append('ℹ️ 未查询到服务日志。')
+        elif logs.get('status') == 'no_anomaly':
+            lines.append('✅ 未发现需关联日志的异常事件。')
         elif logs.get('status') == 'no_match':
-            lines.append('未在异常时间点附近找到关联日志条目。')
+            lines.append('ℹ️ 异常时间窗口附近未发现关联日志。')
         elif logs.get('status') == 'error':
-            lines.append(f'❌ 日志查询失败: {logs.get("error", "未知错误")}')
+            lines.append(f'❌ 日志查询失败：{logs.get("error", "未知错误")}')
         lines.append('')
 
-    # Conflicts section
-    conflicts = results.get('conflicts', {})
-    lines.append('## 地址冲突')
-    if conflicts.get('status') == 'conflict_found':
-        vs_overlaps = conflicts.get('vs_overlaps', [])
-        if vs_overlaps:
-            lines.append('**VS IP:Port 重叠:**')
-            lines.append('| 重叠地址 | 冲突 VS |')
-            lines.append('|---|---|')
-            for o in vs_overlaps:
-                names_list = o[0]
-                ip_port = o[1]
-                lines.append(f"| {ip_port} | {', '.join(names_list)} |")
+    if show_conflicts:
+        lines.append('## 地址冲突分析')
+        if conflicts.get('status') == 'conflict_found':
+            vs_overlaps = conflicts.get('vs_overlaps', [])
+            if vs_overlaps:
+                lines.append('**虚拟服务地址端口重叠**')
+                lines.append('| 重叠地址 | 冲突虚拟服务 |')
+                lines.append('|---|---|')
+                for o in vs_overlaps:
+                    names_list = o[0]
+                    ip_port = o[1]
+                    lines.append(f"| {ip_port} | {', '.join(names_list)} |")
 
-        pool_overlaps = conflicts.get('pool_overlaps', [])
-        if pool_overlaps:
-            lines.append('')
-            lines.append('**Pool 节点重复:**')
-            lines.append('| 节点地址 | 所属 Pool |')
-            lines.append('|---|---|')
-            for o in pool_overlaps:
-                lines.append(f"| {o[0]} | {', '.join(o[1])} |")
-    elif conflicts.get('status') == 'ok':
-        lines.append('✅ 未发现 VS IP:Port 重叠或 Pool 节点重复。')
-    elif conflicts.get('status') == 'error':
-        lines.append(f'❌ 冲突检测失败: {conflicts.get("error", "未知错误")}')
-    lines.append('')
+            pool_overlaps = conflicts.get('pool_overlaps', [])
+            if pool_overlaps:
+                lines.append('')
+                lines.append('**节点池成员重复**')
+                lines.append('| 节点地址 | 所属节点池 |')
+                lines.append('|---|---|')
+                for o in pool_overlaps:
+                    lines.append(f"| {o[0]} | {', '.join(o[1])} |")
+        elif conflicts.get('status') == 'ok':
+            lines.append('✅ 未发现虚拟服务地址端口重叠或节点池成员重复。')
+        elif conflicts.get('status') == 'error':
+            lines.append(f'❌ 冲突检测失败：{conflicts.get("error", "未知错误")}')
+        lines.append('')
 
     lines.append('## 结论边界')
-    lines.append('- 只展示设备实时数据、历史基线和日志中能够确认的现象。')
-    lines.append('- 未返回证据的根因、趋势或处置建议不在本次结论中展开。')
+    lines.append('- 本结论只基于设备实时数据、历史基线和日志记录中能够确认的现象。')
+    lines.append('- 未返回证据的根因、趋势或处置建议不会展开。')
     lines.append('')
 
     return '\n'.join(lines)
@@ -1104,7 +1173,12 @@ def main() -> None:
                         lines.append(f"## {host}")
                         lines.append(f"> 错误: {result['error']}")
                     else:
-                        lines.append(render_logs_markdown(result.get('entries', []), result.get('host', host)))
+                        wrapped = {
+                            'device': result.get('host', host),
+                            'logs': {'status': 'ok', 'entries': result.get('entries', [])},
+                            '_scope': 'logs',
+                        }
+                        lines.append(render_markdown(wrapped))
                     lines.append("")
                 print("\n".join(lines))
             sys.exit(compute_multi_exit_code(results))
@@ -1146,20 +1220,23 @@ def main() -> None:
 
         if cmd == "traffic":
             vs_name = args.vs if hasattr(args, 'vs') and args.vs else None
-            result = traffic_analysis(client, db_path=db_path, vs_name=vs_name)
+            traffic_result = traffic_analysis(client, db_path=db_path, vs_name=vs_name)
+            result = {'device': host, 'traffic': traffic_result, '_scope': 'traffic'}
             _print_result(result, output_format)
-            sys.exit(0 if result.get('status') != 'error' else 1)
+            sys.exit(0 if traffic_result.get('status') != 'error' else 1)
 
         elif cmd == "state":
             disk_source = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
-            result = state_analysis(client, disk_source=disk_source, db_path=db_path)
+            state_result = state_analysis(client, disk_source=disk_source, db_path=db_path)
+            result = {'device': host, 'state': state_result, '_scope': 'state'}
             _print_result(result, output_format)
-            sys.exit(0 if result.get('status') != 'error' else 1)
+            sys.exit(0 if state_result.get('status') != 'error' else 1)
 
         elif cmd == "conflict":
-            result = conflict_analysis(client)
+            conflict_result = conflict_analysis(client)
+            result = {'device': host, 'conflicts': conflict_result, '_scope': 'conflict'}
             _print_result(result, output_format)
-            sys.exit(0 if result.get('status') != 'error' else 1)
+            sys.exit(0 if conflict_result.get('status') != 'error' else 1)
 
         elif cmd == "logs":
             limit = args.limit if hasattr(args, 'limit') else 50
@@ -1168,7 +1245,8 @@ def main() -> None:
                 result = {'host': host, 'entries': entries, 'total': len(entries)}
                 print(render_json(result))
             else:
-                print(render_logs_markdown(entries, host))
+                result = {'device': host, 'logs': {'status': 'ok', 'entries': entries}, '_scope': 'logs'}
+                print(render_markdown(result))
             sys.exit(0)
 
         else:
