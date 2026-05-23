@@ -19,6 +19,7 @@ description: 深信服 AD/ADC/SLB 配置 skill。用于根据用户参数生成�
 - 不要打开、粘贴、改写或解析生成的 `adops-bundle.yml`、`adops-plan.json`、`adops-batch.json`、`apply.py`。这些文件是机器产物。
 - 面向用户输出时，只使用脚本输出的短 JSON 摘要和 `summarize-plan` 的结果，但不要把“工具调用”、退出码、stdout/stderr 作为用户正文标题；这些只供验收侧后台核验。
 - 最终正文的 `markdown-body` 只能从 `## 配置结论` 开始，按固定输出模板结束。禁止出现 `工具调用`、`执行命令`、`命令摘要`、`退出码`、`stdout`、`stderr`、`init_env.py`、`ad_ops_flow.py`、`render_slb_bundle.py`、`plan-and-render`、`summarize-plan`、`preflight-slb-plan`、`apply-slb-plan`、`rollback-and-verify`。用户可见区域可以展示业务产物路径，例如 `apply.py`、`rollback_apply.py`、`adops-bundle.yml`、`adops-plan.json`。
+- 所有 shell 命令禁止使用 `2>&1` 合并 stderr/stdout；工具平台会单独保存 stderr，用户可见正文也不能复制 stderr/stdout。
 - 每个新任务先设置 `AD_OPS_WORKDIR`，然后运行 `init_env.py`。WorkBot 验收场景允许直接清理旧的 `adops-*` 生成文件。
 
 ```bash
@@ -37,6 +38,7 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py status --workdir "$AD_OPS_WO
 - 提示词缺字段或组合超出快捷矩阵时，使用“通用模板流程”生成 `adops-bundle.yml` 模板，让用户人工补齐。
 - 阶段 A 结束时停止，告诉用户下载生成的 YAML、填写必要内容后重新上传；用户只需回复“我写完了 YAML”即可进入阶段 B。
 - 阶段 A 用户可见正文只说明 YAML 产物和下一步，不做计划、不做设备 GET、不下发。
+- 阶段 A 用户可见正文必须明确写出目标设备，例如 `设备：AD1` 或 `目标设备：AD1`。
 
 ```bash
 python3 skills/ad-config-ops/scripts/render_slb_bundle.py \
