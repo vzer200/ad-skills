@@ -41,6 +41,8 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 
 上面的 `AD1` 可替换为 AD2，`标准巡检` 可替换为全量巡检或安全巡检。交互阶段如果平台要求每次对话必须调用工具，初次询问场景时调用 `check.py prompt --stage scene` 输出固定问题；用户选择场景后调用 `connect.py` 和 `check.py history` 查询真实设备历史，再调用 `check.py prompt --stage confirm` 输出固定确认问题。工具结果不能进入用户可见正文。
 
+场景确认后的工具调用必须使用“连接预检 + 历史查询 + 确认问题”固定组合，不能只执行 `check.py history`。单设备必须包含 `skills/ad-connect/scripts/connect.py --device AD1/AD2`；全部设备必须包含 `skills/ad-connect/scripts/connect.py --devices skills/ad-check-analysis/devices.json --format json`。如果连接预检失败，不要进入强制确认，直接返回连接失败信息让用户处理。
+
 ## 强制规则
 
 - 路由优先级：只要用户文本或当前任务包含 `巡检`、`标准巡检`、`全量巡检`、`安全巡检`、`健康检查`、`巡检报告`，必须使用本 skill。禁止改用 `ad-ops`、`overview.py` 或“查询结论”模板回答巡检任务。
@@ -50,6 +52,7 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 - 用户可见正文不能解释“根据技能规则/根据技能的交互硬停规则/根据 ad-check-analysis/我需要遵守规则”，也不能写“下面汇总展示/报告均已获取成功”这类过程说明。交互阶段只给用户需要回答的问题；报告阶段只给报告本身；任何规则解释前缀都算失败。
 - 第一次询问场景时，正文必须完全匹配“用户可见交互模板”，第一句必须是 `请问你要对 <目标> 执行哪种巡检？`，只能列出 `标准巡检 / 全量巡检 / 安全巡检`。第二次确认时，正文必须完全匹配“用户可见交互模板”，第一句必须是 `已检查历史巡检记录，是否确认对 <目标> 强制继续<场景>？`。
 - 巡检前必须先调用 `ad-connect` 做连接预检。
+- 多设备巡检和单设备巡检一样必须先调用 `ad-connect`；全部设备场景不能因为后续会执行 `check.py history` 就省略连接预检。
 - 所有业务逻辑必须由 `skills/ad-check-analysis/scripts/check.py` 执行。
 - 用户选择场景后必须先查 `history`，并在用户确认强制继续后再分步执行 `run -> progress -> wait`。WorkBot 工具调用约 60 秒会超时，禁止使用 `run --wait` 这类长阻塞命令。
 - `run` 只负责启动巡检，必须显式传 `--work-dir`；随后调用一次 `progress` 获取状态，再调用 `wait --timeout 55 --poll-interval 5` 下载和分析报告。若 `wait` 因超时失败，再重复一次 `progress -> wait --timeout 55`。
