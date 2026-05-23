@@ -429,6 +429,7 @@ YAML pass criteria:
 
 - WorkBot does not invent missing fields and does not ask detailed parameter questions in chat.
 - The first answer uses the target device from the prompt, produces or requests completion of a YAML template, then stops.
+- Stage A must be backed by a real tool call that creates `adops-bundle.yml`; a text-only parameter request is a failure.
 - Manual completion happens by uploading a YAML file; the follow-up prompt is only `我写完了 YAML。`.
 - After YAML completion, WorkBot generates the plan, runs GET preflight on every create target and every referenced-existing SLB resource, and asks whether to `真实下发` or `直接给出脚本`.
 - For resources that have a create operation in YAML, HTTP 404 is normal and means the resource will be created. For resources that are only referenced as existing objects, HTTP 404 is a blocker and requires a corrected YAML.

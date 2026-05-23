@@ -21,6 +21,7 @@ description: 深信服 AD/ADC/SLB 配置 skill。用于根据用户参数生成�
 - 最终正文的 `markdown-body` 只能从 `## 配置结论` 开始，按固定输出模板结束。禁止出现 `工具调用`、`执行命令`、`命令摘要`、`退出码`、`stdout`、`stderr`、`init_env.py`、`ad_ops_flow.py`、`render_slb_bundle.py`、`plan-and-render`、`summarize-plan`、`preflight-slb-plan`、`apply-slb-plan`、`rollback-and-verify`。用户可见区域可以展示业务产物路径，例如 `apply.py`、`rollback_apply.py`、`adops-bundle.yml`、`adops-plan.json`。
 - 所有 shell 命令禁止使用 `2>&1` 合并 stderr/stdout；工具平台会单独保存 stderr，用户可见正文也不能复制 stderr/stdout。
 - 每个新任务先设置 `AD_OPS_WORKDIR`，然后运行 `init_env.py`。WorkBot 验收场景允许直接清理旧的 `adops-*` 生成文件。
+- R4 阶段 A 禁止纯文字回答。只要用户表达“创建/新增/生成/配置 VS/虚拟服务/SLB/节点池/策略/Profile”等配置意图，第一轮必须真实调用 shell 工具生成 `adops-bundle.yml`；不能先问 VS 名称、VIP、端口、节点、策略细节。
 
 ```bash
 export AD_OPS_WORKDIR="${AD_OPS_WORKDIR:-./ad_ops_workdir}"
@@ -35,7 +36,7 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py status --workdir "$AD_OPS_WO
 当用户要求新建或生成 SLB/VS 配置，例如“新增 VS”“VS + XFF”“VS + PRE_RULE”“VS + Pool + 节点”“VS 引用已有策略”等，第一步只做 YAML，不追问。
 
 - 常见组合参数能从提示词识别时，使用 `render_slb_bundle.py` 生成 `adops-bundle.yml`。
-- 提示词缺字段或组合超出快捷矩阵时，使用“通用模板流程”生成 `adops-bundle.yml` 模板，让用户人工补齐。
+- 提示词缺字段或组合超出快捷矩阵时，使用下面的 Stage A 通用模板命令生成 `adops-bundle.yml`，让用户人工补齐。不要回复“信息不足”“请补充参数”“VS 名称/VIP/端口是什么”等追问。
 - 阶段 A 结束时停止，告诉用户下载生成的 YAML、填写必要内容后重新上传；用户只需回复“我写完了 YAML”即可进入阶段 B。
 - 阶段 A 用户可见正文只说明 YAML 产物和下一步，不做计划、不做设备 GET、不下发。
 - 阶段 A 用户可见正文必须明确写出目标设备，例如 `设备：AD1` 或 `目标设备：AD1`。
@@ -56,6 +57,24 @@ python3 skills/ad-config-ops/scripts/render_slb_bundle.py \
   [--pre-rule-uri-pattern <URI_PATTERN>] \
   --workdir "$AD_OPS_WORKDIR"
 ```
+
+如果用户只说“创建虚拟服务，引用节点池、前置策略和 HTTP 优化策略”这类缺少具体字段的需求，必须执行这个通用模板命令，而不是追问：
+
+```bash
+export AD_OPS_WORKDIR="${AD_OPS_WORKDIR:-./ad_ops_workdir}"
+python3 skills/ad-config-ops/scripts/init_env.py --workdir "$AD_OPS_WORKDIR" --confirm-clean
+python3 skills/ad-config-ops/scripts/render_bundle_template.py \
+  --skill-root skills/ad-config-ops \
+  --operation create-http-profile create config.http_profile slb/http-profile.js \
+  --operation create-pool create config.pool slb/pool.js \
+  --operation create-http-pre-rule create config.pre_rule_http slb/pre-rule/http.js \
+  --operation create-virtual-service create config.virtual_service slb/virtual-service.js \
+  --out "$AD_OPS_WORKDIR/adops-bundle.yml" \
+  --workdir "$AD_OPS_WORKDIR"
+cp "$AD_OPS_WORKDIR/adops-bundle.yml" /opt/agent/data/outputs/adops-bundle.yml
+```
+
+Stage A 完成后只输出固定模板中的 `配置结论 / 产出物 / 下一步`，不要列字段说明表。
 
 ### 阶段 B：YAML 到脚本/下发选择
 
