@@ -142,6 +142,14 @@ class TestOverviewAPI(unittest.TestCase):
         self.assertIn("virtual_services", overview)
         self.assertEqual(len(overview["virtual_services"]), 2)
 
+        # Pools and traffic are separate from VS config
+        self.assertIn("pools", overview)
+        self.assertEqual(len(overview["pools"]), 2)
+        self.assertIn("traffic", overview)
+        self.assertEqual(len(overview["traffic"]), 2)
+        self.assertNotIn("connections", overview["virtual_services"][0])
+        self.assertNotIn("connection_rate", overview["virtual_services"][0])
+
         # Certificates
         self.assertIn("certificates", overview)
         self.assertEqual(len(overview["certificates"]), 1)
@@ -254,16 +262,24 @@ class TestOverviewAPI(unittest.TestCase):
         self.assertIn("查询结果", md)
         self.assertIn("目标设备：AD1（10.0.0.1）", md)
         self.assertNotIn("覆盖说明", md)
-        self.assertIn("AD Device Overview", md)
-        self.assertIn("Device Info", md)
-        self.assertIn("Virtual Services", md)
-        self.assertIn("SSL Certificates", md)
-        self.assertIn("Hardware Status", md)
+        self.assertIn("设备状态", md)
+        self.assertIn("虚拟服务配置", md)
+        self.assertIn("节点池配置", md)
+        self.assertIn("流量状态", md)
+        self.assertIn("SSL 证书", md)
+        self.assertIn("硬件状态", md)
+        self.assertNotIn("AD Device Overview", md)
+        self.assertNotIn("Device Info", md)
+        self.assertNotIn("Virtual Services", md)
+        self.assertNotIn("SSL Certificates", md)
+        self.assertNotIn("Hardware Status", md)
+        self.assertNotIn("Connections", md)
+        self.assertNotIn("Rate", md)
 
         # Data from mocks
         self.assertIn("vs_web", md)
         self.assertIn("cert_web", md)
-        self.assertIn("master", md)
+        self.assertIn("主用", md)
         self.assertIn("7.0%", md)
         self.assertIn("37.0%", md)
 
@@ -298,8 +314,10 @@ class TestOverviewAPI(unittest.TestCase):
         # Top-level keys
         self.assertIn("device", data)
         self.assertIn("virtual_services", data)
+        self.assertIn("pools", data)
         self.assertIn("certificates", data)
         self.assertIn("hardware", data)
+        self.assertIn("traffic", data)
 
         # Device keys
         self.assertIn("host", data["device"])
@@ -384,8 +402,8 @@ class TestOverviewAPI(unittest.TestCase):
 
         # Markdown must render without errors
         md = render_markdown(overview)
-        self.assertIn("Virtual Services", md)
-        self.assertIn("SSL Certificates", md)
+        self.assertIn("虚拟服务配置", md)
+        self.assertIn("SSL 证书", md)
 
     # ------------------------------------------------------------------
     # Test 14: Multi-VIP / multi-Port Cartesian expansion
@@ -418,6 +436,66 @@ class TestOverviewAPI(unittest.TestCase):
         self.assertIn("10.0.0.1:443", vs["vip_ports"])
         self.assertIn("10.0.0.2:80", vs["vip_ports"])
         self.assertIn("10.0.0.2:443", vs["vip_ports"])
+        self.client.get_vs_stat.assert_not_called()
+
+    def test_vs_query_does_not_request_or_render_traffic(self):
+        """VS config queries must not include traffic/status fields."""
+        overview = build_overview(self.client, "vs")
+        md = render_markdown(overview)
+
+        self.client.get_virtual_services.assert_called_once()
+        self.client.get_vs_stat.assert_not_called()
+        self.assertEqual(overview["traffic"], [])
+        self.assertNotIn("connections", overview["virtual_services"][0])
+        self.assertNotIn("connection_rate", overview["virtual_services"][0])
+        self.assertIn("虚拟服务配置", md)
+        self.assertNotIn("流量状态", md)
+        self.assertNotIn("当前连接数", md)
+        self.assertNotIn("新建速率", md)
+        self.assertNotIn("Connections", md)
+        self.assertNotIn("Rate", md)
+
+    def test_traffic_query_renders_traffic_only(self):
+        """Traffic queries render status metrics without VS config tables."""
+        overview = build_overview(self.client, "traffic")
+        md = render_markdown(overview)
+
+        self.client.get_vs_stat.assert_called_once()
+        self.client.get_virtual_services.assert_not_called()
+        self.assertEqual(len(overview["traffic"]), 2)
+        self.assertIn("流量状态", md)
+        self.assertIn("当前连接数", md)
+        self.assertNotIn("虚拟服务配置", md)
+
+    def test_config_query_renders_configuration_only(self):
+        """Default/config queries must not include status or traffic sections."""
+        overview = build_overview(self.client, "config")
+        md = render_markdown(overview)
+
+        self.client.get_virtual_services.assert_called_once()
+        self.client.get_pools.assert_called_once()
+        self.client.get_ssl_certificates.assert_called_once()
+        self.client.get_ha_status.assert_not_called()
+        self.client.get_sys_system.assert_not_called()
+        self.client.get_vs_stat.assert_not_called()
+        self.assertIn("虚拟服务配置", md)
+        self.assertIn("节点池配置", md)
+        self.assertIn("SSL 证书", md)
+        self.assertNotIn("设备状态", md)
+        self.assertNotIn("硬件状态", md)
+        self.assertNotIn("流量状态", md)
+        self.assertNotIn("当前连接数", md)
+        self.assertNotIn("CPU 使用率", md)
+
+    def test_missing_hardware_does_not_render_fake_zero_usage(self):
+        """Missing status fields must not be shown as zero usage."""
+        self.client.get_sys_system.side_effect = Exception("hardware unavailable")
+
+        overview = build_overview(self.client, "all")
+        md = render_markdown(overview)
+
+        self.assertNotIn("CPU 使用率：0%", md)
+        self.assertNotIn("内存使用率：0%", md)
 
     # ------------------------------------------------------------------
     # Test 15: Parameter error → exit code 4

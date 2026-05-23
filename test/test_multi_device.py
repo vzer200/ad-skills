@@ -349,7 +349,7 @@ class TestOverviewMultiDevice(unittest.TestCase):
         self.assertIsInstance(result, dict)
         self.assertIn("overview", result)
         self.assertIn("markdown", result)
-        self.assertIn("# AD Device Overview", result["markdown"])
+        self.assertIn("## 查询结果", result["markdown"])
 
     def test_overview_one_error_isolation(self):
         """API errors are captured in overview, not raised."""

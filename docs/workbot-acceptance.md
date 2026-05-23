@@ -193,6 +193,10 @@ Full overview prompt:
 Fixed single-device prompts:
 
 ```text
+帮我查一下 AD1 的配置。
+```
+
+```text
 帮我查一下 AD1 的虚拟服务配置。
 ```
 
@@ -221,6 +225,10 @@ Fixed single-device prompts:
 ```
 
 Fixed multi-device prompts:
+
+```text
+帮我查一下所有 AD 设备的配置。
+```
 
 ```text
 帮我查一下所有 AD 设备的虚拟服务配置。
@@ -282,6 +290,9 @@ overview.py all
 Pass criteria:
 
 - `overview.py all` is called, not separate model-written summaries.
+- Prompt wording controls the visible dimensions: prompts containing `配置` show configuration only; prompts containing `状态` / `硬件` / `资源` / `HA` show status only; prompts containing `流量` show traffic only; prompts with no explicit dimension default to configuration and must call `overview.py config`.
+- Configuration/default queries must not show device status, hardware status, traffic status, connection count, new-connection rate, throughput, CPU, or memory data.
+- Status queries must not show VS/Pool/certificate/traffic sections unless those dimensions are explicitly requested in the same prompt.
 - Single-dimension VS query calls `overview.py vs`.
 - Single-dimension node/pool query calls `overview.py pool`.
 - SSL certificate query calls `overview.py cert`.
@@ -290,6 +301,8 @@ Pass criteria:
 - Multi-device VS/Pool/cert/traffic/status/hardware prompts must call `overview.py <dimension> --devices ...` and must not fall back to `--device AD1` or `--device AD2`.
 - Tool commands must not use `2>&1`; stderr must stay separate from stdout so the visible report remains script-controlled.
 - Visible R2 answers must not include `覆盖说明`; target lines should use `目标设备：AD1（192.168.8.30）` rather than exposing URL schemes such as `https://192.168.8.30`.
+- Visible R2 answers must use Chinese section titles and table headers. English template leftovers such as `AD Device Overview`, `Device Info`, `Virtual Services`, `SSL Certificates`, `Hardware Status`, `Connections`, and `Rate` fail acceptance.
+- VS configuration queries must not show traffic/status metrics such as connection count, new connection rate, or throughput. Those fields belong only to `overview.py traffic` / traffic prompts.
 - HA can be tested manually when needed, but is intentionally skipped in the default acceptance batch.
 - `connect.py` validates the AD1 target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
 - The answer includes VS, Pool/config, traffic/status, and certificate sections only if returned by the script.

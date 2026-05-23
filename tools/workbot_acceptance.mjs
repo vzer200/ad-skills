@@ -71,6 +71,8 @@ const FIXED_CASES = [
   "r1-all-full",
   "r1-all-security",
   "r2",
+  "r2-config",
+  "r2-config-all",
   "r2-vs",
   "r2-vs-all",
   "r2-node",
@@ -281,14 +283,33 @@ const cases = {
   },
   "r2-short": {
     prompt: "AD1 现在啥情况？",
-    expected: ["connect.py", "AD1", "overview.py", "all"],
-    commandExpected: ["connect.py", "overview.py", "all"],
+    expected: ["connect.py", "AD1", "overview.py", "config"],
+    commandExpected: ["connect.py", "overview.py", "config"],
+    visibleForbidden: ["设备状态", "硬件状态", "流量状态", "当前连接数", "新建速率", "吞吐量", "CPU 使用率", "内存使用率"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-config": {
+    prompt: "帮我查一下 AD1 的配置。",
+    expected: ["connect.py", "AD1", "overview.py", "config"],
+    commandExpected: ["connect.py", "overview.py", "config"],
+    visibleForbidden: ["设备状态", "硬件状态", "流量状态", "当前连接数", "新建速率", "吞吐量", "CPU 使用率", "内存使用率"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-config-all": {
+    prompt: "帮我查一下所有 AD 设备的配置。",
+    expected: ["connect.py", "devices.json", "overview.py", "config"],
+    commandExpected: ["connect.py", "overview.py", "--devices", "config"],
+    commandForbidden: ["--device AD1", "--device AD2"],
+    visibleForbidden: ["设备状态", "硬件状态", "流量状态", "当前连接数", "新建速率", "吞吐量", "CPU 使用率", "内存使用率"],
     requireTools: true,
     requireDevice: true,
   },
   "r2-vs": {
     prompt: "帮我查一下 AD1 的虚拟服务配置。",
     expected: ["connect.py", "AD1", "overview.py", "vs"],
+    visibleForbidden: ["流量状态", "当前连接数", "新建速率", "吞吐量", "Connections", "Rate"],
     requireTools: true,
     requireDevice: true,
   },
@@ -303,6 +324,7 @@ const cases = {
     expected: ["connect.py", "devices.json", "overview.py", "vs"],
     commandExpected: ["connect.py", "overview.py", "--devices"],
     commandForbidden: ["--device AD1", "--device AD2"],
+    visibleForbidden: ["流量状态", "当前连接数", "新建速率", "吞吐量", "Connections", "Rate"],
     requireTools: true,
     requireDevice: true,
   },
@@ -1358,9 +1380,43 @@ function verify(run) {
     }
   }
   if (/^r2/.test(run.name)) {
-    defaultVisibleForbidden.push("覆盖说明");
+    defaultVisibleForbidden.push(
+      "覆盖说明",
+      "AD Device Overview",
+      "Device Info",
+      "Virtual Services",
+      "SSL Certificates",
+      "Hardware Status",
+      "| Name |",
+      "| Component |",
+      "Connections",
+      "Rate",
+    );
+    const r2ConfigOnly =
+      ["r2-short", "r2-config", "r2-config-all", "r2-node"].includes(run.name) ||
+      run.name.startsWith("r2-vs") ||
+      run.name.startsWith("r2-pool");
+    const r2CertOnly = run.name.startsWith("r2-cert");
+    const r2TrafficOnly = run.name.startsWith("r2-traffic");
+    const r2StatusOnly =
+      run.name.startsWith("r2-status") ||
+      run.name.startsWith("r2-hardware") ||
+      run.name.startsWith("r2-resource") ||
+      run.name.startsWith("r2-ha");
+    if (r2ConfigOnly) {
+      defaultVisibleForbidden.push("设备状态", "硬件状态", "流量状态", "当前连接数", "新建速率", "吞吐量", "CPU 使用率", "内存使用率");
+    }
+    if (r2CertOnly) {
+      defaultVisibleForbidden.push("设备状态", "硬件状态", "流量状态", "虚拟服务配置", "节点池配置", "CPU 使用率", "内存使用率");
+    }
+    if (r2TrafficOnly) {
+      defaultVisibleForbidden.push("设备状态", "硬件状态", "虚拟服务配置", "节点池配置", "SSL 证书", "CPU 使用率", "内存使用率");
+    }
+    if (r2StatusOnly) {
+      defaultVisibleForbidden.push("虚拟服务配置", "节点池配置", "流量状态", "当前连接数", "新建速率", "吞吐量", "SSL 证书");
+    }
   }
-  const visibleForbidden = cfg.visibleForbidden || defaultVisibleForbidden;
+  const visibleForbidden = [...defaultVisibleForbidden, ...(cfg.visibleForbidden || [])];
   const visibleForbiddenFound = visibleForbidden.filter((token) => visibleText.includes(token));
   const visibleForbiddenRegexes = /^r1/.test(run.name)
     ? [

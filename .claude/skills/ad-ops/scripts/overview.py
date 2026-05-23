@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-AD Device Overview Snapshot Script
-深信服AD设备概览快照脚本
+深信服 AD 设备查询脚本
 
 Usage:
     python overview.py all      --host https://x.x.x.x --user admin --password xxx [--format json]
+    python overview.py config   --host ... [--format json]
     python overview.py vs       --host ... [--format json]
     python overview.py pool     --host ... [--format json]
     python overview.py cert     --host ... [--format json]
@@ -121,7 +121,8 @@ def interface_level(status: str) -> str:
 # ADClient method that provides the data.
 API_GROUPS: Dict[str, List[str]] = {
     "all":      ["vs", "pool", "cert", "ha", "hardware", "traffic"],
-    "vs":       ["vs", "traffic"],
+    "config":   ["vs", "pool", "cert"],
+    "vs":       ["vs"],
     "pool":     ["pool"],
     "cert":     ["cert"],
     "hardware": ["hardware"],
@@ -154,8 +155,10 @@ def build_overview(client: ADClient, subcommand: str = "all") -> Dict[str, Any]:
         "query": subcommand,
         "device": {"host": client.host, "name": device_name},
         "virtual_services": [],
+        "pools": [],
         "certificates": [],
         "hardware": {},
+        "traffic": [],
         "api_errors": {},
     }
 
@@ -200,21 +203,29 @@ def build_overview(client: ADClient, subcommand: str = "all") -> Dict[str, Any]:
     # ---------- Virtual Services ---------------------------------------------
     vs_data = raw.get("vs")
     pool_data = raw.get("pool")
-    vs_stat_data = raw.get("traffic")
 
     if vs_data is not None:
         vs_items = vs_data.get("items", [])
-        pool_map = _build_pool_map(pool_data) if pool_data else {}
-        stat_map = _build_vs_stat_map(vs_stat_data) if vs_stat_data else {}
 
         for vs in vs_items:
-            overview["virtual_services"].append(_process_vs(vs, pool_map, stat_map))
+            overview["virtual_services"].append(_process_vs(vs))
+
+    # ---------- Pools / Nodes ------------------------------------------------
+    if pool_data is not None:
+        for pool in pool_data.get("items", []):
+            overview["pools"].append(_process_pool(pool))
 
     # ---------- Certificates ------------------------------------------------
     cert_data = raw.get("cert")
     if cert_data is not None:
         for cert in cert_data.get("items", []):
             overview["certificates"].append(_process_cert(cert))
+
+    # ---------- Traffic -----------------------------------------------------
+    vs_stat_data = raw.get("traffic")
+    if vs_stat_data is not None:
+        for item in vs_stat_data.get("items", []):
+            overview["traffic"].append(_process_traffic(item))
 
     # ---------- Hardware detail ---------------------------------------------
     if sys_data is not None:
@@ -225,36 +236,8 @@ def build_overview(client: ADClient, subcommand: str = "all") -> Dict[str, Any]:
 
 # -- Internal processors ------------------------------------------------------
 
-def _build_pool_map(pool_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-    """Build a lookup map: pool_name → {total, up, down, state}."""
-    pool_map: Dict[str, Dict[str, Any]] = {}
-    for pool in pool_data.get("items", []):
-        name = pool.get("name", "")
-        members = pool.get("members", [])
-        up = sum(1 for m in members if m.get("state") == "up")
-        total = len(members)
-        pool_map[name] = {
-            "total": total,
-            "up": up,
-            "down": total - up,
-            "state": pool.get("state", ""),
-        }
-    return pool_map
-
-
-def _build_vs_stat_map(vs_stat_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-    """Build a lookup map: vs_name → stat dict."""
-    stat_map: Dict[str, Dict[str, Any]] = {}
-    for item in vs_stat_data.get("items", []):
-        stat_map[item.get("name", "")] = item
-    return stat_map
-
-
-def _process_vs(vs: Dict[str, Any],
-                pool_map: Dict[str, Dict[str, Any]],
-                stat_map: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+def _process_vs(vs: Dict[str, Any]) -> Dict[str, Any]:
     """Transform a single VS entry into the overview representation."""
-    name = vs.get("name", "")
     vips = vs.get("vips") or []
     vports = vs.get("vports") or []
 
@@ -262,17 +245,36 @@ def _process_vs(vs: Dict[str, Any],
     vip_ports = [f"{vip}:{vport}" for vip in vips for vport in vports]
 
     pool_name = vs.get("pool_name", "")
-    pool_info = pool_map.get(pool_name, {})
-    stat = stat_map.get(name, {})
 
     return {
-        "name": name,
+        "name": vs.get("name", ""),
         "vip_ports": vip_ports,
         "pool": pool_name,
         "status": vs.get("state", ""),
-        "nodes": pool_info,
-        "connections": _extract_value(stat.get("connection")),
-        "connection_rate": _extract_value(stat.get("connection_rate")),
+    }
+
+
+def _process_pool(pool: Dict[str, Any]) -> Dict[str, Any]:
+    """Transform a pool entry into a user-facing config summary."""
+    members = pool.get("members") or []
+    up = sum(1 for m in members if str(m.get("state", "")).lower() == "up")
+    total = len(members)
+    return {
+        "name": pool.get("name", ""),
+        "status": pool.get("state", ""),
+        "total": total,
+        "up": up,
+        "down": total - up,
+        "members": [
+            {
+                "name": m.get("name", ""),
+                "ip": m.get("ip", ""),
+                "port": m.get("port", ""),
+                "status": m.get("state", ""),
+                "weight": m.get("weight", ""),
+            }
+            for m in members
+        ],
     }
 
 
@@ -285,6 +287,16 @@ def _process_cert(cert: Dict[str, Any]) -> Dict[str, Any]:
         "expiry": validity,
         "days_left": days,
         "level": cert_level(days),
+    }
+
+
+def _process_traffic(item: Dict[str, Any]) -> Dict[str, Any]:
+    """Transform a VS traffic item into a separate status summary."""
+    return {
+        "name": item.get("name", ""),
+        "connections": _extract_value(item.get("connection")),
+        "connection_rate": _extract_value(item.get("connection_rate")),
+        "throughput": _extract_value(item.get("throughput")),
     }
 
 
@@ -374,12 +386,62 @@ _LEVEL_CN_MAP = {
     "warning":  "警告",
     "info":     "提示",
     "ok":       "正常",
+    "unknown":  "未知",
+}
+
+_QUERY_LABELS = {
+    "all": "配置、流量、设备状态、SSL 证书",
+    "config": "配置",
+    "vs": "虚拟服务配置",
+    "pool": "节点池配置",
+    "cert": "SSL 证书",
+    "hardware": "设备状态",
+    "ha": "HA 状态",
+    "traffic": "流量状态",
+}
+
+_STATE_CN_MAP = {
+    "enable": "启用",
+    "enabled": "启用",
+    "disable": "停用",
+    "disabled": "停用",
+    "up": "正常",
+    "down": "异常",
+    "out": "未接入",
+    "normal": "正常",
+    "abnormal": "异常",
+    "fail": "故障",
+    "failed": "故障",
+    "master": "主用",
+    "slave": "备用",
+    "standby": "备用",
+    "unsupported": "不支持",
 }
 
 
 def _level_cn(level: str) -> str:
     """Map English level to Chinese label."""
     return _LEVEL_CN_MAP.get(level, level)
+
+
+def _query_label(query: str) -> str:
+    """Return the user-facing query label."""
+    return _QUERY_LABELS.get(query, query)
+
+
+def _status_cn(status: Any) -> str:
+    """Return a Chinese status label while preserving unknown device values."""
+    if status is None or status == "":
+        return "-"
+    raw = str(status)
+    return _STATE_CN_MAP.get(raw.strip().lower(), raw)
+
+
+def _fmt_value(value: Any, suffix: str = "") -> str:
+    """Format a device/API value for markdown tables."""
+    if value is None or value == "":
+        return "-"
+    return f"{value}{suffix}"
 
 
 def _display_host(host: str) -> str:
@@ -409,7 +471,7 @@ def render_markdown(overview: Dict[str, Any]) -> str:
 
     a("## 查询结论")
     a(f"- 目标设备：{_display_device(overview.get('device', {}))}")
-    a(f"- 维度：{query}")
+    a(f"- 维度：{_query_label(query)}")
     a("- 数据来源：设备实时查询")
     a(f"- 状态：{'失败' if failed else '成功'}")
     a("")
@@ -418,114 +480,151 @@ def render_markdown(overview: Dict[str, Any]) -> str:
     if query == "all":
         a("- 本次覆盖配置、流量、设备状态和 SSL 证书。")
     else:
-        a(f"- 本次只展示 {query} 维度。")
+        a(f"- 本次只展示{_query_label(query)}。")
     a("- 连接校验和设备读取已完成。")
     a("")
 
     a("## 查询结果")
     a("")
-    a("# AD Device Overview")
-    a("")
 
-    # -- Device Info ----------------------------------------------------------
-    a("## Device Info")
     dev = overview.get("device", {})
-    a(f"- **Host**: {dev.get('host', '')}")
-    if dev.get("version"):
-        a(f"- **Version**: {dev['version']}")
-    if dev.get("uptime"):
-        a(f"- **Uptime**: {dev['uptime']}")
-    if dev.get("ha_role"):
-        ha_status = dev.get("ha_status", "")
-        role_line = f"- **HA Role**: {dev['ha_role']}"
-        if ha_status:
-            role_line += f" ({ha_status})"
-        a(role_line)
-    cpu_display = _extract_value(dev.get("cpu"))
-    mem_display = _extract_value(dev.get("memory"))
-    if cpu_display is not None:
-        a(f"- **CPU**: {cpu_display}%")
-    if mem_display is not None:
-        a(f"- **Memory**: {mem_display}%")
-    a("")
+    if query in ("all", "hardware", "ha"):
+        a("### 设备状态")
+        if dev.get("version"):
+            a(f"- 版本：{dev['version']}")
+        if dev.get("uptime"):
+            a(f"- 运行时间：{dev['uptime']}")
+        if dev.get("ha_role") or dev.get("ha_status"):
+            role = _status_cn(dev.get("ha_role", ""))
+            ha_status = _status_cn(dev.get("ha_status", ""))
+            a(f"- HA：{role}（{ha_status}）")
+        if "cpu" in dev:
+            cpu_display = _extract_value(dev.get("cpu"))
+            a(f"- CPU 使用率：{cpu_display}%")
+        if "memory" in dev:
+            mem_display = _extract_value(dev.get("memory"))
+            a(f"- 内存使用率：{mem_display}%")
+        if not any(k in dev and dev.get(k) not in (None, "") for k in ("version", "uptime", "ha_role", "ha_status", "cpu", "memory")):
+            a("- 暂无设备状态摘要。")
+        a("")
 
-    # -- Virtual Services -----------------------------------------------------
-    a("## Virtual Services")
-    vs_error = api_errors.get("vs")
-    if vs_error:
-        a(f"> 获取失败: {vs_error}")
-    else:
-        vs_list = overview.get("virtual_services", [])
-        if not vs_list:
-            a("(无虚拟服务)")
+    if query in ("all", "config", "vs"):
+        a("### 虚拟服务配置")
+        vs_error = api_errors.get("vs")
+        if vs_error:
+            a(f"> 获取失败：{vs_error}")
         else:
-            a("| Name | VIP:Port | Pool | Status | Nodes (Up/Total) | Connections | Rate |")
-            a("|------|----------|------|--------|-------------------|-------------|------|")
-            for vs in vs_list:
-                name = vs.get("name", "")
-                vip_ports = ", ".join(vs.get("vip_ports", []))
-                pool = vs.get("pool", "")
-                status = vs.get("status", "")
-                nodes = vs.get("nodes", {})
-                node_str = f"{nodes.get('up', 0)}/{nodes.get('total', 0)}"
-                conn = _extract_value(vs.get("connections"))
-                conn_str = str(conn) if conn is not None else "-"
-                rate = _extract_value(vs.get("connection_rate"))
-                rate_str = f"{rate}/s" if rate is not None else "-"
-                a(f"| {name} | {vip_ports} | {pool} | {status} | {node_str} | {conn_str} | {rate_str} |")
-    a("")
+            vs_list = overview.get("virtual_services", [])
+            if not vs_list:
+                a("暂无虚拟服务配置。")
+            else:
+                a("| 虚拟服务 | VIP/端口 | 引用节点池 | 是否启用 |")
+                a("| --- | --- | --- | --- |")
+                for vs in vs_list:
+                    name = vs.get("name", "")
+                    vip_ports = ", ".join(vs.get("vip_ports", [])) or "-"
+                    pool = vs.get("pool", "") or "-"
+                    status = _status_cn(vs.get("status", ""))
+                    a(f"| {name} | {vip_ports} | {pool} | {status} |")
+        a("")
 
-    # -- SSL Certificates -----------------------------------------------------
-    a("## SSL Certificates")
-    cert_error = api_errors.get("cert")
-    if cert_error:
-        a(f"> 获取失败: {cert_error}")
-    else:
-        cert_list = overview.get("certificates", [])
-        if not cert_list:
-            a("(无证书)")
+    if query in ("all", "config", "pool"):
+        a("### 节点池配置")
+        pool_error = api_errors.get("pool")
+        if pool_error:
+            a(f"> 获取失败：{pool_error}")
         else:
-            a("| Name | Expiry | Days Left | Status |")
-            a("|------|--------|-----------|--------|")
-            for c in cert_list:
-                cn = _level_cn(c.get("level", "ok"))
-                a(f"| {c.get('name', '')} | {c.get('expiry', '')} | {c.get('days_left', '')} | {cn} |")
-    a("")
+            pools = overview.get("pools", [])
+            if not pools:
+                a("暂无节点池配置。")
+            else:
+                a("| 节点池 | 是否启用 | 节点数 | 节点明细 |")
+                a("| --- | --- | ---: | --- |")
+                for pool in pools:
+                    members = []
+                    for member in pool.get("members", []):
+                        endpoint = f"{member.get('ip', '')}:{member.get('port', '')}".strip(":")
+                        weight = member.get("weight", "")
+                        weight_text = f"，权重 {weight}" if weight != "" else ""
+                        members.append(f"{member.get('name') or endpoint}（{endpoint}{weight_text}）")
+                    member_text = "<br>".join(members) if members else "-"
+                    a(
+                        f"| {pool.get('name', '')} | {_status_cn(pool.get('status'))} | "
+                        f"{pool.get('total', 0)} | {member_text} |"
+                    )
+        a("")
 
-    # -- Hardware Status ------------------------------------------------------
-    a("## Hardware Status")
-    hw_error = api_errors.get("hardware")
-    if hw_error:
-        a(f"> 获取失败: {hw_error}")
-    else:
-        hw = overview.get("hardware", {})
-        if not hw:
-            a("(无硬件信息)")
+    if query in ("all", "traffic"):
+        a("### 流量状态")
+        traffic_error = api_errors.get("traffic")
+        if traffic_error:
+            a(f"> 获取失败：{traffic_error}")
         else:
-            a("| Component | Value | Status |")
-            a("|-----------|-------|--------|")
+            traffic = overview.get("traffic", [])
+            if not traffic:
+                a("暂无流量数据。")
+            else:
+                a("| 虚拟服务 | 当前连接数 | 新建速率 | 吞吐量 |")
+                a("| --- | ---: | ---: | ---: |")
+                for item in traffic:
+                    rate = _fmt_value(item.get("connection_rate"), "/s")
+                    a(
+                        f"| {item.get('name', '')} | {_fmt_value(item.get('connections'))} | "
+                        f"{rate} | {_fmt_value(item.get('throughput'))} |"
+                    )
+        a("")
 
-            def hw_row(label: str, value_str: str, level: str) -> None:
-                cn = _level_cn(level)
-                a(f"| {label} | {value_str} | {cn} |")
+    if query in ("all", "config", "cert"):
+        a("### SSL 证书")
+        cert_error = api_errors.get("cert")
+        if cert_error:
+            a(f"> 获取失败：{cert_error}")
+        else:
+            cert_list = overview.get("certificates", [])
+            if not cert_list:
+                a("暂无 SSL 证书。")
+            else:
+                a("| 证书 | 到期时间 | 剩余天数 | 风险级别 |")
+                a("| --- | --- | ---: | --- |")
+                for c in cert_list:
+                    cn = _level_cn(c.get("level", "ok"))
+                    a(f"| {c.get('name', '')} | {c.get('expiry', '')} | {c.get('days_left', '')} | {cn} |")
+        a("")
 
-            if "cpu" in hw:
-                cpu = hw["cpu"]
-                hw_row("CPU", f"{cpu.get('value', '')}%", cpu.get("level", "ok"))
-            if "memory" in hw:
-                mem = hw["memory"]
-                hw_row("Memory", f"{mem.get('value', '')}%", mem.get("level", "ok"))
-            temp_val = hw.get("temperature", {}).get("value")
-            if temp_val is not None:
-                hw_row("Temperature", f"{temp_val}C", hw["temperature"].get("level", "ok"))
+    if query in ("all", "hardware"):
+        a("### 硬件状态")
+        hw_error = api_errors.get("hardware")
+        if hw_error:
+            a(f"> 获取失败：{hw_error}")
+        else:
+            hw = overview.get("hardware", {})
+            if not hw:
+                a("暂无硬件信息。")
+            else:
+                a("| 项目 | 当前值 | 状态 |")
+                a("| --- | --- | --- |")
 
-            for f in hw.get("fans", []):
-                hw_row(f"Fan: {f.get('name', '')}", f.get("status", ""), f.get("level", "ok"))
-            for p in hw.get("power", []):
-                hw_row(f"Power: {p.get('name', '')}", p.get("status", ""), p.get("level", "ok"))
-            for i in hw.get("interfaces", []):
-                hw_row(f"Interface: {i.get('name', '')}", i.get("status", ""), i.get("level", "ok"))
-    a("")
+                def hw_row(label: str, value_str: str, level: str) -> None:
+                    cn = _level_cn(level)
+                    a(f"| {label} | {value_str} | {cn} |")
+
+                if "cpu" in hw:
+                    cpu = hw["cpu"]
+                    hw_row("CPU 使用率", f"{cpu.get('value', '')}%", cpu.get("level", "ok"))
+                if "memory" in hw:
+                    mem = hw["memory"]
+                    hw_row("内存使用率", f"{mem.get('value', '')}%", mem.get("level", "ok"))
+                temp_val = hw.get("temperature", {}).get("value")
+                if temp_val is not None:
+                    hw_row("温度", f"{temp_val}C", hw["temperature"].get("level", "ok"))
+
+                for f in hw.get("fans", []):
+                    hw_row(f"风扇：{f.get('name', '')}", _status_cn(f.get("status", "")), f.get("level", "ok"))
+                for p in hw.get("power", []):
+                    hw_row(f"电源：{p.get('name', '')}", _status_cn(p.get("status", "")), p.get("level", "ok"))
+                for i in hw.get("interfaces", []):
+                    hw_row(f"接口：{i.get('name', '')}", _status_cn(i.get("status", "")), i.get("level", "ok"))
+        a("")
 
     return "\n".join(lines)
 
@@ -537,7 +636,7 @@ def render_markdown(overview: Dict[str, Any]) -> str:
 def build_parser() -> argparse.ArgumentParser:
     """Build the argument parser."""
     parser = argparse.ArgumentParser(
-        description="AD Device Overview — 深信服AD设备概览快照",
+        description="深信服 AD 设备查询",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -545,7 +644,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "subcommand",
         nargs="?",
-        choices=["all", "vs", "pool", "cert", "hardware", "ha", "traffic"],
+        choices=["all", "config", "vs", "pool", "cert", "hardware", "ha", "traffic"],
         default="all",
         help="概览维度 (默认: all)",
     )
@@ -630,7 +729,7 @@ def main() -> None:
             }
             print(json.dumps(output, indent=2, ensure_ascii=False))
         else:
-            lines = [render_multi_summary(results, "AD Device Overview — 多设备", device_names)]
+            lines = [render_multi_summary(results, "AD 设备查询概览 - 多设备", device_names)]
             lines.append("---")
             for host, result in results.items():
                 device_label = device_names.get(host, _display_host(host))
@@ -649,7 +748,7 @@ def main() -> None:
 
     # -- Parameter validation -------------------------------------------------
     if not args.host:
-        print("用法: python overview.py {all|vs|pool|cert|hardware|ha|traffic}", file=sys.stderr)
+        print("用法: python overview.py {all|config|vs|pool|cert|hardware|ha|traffic}", file=sys.stderr)
         print("       --host HOST [--user USER] [--password PASS] [--format json]", file=sys.stderr)
         print("", file=sys.stderr)
         print("密码优先使用环境变量 AD_PASS, 其次 --password 参数", file=sys.stderr)
