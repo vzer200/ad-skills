@@ -434,6 +434,74 @@ class TestAdOpsFlowPreflight(unittest.TestCase):
         self.assertEqual(preflight["error_count"], 1)
         self.assertEqual(preflight["errors"][0]["status"], 500)
 
+    def test_preflight_gets_referenced_existing_resources(self):
+        plan = {
+            "operations": [
+                {
+                    "id": "create-virtual-service",
+                    "action": "create",
+                    "method": "POST",
+                    "path": "/api/ad/v3/slb/virtual-service/",
+                    "resource_path": "/api/ad/v3/slb/virtual-service/{name}",
+                    "path_parameters": {"name": "vs1"},
+                    "payload": {"name": "vs1", "pool": "existing_pool"},
+                }
+            ]
+        }
+        session = FakeSession([
+            FakeResponse(404, text="not found"),
+            FakeResponse(200, {"name": "existing_pool"}),
+        ])
+        with tempfile.TemporaryDirectory() as tmp:
+            preflight, _effective, _reused, _artifacts = ad_ops_flow.run_preflight(
+                plan=plan,
+                session=session,
+                base_url="https://ad.example",
+                auth={"host": "https://ad.example", "username": "admin", "password": "secret", "token": None},
+                workdir=Path(tmp),
+            )
+
+        self.assertTrue(preflight["ok"])
+        self.assertEqual(preflight["check_count"], 2)
+        self.assertEqual(preflight["checks"][1]["target_path"], "/api/ad/v3/slb/pool/existing_pool")
+        self.assertTrue(preflight["checks"][1]["reference_required"])
+        self.assertEqual([item["method"] for item in session.calls], ["GET", "GET"])
+
+    def test_preflight_blocks_missing_referenced_resources(self):
+        plan = {
+            "operations": [
+                {
+                    "id": "create-virtual-service",
+                    "action": "create",
+                    "method": "POST",
+                    "path": "/api/ad/v3/slb/virtual-service/",
+                    "resource_path": "/api/ad/v3/slb/virtual-service/{name}",
+                    "path_parameters": {"name": "vs1"},
+                    "payload": {"name": "vs1", "http_profile": "missing_profile"},
+                }
+            ]
+        }
+        session = FakeSession([
+            FakeResponse(404, text="not found"),
+            FakeResponse(404, text="not found"),
+        ])
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp)
+            with self.assertRaisesRegex(ValueError, "preflight GET failed"):
+                ad_ops_flow.run_preflight(
+                    plan=plan,
+                    session=session,
+                    base_url="https://ad.example",
+                    auth={"host": "https://ad.example", "username": "admin", "password": "secret", "token": None},
+                    workdir=workdir,
+                )
+            preflight = read_json(workdir / "adops-preflight.json")
+
+        self.assertFalse(preflight["ok"])
+        self.assertEqual(preflight["error_count"], 1)
+        self.assertEqual(preflight["errors"][0]["target_path"], "/api/ad/v3/slb/http-profile/missing_profile")
+        self.assertEqual(preflight["errors"][0]["error"], "not found")
+
     def test_apply_slb_plan_honors_allow_existing_flag(self):
         plan = {
             "operations": [

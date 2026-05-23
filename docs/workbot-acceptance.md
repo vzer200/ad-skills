@@ -371,25 +371,39 @@ Pass criteria:
 
 Requirement 4 is a general configuration-generation workflow. The minimum supported SLB matrix is VS + existing Pool, VS + Pool + nodes, VS + existing/new HTTP Profile, VS + existing/new HTTP Pre Rule, and combinations of those dependencies. XFF is only one example, not the only workflow.
 
-Requirement 4 is always staged. Prompt-to-YAML is a mandatory first flow and must not be replaced by parameter follow-up questions. If the prompt is incomplete or ambiguous, WorkBot generates a YAML template with blanks and stops for manual completion. A completed YAML then enters the second flow: plan/script generation, same-name resource GET preflight, and a user choice between script-only output or delivery verification.
+Requirement 4 is always staged. Prompt-to-YAML is a mandatory first flow and must not be replaced by parameter follow-up questions. Stage A prompts must name the target AD device. If the prompt is incomplete or ambiguous, WorkBot generates a YAML template with blanks and stops for manual completion. A completed YAML then enters the second flow: plan/script generation, same-name resource GET preflight against the target device, and a user choice between script-only output or delivery verification.
 
-Stage A prompt:
-
-```text
-帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。
-```
-
-Extended suite Stage A prompts, not part of the fixed mainline gate:
+Fixed Stage A mainline prompt:
 
 ```text
-帮我建个 VS，挂已有 Pool。
+在 AD1 上帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。
+```
+
+Fixed Stage A coverage prompts:
+
+```text
+在 AD1 上帮我创建一个 HTTP 虚拟服务，引用节点池和 http 优化策略。
 ```
 
 ```text
-这份 VS 配置会不会撞现网？
+在 AD1 上帮我创建虚拟服务，引用节点池和前置策略。
 ```
 
-Human uploads a filled YAML, then replies:
+```text
+在 AD1 上帮我创建虚拟服务，挂节点池。
+```
+
+Extended suite Stage A prompts, not part of the fixed R4 gate:
+
+```text
+在 AD1 上帮我建个 VS，挂已有 Pool。
+```
+
+```text
+在 AD1 上检查这份 VS 配置会不会撞现网。
+```
+
+Human downloads WorkBot's YAML artifact, fills the required fields, uploads the completed YAML, then replies:
 
 ```text
 我写完了 YAML。
@@ -416,10 +430,14 @@ Rollback choice:
 YAML pass criteria:
 
 - WorkBot does not invent missing fields and does not ask detailed parameter questions in chat.
-- The first answer produces or requests completion of a YAML template, then stops.
+- The first answer uses the target device from the prompt, produces or requests completion of a YAML template, then stops.
 - Manual completion happens by uploading a YAML file; the follow-up prompt is only `我写完了 YAML。`.
-- After YAML completion, WorkBot generates the plan, runs same-name preflight, and asks whether to `真实下发` or `直接给出脚本`.
-- After delivery, WorkBot asks whether rollback is needed; the human reply is only `需要回滚。`.
+- After YAML completion, WorkBot generates the plan, runs GET preflight on every create target and every referenced-existing SLB resource, and asks whether to `真实下发` or `直接给出脚本`.
+- For resources that have a create operation in YAML, HTTP 404 is normal and means the resource will be created. For resources that are only referenced as existing objects, HTTP 404 is a blocker and requires a corrected YAML.
+- If same-name resources exist, WorkBot reuses the existing device resources, omits those create operations from the effective plan, and tells the user which resources were reused.
+- If the user replies `不需要下发`, `先不下发`, or similar wording, WorkBot treats it as script-only mode: produce forward and rollback scripts, explain how to use them, and stop.
+- After delivery, WorkBot asks the user to inspect the device result and confirm rollback; the human reply is only `需要回滚。` or `是`.
+- If the user says `不符合预期` or similar wording after delivery, WorkBot must tell the user to rollback the current delivery and submit a corrected YAML. It must not patch the previous YAML in chat or continue mutating the device.
 - If completed YAML is invalid, WorkBot reports script validation errors and stops before any mutating call.
 
 Expected tool calls:
@@ -448,14 +466,15 @@ Pass criteria:
 
 - Tool calls include the expected generation and plan scripts; generated payloads and summaries come from tool stdout/artifacts.
 - Stage A ends with YAML only; no plan/apply happens before the user confirms YAML is complete.
-- Stage B always runs `preflight-slb-plan` before script output or delivery. Same-name create targets found by GET are reused and omitted from the effective plan.
-- Stage B treats non-404 GET failures as blockers. WorkBot must stop before any mutating call if preflight cannot prove whether a same-name resource exists.
+- Stage B always runs `preflight-slb-plan` before script output or delivery. Same-name create targets found by GET are reused and omitted from the effective plan. Referenced-existing resources must also be confirmed by GET before delivery.
+- Stage B treats non-404 GET failures as blockers. WorkBot must stop before any mutating call if preflight cannot prove whether a same-name resource exists. For referenced-existing resources, HTTP 404 is also a blocker; for create targets, HTTP 404 is expected.
 - Same-name reuse is a name-based reuse policy, not an overwrite. If `reuse_compatibility_warning_count` is greater than zero, WorkBot must report the warning and include it in the manual inspection checklist.
 - Script-only mode lists `apply.py`, `rollback_apply.py`, `adops-effective-plan.json`, and `adops-preflight.json`, then ends with no mutating call.
 - Delivery mode runs `apply-slb-plan`, writes `adops-execute-result.json`, `adops-rollback.json`, `adops-post-apply.json`, and then pauses for manual inspection.
+- Delivery acceptance independently verifies the real AD device through API after `apply-slb-plan`: the VS, Pool, node, HTTP Profile, and Pre Rule from the YAML must be present before the rollback prompt is sent.
 - Rollback runs only after explicit user confirmation. `rollback-and-verify` must write `adops-post-rollback.json` and `adops-rollback-compare.json`.
 - Rollback must use the baseline and rollback manifest from the same AD host and plan. A mismatch is a hard failure.
-- The run passes only if post-rollback GET state matches the preflight baseline. If not, WorkBot must report the diff and must not claim rollback success.
+- The run passes only if post-rollback GET state matches the preflight baseline and the same external API verification confirms the acceptance VS/Pool/node/Profile/Pre Rule are absent again. If not, WorkBot must report the diff and must not claim rollback success.
 
 ## Tool-Call Verification Checklist
 

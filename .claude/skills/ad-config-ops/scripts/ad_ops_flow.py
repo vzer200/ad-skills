@@ -377,6 +377,66 @@ def auth_from_args(args: argparse.Namespace) -> dict[str, Any]:
     return {"host": args.host, "username": args.username, "password": password, "token": None}
 
 
+REFERENCE_RESOURCE_PATHS = {
+    "pool": "/api/ad/v3/slb/pool/{name}",
+    "http_profile": "/api/ad/v3/slb/http-profile/{name}",
+    "pre_rule_http": "/api/ad/v3/slb/pre-rule/http/{name}",
+}
+
+
+def _reference_operation(kind: str, name: Any, source_operation: dict[str, Any]) -> dict[str, Any] | None:
+    if not isinstance(name, str) or not name.strip():
+        return None
+    resource_template = REFERENCE_RESOURCE_PATHS.get(kind)
+    if not resource_template:
+        return None
+    clean_name = name.strip()
+    return {
+        "id": f"reference-{kind}-{clean_name}",
+        "action": "reference",
+        "method": "GET",
+        "resource_path": resource_template,
+        "path_parameters": {"name": clean_name},
+        "name": clean_name,
+        "reference_kind": kind,
+        "reference_from": source_operation.get("id"),
+        "payload": {"name": clean_name},
+    }
+
+
+def referenced_operations(plan: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return referenced SLB resources that are not explicit operation targets."""
+    target_paths = {resource_path(operation) for operation in unique_operations(plan)}
+    seen: set[str] = set(target_paths)
+    refs: list[dict[str, Any]] = []
+
+    def add(kind: str, name: Any, source_operation: dict[str, Any]) -> None:
+        ref = _reference_operation(kind, name, source_operation)
+        if ref is None:
+            return
+        target_path = resource_path(ref)
+        if target_path in seen:
+            return
+        seen.add(target_path)
+        refs.append(ref)
+
+    for operation in plan.get("operations", []) or []:
+        if not isinstance(operation, dict):
+            continue
+        payload = operation.get("payload")
+        if not isinstance(payload, dict):
+            continue
+        add("pool", payload.get("pool"), operation)
+        add("http_profile", payload.get("http_profile"), operation)
+        pre_rules = payload.get("pre_rules")
+        if isinstance(pre_rules, list):
+            for name in pre_rules:
+                add("pre_rule_http", name, operation)
+        add("pool", payload.get("sched_pool"), operation)
+
+    return refs
+
+
 def unique_operations(plan: dict[str, Any]) -> list[dict[str, Any]]:
     seen: set[str] = set()
     unique: list[dict[str, Any]] = []
@@ -400,7 +460,7 @@ def capture_target_state(
 ) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
     errors: list[dict[str, Any]] = []
-    for operation in unique_operations(plan):
+    for operation in unique_operations(plan) + referenced_operations(plan):
         target_path = resource_path(operation)
         response = request(
             session,
@@ -423,13 +483,18 @@ def capture_target_state(
             check["payload"] = response_payload(response)
         elif getattr(response, "text", ""):
             check["error"] = response.text
-        if not found and getattr(response, "status_code", None) != 404:
+        is_reference = str(operation.get("action", "")).lower() == "reference"
+        if is_reference:
+            check["reference_required"] = True
+            check["reference_kind"] = operation.get("reference_kind")
+            check["reference_from"] = operation.get("reference_from")
+        if (is_reference and not found) or (not found and getattr(response, "status_code", None) != 404):
             errors.append(
                 {
                     "operation_id": operation.get("id"),
                     "target_path": target_path,
                     "status": getattr(response, "status_code", None),
-                    "error": check.get("error"),
+                    "error": check.get("error") or ("referenced resource not found" if is_reference else None),
                 }
             )
         if str(operation.get("action", "")).lower() == "create" and found:

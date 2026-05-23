@@ -106,10 +106,19 @@ const EXTENDED_CASES = [
   "r4-vs-pool-script",
   "r4-audit-script",
 ].join(",");
+const R4_CASES = [
+  "install",
+  "r4-script",
+  "r4-pool-profile-script",
+  "r4-pool-prerule-script",
+  "r4-vs-pool-script",
+  "r4-delivery",
+].join(",");
 const CASE_SUITES = {
   fixed: FIXED_CASES,
   extended: EXTENDED_CASES,
-  all: Array.from(new Set(`${FIXED_CASES},${EXTENDED_CASES}`.split(","))).join(","),
+  r4: R4_CASES,
+  all: Array.from(new Set(`${FIXED_CASES},${EXTENDED_CASES},${R4_CASES}`.split(","))).join(","),
 };
 const CASE_SUITE = argValue("--case-suite", process.env.WORKBOT_CASE_SUITE || "fixed");
 if (!CASE_SUITES[CASE_SUITE]) {
@@ -479,56 +488,87 @@ const cases = {
   },
   "r4-script": {
     steps: [
-      "帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
+      "在 AD1 上帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
       { upload: R4_YAML_PATH, name: "r4-yaml" },
       "我写完了 YAML。",
       "直接给出脚本。",
     ],
-    expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
+    expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
+    commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
+    commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
+    requireTools: true,
+  },
+  "r4-pool-profile-script": {
+    steps: [
+      "在 AD1 上帮我创建一个 HTTP 虚拟服务，引用节点池和 http 优化策略。",
+      { upload: R4_YAML_PATH, name: "r4-yaml" },
+      "我写完了 YAML。",
+      "不需要下发。",
+    ],
+    expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
+    commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
+    commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
+    requireTools: true,
+  },
+  "r4-pool-prerule-script": {
+    steps: [
+      "在 AD1 上帮我创建虚拟服务，引用节点池和前置策略。",
+      { upload: R4_YAML_PATH, name: "r4-yaml" },
+      "我写完了 YAML。",
+      "先不下发。",
+    ],
+    expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
     commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
     requireTools: true,
   },
   "r4-vs-pool-script": {
     steps: [
-      "帮我建个 VS，挂已有 Pool。",
+      "在 AD1 上帮我创建虚拟服务，挂节点池。",
       { upload: R4_YAML_PATH, name: "r4-yaml" },
       "我写完了 YAML。",
       "直接给出脚本。",
     ],
-    expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
+    expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
     commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
     requireTools: true,
   },
   "r4-audit-script": {
     steps: [
-      "这份 VS 配置会不会撞现网？",
+      "在 AD1 上检查这份 VS 配置会不会撞现网。",
       { upload: R4_YAML_PATH, name: "r4-yaml" },
       "我写完了 YAML。",
       "只审不下发。",
     ],
-    expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
+    expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
     commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
     requireTools: true,
   },
   "r4-delivery": {
     steps: [
-      "帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
+      "在 AD1 上帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
       { upload: R4_YAML_PATH, name: "r4-yaml" },
       "我写完了 YAML。",
       "真实下发。",
-      "需要回滚。",
+      { adVerify: "present", name: "r4-ad-present" },
+      "是。",
     ],
-    expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback-and-verify", "rollback_apply.py"],
+    expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback-and-verify", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"],
     requireTools: true,
-    verifyAbsent: { vsName: "wb_vs_workbot_flow_01", poolName: "wb_pool_workbot_flow_01", nodeIp: "192.0.2.51" },
+    verifyAbsent: {
+      vsName: "wb_vs_workbot_flow_01",
+      poolName: "wb_pool_workbot_flow_01",
+      nodeIp: "192.0.2.51",
+      httpProfile: "wb_http_profile_workbot_01",
+      preRule: "wb_pre_rule_workbot_01",
+    },
   },
   "r4-basic": {
     steps: [
-      "帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
+      "在 AD1 上帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
       { upload: R4_YAML_PATH, name: "r4-yaml" },
       "我写完了 YAML。",
       "直接给出脚本。",
@@ -538,16 +578,23 @@ const cases = {
   },
   "r4-basic-delivery": {
     steps: [
-      "帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
+      "在 AD1 上帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
       { upload: R4_YAML_PATH, name: "r4-yaml" },
       "我写完了 YAML。",
       "真实下发。",
+      { adVerify: "present", name: "r4-ad-present" },
       "需要回滚。",
     ],
     expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback-and-verify", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"],
     requireTools: true,
-    verifyAbsent: { vsName: "wb_vs_workbot_flow_01", poolName: "wb_pool_workbot_flow_01", nodeIp: "192.0.2.51" },
+    verifyAbsent: {
+      vsName: "wb_vs_workbot_flow_01",
+      poolName: "wb_pool_workbot_flow_01",
+      nodeIp: "192.0.2.51",
+      httpProfile: "wb_http_profile_workbot_01",
+      preRule: "wb_pre_rule_workbot_01",
+    },
   },
 };
 
@@ -1047,6 +1094,64 @@ function textOfResponse(response) {
 }
 
 function stepRuleViolationsFor(name, cfg, responses) {
+  if (name.startsWith("r4") && cfg.steps) {
+    const violations = [];
+    const promptResponses = responses.filter((item) => !item.upload && !item.localVerification);
+    const stageA = promptResponses[0] || {};
+    const yamlDone = promptResponses[1] || {};
+    const choice = promptResponses[2] || {};
+    const rollback = promptResponses[3] || {};
+    const stageAVisible = `${stageA.visibleText || ""}\n${stageA.visibleAgentText || ""}`;
+    const yamlDoneVisible = `${yamlDone.visibleText || ""}\n${yamlDone.visibleAgentText || ""}`;
+    const choiceVisible = `${choice.visibleText || ""}\n${choice.visibleAgentText || ""}`;
+    const rollbackVisible = `${rollback.visibleText || ""}\n${rollback.visibleAgentText || ""}`;
+    const stageACommands = extractStepToolCommands(stageA).join("\n");
+    const yamlDoneCommands = extractStepToolCommands(yamlDone).join("\n");
+    const choiceCommands = extractStepToolCommands(choice).join("\n");
+    const rollbackCommands = extractStepToolCommands(rollback).join("\n");
+    const prematureStageACommands = ["plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"];
+
+    if (!stageAVisible.includes("AD1")) violations.push("r4 stageA did not keep target device AD1 visible");
+    if (!/YAML|yaml|adops-bundle/.test(stageAVisible)) violations.push("r4 stageA did not produce or point to a YAML artifact");
+    for (const token of prematureStageACommands) {
+      if (stageACommands.includes(token)) violations.push(`r4 stageA executed premature command: ${token}`);
+    }
+
+    for (const token of ["plan-and-render", "summarize-plan", "preflight-slb-plan"]) {
+      if (!yamlDoneCommands.includes(token)) violations.push(`r4 yaml-complete step missing command token: ${token}`);
+    }
+    for (const token of ["apply-slb-plan", "rollback-and-verify"]) {
+      if (yamlDoneCommands.includes(token)) violations.push(`r4 yaml-complete step executed too early: ${token}`);
+    }
+    if (!/(同名|预检|复用|待新建|无冲突|无同名)/.test(yamlDoneVisible)) {
+      violations.push("r4 yaml-complete step did not explain same-name/reference preflight result");
+    }
+    if (!/(真实下发|直接给出脚本|不需要下发|先不下发|脚本)/.test(yamlDoneVisible)) {
+      violations.push("r4 yaml-complete step did not ask the user to choose delivery or script-only mode");
+    }
+
+    const isDelivery = Boolean(cfg.verifyAbsent || cfg.verifyPresent);
+    if (isDelivery) {
+      if (!choiceCommands.includes("apply-slb-plan")) violations.push("r4 delivery step missing apply-slb-plan");
+      if (choiceCommands.includes("rollback-and-verify")) violations.push("r4 delivery step rolled back before user confirmation");
+      if (!/(检查|验证|回滚)/.test(choiceVisible)) violations.push("r4 delivery step did not pause for manual inspection/rollback confirmation");
+      const presentCheck = responses.find((item) => item.localVerification && item.localVerification.kind === "verify_present");
+      if (presentCheck && presentCheck.localVerification.status === "fail") {
+        violations.push("r4 local AD present verification failed after delivery");
+      }
+      if (!rollbackCommands.includes("rollback-and-verify")) violations.push("r4 rollback step missing rollback-and-verify");
+      if (!/回滚/.test(rollbackVisible)) violations.push("r4 rollback step did not report rollback");
+    } else {
+      for (const token of ["apply-slb-plan", "rollback-and-verify"]) {
+        if (choiceCommands.includes(token)) violations.push(`r4 script-only step executed forbidden command: ${token}`);
+      }
+      if (!choiceVisible.includes("apply.py") || !choiceVisible.includes("rollback_apply.py")) {
+        violations.push("r4 script-only step did not provide forward and rollback scripts");
+      }
+    }
+    return violations;
+  }
+
   if (!name.startsWith("r1") || !cfg.steps) return [];
   const violations = [];
   const step1 = responses[0] || {};
@@ -1141,7 +1246,7 @@ function templateExpectedFor(name, cfg) {
   return [];
 }
 
-function runLocalAdVerification(name, cfg) {
+function runLocalAdVerification(name, cfg, override = {}) {
   if (!VERIFY_AD) return { status: "disabled" };
   if (!AD_VERIFY_PASSWORD) {
     return {
@@ -1160,8 +1265,8 @@ function runLocalAdVerification(name, cfg) {
     AD_PASSWORD: AD_VERIFY_PASSWORD,
     AD_PASS: AD_VERIFY_PASSWORD,
   };
-  const target = cfg && (cfg.verifyPresent || cfg.verifyAbsent);
-  const expect = cfg && cfg.verifyPresent ? "present" : "absent";
+  const target = override.target || (cfg && (cfg.verifyPresent || cfg.verifyAbsent));
+  const expect = override.expect || (cfg && cfg.verifyPresent ? "present" : "absent");
   const command =
     target
       ? {
@@ -1503,6 +1608,19 @@ async function runCase(page, name) {
       responses.push(await sendPrompt(page, label, step));
     } else if (step && step.upload) {
       responses.push(await uploadFile(page, step.upload, step.name || label));
+    } else if (step && step.adVerify) {
+      const expect = step.adVerify;
+      const target = step.target || cfg.verifyPresent || cfg.verifyAbsent;
+      const localVerification = runLocalAdVerification(step.name || label, cfg, { expect, target });
+      responses.push({
+        name: step.name || label,
+        text: JSON.stringify(localVerification, null, 2),
+        agentText: "",
+        visibleText: "",
+        visibleAgentText: "",
+        toolEvidence: { hasEvidence: false, candidates: [] },
+        localVerification,
+      });
     } else {
       throw new Error(`unsupported step for ${name}: ${JSON.stringify(step)}`);
     }
@@ -1542,7 +1660,14 @@ async function runCase(page, name) {
 
   return verify({
     name,
-    prompt: prompts.map((item) => (typeof item === "string" ? item : `[upload] ${item.upload}`)).join("\n\n"),
+    prompt: prompts
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item && item.upload) return `[upload] ${item.upload}`;
+        if (item && item.adVerify) return `[ad-verify] ${item.adVerify}`;
+        return `[step] ${JSON.stringify(item)}`;
+      })
+      .join("\n\n"),
     text: responses.map((item) => item.text).join("\n\n").slice(-20000),
     agentText: responses.map((item) => item.agentText).join("\n\n").slice(-20000),
     visibleText: responses.map((item) => item.visibleText ?? item.text).join("\n\n").slice(-20000),

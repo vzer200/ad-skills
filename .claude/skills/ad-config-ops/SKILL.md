@@ -10,10 +10,11 @@ description: 深信服 AD/ADC/SLB 配置 skill。用于根据用户参数生成�
 - 只使用本 skill 内脚本作为事实来源：`skills/ad-config-ops/scripts/`。
 - R4 必须分阶段执行：提示词先落成 YAML；YAML 再生成计划/脚本；用户明确选择后才进入下发验证。
 - 禁止用追问补参数。提示词不完整时，直接产出带空字段/注释的 YAML 模板让人工补齐，不能猜。
+- 阶段 A 必须识别目标设备。验收主线提示词会包含 `AD1`；如果用户未说明设备，YAML 模板必须保留设备空字段让人工填写，不能默认猜 AD1。
 - 用户选择“仅产出脚本”时，只输出正向脚本和回滚脚本，不下发。
 - 用户选择“下发验证”时，下发前必须 GET 设备保存 baseline；下发后必须 GET 验证资源；然后停止，等待用户人工检查完成后再回滚。
 - 回滚后必须再次 GET，并和下发前 baseline 比较；两次 GET 不一致时，禁止宣称兜底成功。
-- 用户交互必须短句化：不要把命令参数塞给用户。接受“我写完了 YAML”“真实下发”“直接给出脚本”“需要回滚”这类短回复，并按本流程推进。
+- 用户交互必须短句化：不要把命令参数塞给用户。接受“我写完了 YAML”“真实下发”“直接给出脚本”“不需要下发”“需要回滚”“是”“不符合预期”这类短回复，并按本流程推进。
 - 不要手写 API payload、batch JSON、apply.py 或回滚文件；必须由脚本生成。
 - 不要打开、粘贴、改写或解析生成的 `adops-bundle.yml`、`adops-plan.json`、`adops-batch.json`、`apply.py`。这些文件是机器产物。
 - 面向用户输出时，只使用脚本输出的短 JSON 摘要和 `summarize-plan` 的结果，但不要把“工具调用”、退出码、stdout/stderr 作为用户正文标题；这些只供验收侧后台核验。
@@ -34,7 +35,8 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py status --workdir "$AD_OPS_WO
 
 - 常见组合参数能从提示词识别时，使用 `render_slb_bundle.py` 生成 `adops-bundle.yml`。
 - 提示词缺字段或组合超出快捷矩阵时，使用“通用模板流程”生成 `adops-bundle.yml` 模板，让用户人工补齐。
-- 阶段 A 结束时停止，要求用户检查/补齐并上传 YAML。用户回复“我写完了 YAML”后进入阶段 B。
+- 阶段 A 结束时停止，告诉用户下载生成的 YAML、填写必要内容后重新上传；用户只需回复“我写完了 YAML”即可进入阶段 B。
+- 阶段 A 用户可见正文只说明 YAML 产物和下一步，不做计划、不做设备 GET、不下发。
 
 ```bash
 python3 skills/ad-config-ops/scripts/render_slb_bundle.py \
@@ -54,7 +56,7 @@ python3 skills/ad-config-ops/scripts/render_slb_bundle.py \
 
 ### 阶段 B：YAML 到脚本/下发选择
 
-用户确认 YAML 后，生成计划和脚本，并先用 YAML 对设备做同名资源 GET 预检。有同名 create 目标存在时，直接复用该资源，重新渲染有效计划和脚本；不要再 POST 创建同名资源。
+用户确认 YAML 后，生成计划和脚本，并先用 YAML 对目标设备做 GET 预检。有同名 create 目标存在时，直接复用设备现有资源，重新渲染有效计划和脚本；不要再 POST 创建同名资源。YAML 中已有 create 操作的资源，GET 404 表示需要新建，是正常结果；只有 YAML 明确引用现网已有资源、且没有对应 create 操作时，GET 404 才阻断流程。必须在用户正文里说明本次预检结果：待新建资源、复用已有资源、引用资源已确认，或预检失败。
 
 ```bash
 python3 skills/ad-config-ops/scripts/ad_ops_flow.py plan-and-render \
@@ -73,12 +75,12 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py preflight-slb-plan \
   --workdir "$AD_OPS_WORKDIR"
 ```
 
-Preflight safety: HTTP 404 means absent; any other GET failure blocks the workflow before script output or device mutation.
+Preflight safety: create target HTTP 404 means absent and can proceed as a new resource; referenced-existing target HTTP 404 blocks the workflow because the YAML points to a resource that is not present. Any other GET failure blocks before script output or device mutation.
 Same-name reuse safety: an existing resource is reused by name and is not overwritten. If the preflight result reports `reuse_compatibility_warning_count > 0`, surface it to the user and require manual review during the device inspection step.
 
 预检后必须让用户二选一，只接受短回复：
 
-- 用户回复“直接给出脚本”：输出 `apply.py` 和 `rollback_apply.py` 后结束。
+- 用户回复“直接给出脚本”“不需要下发”“先不下发”“只要脚本”：输出 `apply.py` 和 `rollback_apply.py`，说明如何使用，然后结束；禁止执行 `apply-slb-plan`。
 - 用户回复“真实下发”：进入阶段 C。
 
 ### 阶段 C：下发、人工检查、回滚兜底
@@ -102,7 +104,7 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py apply-slb-plan \
   --workdir "$AD_OPS_WORKDIR"
 ```
 
-`apply-slb-plan` 完成后必须停止，询问用户是否需要回滚。用户回复“需要回滚”后，才运行：
+`apply-slb-plan` 完成后必须停止，要求用户到设备侧验证是否符合预期，并询问是否回滚。用户回复“需要回滚”“回滚”或“是”后，才运行：
 
 ```bash
 python3 skills/ad-config-ops/scripts/ad_ops_flow.py rollback-and-verify \
@@ -128,6 +130,8 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py rollback-and-verify \
 - 设备验证结果：`apply-slb-plan` 结果中的 `verify_result`
 
 Rollback safety: `rollback-and-verify` must use the rollback manifest and baseline created by the same `apply-slb-plan` run and the same AD host. A host/plan mismatch is a hard stop.
+
+如果用户在下发后回复“不符合预期”“有问题”等类似内容，必须先提示建议回滚当前下发并重新提交 YAML；禁止继续基于旧 YAML 二次修改或追加下发。用户确认回滚后执行 `rollback-and-verify`，然后回到阶段 A/阶段 B 等待新的 YAML。
 
 Supported composition examples:
 
