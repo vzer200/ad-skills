@@ -13,6 +13,7 @@ description: 深信服 AD/ADC/SLB 配置 skill。用于根据用户参数生成�
 - 用户选择“仅产出脚本”时，只输出正向脚本和回滚脚本，不下发。
 - 用户选择“下发验证”时，下发前必须 GET 设备保存 baseline；下发后必须 GET 验证资源；然后停止，等待用户人工检查完成后再回滚。
 - 回滚后必须再次 GET，并和下发前 baseline 比较；两次 GET 不一致时，禁止宣称兜底成功。
+- 用户交互必须短句化：不要把命令参数塞给用户。接受“我写完了 YAML”“真实下发”“直接给出脚本”“需要回滚”这类短回复，并按本流程推进。
 - 不要手写 API payload、batch JSON、apply.py 或回滚文件；必须由脚本生成。
 - 不要打开、粘贴、改写或解析生成的 `adops-bundle.yml`、`adops-plan.json`、`adops-batch.json`、`apply.py`。这些文件是机器产物。
 - 面向用户输出时，只使用脚本 stdout 的短 JSON 摘要和 `summarize-plan` 的结果。
@@ -32,7 +33,7 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py status --workdir "$AD_OPS_WO
 
 - 常见组合参数能从提示词识别时，使用 `render_slb_bundle.py` 生成 `adops-bundle.yml`。
 - 提示词缺字段或组合超出快捷矩阵时，使用“通用模板流程”生成 `adops-bundle.yml` 模板，让用户人工补齐。
-- 阶段 A 结束时停止，要求用户检查/补齐 YAML 并确认进入阶段 B。
+- 阶段 A 结束时停止，要求用户检查/补齐并上传 YAML。用户回复“我写完了 YAML”后进入阶段 B。
 
 ```bash
 python3 skills/ad-config-ops/scripts/render_slb_bundle.py \
@@ -74,10 +75,10 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py preflight-slb-plan \
 Preflight safety: HTTP 404 means absent; any other GET failure blocks the workflow before script output or device mutation.
 Same-name reuse safety: an existing resource is reused by name and is not overwritten. If stdout reports `reuse_compatibility_warning_count > 0`, surface it to the user and require manual review during the device inspection step.
 
-预检后必须让用户二选一：
+预检后必须让用户二选一，只接受短回复：
 
-- 仅产出脚本：输出 `apply.py` 和 `rollback_apply.py` 后结束。
-- 下发验证：进入阶段 C。
+- 用户回复“直接给出脚本”：输出 `apply.py` 和 `rollback_apply.py` 后结束。
+- 用户回复“真实下发”：进入阶段 C。
 
 ### 阶段 C：下发、人工检查、回滚兜底
 
@@ -100,7 +101,7 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py apply-slb-plan \
   --workdir "$AD_OPS_WORKDIR"
 ```
 
-`apply-slb-plan` 完成后必须停止，明确让用户到设备侧人工检查。用户回复“检查完成，执行回滚”后，才运行：
+`apply-slb-plan` 完成后必须停止，询问用户是否需要回滚。用户回复“需要回滚”后，才运行：
 
 ```bash
 python3 skills/ad-config-ops/scripts/ad_ops_flow.py rollback-and-verify \

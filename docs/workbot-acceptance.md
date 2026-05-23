@@ -71,16 +71,30 @@ If a real-device case has tool calls but no AD 外网设备资源验证, send th
 
 ## Requirement 1: Inspection
 
-Short prompt:
+Single-device prompt:
 
 ```text
 请对 AD1 做一次标准巡检。
 ```
 
-Parameter follow-up if WorkBot asks:
+Expected human replies:
 
 ```text
-使用 devices.json 里的 AD1，必须带 --device AD1，密码从环境变量读取。请先 history，再用 check.py run --wait 完成巡检，结果以工具 stdout 为准。
+标准巡检
+继续
+```
+
+All-device prompt:
+
+```text
+请对 AD 所有设备做一次标准巡检。
+```
+
+Expected human replies:
+
+```text
+标准巡检
+继续
 ```
 
 Expected tool calls:
@@ -95,21 +109,27 @@ Pass criteria:
 
 - Tool calls include the expected scripts in order.
 - `connect.py` validates the AD1 target from `devices.json` before inspection, including AD 外网设备资源 reachability/auth evidence.
+- All-device inspection uses `devices.json` without `--device AD1` and produces multi-device evidence.
 - `check.py run --wait` or `check.py analyze` stdout is the source of the final report.
 - The final answer does not add model-written inspection findings.
+- Acceptance prompts must stay short. Do not use detailed parameter-fill prompts for R1.
 
 ## Requirement 2: Query Overview
 
-Short prompt:
+Full overview prompt:
 
 ```text
 帮我查一下 AD1 的配置、流量、设备状态和 SSL 证书到期时间。
 ```
 
-Parameter follow-up if WorkBot asks:
+Single-dimension prompts:
 
 ```text
-使用 devices.json 里的 AD1，必须带 --device AD1，密码从环境变量读取。请实际调用查询 skill，最终结果展示脚本 stdout。
+帮我查一下 AD1 的虚拟服务配置。
+```
+
+```text
+帮我查一下 AD1 的节点配置。
 ```
 
 Expected tool calls:
@@ -122,21 +142,32 @@ overview.py all
 Pass criteria:
 
 - `overview.py all` is called, not separate model-written summaries.
+- Single-dimension VS query calls `overview.py vs`.
+- Single-dimension node/pool query calls `overview.py pool`.
 - `connect.py` validates the AD1 target from `devices.json`, including AD 外网设备资源 reachability/auth evidence.
 - The answer includes VS, Pool/config, traffic/status, and certificate sections only if returned by the script.
+- Acceptance prompts must not include parameter-fill follow-ups for R2.
 
 ## Requirement 3: Perception Analysis
 
-Short prompt:
+Full analysis prompt:
 
 ```text
 请对 AD1 做一次感知分析，重点看流量、资源、冲突和日志线索。
 ```
 
-Parameter follow-up if WorkBot asks:
+Single-dimension prompts:
 
 ```text
-使用 devices.json 里的 AD1，必须带 --device AD1 做连接预检，密码从环境变量读取。请实际调用感知分析 skill，分析结论以脚本 stdout 为准。
+帮我分析一下 AD1 的流量异常。
+```
+
+```text
+帮我分析一下 AD1 的设备资源状态异常。
+```
+
+```text
+帮我分析一下 AD1 有没有地址冲突。
 ```
 
 Expected tool calls:
@@ -150,7 +181,9 @@ Pass criteria:
 
 - `connect.py` validates the AD1 target from `devices.json`, including AD 外网设备资源 reachability/auth evidence.
 - The final conclusion is backed by `perception.py` output.
+- Single-dimension prompts call `perception.py traffic|state|conflict` respectively.
 - No root cause, anomaly, or trend is invented outside script stdout.
+- Acceptance prompts must not include parameter-fill follow-ups for R3.
 
 ## Requirement 4: Config Generation
 
@@ -158,54 +191,43 @@ Requirement 4 is a general configuration-generation workflow. The minimum suppor
 
 Requirement 4 is always staged. Prompt-to-YAML is a mandatory first flow and must not be replaced by parameter follow-up questions. If the prompt is incomplete or ambiguous, WorkBot generates a YAML template with blanks and stops for manual completion. A completed YAML then enters the second flow: plan/script generation, same-name resource GET preflight, and a user choice between script-only output or delivery verification.
 
-Stage A prompt, basic VS + Pool + nodes:
+Stage A prompt:
 
 ```text
-请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_basic_01，VIP 10.250.250.10:8080，Pool wb_pool_basic_01，节点 192.0.2.10:80、192.0.2.11:80。
+帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。
 ```
 
-Stage A prompt, VS + HTTP Pre Rule:
+Human uploads a filled YAML, then replies:
 
 ```text
-请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_prerule_01，VIP 10.250.250.20:8081，Pool wb_pool_prerule_01，节点 192.0.2.20:80，HTTP Pre Rule wb_pre_rule_01 匹配 URI 包含 /api 后调度到 Pool。
+我写完了 YAML。
 ```
 
-Stage A prompt, VS + XFF HTTP Profile:
+Script-only choice:
 
 ```text
-请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_xff_01，VIP 10.250.250.30:8082，Pool wb_pool_xff_01，节点 192.0.2.30:80，新 HTTP Profile wb_xff_profile_01 插入 X-Forwarded-For。
+直接给出脚本。
 ```
 
-Stage A ambiguous prompt:
+Delivery choice:
 
 ```text
-请把这个 SLB 创建需求转成 YAML，我还没想好具体字段。
+真实下发。
 ```
 
-Stage B script-only prompt after YAML exists:
+Rollback choice:
 
 ```text
-使用刚才的 YAML 生成计划，先查 AD1 同名资源；我只要正向脚本和回滚脚本，不下发。
-```
-
-Stage C delivery prompt after YAML exists:
-
-```text
-使用刚才的 YAML 下发到 AD1 并验证结果；下发后暂停，等我检查完成再回滚。
-```
-
-Stage D rollback prompt after the operator confirms manual device inspection:
-
-```text
-我已经检查完成，请执行回滚并确认回滚后的 GET 结果和下发前一致。
+需要回滚。
 ```
 
 YAML pass criteria:
 
-- WorkBot does not invent missing fields.
-- For common matrix cases, WorkBot calls `render_slb_bundle.py` and stops after producing `adops-bundle.yml`.
-- For ambiguous or unsupported cases, WorkBot calls `lookup_api.py`/`render_bundle_template.py`, outputs a YAML template, and stops for manual completion.
-- WorkBot must not ask parameter questions in chat for R4; manual completion happens in YAML.
+- WorkBot does not invent missing fields and does not ask detailed parameter questions in chat.
+- The first answer produces or requests completion of a YAML template, then stops.
+- Manual completion happens by uploading a YAML file; the follow-up prompt is only `我写完了 YAML。`.
+- After YAML completion, WorkBot generates the plan, runs same-name preflight, and asks whether to `真实下发` or `直接给出脚本`.
+- After delivery, WorkBot asks whether rollback is needed; the human reply is only `需要回滚。`.
 - If completed YAML is invalid, WorkBot reports script validation errors and stops before any mutating call.
 
 Expected tool calls:
@@ -213,7 +235,7 @@ Expected tool calls:
 ```text
 init_env.py --confirm-clean
 ad_ops_flow.py status
-render_slb_bundle.py
+render_bundle_template.py or uploaded adops-bundle.yml
 ad_ops_flow.py plan-and-render
 ad_ops_flow.py summarize-plan
 ad_ops_flow.py preflight-slb-plan
@@ -224,18 +246,9 @@ ad_ops_flow.py rollback-and-verify
 Expected plan summaries by case:
 
 ```text
-basic:
-POST /api/ad/v3/slb/pool/
-POST /api/ad/v3/slb/virtual-service/
-
-pre-rule:
-POST /api/ad/v3/slb/pool/
-POST /api/ad/v3/slb/pre-rule/http/
-POST /api/ad/v3/slb/virtual-service/
-
-xff:
 POST /api/ad/v3/slb/http-profile/
 POST /api/ad/v3/slb/pool/
+POST /api/ad/v3/slb/pre-rule/http/
 POST /api/ad/v3/slb/virtual-service/
 ```
 

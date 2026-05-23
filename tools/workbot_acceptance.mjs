@@ -37,6 +37,7 @@ const WORKBOT_URL = argValue("--url", process.env.WORKBOT_URL || "https://14.18.
 const WORKBOT_USER = argValue("--user", process.env.WORKBOT_USER || "workbot_user");
 const WORKBOT_PASSWORD = argValue("--password", process.env.WORKBOT_PASSWORD);
 const ZIP_PATH = path.resolve(argValue("--zip", process.env.AD_SKILLS_ZIP || "dist/ad-skills-workbot.zip"));
+const R4_YAML_PATH = path.resolve(argValue("--r4-yaml", process.env.WORKBOT_R4_YAML || "test/fixtures/workbot/r4-slb-full.yml"));
 const OUT_DIR = path.resolve(argValue("--out-dir", "workbot-results"));
 const HEADLESS = hasFlag("--headless") || process.env.WORKBOT_HEADLESS === "1";
 const VERIFY_AD = hasFlag("--verify-ad") || process.env.WORKBOT_VERIFY_AD === "1";
@@ -48,7 +49,7 @@ const CHROME_PATH = argValue(
   "--chrome",
   process.env.CHROME_PATH || "C:/Program Files/Google/Chrome/Application/chrome.exe",
 );
-const CASES = (argValue("--cases", "install,r1,r2,r3,r4-basic,r4-prerule") || "")
+const CASES = (argValue("--cases", "install,r1,r1-all,r2,r2-vs,r2-node,r3,r3-traffic,r3-state,r3-conflict,r4-script") || "")
   .split(",")
   .map((item) => item.trim())
   .filter(Boolean);
@@ -58,6 +59,9 @@ if (!WORKBOT_PASSWORD) {
 }
 if (!fs.existsSync(ZIP_PATH)) {
   throw new Error(`zip not found: ${ZIP_PATH}`);
+}
+if (CASES.some((name) => name.startsWith("r4-")) && !fs.existsSync(R4_YAML_PATH)) {
+  throw new Error(`R4 YAML fixture not found: ${R4_YAML_PATH}`);
 }
 
 const NO_TOOL_FOLLOWUP =
@@ -77,60 +81,115 @@ const cases = {
     requireTools: true,
   },
   r1: {
-    prompt: "请对 AD1 做一次标准巡检。",
-    params: "使用 devices.json 里的 AD1，必须带 --device AD1，密码从环境变量读取。请先 history，再用 check.py run --wait 完成巡检，结果以工具 stdout 为准。",
-    expected: ["connect.py", "--device", "AD1", "check.py", "history", "run", "--wait"],
+    steps: [
+      "请对 AD1 做一次标准巡检。",
+      "标准巡检",
+      "继续",
+    ],
+    expected: ["connect.py", "AD1", "check.py", "history", "run", "--wait"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r1-all": {
+    steps: [
+      "请对 AD 所有设备做一次标准巡检。",
+      "标准巡检",
+      "继续",
+    ],
+    expected: ["connect.py", "devices.json", "check.py", "run", "--wait"],
     requireTools: true,
     requireDevice: true,
   },
   r2: {
     prompt: "帮我查一下 AD1 的配置、流量、设备状态和 SSL 证书到期时间。",
-    params: "使用 devices.json 里的 AD1，必须带 --device AD1，密码从环境变量读取。请实际调用查询 skill，最终结果展示脚本 stdout。",
-    expected: ["connect.py", "--device", "AD1", "overview.py", "all"],
+    expected: ["connect.py", "AD1", "overview.py", "all"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-vs": {
+    prompt: "帮我查一下 AD1 的虚拟服务配置。",
+    expected: ["connect.py", "AD1", "overview.py", "vs"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r2-node": {
+    prompt: "帮我查一下 AD1 的节点配置。",
+    expected: ["connect.py", "AD1", "overview.py", "pool"],
     requireTools: true,
     requireDevice: true,
   },
   r3: {
     prompt: "请对 AD1 做一次感知分析，重点看流量、资源、冲突和日志线索。",
-    params: "使用 devices.json 里的 AD1，必须带 --device AD1 做连接预检，密码从环境变量读取。请实际调用感知分析 skill，分析结论以脚本 stdout 为准。",
-    expected: ["connect.py", "--device", "AD1", "perception.py", "analyze"],
+    expected: ["connect.py", "AD1", "perception.py", "analyze"],
     requireTools: true,
     requireDevice: true,
   },
+  "r3-traffic": {
+    prompt: "帮我分析一下 AD1 的流量异常。",
+    expected: ["connect.py", "AD1", "perception.py", "traffic"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r3-state": {
+    prompt: "帮我分析一下 AD1 的设备资源状态异常。",
+    expected: ["connect.py", "AD1", "perception.py", "state"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r3-conflict": {
+    prompt: "帮我分析一下 AD1 有没有地址冲突。",
+    expected: ["connect.py", "AD1", "perception.py", "conflict"],
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r4-script": {
+    steps: [
+      "帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
+      { upload: R4_YAML_PATH, name: "r4-yaml" },
+      "我写完了 YAML。",
+      "直接给出脚本。",
+    ],
+    expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
+    requireTools: true,
+  },
+  "r4-delivery": {
+    steps: [
+      "帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
+      { upload: R4_YAML_PATH, name: "r4-yaml" },
+      "我写完了 YAML。",
+      "真实下发。",
+      "需要回滚。",
+    ],
+    expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback-and-verify", "rollback_apply.py"],
+    requireTools: true,
+    verifyAbsent: { vsName: "wb_vs_workbot_flow_01", poolName: "wb_pool_workbot_flow_01", nodeIp: "192.0.2.51" },
+  },
   "r4-basic": {
     steps: [
-      "请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_basic_01，VIP 10.250.250.10:8080，Pool wb_pool_basic_01，节点 192.0.2.10:80、192.0.2.11:80。",
-      "使用刚才的 YAML 生成计划，先查 AD1 同名资源；我只要正向脚本和回滚脚本，不下发。",
+      "帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
+      { upload: R4_YAML_PATH, name: "r4-yaml" },
+      "我写完了 YAML。",
+      "直接给出脚本。",
     ],
-    expected: ["init_env.py", "render_slb_bundle.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
-    requireTools: true,
-  },
-  "r4-prerule": {
-    steps: [
-      "请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_prerule_01，VIP 10.250.250.20:8081，Pool wb_pool_prerule_01，节点 192.0.2.20:80，HTTP Pre Rule wb_pre_rule_01 匹配 URI 包含 /api 后调度到 Pool。",
-      "使用刚才的 YAML 生成计划，先查 AD1 同名资源；我只要正向脚本和回滚脚本，不下发。",
-    ],
-    expected: ["init_env.py", "render_slb_bundle.py", "pre-rule", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
-    requireTools: true,
-  },
-  "r4-xff": {
-    steps: [
-      "请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_xff_01，VIP 10.250.250.30:8082，Pool wb_pool_xff_01，节点 192.0.2.30:80，新 HTTP Profile wb_xff_profile_01 插入 X-Forwarded-For。",
-      "使用刚才的 YAML 生成计划，先查 AD1 同名资源；我只要正向脚本和回滚脚本，不下发。",
-    ],
-    expected: ["init_env.py", "render_slb_bundle.py", "http-profile", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
+    expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
     requireTools: true,
   },
   "r4-basic-delivery": {
     steps: [
-      "请把这个需求转成 AD 配置 YAML：在 AD1 创建 HTTP VS wb_vs_basic_01，VIP 10.250.250.10:8080，Pool wb_pool_basic_01，节点 192.0.2.10:80、192.0.2.11:80。",
-      "使用刚才的 YAML 下发到 AD1 并验证结果；下发后暂停，等我检查完成再回滚。",
+      "帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
+      { upload: R4_YAML_PATH, name: "r4-yaml" },
+      "我写完了 YAML。",
+      "真实下发。",
+      "需要回滚。",
     ],
-    expected: ["init_env.py", "render_slb_bundle.py", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback_apply.py"],
+    expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback-and-verify", "rollback_apply.py"],
     requireTools: true,
-    verifyPresent: { vsName: "wb_vs_basic_01", poolName: "wb_pool_basic_01", nodeIp: "192.0.2.10" },
+    verifyAbsent: { vsName: "wb_vs_workbot_flow_01", poolName: "wb_pool_workbot_flow_01", nodeIp: "192.0.2.51" },
   },
 };
+
+cases["r4-prerule"] = cases["r4-script"];
+cases["r4-xff"] = cases["r4-script"];
 
 function log(event, data = {}) {
   console.error(JSON.stringify({ ts: new Date().toISOString(), event, ...data }));
@@ -407,13 +466,19 @@ async function sendPrompt(page, name, prompt) {
   return { name, prompt, text: delta.slice(-12000), agentText: agentText.slice(-12000), toolEvidence, artifacts };
 }
 
-async function uploadZip(page) {
-  log("upload-start", { zip: ZIP_PATH });
+async function uploadFile(page, filePath, name = "upload") {
+  log("upload-start", { name, file: filePath });
   const input = page.locator('input[type="file"].hidden-input');
   if (!(await input.count())) throw new Error("upload file input not found");
-  await input.setInputFiles(ZIP_PATH);
+  await input.setInputFiles(filePath);
   await page.waitForTimeout(2000);
-  log("upload-done");
+  const artifacts = await savePageArtifacts(page, name);
+  log("upload-done", { name, artifacts });
+  return { name, upload: filePath, text: "", agentText: "", toolEvidence: { hasEvidence: false, candidates: [] }, artifacts };
+}
+
+async function uploadZip(page) {
+  return uploadFile(page, ZIP_PATH, "skill-zip");
 }
 
 function verify(run) {
@@ -445,8 +510,15 @@ async function runCase(page, name) {
   const responses = [];
   const prompts = cfg.steps || [cfg.prompt];
   for (let index = 0; index < prompts.length; index += 1) {
+    const step = prompts[index];
     const label = prompts.length > 1 ? `${name}-step${index + 1}` : name;
-    responses.push(await sendPrompt(page, label, prompts[index]));
+    if (typeof step === "string") {
+      responses.push(await sendPrompt(page, label, step));
+    } else if (step && step.upload) {
+      responses.push(await uploadFile(page, step.upload, step.name || label));
+    } else {
+      throw new Error(`unsupported step for ${name}: ${JSON.stringify(step)}`);
+    }
   }
   let combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
 
@@ -468,7 +540,7 @@ async function runCase(page, name) {
 
   return verify({
     name,
-    prompt: prompts.join("\n\n"),
+    prompt: prompts.map((item) => (typeof item === "string" ? item : `[upload] ${item.upload}`)).join("\n\n"),
     text: responses.map((item) => item.text).join("\n\n").slice(-20000),
     agentText: responses.map((item) => item.agentText).join("\n\n").slice(-20000),
     responses,

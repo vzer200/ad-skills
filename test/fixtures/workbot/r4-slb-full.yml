@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "source": "workbot acceptance filled YAML fixture",
+  "operations": [
+    {
+      "id": "create-http-profile",
+      "action": "create",
+      "schema": "config.http_profile",
+      "document": "slb/http-profile.js",
+      "payload": {
+        "name": "wb_http_profile_workbot_01",
+        "description": "WorkBot acceptance HTTP optimization profile.",
+        "source_address": {
+          "operation": "REQUEST-HEADER-INSERT-SRCIP",
+          "request_header": "X-Forwarded-For"
+        }
+      }
+    },
+    {
+      "id": "create-pool",
+      "action": "create",
+      "schema": "config.pool",
+      "document": "slb/pool.js",
+      "payload": {
+        "name": "wb_pool_workbot_flow_01",
+        "description": "WorkBot acceptance node pool.",
+        "method": "ROUND-ROBIN",
+        "nodes": [
+          {
+            "name": "node_1_192.0.2.51_80",
+            "type": "ADDRESS",
+            "address": "192.0.2.51",
+            "port": 80,
+            "state": "ENABLE",
+            "weight": 10,
+            "priority_level": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "create-http-pre-rule",
+      "action": "create",
+      "schema": "config.pre_rule_http",
+      "document": "slb/pre-rule/http.js",
+      "payload": {
+        "name": "wb_pre_rule_workbot_01",
+        "description": "WorkBot acceptance HTTP pre rule.",
+        "service": "HTTP",
+        "source_address": {
+          "type": "ALL"
+        },
+        "action": "SCHED-POOL",
+        "sched_pool": "wb_pool_workbot_flow_01",
+        "sched_failure": "NEXT-RULE",
+        "http_request_uri_rule": {
+          "mode": "WILDCARD",
+          "case_sensitive": "DISABLE",
+          "pattern": "/"
+        }
+      }
+    },
+    {
+      "id": "create-virtual-service",
+      "action": "create",
+      "schema": "config.virtual_service",
+      "document": "slb/virtual-service.js",
+      "payload": {
+        "name": "wb_vs_workbot_flow_01",
+        "description": "WorkBot acceptance virtual service.",
+        "state": "ENABLE",
+        "service": "HTTP",
+        "vips": [
+          "10.250.250.51"
+        ],
+        "vports": [
+          "8051"
+        ],
+        "pool": "wb_pool_workbot_flow_01",
+        "http_profile": "wb_http_profile_workbot_01",
+        "pre_rules": [
+          "wb_pre_rule_workbot_01"
+        ]
+      }
+    }
+  ]
+}
