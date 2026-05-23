@@ -44,14 +44,14 @@ const VERIFY_AD = hasFlag("--verify-ad") || process.env.WORKBOT_VERIFY_AD === "1
 const PYTHON = argValue("--python", process.env.PYTHON || "python");
 const AD_VERIFY_BASE_URL = argValue("--ad-base-url", process.env.AD_VERIFY_BASE_URL || process.env.AD1_PUBLIC_URL || "https://14.18.243.211:21044");
 const AD_VERIFY_USERNAME = argValue("--ad-user", process.env.AD_VERIFY_USERNAME || process.env.AD1_USER || "admin");
-const AD_VERIFY_PASSWORD = argValue("--ad-password", process.env.AD_VERIFY_PASSWORD || process.env.AD1_PASS || process.env.AD_PASS);
+const AD_VERIFY_PASSWORD = argValue("--ad-password", process.env.AD_VERIFY_PASSWORD || process.env.AD1_PASS || process.env.AD_PASS || process.env.AD_PASSWORD);
 const IDLE_AFTER_STOP_MS = Number(argValue("--idle-after-stop-ms", process.env.WORKBOT_IDLE_AFTER_STOP_MS || "2000"));
 const WAIT_POLL_MS = Number(argValue("--wait-poll-ms", process.env.WORKBOT_WAIT_POLL_MS || "1000"));
 const CHROME_PATH = argValue(
   "--chrome",
   process.env.CHROME_PATH || "C:/Program Files/Google/Chrome/Application/chrome.exe",
 );
-const DEFAULT_CASES = [
+const FIXED_CASES = [
   "install",
   "r1",
   "r1-full",
@@ -60,37 +60,50 @@ const DEFAULT_CASES = [
   "r1-all-full",
   "r1-all-security",
   "r2",
-  "r2-short",
   "r2-vs",
-  "r2-vs-alt",
   "r2-vs-all",
-  "r2-vs-all-short",
   "r2-node",
   "r2-pool",
-  "r2-pool-node",
   "r2-cert",
-  "r2-cert-alt",
   "r2-traffic",
   "r2-status",
-  "r2-resource-alt",
   "r2-hardware",
   "r3",
-  "r3-short",
-  "r3-abnormal",
   "r3-traffic",
   "r3-state",
-  "r3-resource-short",
   "r3-conflict",
-  "r3-conflict-port",
   "r3-logs",
   "r4-script",
+  "r4-delivery",
+].join(",");
+const EXTENDED_CASES = [
+  "install",
+  "r2-short",
+  "r2-vs-alt",
+  "r2-vs-all-short",
+  "r2-pool-node",
+  "r2-cert-alt",
+  "r2-resource-alt",
+  "r3-short",
+  "r3-abnormal",
+  "r3-resource-short",
+  "r3-conflict-port",
   "r4-vs-pool-script",
   "r4-audit-script",
 ].join(",");
+const CASE_SUITES = {
+  fixed: FIXED_CASES,
+  extended: EXTENDED_CASES,
+  all: Array.from(new Set(`${FIXED_CASES},${EXTENDED_CASES}`.split(","))).join(","),
+};
+const CASE_SUITE = argValue("--case-suite", process.env.WORKBOT_CASE_SUITE || "fixed");
+if (!CASE_SUITES[CASE_SUITE]) {
+  throw new Error(`unknown case suite: ${CASE_SUITE}. Expected one of: ${Object.keys(CASE_SUITES).join(", ")}`);
+}
 const CASES = (
   argValue(
     "--cases",
-    DEFAULT_CASES,
+    process.env.WORKBOT_CASES || CASE_SUITES[CASE_SUITE],
   ) || ""
 )
   .split(",")
@@ -392,6 +405,7 @@ const cases = {
       "需要回滚。",
     ],
     expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback-and-verify", "rollback_apply.py"],
+    commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"],
     requireTools: true,
     verifyAbsent: { vsName: "wb_vs_workbot_flow_01", poolName: "wb_pool_workbot_flow_01", nodeIp: "192.0.2.51" },
   },
@@ -414,6 +428,7 @@ const cases = {
       "需要回滚。",
     ],
     expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback-and-verify", "rollback_apply.py"],
+    commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"],
     requireTools: true,
     verifyAbsent: { vsName: "wb_vs_workbot_flow_01", poolName: "wb_pool_workbot_flow_01", nodeIp: "192.0.2.51" },
   },
@@ -907,7 +922,7 @@ async function main() {
   let browser = null;
   let page = null;
   try {
-    log("main-start", { cases: CASES, zip: ZIP_PATH, outDir: OUT_DIR });
+    log("main-start", { caseSuite: CASE_SUITE, cases: CASES, zip: ZIP_PATH, outDir: OUT_DIR });
     log("resolve-playwright-start");
     const { chromium } = resolvePlaywrightCore();
     log("resolve-playwright-done");
@@ -945,6 +960,7 @@ async function main() {
       ok: !failure && results.every((item) => item.ok),
       url: WORKBOT_URL,
       zip: ZIP_PATH,
+      caseSuite: CASE_SUITE,
       cases: CASES,
       results,
       debug,

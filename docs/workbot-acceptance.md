@@ -29,9 +29,19 @@ $env:AD1_PASS = "<operator-provided AD1 password>"
 .\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD
 ```
 
-The automation runs tests, validates skills, runs an SLB bundle smoke test, commits and pushes, packages `dist/ad-skills-workbot.zip`, uploads it to WorkBot, sends the acceptance prompts, and writes a JSON evidence report under `workbot-results/`.
+The automation runs tests, validates skills, runs an SLB bundle smoke test, commits and pushes, packages `dist/ad-skills-workbot.zip`, uploads it to WorkBot, sends the fixed acceptance prompts, and writes a JSON evidence report under `workbot-results/`.
 
-Default WorkBot pacing waits 2 seconds after the stop button disappears before sending the next prompt. The default case list is intentionally broad: it covers R1 standard/full/security on one device and all devices, R2 full/single-dimension/multi-device VS short prompts, R3 full/single-dimension perception prompts, and R4 script-only/audit-only SLB prompts. HA is not part of the default run.
+Default WorkBot pacing waits 2 seconds after the stop button disappears before sending the next prompt.
+
+The default `fixed` suite is the mainline gate. It uses only the agreed fixed prompts and covers the complete requirements flow in one WorkBot run: R1 standard/full/security on one device and all devices, R2 full/single-dimension/multi-device VS queries, R3 full/single-dimension perception analysis, and R4 script-only plus real delivery/rollback. HA is not part of the default run.
+
+Exploratory prompt variants are kept in a separate suite and must not be mixed into the mainline stability gate:
+
+```powershell
+.\tools\run_workbot_acceptance.ps1 -VerifyAD -CaseSuite extended
+```
+
+Use `-Cases "case1,case2"` only for temporary debugging of a specific failure.
 
 If WorkBot cannot see local environment variables such as `AD1_PASS`, build the upload-only package with runtime credential injection:
 
@@ -177,11 +187,41 @@ Full overview prompt:
 帮我查一下 AD1 的配置、流量、设备状态和 SSL 证书到期时间。
 ```
 
-Single-dimension prompts:
+Fixed single-dimension prompts:
 
 ```text
 帮我查一下 AD1 的虚拟服务配置。
 ```
+
+```text
+帮我查一下所有 AD 设备的虚拟服务配置。
+```
+
+```text
+帮我查一下 AD1 的节点配置。
+```
+
+```text
+帮我查一下 AD1 的节点池配置。
+```
+
+```text
+帮我查一下 AD1 的 SSL 证书到期时间。
+```
+
+```text
+帮我查一下 AD1 的流量情况。
+```
+
+```text
+帮我查一下 AD1 的设备状态。
+```
+
+```text
+帮我查一下 AD1 的硬件状态。
+```
+
+Extended suite prompts, not part of the fixed mainline gate:
 
 ```text
 AD1 现在啥情况？
@@ -196,19 +236,7 @@ AD1 现在啥情况？
 ```
 
 ```text
-帮我查一下 AD1 的节点配置。
-```
-
-```text
-帮我查一下 AD1 的节点池配置。
-```
-
-```text
 AD1 节点池和节点发我。
-```
-
-```text
-帮我查一下 AD1 的 SSL 证书到期时间。
 ```
 
 ```text
@@ -216,19 +244,7 @@ AD1 证书有没有快过期？
 ```
 
 ```text
-帮我查一下 AD1 的流量情况。
-```
-
-```text
-帮我查一下 AD1 的设备状态。
-```
-
-```text
 AD1 设备资源状态查一下。
-```
-
-```text
-帮我查一下 AD1 的硬件状态。
 ```
 
 Expected tool calls:
@@ -260,7 +276,7 @@ Full analysis prompt:
 请对 AD1 做一次感知分析，重点看流量、资源、冲突和日志线索。
 ```
 
-Short analysis prompts:
+Extended suite short prompts, not part of the fixed mainline gate:
 
 ```text
 AD1 做个感知分析。
@@ -270,7 +286,7 @@ AD1 做个感知分析。
 AD1 有没有异常？
 ```
 
-Single-dimension prompts:
+Fixed single-dimension prompts:
 
 ```text
 帮我分析一下 AD1 的流量异常。
@@ -281,19 +297,21 @@ Single-dimension prompts:
 ```
 
 ```text
-AD1 CPU/内存/磁盘看下。
-```
-
-```text
 帮我分析一下 AD1 有没有地址冲突。
 ```
 
 ```text
-AD1 有没有地址端口冲突？
+帮我看一下 AD1 的服务日志线索。
+```
+
+Extended suite single-dimension prompts:
+
+```text
+AD1 CPU/内存/磁盘看下。
 ```
 
 ```text
-帮我看一下 AD1 的服务日志线索。
+AD1 有没有地址端口冲突？
 ```
 
 Expected tool calls:
@@ -323,7 +341,7 @@ Stage A prompt:
 帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。
 ```
 
-Additional short Stage A prompts:
+Extended suite Stage A prompts, not part of the fixed mainline gate:
 
 ```text
 帮我建个 VS，挂已有 Pool。
