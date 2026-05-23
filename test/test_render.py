@@ -199,10 +199,13 @@ class TestRenderMultiDeviceReport(unittest.TestCase):
             },
         }
         output = render_multi_device_report(results, scene="标准巡检", device_names={"https://dev1.com": "AD1"})
-        self.assertIn("AD 巡检分析报告（多设备）", output)
+        self.assertIn("全部 AD 设备", output)
         self.assertIn("AD1", output)
         self.assertIn("标准巡检", output)
-        self.assertIn("设备汇总", output)
+        self.assertIn("设备概览", output)
+        self.assertIn("全局共性问题", output)
+        self.assertNotIn("## 巡检过程", output)
+        self.assertNotIn("## 原始报告", output)
 
     def test_mixed_success_and_error(self):
         results = {
@@ -213,10 +216,10 @@ class TestRenderMultiDeviceReport(unittest.TestCase):
             "https://dev2.com": {"error": "Connection refused"},
         }
         output = render_multi_device_report(results)
-        self.assertIn("设备汇总", output)
+        self.assertIn("设备概览", output)
         self.assertIn("2 台", output)
 
-    def test_with_anomalies_includes_comparison(self):
+    def test_with_anomalies_omits_per_device_comparison(self):
         results = {
             "https://dev1.com": {
                 "meta": {"host": "https://dev1.com", "start_time": "20260520120000"},
@@ -236,7 +239,8 @@ class TestRenderMultiDeviceReport(unittest.TestCase):
             },
         }
         output = render_multi_device_report(results)
-        self.assertIn("跨设备对比", output)
+        self.assertNotIn("跨设备对比", output)
+        self.assertIn("未发现所有设备共同存在的异常项", output)
 
     def test_device_summary_uses_overall_health_score(self):
         results = {
@@ -287,16 +291,17 @@ class TestRenderMultiDeviceReport(unittest.TestCase):
             },
         }
         output = render_multi_device_report(results, device_names={"https://dev1.com": "AD1", "https://dev2.com": "AD2"})
-        self.assertIn("设备安全检查：未通过", output)
-        self.assertIn("不安全算法：是", output)
-        self.assertIn("不安全协议：是", output)
+        self.assertIn("设备安全状态检查", output)
+        self.assertIn("设备安全状态检查 状态异常，建议进一步排查", output)
+        self.assertNotIn("SSL 安全策略检查", output)
         self.assertNotIn("security_check_state=", output)
         self.assertNotIn("algorithm=", output)
         self.assertNotIn("protocol=", output)
         self.assertNotIn("ad.json", output)
         self.assertNotIn("## 重点异常", output)
+        self.assertNotIn("## 巡检过程", output)
+        self.assertNotIn("## 原始报告", output)
         self.assertNotRegex(output, r"\b(?:[A-Za-z][A-Za-z0-9_]*|82599)=")
-        self.assertNotIn("❌ 异常", output)
         self.assertNotIn("⚠️ 异常", output)
 
 

@@ -3,8 +3,7 @@
 """
 多设备巡检报告渲染。
 
-根据巡检分析结果生成丰富的 Markdown 报告，包括
-逐设备详情块、跨设备对比和汇总表。
+根据巡检分析结果生成多设备摘要 Markdown 报告，避免逐设备展开导致输出过长。
 
 本模块所有函数均为 ad-check-analysis 专用。
 """
@@ -61,7 +60,7 @@ def _check_label(key: str, result: Optional[Dict[str, Any]] = None) -> str:
 
 
 def _status_label(status: str) -> str:
-    return {"pass": "正常", "fail": "异常", "warn": "异常"}.get(status, status)
+    return {"pass": "✅ 正常", "fail": "❌ 异常", "warn": "❌ 异常"}.get(status, status)
 
 
 _CATEGORY_LABELS = {
@@ -151,13 +150,32 @@ def _device_summary_status(result: Dict[str, Any]) -> str:
     if "error" in result:
         err = result["error"]
         if any(kw in err for kw in ("Auth", "401", "认证")):
-            return "认证失败"
-        return "连接失败"
+            return "❌ 认证失败"
+        return "❌ 连接失败"
     analysis = result.get("analysis", {})
     summary = analysis.get("summary", {})
     if summary.get("fail", 0) > 0 or summary.get("warn", 0) > 0:
-        return "异常"
-    return "正常"
+        return "❌ 异常"
+    return "✅ 正常"
+
+
+def _risk_level(min_score: Optional[int], has_failed_device: bool = False) -> str:
+    if has_failed_device:
+        return "高"
+    if min_score is None:
+        return "未知"
+    if min_score >= 90:
+        return "低"
+    if min_score >= 70:
+        return "中"
+    return "高"
+
+
+def _suggestion_for_check(analysis: Dict[str, Any], check_key: str, check_name: str) -> str:
+    for suggestion in analysis.get("suggestions", []) or []:
+        if suggestion.get("check") == check_key or suggestion.get("check_name") == check_name:
+            return _user_detail(suggestion.get("suggestion", ""))
+    return "{} 状态异常，建议进一步排查".format(check_name)
 
 
 def _render_device_detail_block(
@@ -370,14 +388,12 @@ def render_multi_device_report(
     scene: str = "标准巡检",
     device_names: Optional[Dict[str, str]] = None,
 ) -> str:
-    """渲染丰富的多设备巡检报告(markdown 格式)。
+    """渲染摘要型多设备巡检报告(markdown 格式)。
 
-    生成 ad-check-analysis/examples/output-multi.md 中定义的完整输出格式，包括:
-      - 头部: 场景 / 时间范围 / 设备数量
-      - 6 列汇总表
-      - 逐设备详情块 (按类别分组的检查项、统计、建议)
-      - 跨设备对比 (当 >=2 台设备连接且 >=1 台存在异常时)
-      - 失败设备的错误块
+    多设备场景避免逐台展开检查项，正文只保留：
+      - 巡检结论
+      - 设备概览
+      - 全局共性问题（所有成功巡检设备都异常的检查项）
 
     Args:
         results: run_multi() 返回的 {host: result_dict, ...}。
@@ -392,6 +408,9 @@ def render_multi_device_report(
     device_names = device_names or {}
 
     devices_info = []
+    successful_hosts = []
+    anomaly_sets = []
+    min_score: Optional[int] = None
     for host, result in results.items():
         ip = _extract_ip(host)
         name = device_names.get(host, ip)
@@ -404,17 +423,23 @@ def render_multi_device_report(
                 "has_error": True,
                 "status_text": _device_summary_status(result),
                 "error": result["error"],
-                "total_checks": "-",
-                "pass_rate": "-",
+                "abnormal_count": "-",
                 "score_text": "-",
             })
         else:
             analysis = result.get("analysis", {})
             summary = analysis.get("summary", {})
-            total = summary.get("total", 0)
-            pass_count = summary.get("pass", 0)
             score = _overall_score(analysis)
-            rate = round(pass_count / max(total, 1) * 100) if total else 0
+            fail_warn = summary.get("fail", 0) + summary.get("warn", 0)
+            if min_score is None or score < min_score:
+                min_score = score
+            successful_hosts.append(host)
+            anomaly_keys = {
+                key
+                for key, check in (analysis.get("check_results", {}) or {}).items()
+                if check.get("status") in ("fail", "warn")
+            }
+            anomaly_sets.append(anomaly_keys)
 
             devices_info.append({
                 "host": host,
@@ -422,130 +447,70 @@ def render_multi_device_report(
                 "ip": ip,
                 "has_error": False,
                 "status_text": _device_summary_status(result),
-                "total_checks": str(total) if total else "-",
-                "pass_rate": "{}%".format(rate) if total else "-",
-                "score_text": "{} {}/100".format(_score_icon(score), score) if total else "-",
+                "abnormal_count": str(fail_warn),
+                "score_text": "{}/100".format(score),
             })
 
-    times = []
-    for host, result in results.items():
-        if "error" not in result:
-            meta = result.get("meta", {})
-            t = meta.get("start_time", "")
-            formatted = _format_check_time(t)
-            if formatted:
-                times.append(formatted)
-    times.sort()
-    if len(times) >= 2:
-        time_range = "{} ~ {}".format(times[0], times[-1])
-    elif len(times) == 1:
-        time_range = times[0]
-    else:
-        time_range = "N/A"
-
     total_devices = len(results)
-    success_count = sum(1 for d in devices_info if not d["has_error"])
-    failed_count = total_devices - success_count
-    normal_count = 0
+    failed_count = sum(1 for d in devices_info if d["has_error"])
     device_abnormal_count = 0
-    check_abnormal_count = 0
-    abnormal_rows = []
     for d in devices_info:
         if d["has_error"]:
             device_abnormal_count += 1
-            abnormal_rows.append("| {} | 连接状态 | 异常 | {} |".format(d["name"], d.get("error", "连接或认证失败")))
             continue
         analysis = results[d["host"]].get("analysis", {})
         summary = analysis.get("summary", {})
-        fail_warn = summary.get("fail", 0) + summary.get("warn", 0)
-        if fail_warn:
+        if summary.get("fail", 0) + summary.get("warn", 0):
             device_abnormal_count += 1
-        else:
-            normal_count += 1
-        check_abnormal_count += fail_warn
-        check_results = analysis.get("check_results", {})
-        categories = analysis.get("categories", {})
-        for cat_key, cat_label in _CATEGORY_LABELS.items():
-            for key in categories.get(cat_key, []):
-                cr = check_results.get(key)
-                if not cr or cr.get("status") not in ("fail", "warn"):
-                    continue
-                detail = _user_detail(cr.get("detail") or cr.get("value", ""))
-                abnormal_rows.append("| {} | {} | {} | {} |".format(
-                    d["name"],
-                    cat_label,
-                    _check_label(key, cr),
-                    detail,
-                ))
 
-    if abnormal_rows:
-        abnormal_section = "\n".join([
-            "| 设备 | 类别 | 检查项 | 详情 |",
-            "|------|------|--------|------|",
-            *abnormal_rows,
-        ])
+    risk = _risk_level(min_score, failed_count > 0)
+    if anomaly_sets:
+        common_keys = set.intersection(*anomaly_sets) if anomaly_sets else set()
     else:
-        abnormal_section = "无。"
+        common_keys = set()
+
+    common_rows = []
+    if common_keys:
+        first_success = successful_hosts[0]
+        first_analysis = results[first_success].get("analysis", {})
+        check_results = first_analysis.get("check_results", {})
+        for key in sorted(common_keys, key=lambda item: _check_label(item, check_results.get(item))):
+            check = check_results.get(key, {})
+            check_name = _check_label(key, check)
+            common_rows.append("| {} | {} |".format(
+                check_name,
+                _suggestion_for_check(first_analysis, key, check_name),
+            ))
 
     lines = [
         "## 巡检结论",
-        "- 目标：全部设备",
-        "- 报告类型：AD 巡检分析报告（多设备）",
+        "- 目标：全部 AD 设备",
         "- 场景：{}".format(scene),
-        "- 数据来源：设备巡检报告",
-        "- 巡检时间：{}".format(time_range),
         "- 设备数量：{} 台".format(total_devices),
         "- 异常设备：{} 台".format(device_abnormal_count),
-        "- 异常检查项：{}".format(check_abnormal_count),
+        "- 总体风险：{}".format(risk),
         "",
-        "## 巡检过程",
-        "- 连接校验：已对设备清单执行前置校验",
-        "- 历史记录：已确认生成本次巡检报告",
-        "- 进度轮询：完成",
-        "- 报告获取：成功",
+        "## 设备概览",
         "",
-        "## 分类统计",
-        "",
-        "### 设备汇总",
-        "",
-        "| 设备 | IP | 状态 | 检查项 | 通过率 | 综合评分 |",
-        "|------|-----|------|--------|--------|----------|",
+        "| 设备 | IP | 状态 | 综合评分 | 异常项 |",
+        "| --- | --- | --- | ---: | ---: |",
     ]
 
     for d in devices_info:
-        lines.append("| {} | {} | {} | {} | {} | {} |".format(
+        lines.append("| {} | {} | {} | {} | {} |".format(
             d["name"], d["ip"], d["status_text"],
-            d["total_checks"], d["pass_rate"], d["score_text"],
+            d["score_text"], d["abnormal_count"],
         ))
 
     lines.append("")
-
+    lines.append("## 全局共性问题")
     lines.append("")
-    lines.append("> {} 台设备: {} 台正常, {} 台异常".format(total_devices, normal_count, device_abnormal_count))
-
-    lines.append("## 原始报告")
-    lines.append("")
-    lines.append("### 设备详情")
-    lines.append("")
-
-    for i, d in enumerate(devices_info):
-        if d["has_error"]:
-            continue  # Connection/auth failures are reported by ad-connect, not in this report
-        lines.append("---")
-        lines.append("")
-        result = results[d["host"]]
-        detail_block = _render_device_detail_block(d["host"], result, d["name"])
-        lines.append(detail_block)
-
-    cross = _render_cross_device_comparison(results, device_names)
-    if cross:
-        lines.append("---")
-        lines.append("")
-        lines.append(cross)
-
-    lines.append("---")
-    lines.append("")
-    lines.append("**说明**: 以上结果全部来自各设备巡检报告，严格按照巡检返回数据进行分析。")
+    if common_rows:
+        lines.append("| 问题 | 建议 |")
+        lines.append("| --- | --- |")
+        lines.extend(common_rows)
+    else:
+        lines.append("未发现所有设备共同存在的异常项。")
 
     return "\n".join(lines)
 

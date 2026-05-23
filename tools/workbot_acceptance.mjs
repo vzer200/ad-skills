@@ -1067,7 +1067,7 @@ function commandExpectedFor(name, cfg) {
 
 function templateExpectedFor(name, cfg) {
   if (cfg.templateExpected) return cfg.templateExpected;
-  if (name.startsWith("r1-all")) return ["巡检结论", "巡检过程", "分类统计", "原始报告"];
+  if (name.startsWith("r1-all")) return ["巡检结论", "设备概览", "全局共性问题"];
   if (name.startsWith("r1")) return ["巡检结论", "分类统计", "设备基本信息", "检查项明细", "优化建议", "健康评分"];
   if (name.startsWith("r2")) return ["查询结论", "查询范围", "查询结果", "覆盖说明"];
   if (name.startsWith("r3")) return ["感知结论", "分析结果", "结论边界"];
@@ -1288,8 +1288,9 @@ function verify(run) {
       "heartbeat_state=",
       "shm_sem_state=",
     );
-    if (!run.name.startsWith("r1-all")) {
-      defaultVisibleForbidden.push("巡检过程", "原始报告");
+    defaultVisibleForbidden.push("巡检过程", "原始报告");
+    if (run.name.startsWith("r1-all")) {
+      defaultVisibleForbidden.push("跨设备对比", "高频异常", "重点关注设备", "设备详情", "详细报告");
     }
   }
   const visibleForbidden = cfg.visibleForbidden || defaultVisibleForbidden;

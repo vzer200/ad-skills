@@ -1114,7 +1114,7 @@ def render_markdown(
     secure_keys = analysis.get("categories", {}).get("secure", [])
 
     def status_label(s: str) -> str:
-        return {"pass": "正常", "fail": "异常", "warn": "异常"}.get(s, s)
+        return {"pass": "✅ 正常", "fail": "❌ 异常", "warn": "❌ 异常"}.get(s, s)
 
     def score_icon_for(val: Union[int, float]) -> str:
         return "🟢" if val >= 90 else ("🟡" if val >= 70 else "🔴")

@@ -244,9 +244,9 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertNotIn("## 巡检过程", output)
         self.assertNotIn("## 原始报告", output)
         self.assertNotRegex(output, r"\b(?:[A-Za-z][A-Za-z0-9_]*|82599)=")
-        self.assertNotIn("❌ 异常", output)
         self.assertNotIn("⚠️ 异常", output)
-        self.assertIn("| 设备安全状态检查 | 异常 | 设备安全检查未开启 |", output)
+        self.assertIn("| 设备安全状态检查 | ❌ 异常 | 设备安全检查未开启 |", output)
+        self.assertIn("✅ 正常", output)
 
     def test_wait_devices_timeout_does_not_render_report(self):
         from check import main
