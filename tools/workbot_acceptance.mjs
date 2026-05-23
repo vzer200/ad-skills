@@ -1247,6 +1247,7 @@ function verify(run) {
   if (/^r1/.test(run.name)) {
     const combinedProgress = /\b(?:sleep|Start-Sleep)\b[^\n]*\bcheck\.py\b[^\n]*\bprogress\b|\bcheck\.py\b[^\n]*\bprogress\b[^\n]*\b(?:sleep|Start-Sleep)\b/i;
     if (combinedProgress.test(toolCommandText)) commandForbiddenFound.push("sleep + check.py progress");
+    if (/\b(?:sleep|Start-Sleep)\b/i.test(toolCommandText)) commandForbiddenFound.push("manual sleep");
   }
   const defaultVisibleForbidden = /^r[1-4]/.test(run.name) ? [
     "工具调用",

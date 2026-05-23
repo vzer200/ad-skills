@@ -52,8 +52,8 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 - 巡检前必须先调用 `ad-connect` 做连接预检。
 - 所有业务逻辑必须由 `skills/ad-check-analysis/scripts/check.py` 执行。
 - 用户选择场景后必须先查 `history`，并在用户确认强制继续后再分步执行 `run -> progress -> wait`。WorkBot 工具调用约 60 秒会超时，禁止使用 `run --wait` 这类长阻塞命令。
-- `run` 只负责启动巡检，必须显式传 `--work-dir`；`progress` 每次只轮询一次，可重复调用；只有 `progress` 明确显示 FINISHED/完成后，才用 `wait --timeout 55 --poll-interval 5` 下载和分析报告。不要在 WAITING/RUNNING 状态提前 wait。
-- 不要把 `sleep` 和 `progress` 拼到同一条 shell 命令里；工具命令中禁止出现 `sleep && python3 ... progress`。每次工具调用只执行一次 `progress`，如果仍是 WAITING/RUNNING，可单独等待后再次调用 `progress`；直到完成再进入 `wait --timeout 55`，避免提前 wait 产生失败报告。
+- `run` 只负责启动巡检，必须显式传 `--work-dir`；随后调用一次 `progress` 获取状态，再调用 `wait --timeout 55 --poll-interval 5` 下载和分析报告。若 `wait` 因超时失败，再重复一次 `progress -> wait --timeout 55`。
+- 工具命令中绝对禁止出现 `sleep`、`Start-Sleep` 或 `sleep && python3 ... progress`。不要手动等待；`wait --poll-interval 5 --timeout 55` 自带短轮询，且不会超过平台 60 秒工具超时。
 - 脚本输出是唯一事实来源。禁止模型自行生成巡检结论、风险项、分数或报告内容。
 - 如果用户指定 AD1/AD2，优先使用设备清单中的主机和密码。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-check-analysis/devices.json` 或 `.claude/skills/ad-check-analysis/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
 - 验收交互必须像真实人工：不要要求用户补充命令参数。用户只说“请对 AD1 做一次巡检”时，先用短问题让用户选择场景；用户回答“标准巡检/全量巡检/安全巡检”后，先查连接和历史，再确认是否继续/强制；用户回答“强制”后执行脚本并加 `--force`。
@@ -79,8 +79,8 @@ python3 skills/ad-check-analysis/scripts/check.py history --devices skills/ad-ch
 python3 skills/ad-check-analysis/scripts/check.py prompt --stage confirm --target AD1 --scene "标准巡检"
 python3 skills/ad-check-analysis/scripts/check.py run --devices skills/ad-check-analysis/devices.json --device AD1 --scene "标准巡检" --force --work-dir "$AD_CHECK_WORKDIR"
 python3 skills/ad-check-analysis/scripts/check.py progress --devices skills/ad-check-analysis/devices.json --device AD1
-# 若 progress 仍是 WAITING/RUNNING，可单独 sleep 8-10 秒后再 progress 一次；直到 progress 显示 FINISHED/完成后再 wait。
 python3 skills/ad-check-analysis/scripts/check.py wait --devices skills/ad-check-analysis/devices.json --device AD1 --work-dir "$AD_CHECK_WORKDIR" --poll-interval 5 --timeout 55
+# 若 wait 超时未拿到报告，再重复 progress -> wait；不要使用 sleep。
 ```
 
 全量巡检和安全巡检使用相同命令，只替换 `--scene "全量巡检"` 或 `--scene "安全巡检"`。
@@ -97,8 +97,8 @@ python3 skills/ad-check-analysis/scripts/check.py history --devices skills/ad-ch
 python3 skills/ad-check-analysis/scripts/check.py prompt --stage confirm --target "全部 AD 设备" --scene "标准巡检"
 python3 skills/ad-check-analysis/scripts/check.py run --devices skills/ad-check-analysis/devices.json --scene "标准巡检" --force
 python3 skills/ad-check-analysis/scripts/check.py progress --devices skills/ad-check-analysis/devices.json
-# 若任一设备仍是 WAITING/RUNNING，可单独 sleep 8-10 秒后再 progress 一次；直到所有设备显示 FINISHED/完成后再 wait。
 python3 skills/ad-check-analysis/scripts/check.py wait --devices skills/ad-check-analysis/devices.json --poll-interval 5 --timeout 55
+# 若 wait 超时未拿到报告，再重复 progress -> wait；不要使用 sleep。
 ```
 
 批量巡检交互流程与单设备一致：先问场景，再问是否强制继续；用户回复“强制”后执行。不要为多设备设计额外复杂分支。
