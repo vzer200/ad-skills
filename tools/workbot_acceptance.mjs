@@ -186,7 +186,8 @@ const FRESH_AGENT_PROFILE =
   "2. 对于一些实时操作（读取文件，API请求，写文件）等，必须实际执行，不能使用文件缓存的内容，或者上下文信息中携带的内容进行回答\n" +
   "3. 绝对禁止杜撰信息回答\n" +
   "4. 如果脚本或者api执行错误，可以继续尝试最多3次修复，如果没有结果，需要把错误信息返回，让用户提供更多信息帮助矫正\n" +
-  "5. 任何对技能的修改，包括技能说明本身还有技能目录下的脚本，都需要先把需要修改的信息寻求用户同意后才能更新写到文件中。";
+  "5. 任何对技能的修改，包括技能说明本身还有技能目录下的脚本，都需要先把需要修改的信息寻求用户同意后才能更新写到文件中。\n" +
+  "6. 用户可见正文只能回答任务结果或必要问题，不要解释你遵守了哪个技能规则、工具规则或系统规则。";
 const FRESH_AGENT_INIT_PROMPT =
   "你是一个通用智能体，现在需要你进行初始化。你需要阅读技能 “Self-Improving + Proactive Agent” 与技能 “Proactivity (Proactive Agent)”，并执行初始化流程。";
 
@@ -934,7 +935,9 @@ function hasDeviceEvidence(value) {
   return /connect\.py/i.test(value || "") && /(devices\.json|192\.168\.8\.3[01]|认证|auth|reach|连接测试|连接正常)/i.test(value || "");
 }
 
-function extractToolCommands(responses) {
+function extractToolCommands(responses, options = {}) {
+  const includeAgentText = options.includeAgentText !== false;
+  const includePageText = options.includePageText !== false;
   const commands = [];
   const commandPattern = /"command"\s*:\s*"((?:\\.|[^"\\])*)"/g;
   const parseText = (text) => {
@@ -950,10 +953,16 @@ function extractToolCommands(responses) {
     for (const candidate of (response.toolEvidence && response.toolEvidence.candidates) || []) {
       parseText(candidate.text || "");
     }
-    parseText(response.agentText || "");
-    parseText(response.text || "");
+    if (includeAgentText) parseText(response.agentText || "");
+    if (includePageText) parseText(response.text || "");
   }
   return Array.from(new Set(commands));
+}
+
+function extractStepToolCommands(response) {
+  // response.text is a page-level delta in WorkBot and can include commands from
+  // earlier turns. Step gates must only inspect current message tool evidence.
+  return extractToolCommands([response], { includePageText: false });
 }
 
 function textOfResponse(response) {
@@ -984,7 +993,7 @@ function stepRuleViolationsFor(name, cfg, responses) {
   const earlyForbiddenVisible = ["巡检结论", "感知结论", "查询结论"];
 
   const step1Visible = `${step1.visibleText || ""}\n${step1.visibleAgentText || ""}`;
-  const step1Commands = extractToolCommands([step1]).join("\n");
+  const step1Commands = extractStepToolCommands(step1).join("\n");
   if (!/标准巡检/.test(step1Visible) || !/全量巡检/.test(step1Visible) || !/安全巡检/.test(step1Visible)) {
     violations.push("r1 step1 did not ask the user to choose 标准巡检/全量巡检/安全巡检");
   }
@@ -999,7 +1008,7 @@ function stepRuleViolationsFor(name, cfg, responses) {
   }
 
   const step2Visible = `${step2.visibleText || ""}\n${step2.visibleAgentText || ""}`;
-  const step2Commands = extractToolCommands([step2]).join("\n");
+  const step2Commands = extractStepToolCommands(step2).join("\n");
   if (!/(强制|继续|覆盖)/.test(step2Visible)) {
     violations.push("r1 step2 did not ask whether to force/continue");
   }
@@ -1011,7 +1020,7 @@ function stepRuleViolationsFor(name, cfg, responses) {
   }
 
   const step3Visible = `${step3.visibleText || ""}\n${step3.visibleAgentText || ""}`;
-  const step3Commands = extractToolCommands([step3]).join("\n");
+  const step3Commands = extractStepToolCommands(step3).join("\n");
   const requiredFinalCommands = ["connect.py", "check.py", "history", "run", "progress", "wait"];
   for (const token of requiredFinalCommands) {
     if (!step3Commands.includes(token)) violations.push(`r1 step3 missing command token: ${token}`);
@@ -1413,7 +1422,7 @@ async function main() {
       debug.freshAgent = await ensureFreshAgent(page);
       debug.freshAgent.initialization = await initializeFreshAgent(page);
     }
-    if (!FRESH_AGENT || CASES.includes("cleanup")) {
+    if (CASES.includes("cleanup")) {
       const cleanupResult = await runCase(page, "cleanup");
       results.push(cleanupResult);
       assertGate(cleanupResult, "cleanup");

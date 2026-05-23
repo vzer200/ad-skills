@@ -42,7 +42,7 @@ Every temporary employee is created through the same WorkBot API used by the web
 你是一个通用智能体，现在需要你进行初始化。你需要阅读技能 “Self-Improving + Proactive Agent” 与技能 “Proactivity (Proactive Agent)”，并执行初始化流程。
 ```
 
-Fresh-agent runs skip cleanup because the employee has empty AD-skill context. Cleanup remains a hard gate only when `-NoFreshAgent` is used or the `cleanup` case is explicitly requested. Install is always a hard gate: if it needs a no-tool follow-up, misses required tool commands, or leaks tool/command text in the visible answer, the automation stops before requirement cases.
+Fresh-agent runs skip cleanup because the employee has empty AD-skill context. Cleanup is not part of the main orchestration and runs only when the `cleanup` case is explicitly requested for debugging an existing employee. Install is always a hard gate: if it needs a no-tool follow-up, misses required tool commands, or leaks tool/command text in the visible answer, the automation stops before requirement cases.
 
 The default `fixed` suite is the mainline gate. It uses only the agreed fixed prompts and covers the complete requirements flow in one WorkBot run: R1 standard/full/security on one device and all devices, R2 full/single-dimension/multi-device VS queries, R3 full/single-dimension perception analysis, and R4 script-only plus real delivery/rollback. HA is not part of the default run.
 
@@ -65,19 +65,6 @@ $env:AD2_HOST = "https://192.168.8.31"
 ```
 
 This replaces `password_from` with `password` and, when requested, applies `AD1_HOST`/`AD1_USER` style overrides only inside the ignored zip artifact; source `devices.json` and the package manifest do not store password values. The packager writes the rendered device file to `devices.json`, `skills/devices.json`, and each `skills/<skill>/devices.json` so WorkBot can still find it when the installer copies only skill directories.
-
-Only when reusing an existing employee, clear old AD skills and memory with this short prompt:
-
-```text
-请实际调用工具清理旧的 AD skills 和相关记忆。必须用 shell 检查并删除 skills/ad-*，用 cron_list 检查定时任务，用 memory_export/memory_purge 清理记忆；最终正文只回答清理完成，不要列工具、命令、退出码或 stdout/stderr。
-```
-
-Pass criteria:
-
-- WorkBot uses tool calls to inspect/delete old AD skill directories and clear available memory stores.
-- Tool-call panels show deleted skill paths or say none existed, and include the memory cleanup result.
-- The final visible answer stays short and does not train later requirement answers to expose tool-call details.
-- A model-only answer without tool-call panels is a failed run.
 
 After attaching the AD skills zip, use this short install prompt:
 
