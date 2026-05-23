@@ -7,6 +7,9 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 
 ## 强制规则
 
+- 硬性验收规则：查询类最终回答必须以 `## 查询结论` 开头，必须包含 `## 工具调用`、`## 查询结果`、`## 覆盖说明`。缺少任一标题即视为任务失败。
+- 最终回答必须复制 `overview.py --format markdown` 的 stdout 原文。不要改写成自定义表格，不要只摘取 VS/Pool/证书数据，不要把脚本输出重新组织成自己的摘要。
+- `## 工具调用` 中必须出现字面量 `connect.py` 和 `overview.py <维度>`，并写明退出码/stdout 摘要；即使工具面板已经展示调用，最终回答也必须保留这两个脚本名。
 - 查询真实设备前必须先调用 `ad-connect`。
 - 用户要“配置、流量、状态、证书”整体视图时，必须使用 `overview.py all`。
 - 用户要特定维度时，必须先用 `connect.py` 验证目标设备，再使用 `overview.py vs|pool|cert|hardware|ha|traffic`；不要直接调用 `ad_api.py` 给用户生成查询结果。
@@ -37,7 +40,7 @@ python3 skills/ad-ops/scripts/overview.py ha --devices skills/ad-ops/devices.jso
 
 ## 输出模板
 
-最终回答必须使用以下四个二级标题，标题文字不能改，不能缺失，不能用其他顶级标题替代：
+最终回答必须使用以下四个二级标题，标题文字不能改，不能缺失，不能用其他顶级标题替代。最简单可靠的做法是：运行 `overview.py --format markdown` 后，直接把 stdout 从 `## 查询结论` 到 `## 覆盖说明` 完整粘贴给用户，再补充必要的退出码摘要。
 
 ```text
 ## 查询结论

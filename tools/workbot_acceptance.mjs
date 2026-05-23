@@ -371,23 +371,54 @@ async function waitForIdleText(page, beforeText, label, maxMs = 600000) {
 }
 
 async function expandToolCalls(page) {
-  const selectors = [
-    '[utid="thinking-toggle"]',
-    ".agent-bubble__thinking-header",
+  const openToggle = async (selector, blockSelector, contentSelector) => {
+    const locator = page.locator(selector);
+    const count = Math.min(await locator.count().catch(() => 0), 20);
+    for (let i = 0; i < count; i += 1) {
+      const toggle = locator.nth(i);
+      const isClosed = await toggle.evaluate((node, args) => {
+        const { blockSelector, contentSelector } = args;
+        const block = node.closest(blockSelector);
+        const content = block && block.querySelector(contentSelector);
+        const style = content ? window.getComputedStyle(content) : null;
+        const hidden = !content || style.display === "none" || style.visibility === "hidden";
+        const arrowDown = Boolean(node.querySelector('[class*="arrow-down"], [class*="down"]'));
+        return hidden || arrowDown;
+      }, { blockSelector, contentSelector }).catch(() => true);
+      if (isClosed) await toggle.click({ timeout: 1000 }).catch(() => {});
+    }
+  };
+  await openToggle('[utid="thinking-toggle"]', ".agent-bubble__thinking-block", ".agent-bubble__thinking-content");
+  await openToggle('[utid="tools-toggle"]', ".agent-bubble__tools-block", ".agent-bubble__tools-content");
+  const fallbackSelectors = [
     'button:has-text("工具")',
     'button:has-text("调用")',
     '[role="button"]:has-text("工具")',
     '[role="button"]:has-text("调用")',
     '.ant-collapse-header',
-    '.tool-call',
-    '.tool-call-header',
   ];
-  for (const selector of selectors) {
+  for (const selector of fallbackSelectors) {
     const locator = page.locator(selector);
-    const count = Math.min(await locator.count().catch(() => 0), 20);
+    const count = Math.min(await locator.count().catch(() => 0), 10);
     for (let i = 0; i < count; i += 1) {
       await locator.nth(i).click({ timeout: 1000 }).catch(() => {});
     }
+  }
+  await page.waitForTimeout(300);
+  const toolHeaders = page.locator('[utid="tool-call-toggle"], .tool-call-header');
+  const count = Math.min(await toolHeaders.count().catch(() => 0), 60);
+  for (let i = 0; i < count; i += 1) {
+    const header = toolHeaders.nth(i);
+    const isClosed = await header.evaluate((node) => {
+      const text = node.textContent || "";
+      const card = node.closest(".tool-call-card") || node.parentElement;
+      const hasRenderedDetail = Boolean(
+        card && card.querySelector('pre, code, textarea, [class*="content" i], [class*="body" i], [class*="result" i]'),
+      );
+      const arrowDown = Boolean(node.querySelector('[class*="arrow-down"], [class*="down"]'));
+      return !hasRenderedDetail || arrowDown || /shell|python|bash|cmd|powershell/i.test(text);
+    }).catch(() => true);
+    if (isClosed) await header.click({ timeout: 1000 }).catch(() => {});
   }
   await page.waitForTimeout(1000);
 }
