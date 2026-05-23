@@ -1224,7 +1224,7 @@ async function uploadZip(page) {
 function verify(run) {
   const cfg = cases[run.name] || {};
   const tokens = cfg.expected || [];
-  const toolCommands = extractToolCommands(run.responses);
+  const toolCommands = extractToolCommands(run.responses, { includePageText: false });
   const toolCommandText = toolCommands.join("\n");
   const toolCandidateText = (run.responses || [])
     .flatMap((item) => (item.toolEvidence && item.toolEvidence.candidates) || [])
