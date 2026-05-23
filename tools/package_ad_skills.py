@@ -27,6 +27,11 @@ def parse_args() -> argparse.Namespace:
             "runtime environment password values. Values are not written to the manifest."
         ),
     )
+    parser.add_argument(
+        "--inject-device-overrides",
+        action="store_true",
+        help="For upload artifacts only: apply AD1_HOST/AD1_USER style runtime device overrides to devices.json.",
+    )
     return parser.parse_args()
 
 
@@ -49,24 +54,45 @@ def add_tree(zf: zipfile.ZipFile, source: Path, arc_root: Path) -> list[str]:
     return names
 
 
-def render_devices_json(path: Path, inject_passwords: bool) -> tuple[str, list[str]]:
-    text = path.read_text(encoding="utf-8")
-    if not inject_passwords:
-        return text, []
+def _device_env_prefix(name: str) -> str:
+    return "".join(ch if ch.isalnum() else "_" for ch in name).strip("_").upper()
 
+
+def _first_env(names: list[str]) -> str:
+    for name in names:
+        value = os.environ.get(name)
+        if value:
+            return value
+    return ""
+
+
+def render_devices_json(path: Path, inject_passwords: bool, inject_overrides: bool = False) -> tuple[str, list[str], list[str]]:
+    text = path.read_text(encoding="utf-8")
     data = json.loads(text)
-    injected: list[str] = []
+    injected_passwords: list[str] = []
+    injected_overrides: list[str] = []
     for device in data.get("devices", []):
-        env_name = device.get("password_from")
-        if not env_name:
-            continue
-        password = os.environ.get(env_name)
-        if not password:
-            raise SystemExit(f"{env_name} is required for --inject-device-passwords")
-        device["password"] = password
-        device.pop("password_from", None)
-        injected.append(str(device.get("name") or env_name))
-    return json.dumps(data, ensure_ascii=False, indent=2) + "\n", injected
+        device_name = str(device.get("name") or "").strip()
+        prefix = _device_env_prefix(device_name)
+        if inject_passwords:
+            env_name = device.get("password_from")
+            if env_name:
+                password = os.environ.get(env_name)
+                if not password:
+                    raise SystemExit(f"{env_name} is required for --inject-device-passwords")
+                device["password"] = password
+                device.pop("password_from", None)
+                injected_passwords.append(device_name or env_name)
+        if inject_overrides and prefix:
+            host = _first_env([f"{prefix}_HOST", f"{prefix}_PUBLIC_URL", f"{prefix}_BASE_URL"])
+            user = _first_env([f"{prefix}_USER", f"{prefix}_USERNAME"])
+            if host:
+                device["host"] = host
+                injected_overrides.append(f"{device_name}.host")
+            if user:
+                device["user"] = user
+                injected_overrides.append(f"{device_name}.user")
+    return json.dumps(data, ensure_ascii=False, indent=2) + "\n", injected_passwords, injected_overrides
 
 
 def devices_arc_names(skill_names: list[str]) -> list[Path]:
@@ -89,12 +115,17 @@ def main() -> int:
     skill_names = sorted(path.name for path in skills_root.iterdir() if path.is_dir())
     entries: list[str] = []
     injected_devices: list[str] = []
+    injected_overrides: list[str] = []
     device_file_entries: list[str] = []
     with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         entries.extend(add_tree(zf, skills_root, Path("skills")))
         devices_path = repo / "devices.json"
         if devices_path.exists() and devices_path.is_file():
-            rendered, injected_devices = render_devices_json(devices_path, args.inject_device_passwords)
+            rendered, injected_devices, injected_overrides = render_devices_json(
+                devices_path,
+                args.inject_device_passwords,
+                args.inject_device_overrides,
+            )
             for arcname in devices_arc_names(skill_names):
                 zf.writestr(arcname.as_posix(), rendered)
                 entries.append(arcname.as_posix())
@@ -111,6 +142,7 @@ def main() -> int:
         "entry_count": len(entries),
         "skills": skill_names,
         "device_passwords_injected": injected_devices,
+        "device_overrides_injected": injected_overrides,
         "device_file_entries": device_file_entries,
     }
     manifest_out.parent.mkdir(parents=True, exist_ok=True)

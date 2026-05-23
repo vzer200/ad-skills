@@ -13,6 +13,7 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 - 输出必须来自脚本 stdout。禁止模型自己拼接 VS、Pool、证书或状态表。
 - 支持 `devices.json` 中的 AD1/AD2。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-ops/devices.json` 或 `.claude/skills/ad-ops/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
 - 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动使用设备清单并加 `--device AD1`。
+- 若设备清单中的地址不可达，但同一设备的内网地址可达，可以使用可达地址完成查询；必须在“覆盖说明”中说明地址切换原因，不要询问用户是否修改 `devices.json`。
 - “虚拟服务配置/VS 配置”映射到 `overview.py vs`；“节点配置/节点池/Pool 配置”映射到 `overview.py pool`；整体配置、流量、状态、证书查询映射到 `overview.py all`。
 - “SSL 证书/证书到期”映射到 `overview.py cert`；“流量情况”映射到 `overview.py traffic`；“HA 状态”映射到 `overview.py ha`；“设备状态/硬件状态”映射到 `overview.py hardware`。
 
@@ -36,6 +37,8 @@ python3 skills/ad-ops/scripts/overview.py ha --devices skills/ad-ops/devices.jso
 
 ## 输出模板
 
+最终回答必须使用以下四个二级标题，标题文字不能改，不能缺失，不能用其他顶级标题替代：
+
 ```text
 ## 查询结论
 - 目标：<AD1>
@@ -44,7 +47,7 @@ python3 skills/ad-ops/scripts/overview.py ha --devices skills/ad-ops/devices.jso
 - 状态：<成功/失败>
 
 ## 工具调用
-- connect.py：<成功/失败>，<目标和认证摘要>
+- connect.py：<成功/失败>，<目标、认证摘要、退出码/stdout 摘要>
 - overview.py <维度>：<成功/失败>，<退出码/stdout 摘要>
 
 ## 查询结果
@@ -53,4 +56,7 @@ python3 skills/ad-ops/scripts/overview.py ha --devices skills/ad-ops/devices.jso
 ## 覆盖说明
 - 若为 all：必须覆盖配置、流量、设备状态、SSL 证书。
 - 若为单项：只展示用户请求的维度，避免混入模型自行整理的额外结论。
+- 如果使用了备用/内网地址：说明原地址不可达和本次实际查询地址。
 ```
+
+禁止在最终回答末尾向用户反问是否修改配置、是否继续查询或是否补充参数。

@@ -28,10 +28,11 @@ class TestPackageAdSkills(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            rendered, injected = render_devices_json(devices, inject_passwords=False)
+            rendered, injected, overrides = render_devices_json(devices, inject_passwords=False)
             data = json.loads(rendered)
 
         self.assertEqual(injected, [])
+        self.assertEqual(overrides, [])
         self.assertEqual(data["devices"][0]["password_from"], "AD1_PASS")
         self.assertNotIn("password", data["devices"][0])
 
@@ -54,12 +55,45 @@ class TestPackageAdSkills(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            rendered, injected = render_devices_json(devices, inject_passwords=True)
+            rendered, injected, overrides = render_devices_json(devices, inject_passwords=True)
             data = json.loads(rendered)
 
         self.assertEqual(injected, ["AD1"])
+        self.assertEqual(overrides, [])
         self.assertEqual(data["devices"][0]["password"], "secret")
         self.assertNotIn("password_from", data["devices"][0])
+
+    def test_render_devices_json_injects_host_and_user_overrides(self):
+        env = {"AD1_HOST": "https://192.168.8.30", "AD1_USER": "admin2"}
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, env, clear=False):
+            devices = Path(tmp) / "devices.json"
+            devices.write_text(
+                json.dumps(
+                    {
+                        "devices": [
+                            {
+                                "name": "AD1",
+                                "host": "https://public",
+                                "user": "admin",
+                                "password_from": "AD1_PASS",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            rendered, injected, overrides = render_devices_json(
+                devices,
+                inject_passwords=False,
+                inject_overrides=True,
+            )
+            data = json.loads(rendered)
+
+        self.assertEqual(injected, [])
+        self.assertEqual(overrides, ["AD1.host", "AD1.user"])
+        self.assertEqual(data["devices"][0]["host"], "https://192.168.8.30")
+        self.assertEqual(data["devices"][0]["user"], "admin2")
 
     def test_devices_arc_names_include_root_shared_and_skill_copies(self):
         names = [item.as_posix() for item in devices_arc_names(["ad-connect", "ad-ops"])]

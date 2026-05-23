@@ -76,7 +76,7 @@ const DEVICE_FOLLOWUP =
 
 const cases = {
   cleanup: {
-    prompt: "请清理旧的 AD skills 和相关记忆。",
+    prompt: "请实际调用工具清理旧的 AD skills 和相关记忆。必须用 shell 检查并删除 skills/ad-*，用 cron_list 检查定时任务，用 memory_export/memory_purge 清理记忆，最后列出工具、命令、退出码和 stdout/stderr 摘要；不要只输出结论。",
     expected: ["skill", "记忆"],
     requireTools: true,
   },

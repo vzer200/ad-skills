@@ -35,15 +35,16 @@ If WorkBot cannot see local environment variables such as `AD1_PASS`, build the 
 
 ```powershell
 $env:AD1_PASS = "<operator-provided AD1 password>"
-.\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD -InjectDevicePasswords
+$env:AD1_HOST = "https://192.168.8.30"
+.\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD -InjectDevicePasswords -InjectDeviceOverrides
 ```
 
-This replaces `password_from` with `password` only inside the ignored zip artifact; source `devices.json` and the package manifest do not store password values. The packager writes the rendered device file to `devices.json`, `skills/devices.json`, and each `skills/<skill>/devices.json` so WorkBot can still find it when the installer copies only skill directories.
+This replaces `password_from` with `password` and applies `AD1_HOST`/`AD1_USER` style overrides only inside the ignored zip artifact; source `devices.json` and the package manifest do not store password values. The packager writes the rendered device file to `devices.json`, `skills/devices.json`, and each `skills/<skill>/devices.json` so WorkBot can still find it when the installer copies only skill directories.
 
 Before every upload, clear old AD skills and memory with this short prompt:
 
 ```text
-请清理旧的 AD skills 和相关记忆。
+请实际调用工具清理旧的 AD skills 和相关记忆。必须用 shell 检查并删除 skills/ad-*，用 cron_list 检查定时任务，用 memory_export/memory_purge 清理记忆，最后列出工具、命令、退出码和 stdout/stderr 摘要；不要只输出结论。
 ```
 
 Pass criteria:
