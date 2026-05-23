@@ -1184,6 +1184,36 @@ def _check_one(client: Any, scene: str = "标准巡检", force: bool = False, wo
     }
 
 
+def _wait_one(
+    client: Any,
+    work_dir: Optional[str] = None,
+    poll_interval: int = 5,
+    timeout: int = 55,
+    **kw: Any,
+) -> Dict[str, Any]:
+    """Download and analyze a finished check report for one device."""
+    import tempfile
+    if work_dir is None:
+        slug = host_slug(client.host)
+        work_dir = os.path.join(tempfile.gettempdir(), f"ad_check_{slug}")
+
+    meta = wait_and_download(
+        client,
+        work_dir=work_dir,
+        poll_interval=poll_interval,
+        timeout=timeout,
+    )
+    with open(meta["ad_json_path"], encoding="utf-8") as f:
+        data = json.load(f)
+    analysis = analyze(data)
+    report = render_markdown(analysis, meta)
+    return {
+        "meta": meta,
+        "analysis": analysis,
+        "markdown": report,
+    }
+
+
 def main() -> None:
     sys.stdout.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description="AD 设备巡检工具")
@@ -1213,15 +1243,18 @@ def main() -> None:
 
     # wait — 步骤 4-6：轮询确认新报告生成 → 下载 → 分析
     p_wait = sub.add_parser("wait", help="下载巡检报告并分析（请先用 progress 确认已完成）")
-    p_wait.add_argument("--host", required=True)
+    p_wait.add_argument("--host", default="", help="设备地址 https://IP")
+    p_wait.add_argument("--hosts", default="", help="多设备地址，逗号分隔")
+    p_wait.add_argument("--devices", default="", help="设备清单 JSON 文件路径")
+    p_wait.add_argument("--device", default="", help="从 --devices 中选择单台设备名称，如 AD1")
     p_wait.add_argument("--username", default="admin")
     p_wait.add_argument("--password", default="")
-    p_wait.add_argument("--work-dir", default="/tmp/ad_check",
+    p_wait.add_argument("--work-dir", default="",
                         help="与 run 的 --work-dir 保持一致")
-    p_wait.add_argument("--poll-interval", type=int, default=10,
-                        help="轮询间隔秒数，默认 10")
-    p_wait.add_argument("--timeout", type=int, default=600,
-                        help="最长等待秒数，默认 600")
+    p_wait.add_argument("--poll-interval", type=int, default=5,
+                        help="轮询间隔秒数，默认 5")
+    p_wait.add_argument("--timeout", type=int, default=55,
+                        help="最长等待秒数，默认 55，避免 WorkBot 工具调用超时")
 
     # history
     p_hist = sub.add_parser("history", help="查看历史巡检记录")
@@ -1322,24 +1355,42 @@ def main() -> None:
             sys.exit(4)
 
     elif args.command == "wait":
+        if args.hosts or args.devices:
+            if args.devices:
+                devices = load_devices_json(args.devices, args.device)
+            else:
+                devices = parse_hosts_arg(args.hosts, args.username, args.password)
+            if not devices:
+                print("错误: 设备列表为空", file=sys.stderr)
+                sys.exit(4)
+            results = run_multi(
+                devices,
+                _wait_one,
+                work_dir=args.work_dir or None,
+                poll_interval=args.poll_interval,
+                timeout=args.timeout,
+                _timeout=min(max(args.timeout + 15, 30), 75),
+            )
+            device_names = {d["host"]: d["name"] for d in devices if d.get("name")}
+            print(render_multi_device_report(results, scene="巡检", device_names=device_names))
+            sys.exit(compute_multi_exit_code(results))
+
+        if not args.host:
+            print("错误: 必须指定 --host 或 --hosts", file=sys.stderr)
+            sys.exit(4)
         password = args.password or os.environ.get("AD_PASS", "")
         if not password:
             print("错误: 未指定密码，请使用 --password 或设置 AD_PASS 环境变量", file=sys.stderr)
             sys.exit(4)
         client = ADClient(args.host, args.username, password)
         try:
-            meta = wait_and_download(
+            result = _wait_one(
                 client,
-                work_dir=args.work_dir,
+                work_dir=args.work_dir or None,
                 poll_interval=args.poll_interval,
                 timeout=args.timeout,
             )
-            # 下载完成后自动分析并输出 markdown
-            with open(meta["ad_json_path"], encoding="utf-8") as f:
-                data = json.load(f)
-            analysis = analyze(data)
-            report = render_markdown(analysis, meta)
-            print("\n" + report)
+            print("\n" + result["markdown"])
         except CheckTimeoutError as e:
             print(f"❌ {e}", file=sys.stderr)
             sys.exit(5)

@@ -98,75 +98,63 @@ If a real-device case has tool calls but no AD 外网设备资源验证, send th
 Every requirement run must use the corresponding skill output template. Missing template headings fail the run even if the script tokens are present.
 
 ```text
-R1: 巡检结论 / 工具调用 / 分类统计 / 原始报告
-R2: 查询结论 / 工具调用 / 查询结果
-R3: 感知结论 / 工具调用 / 分析结果
-R4: 配置结论 / 工具调用 / 生成产物 / 安全确认
+R1: 巡检结论 / 巡检过程 / 分类统计 / 重点异常 / 原始报告
+R2: 查询结论 / 查询范围 / 查询结果 / 覆盖说明
+R3: 感知结论 / 分析结果 / 结论边界
+R4: 配置结论 / 执行摘要 / 生成产物 / 安全确认
 ```
+
+User-facing answers must not expose `工具调用` as a heading, nor list command exit codes/stdout/stderr. Tool names and command strings are verified from WorkBot's tool-call panels by the automation, not shown as the main answer to the operator.
 
 ## Requirement 1: Inspection
 
 Single-device prompt:
 
 ```text
-请对 AD1 做一次标准巡检。
-```
-
-Additional single-device scene prompts:
-
-```text
-请对 AD1 做一次全量巡检。
-```
-
-```text
-请对 AD1 做一次安全巡检。
+请对 AD1 做一次巡检。
 ```
 
 Expected human replies:
 
 ```text
-标准巡检 case:
 标准巡检
-继续
+强制
+```
 
-全量巡检 case:
+Additional single-device scene replies:
+
+```text
 全量巡检
-继续
+强制
 
-安全巡检 case:
 安全巡检
-继续
+强制
 ```
 
 All-device prompt:
 
 ```text
-请对 AD 所有设备做一次标准巡检。
-```
-
-Additional all-device scene prompts:
-
-```text
-请对 AD 所有设备做一次全量巡检。
-```
-
-```text
-请对 AD 所有设备做一次安全巡检。
+请对 AD 所有设备做一次巡检。
 ```
 
 Expected human replies:
 
 ```text
 标准巡检 / 全量巡检 / 安全巡检
-继续
+强制
 ```
+
+If the first user prompt already includes a scene such as `请对 AD1 做一次标准巡检。`, WorkBot must not ask for the scene again. It should only ask for force/continue if needed.
+
 
 Expected tool calls:
 
 ```text
 connect.py
 check.py history
-check.py run --wait
+check.py run
+check.py progress
+check.py wait --timeout 55
 ```
 
 Pass criteria:
@@ -174,7 +162,8 @@ Pass criteria:
 - Tool calls include the expected scripts in order.
 - `connect.py` validates the AD1 target from `devices.json` before inspection, including AD 外网设备资源 reachability/auth evidence.
 - All-device inspection uses `devices.json` without `--device AD1` and produces multi-device evidence.
-- `check.py run --wait` or `check.py analyze` stdout is the source of the final report.
+- `check.py run --wait` must not be used in WorkBot acceptance; it can exceed the platform's 60-second tool timeout.
+- The final report comes from `check.py wait` / downloaded report stdout, after `progress` confirms completion.
 - The final answer does not add model-written inspection findings.
 - Acceptance prompts must stay short. Do not use detailed parameter-fill prompts for R1.
 - Scoring rule: pass = 1, warn = 0.5, fail = 0. Empty dimensions must not pull down the overall score; the overall score averages only dimensions that appear in the current report.

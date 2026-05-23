@@ -16,7 +16,7 @@ description: 深信服 AD/ADC/SLB 配置 skill。用于根据用户参数生成�
 - 用户交互必须短句化：不要把命令参数塞给用户。接受“我写完了 YAML”“真实下发”“直接给出脚本”“需要回滚”这类短回复，并按本流程推进。
 - 不要手写 API payload、batch JSON、apply.py 或回滚文件；必须由脚本生成。
 - 不要打开、粘贴、改写或解析生成的 `adops-bundle.yml`、`adops-plan.json`、`adops-batch.json`、`apply.py`。这些文件是机器产物。
-- 面向用户输出时，只使用脚本 stdout 的短 JSON 摘要和 `summarize-plan` 的结果。
+- 面向用户输出时，只使用脚本输出的短 JSON 摘要和 `summarize-plan` 的结果，但不要把“工具调用”、退出码、stdout/stderr 作为用户正文标题；这些只供验收侧后台核验。
 - 每个新任务先设置 `AD_OPS_WORKDIR`，然后运行 `init_env.py`。WorkBot 验收场景允许直接清理旧的 `adops-*` 生成文件。
 
 ```bash
@@ -73,7 +73,7 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py preflight-slb-plan \
 ```
 
 Preflight safety: HTTP 404 means absent; any other GET failure blocks the workflow before script output or device mutation.
-Same-name reuse safety: an existing resource is reused by name and is not overwritten. If stdout reports `reuse_compatibility_warning_count > 0`, surface it to the user and require manual review during the device inspection step.
+Same-name reuse safety: an existing resource is reused by name and is not overwritten. If the preflight result reports `reuse_compatibility_warning_count > 0`, surface it to the user and require manual review during the device inspection step.
 
 预检后必须让用户二选一，只接受短回复：
 
@@ -124,7 +124,7 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py rollback-and-verify \
 - 回滚清单：`$AD_OPS_WORKDIR/adops-rollback.json`
 - 回滚后 GET：`$AD_OPS_WORKDIR/adops-post-rollback.json`
 - 回滚前后比较：`$AD_OPS_WORKDIR/adops-rollback-compare.json`
-- 设备验证结果：`apply-slb-plan` stdout 中的 `verify_result`
+- 设备验证结果：`apply-slb-plan` 结果中的 `verify_result`
 
 Rollback safety: `rollback-and-verify` must use the rollback manifest and baseline created by the same `apply-slb-plan` run and the same AD host. A host/plan mismatch is a hard stop.
 
@@ -156,7 +156,7 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
   --header X-Forwarded-For
 ```
 
-如果 stdout 中 `reusable=true` 且 `selected` 有值，后续 `render_slb_bundle.py` 必须使用 `--http-profile <selected>`，不要新建 XFF Profile。否则才使用 `--create-http-profile-xff <new_name>`。
+如果发现结果中 `reusable=true` 且 `selected` 有值，后续 `render_slb_bundle.py` 必须使用 `--http-profile <selected>`，不要新建 XFF Profile。否则才使用 `--create-http-profile-xff <new_name>`。
 
 ## 固定输出模板
 
@@ -166,13 +166,14 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 ## 配置结论
 - 目标：<一句话说明用户要生成什么>
 - 阶段：<YAML 待填写/脚本已生成/已下发待回滚/已回滚>
-- 结果来源：ad-config-ops 脚本 stdout
+- 数据来源：配置计划和设备预检结果
 - 设备：<AD1/未下发>
 
-## 工具调用
-- init_env.py：<成功/失败>，<清理摘要>
-- ad_ops_flow.py：<成功/失败>，<plan/preflight/apply/rollback 摘要>
-- verify_slb_resource.py：<成功/失败/未执行>，<设备验证摘要>
+## 执行摘要
+- 配置计划：<已生成/失败>
+- 同名预检：<无冲突/复用已有资源/失败>
+- 下发验证：<未执行/通过/失败>
+- 回滚验证：<未执行/一致/不一致>
 
 ## 生成产物
 | 产物 | 路径 |

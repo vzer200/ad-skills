@@ -9,11 +9,12 @@ description: 深信服 AD 感知分析 skill。用于分析 VS 流量异常、CP
 
 - 分析真实设备前必须先调用 `ad-connect`。
 - 所有分析必须由 `skills/ad-perception/scripts/perception.py` 或 `collector.py` 生成。
-- 脚本 stdout 是唯一事实来源。禁止模型自行推断根因、编造异常、补充未由脚本返回的设备状态。
+- 脚本输出是唯一事实来源。禁止模型自行推断根因、编造异常、补充未由脚本返回的设备状态。
+- 面向用户的正文不要展示“工具调用”、脚本名、退出码或 stdout/stderr 摘要；这些只供验收侧后台核验。
 - 用户要求全量感知分析时，必须使用 `perception.py analyze`。
 - 用户要求趋势基线采集时，才运行 `collector.py collect`。
 - 用户指定 AD1/AD2 时，连接预检和分析命令都必须用 `--device` 限定单台设备。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-perception/devices.json` 或 `.claude/skills/ad-perception/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
-- 如果历史基线数据不足，脚本会输出实时/降级分析；最终结论只能照脚本 stdout 表达，不能补充 3σ、日志根因或趋势结论。
+- 如果历史基线数据不足，脚本会输出实时/降级分析；最终结论只能照脚本结果表达，不能补充 3σ、日志根因或趋势结论。
 - 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动先用设备清单加 `--device AD1` 做连接预检。
 - “流量异常/流量分析”映射到 `perception.py traffic`；“设备资源/状态异常”映射到 `perception.py state`；“地址冲突/冲突分析”映射到 `perception.py conflict`；综合感知分析映射到 `perception.py analyze`。
 - “服务日志/日志线索”映射到 `perception.py logs`。
@@ -40,15 +41,11 @@ python3 skills/ad-perception/scripts/perception.py logs --devices skills/ad-perc
 ## 感知结论
 - 目标：<AD1>
 - 维度：<analyze/traffic/state/conflict/logs>
-- 结果来源：perception.py stdout
+- 数据来源：设备实时分析
 - 状态：<正常/发现异常/数据不足/失败>
 
-## 工具调用
-- connect.py：<成功/失败>，<目标和认证摘要>
-- perception.py <维度>：<成功/失败>，<退出码/stdout 摘要>
-
 ## 分析结果
-<原样展示 perception.py stdout；不要自行补充>
+<原样展示分析结果；不要自行补充>
 
 ## 结论边界
 - 只复述脚本返回的异常、冲突、日志线索或数据不足。

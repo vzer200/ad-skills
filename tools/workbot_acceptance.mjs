@@ -140,61 +140,61 @@ const cases = {
   },
   r1: {
     steps: [
-      "请对 AD1 做一次标准巡检。",
+      "请对 AD1 做一次巡检。",
       "标准巡检",
-      "继续",
+      "强制",
     ],
-    expected: ["connect.py", "AD1", "check.py", "history", "run", "--wait"],
+    expected: ["AD1", "标准巡检"],
     requireTools: true,
     requireDevice: true,
   },
   "r1-full": {
     steps: [
-      "请对 AD1 做一次全量巡检。",
+      "请对 AD1 做一次巡检。",
       "全量巡检",
-      "继续",
+      "强制",
     ],
-    expected: ["connect.py", "AD1", "check.py", "history", "run", "--wait", "全量巡检"],
+    expected: ["AD1", "全量巡检"],
     requireTools: true,
     requireDevice: true,
   },
   "r1-security": {
     steps: [
-      "请对 AD1 做一次安全巡检。",
+      "请对 AD1 做一次巡检。",
       "安全巡检",
-      "继续",
+      "强制",
     ],
-    expected: ["connect.py", "AD1", "check.py", "history", "run", "--wait", "安全巡检"],
+    expected: ["AD1", "安全巡检"],
     requireTools: true,
     requireDevice: true,
   },
   "r1-all": {
     steps: [
-      "请对 AD 所有设备做一次标准巡检。",
+      "请对 AD 所有设备做一次巡检。",
       "标准巡检",
-      "继续",
+      "强制",
     ],
-    expected: ["connect.py", "devices.json", "check.py", "run", "--wait"],
+    expected: ["devices.json", "标准巡检"],
     requireTools: true,
     requireDevice: true,
   },
   "r1-all-full": {
     steps: [
-      "请对 AD 所有设备做一次全量巡检。",
+      "请对 AD 所有设备做一次巡检。",
       "全量巡检",
-      "继续",
+      "强制",
     ],
-    expected: ["connect.py", "devices.json", "check.py", "run", "--wait", "全量巡检"],
+    expected: ["devices.json", "全量巡检"],
     requireTools: true,
     requireDevice: true,
   },
   "r1-all-security": {
     steps: [
-      "请对 AD 所有设备做一次安全巡检。",
+      "请对 AD 所有设备做一次巡检。",
       "安全巡检",
-      "继续",
+      "强制",
     ],
-    expected: ["connect.py", "devices.json", "check.py", "run", "--wait", "安全巡检"],
+    expected: ["devices.json", "安全巡检"],
     requireTools: true,
     requireDevice: true,
   },
@@ -657,7 +657,7 @@ function extractToolCommands(responses) {
 
 function commandExpectedFor(name, cfg) {
   if (cfg.commandExpected) return cfg.commandExpected;
-  if (name.startsWith("r1")) return ["connect.py", "check.py"];
+  if (name.startsWith("r1")) return ["connect.py", "check.py", "history", "run", "progress", "wait"];
   if (name.startsWith("r2")) return ["connect.py", "overview.py"];
   if (name.startsWith("r3")) return ["connect.py", "perception.py"];
   return [];
@@ -665,10 +665,10 @@ function commandExpectedFor(name, cfg) {
 
 function templateExpectedFor(name, cfg) {
   if (cfg.templateExpected) return cfg.templateExpected;
-  if (name.startsWith("r1")) return ["巡检结论", "工具调用", "分类统计", "原始报告"];
-  if (name.startsWith("r2")) return ["查询结论", "工具调用", "查询结果"];
-  if (name.startsWith("r3")) return ["感知结论", "工具调用", "分析结果"];
-  if (name.startsWith("r4")) return ["配置结论", "工具调用", "生成产物", "安全确认"];
+  if (name.startsWith("r1")) return ["巡检结论", "巡检过程", "分类统计", "重点异常", "原始报告"];
+  if (name.startsWith("r2")) return ["查询结论", "查询范围", "查询结果", "覆盖说明"];
+  if (name.startsWith("r3")) return ["感知结论", "分析结果", "结论边界"];
+  if (name.startsWith("r4")) return ["配置结论", "执行摘要", "生成产物", "安全确认", "下一步"];
   return [];
 }
 
@@ -805,19 +805,26 @@ async function uploadZip(page) {
 function verify(run) {
   const cfg = cases[run.name] || {};
   const tokens = cfg.expected || [];
-  const searchable = `${run.text || ""}\n${run.agentText || ""}`;
+  const toolCommands = extractToolCommands(run.responses);
+  const toolCommandText = toolCommands.join("\n");
+  const toolCandidateText = (run.responses || [])
+    .flatMap((item) => (item.toolEvidence && item.toolEvidence.candidates) || [])
+    .map((item) => item.text || "")
+    .join("\n");
+  const visibleText = `${run.text || ""}\n${run.agentText || ""}`;
+  const searchable = `${visibleText}\n${toolCommandText}\n${toolCandidateText}`;
   const found = tokens.filter((token) => searchable.includes(token));
   const missing = tokens.filter((token) => !searchable.includes(token));
   const templateExpected = templateExpectedFor(run.name, cfg);
-  const templateFound = templateExpected.filter((token) => searchable.includes(token));
-  const templateMissing = templateExpected.filter((token) => !searchable.includes(token));
-  const toolCommands = extractToolCommands(run.responses);
-  const toolCommandText = toolCommands.join("\n");
+  const templateFound = templateExpected.filter((token) => visibleText.includes(token));
+  const templateMissing = templateExpected.filter((token) => !visibleText.includes(token));
   const commandExpected = commandExpectedFor(run.name, cfg);
   const commandFound = commandExpected.filter((token) => toolCommandText.includes(token));
   const commandMissing = commandExpected.filter((token) => !toolCommandText.includes(token));
   const commandForbidden = cfg.commandForbidden || [];
   const commandForbiddenFound = commandForbidden.filter((token) => toolCommandText.includes(token));
+  const visibleForbidden = cfg.visibleForbidden || (/^r[1-4]/.test(run.name) ? ["工具调用", "退出码", "stdout", "stderr"] : []);
+  const visibleForbiddenFound = visibleForbidden.filter((token) => visibleText.includes(token));
   const forbidden = cfg.forbidExecute && /(^|\s)--execute(\s|$)/.test(searchable);
   const toolEvidenceOk = !cfg.requireTools || run.responses.some((item) => item.toolEvidence && item.toolEvidence.hasEvidence);
   const deviceEvidenceOk = !cfg.requireDevice || hasDeviceEvidence(searchable);
@@ -837,6 +844,8 @@ function verify(run) {
     commandMissing,
     commandForbidden,
     commandForbiddenFound,
+    visibleForbidden,
+    visibleForbiddenFound,
     toolCommands,
     toolEvidenceOk,
     cleanToolTriggerOk,
@@ -846,7 +855,7 @@ function verify(run) {
     toolFollowupUsed: Boolean(run.toolFollowupUsed),
     commandFollowupUsed: Boolean(run.commandFollowupUsed),
     deviceFollowupUsed: Boolean(run.deviceFollowupUsed),
-    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && commandForbiddenFound.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk,
+    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && commandForbiddenFound.length === 0 && visibleForbiddenFound.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk,
     forbidden_execute: forbidden,
   };
 }

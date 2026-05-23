@@ -7,15 +7,15 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 
 ## 强制规则
 
-- 硬性验收规则：查询类最终回答必须以 `## 查询结论` 开头，必须包含 `## 工具调用`、`## 查询结果`、`## 覆盖说明`。缺少任一标题即视为任务失败。
-- 最终回答必须复制 `overview.py --format markdown` 的 stdout 原文。不要改写成自定义表格，不要只摘取 VS/Pool/证书数据，不要把脚本输出重新组织成自己的摘要。
-- `## 工具调用` 中必须出现字面量 `connect.py` 和 `overview.py <维度>`，并写明退出码/stdout 摘要；即使工具面板已经展示调用，最终回答也必须保留这两个脚本名。
+- 硬性验收规则：查询类最终回答必须以 `## 查询结论` 开头，必须包含 `## 查询范围`、`## 查询结果`、`## 覆盖说明`。缺少任一标题即视为任务失败。
+- 最终回答必须复制 `overview.py --format markdown` 的正文输出。不要改写成自定义表格，不要只摘取 VS/Pool/证书数据，不要把脚本输出重新组织成自己的摘要。
+- 面向用户的正文不要展示“工具调用”、脚本名、退出码或 stdout/stderr 摘要；这些只供验收侧后台核验。
 - 工具面板里的真实命令必须先单独执行 `skills/ad-connect/scripts/connect.py`，再执行 `skills/ad-ops/scripts/overview.py`。不能把 `overview.py` stdout 中提到的 `connect.py` 当作连接预检。
 - 每一条新的用户查询都必须重新执行一次 `connect.py`。禁止复用上一轮 VS/Pool/证书查询里的连接预检结果。
 - 查询真实设备前必须先调用 `ad-connect`。
 - 用户要“配置、流量、状态、证书”整体视图时，必须使用 `overview.py all`。
 - 用户要特定维度时，必须先用 `connect.py` 验证目标设备，再使用 `overview.py vs|pool|cert|hardware|ha|traffic`；不要直接调用 `ad_api.py` 给用户生成查询结果。
-- 输出必须来自脚本 stdout。禁止模型自己拼接 VS、Pool、证书或状态表。
+- 输出必须来自脚本结果。禁止模型自己拼接 VS、Pool、证书或状态表。
 - 支持 `devices.json` 中的 AD1/AD2。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-ops/devices.json` 或 `.claude/skills/ad-ops/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
 - 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动使用设备清单并加 `--device AD1`。
 - 用户说“所有 AD 设备 / 全部 AD / 多台设备”时，必须使用 `--devices skills/ad-ops/devices.json`，不要加 `--device AD1` 或 `--device AD2`，让脚本按设备清单查询全部设备。
@@ -62,21 +62,21 @@ python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.jso
 
 ## 输出模板
 
-最终回答必须使用以下四个二级标题，标题文字不能改，不能缺失，不能用其他顶级标题替代。最简单可靠的做法是：运行 `overview.py --format markdown` 后，直接把 stdout 从 `## 查询结论` 到 `## 覆盖说明` 完整粘贴给用户，再补充必要的退出码摘要。
+最终回答必须使用以下四个二级标题，标题文字不能改，不能缺失，不能用其他顶级标题替代。最简单可靠的做法是：运行 `overview.py --format markdown` 后，直接把 stdout 从 `## 查询结论` 到 `## 覆盖说明` 完整粘贴给用户。
 
 ```text
 ## 查询结论
 - 目标：<AD1>
 - 维度：<all/vs/pool/cert/traffic/hardware/ha>
-- 结果来源：overview.py stdout
+- 数据来源：设备实时查询
 - 状态：<成功/失败>
 
-## 工具调用
-- connect.py：<成功/失败>，<目标、认证摘要、退出码/stdout 摘要>
-- overview.py <维度>：<成功/失败>，<退出码/stdout 摘要>
+## 查询范围
+- <整体查询/单项查询/多设备查询说明>
+- 连接校验和设备读取已完成。
 
 ## 查询结果
-<原样展示 overview.py stdout；不要自行补充>
+<原样展示查询结果；不要自行补充>
 
 ## 覆盖说明
 - 若为 all：必须覆盖配置、流量、设备状态、SSL 证书。

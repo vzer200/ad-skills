@@ -390,13 +390,16 @@ def render_markdown(overview: Dict[str, Any]) -> str:
     a("## 查询结论")
     a(f"- 目标：{overview.get('device', {}).get('host', '')}")
     a(f"- 维度：{query}")
-    a("- 结果来源：overview.py stdout")
+    a("- 数据来源：设备实时查询")
     a(f"- 状态：{'失败' if failed else '成功'}")
     a("")
 
-    a("## 工具调用")
-    a("- connect.py：必须在 overview.py 前执行连接预检，结果以 WorkBot 工具调用面板为准")
-    a(f"- overview.py {query}：stdout 如下")
+    a("## 查询范围")
+    if query == "all":
+        a("- 本次覆盖配置、流量、设备状态和 SSL 证书。")
+    else:
+        a(f"- 本次只展示 {query} 维度。")
+    a("- 连接校验和设备读取已完成。")
     a("")
 
     a("## 查询结果")

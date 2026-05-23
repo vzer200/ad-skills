@@ -748,6 +748,30 @@ def render_markdown(results: Dict[str, Any]) -> str:
     device = results.get('device', '')
     if not device:
         device = results.get('_device', 'Unknown')
+    statuses = [
+        value.get('status')
+        for value in (
+            results.get('traffic', {}),
+            results.get('state', {}),
+            results.get('logs', {}),
+            results.get('conflicts', {}),
+        )
+        if isinstance(value, dict) and value.get('status')
+    ]
+    if any(status == 'error' for status in statuses):
+        status_text = '失败'
+    elif any(status in ('conflict_found', 'insufficient_data', 'no_match') for status in statuses):
+        status_text = '需关注'
+    else:
+        status_text = '未发现明显异常'
+
+    lines.append('## 感知结论')
+    lines.append(f'- 目标：{device}')
+    lines.append('- 数据来源：设备实时分析')
+    lines.append(f'- 状态：{status_text}')
+    lines.append('')
+    lines.append('## 分析结果')
+    lines.append('')
     lines.append(f'# AD 感知分析报告')
     lines.append(f'**设备**: {device}')
     lines.append('')
@@ -896,6 +920,11 @@ def render_markdown(results: Dict[str, Any]) -> str:
         lines.append('✅ 未发现 VS IP:Port 重叠或 Pool 节点重复。')
     elif conflicts.get('status') == 'error':
         lines.append(f'❌ 冲突检测失败: {conflicts.get("error", "未知错误")}')
+    lines.append('')
+
+    lines.append('## 结论边界')
+    lines.append('- 只展示设备实时数据、历史基线和日志中能够确认的现象。')
+    lines.append('- 未返回证据的根因、趋势或处置建议不在本次结论中展开。')
     lines.append('')
 
     return '\n'.join(lines)
