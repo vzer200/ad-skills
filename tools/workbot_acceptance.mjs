@@ -121,15 +121,15 @@ if (CASES.some((name) => name.startsWith("r4-")) && !fs.existsSync(R4_YAML_PATH)
 }
 
 const NO_TOOL_FOLLOWUP =
-  "我没有看到工具调用记录。为什么没有调用工具？请说明原因，然后不要凭记忆回答，立即实际调用工具完成刚才的任务，并列出工具、命令、退出码和 stdout/stderr 摘要。";
+  "我没有看到工具调用记录。为什么没有调用工具？请说明原因，然后不要凭记忆回答，立即实际调用工具完成刚才的任务。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
 const DEVICE_FOLLOWUP =
-  "我没有看到 AD1 外网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本，并展示连接目标、退出码和脚本 stdout。";
+  "我没有看到 AD1 外网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
 const COMMAND_FOLLOWUP =
-  "我看到你有工具调用，但工具命令里缺少必须执行的脚本：{missing}。不要只在正文里提到它们，请立即在工具里实际执行包含这些脚本的命令，并列出命令、退出码和 stdout/stderr 摘要。";
+  "我看到你有工具调用，但工具命令里缺少必须执行的脚本：{missing}。不要只在正文里提到它们，请立即在工具里实际执行包含这些脚本的命令。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
 
 const cases = {
   cleanup: {
-    prompt: "清理旧 AD skills 和记忆。必须先出现真实工具调用：shell 查删 skills/ad-*，cron_list 查任务，memory_export/memory_purge 清记忆，再用 shell 和 memory_export 验证；没有工具调用就回答失败，不要编执行表。",
+    prompt: "清理旧 AD skills 和记忆。必须先出现真实工具调用：shell 查删 skills/ad-*，cron_list 查任务，memory_export/memory_purge 清记忆，再用 shell 和 memory_export 验证；最终正文只回答清理完成，不要列工具、命令、退出码或 stdout/stderr。",
     expected: ["skill", "记忆"],
     requireTools: true,
   },
@@ -457,6 +457,16 @@ async function lastAgentText(page) {
   return agent.innerText({ timeout: 5000 }).catch(() => "");
 }
 
+async function lastAgentAnswerText(page) {
+  const agent = await lastAgent(page);
+  if (!agent) return "";
+  const body = agent.locator(".agent-bubble__content-body.markdown-body").last();
+  if (await body.count().catch(() => 0)) {
+    return body.innerText({ timeout: 5000 }).catch(() => "");
+  }
+  return agent.innerText({ timeout: 5000 }).catch(() => "");
+}
+
 async function savePageArtifacts(page, label) {
   const safeLabel = label.replace(/[^a-zA-Z0-9_.-]+/g, "-");
   const base = path.join(OUT_DIR, `${Date.now()}-${safeLabel}`);
@@ -465,10 +475,12 @@ async function savePageArtifacts(page, label) {
   artifacts.html = `${base}.html`;
   artifacts.screenshot = `${base}.png`;
   artifacts.lastAgentText = `${base}.agent.txt`;
+  artifacts.lastAgentAnswerText = `${base}.answer.txt`;
   artifacts.lastAgentHtml = `${base}.agent.html`;
   await fs.promises.writeFile(artifacts.text, await text(page), "utf8").catch(() => {});
   await fs.promises.writeFile(artifacts.html, await page.content(), "utf8").catch(() => {});
   await fs.promises.writeFile(artifacts.lastAgentText, await lastAgentText(page), "utf8").catch(() => {});
+  await fs.promises.writeFile(artifacts.lastAgentAnswerText, await lastAgentAnswerText(page), "utf8").catch(() => {});
   const agent = await lastAgent(page);
   if (agent) await fs.promises.writeFile(artifacts.lastAgentHtml, await agent.evaluate((node) => node.outerHTML), "utf8").catch(() => {});
   await page.screenshot({ path: artifacts.screenshot, fullPage: true }).catch(() => {});
@@ -769,7 +781,7 @@ async function sendPrompt(page, name, prompt) {
   log("prompt-sent", { name, beforeLength: before.length, beforeAgentCount });
   const after = await waitForIdleText(page, before, name);
   const visibleDelta = after.startsWith(before) ? after.slice(before.length) : after;
-  const visibleAgentText = await lastAgentText(page);
+  const visibleAgentText = await lastAgentAnswerText(page);
   await expandToolCalls(page);
   const expanded = await text(page);
   const delta = expanded.startsWith(before) ? expanded.slice(before.length) : expanded;
@@ -793,7 +805,7 @@ async function sendPrompt(page, name, prompt) {
     prompt,
     text: delta.slice(-12000),
     agentText: agentText.slice(-12000),
-    visibleText: visibleDelta.slice(-12000),
+    visibleText: visibleAgentText.slice(-12000),
     visibleAgentText: visibleAgentText.slice(-12000),
     toolEvidence,
     artifacts,

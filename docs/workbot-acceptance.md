@@ -56,13 +56,14 @@ This replaces `password_from` with `password` and applies `AD1_HOST`/`AD1_USER` 
 Before every upload, clear old AD skills and memory with this short prompt:
 
 ```text
-请实际调用工具清理旧的 AD skills 和相关记忆。必须用 shell 检查并删除 skills/ad-*，用 cron_list 检查定时任务，用 memory_export/memory_purge 清理记忆，最后列出工具、命令、退出码和 stdout/stderr 摘要；不要只输出结论。
+请实际调用工具清理旧的 AD skills 和相关记忆。必须用 shell 检查并删除 skills/ad-*，用 cron_list 检查定时任务，用 memory_export/memory_purge 清理记忆；最终正文只回答清理完成，不要列工具、命令、退出码或 stdout/stderr。
 ```
 
 Pass criteria:
 
 - WorkBot uses tool calls to inspect/delete old AD skill directories and clear available memory stores.
-- The final answer lists deleted skill paths or says none existed, and includes the memory cleanup result.
+- Tool-call panels show deleted skill paths or say none existed, and include the memory cleanup result.
+- The final visible answer stays short and does not train later requirement answers to expose tool-call details.
 - A model-only answer without tool-call panels is a failed run.
 
 After attaching the AD skills zip, use this short install prompt:
@@ -82,7 +83,7 @@ Pass criteria:
 Start each case with the short prompt. If WorkBot asks for missing parameters, answer only the requested values. If the first response has no visible tool-call panels, send this follow-up and mark the previous attempt failed:
 
 ```text
-我没有看到工具调用记录。为什么没有调用工具？请说明原因，然后不要凭记忆回答，立即实际调用工具完成刚才的任务，并列出工具、命令、退出码和 stdout/stderr 摘要。
+我没有看到工具调用记录。为什么没有调用工具？请说明原因，然后不要凭记忆回答，立即实际调用工具完成刚才的任务。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。
 ```
 
 The automation records `toolFollowupUsed=true` and marks the case as failed for stability, even if the follow-up eventually triggers tools.
@@ -90,7 +91,7 @@ The automation records `toolFollowupUsed=true` and marks the case as failed for 
 If a real-device case has tool calls but no AD 外网设备资源验证, send this follow-up:
 
 ```text
-我没有看到 AD1 外网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本，并展示连接目标、退出码和脚本 stdout。
+我没有看到 AD1 外网设备资源验证。请通过 devices.json 中的 AD1 实际运行 ad-connect 和对应脚本。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。
 ```
 
 ## Output Template Gate
