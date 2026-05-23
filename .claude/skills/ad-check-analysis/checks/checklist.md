@@ -36,8 +36,8 @@
 
 - [ ] 6. 报告下载与分析（wait 命令）
   运行: `python scripts/check.py wait --host TEST_IP --password TEST_PASS --work-dir /tmp/ad_check_test --timeout 600`
-  验证: stdout 包含 `## 巡检结论`、`## 巡检过程`、`## 分类统计`、`## 原始报告`
-        包含 `### 设备基本信息`、`### 检查项明细`、`### 优化建议`、`### 健康评分`
+  验证: stdout 包含 `## 巡检结论`、`## 分类统计`、`## 设备基本信息`、`## 检查项明细`、`## 优化建议`、`## 健康评分`
+        不包含 `## 巡检过程`、`## 原始报告`
         检查项显示中文名称，用户正文不包含工具调用、脚本名、退出码、stdout/stderr
         exit code 0
 

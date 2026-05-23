@@ -83,6 +83,13 @@ def render_interaction_prompt(stage: str, target: str, scene: str = "标准巡�
     raise ValueError(f"unsupported prompt stage: {stage}")
 
 
+def _extract_ip(host: str) -> str:
+    """Extract an IPv4 address from a host URL for user-facing labels."""
+    host = host or "?"
+    m = re.search(r"(\d+\.\d+\.\d+\.\d+)", host)
+    return m.group(1) if m else host
+
+
 # ---------------------------------------------------------------------------
 # 巡检执行流程
 # ---------------------------------------------------------------------------
@@ -142,9 +149,13 @@ def start_check(
     print("         巡检已在设备后台执行，请使用 progress 命令轮询进度。")
 
     check_start_time = result.get("start_time", "")
+    device_name = getattr(client, "device_name", "")
+    if not isinstance(device_name, str):
+        device_name = ""
     meta = {
         "scene": scene,
         "host": client.host,
+        "device_name": device_name,
         "event_id": event_id,
         "report_name": "",
         "t0_int": _normalize_start_time(check_start_time),
@@ -1162,8 +1173,9 @@ def render_markdown(
         )
     suggestions_table = "\n".join(suggestion_rows) if suggestion_rows else "| - | - | 暂无优化建议 |"
 
-    # 设备中文名（从 devices.json 匹配，降级到 host URL）
-    device_label = meta.get("host", "?")
+    # 设备中文名（从 devices.json 匹配，降级到设备 IP）
+    device_host = meta.get("host", "?")
+    device_label = meta.get("device_name") or _extract_ip(device_host)
     try:
         import json as _json
         _devices_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "devices.json")
@@ -1172,11 +1184,12 @@ def render_markdown(
                 _data = _json.load(_f)
             for _d in _data.get("devices", []):
                 _hosts = [_d.get("host", ""), _d.get("host", "").replace("https://", "http://")]
-                if meta.get("host", "") in _hosts:
+                if device_host in _hosts:
                     device_label = _d.get("name", device_label)
                     break
     except Exception:
         pass
+    device_ip = _extract_ip(device_host)
 
     # 巡检时间格式化
     raw_time = meta.get("start_time", "")
@@ -1200,18 +1213,12 @@ def render_markdown(
         check_detail_section = "> 本次报告未包含可分析检查项。\n"
 
     return f"""## 巡检结论
-- 目标：{device_label} ({meta.get("host", "?")})
+- 目标：{device_label} ({device_ip})
 - 场景：{meta.get("scene", "?")}
 - 数据来源：设备巡检报告
 - 巡检时间：{check_time or "-"}
 - 综合评分：{overall}/100
 - 异常数量：{summary["fail"] + summary["warn"]}
-
-## 巡检过程
-- 连接校验：已完成前置校验
-- 历史记录：已确认生成本次巡检报告
-- 进度轮询：完成
-- 报告获取：成功
 
 ## 分类统计
 | 类别 | 检查项 | 通过 | 异常 | 得分 |
@@ -1220,9 +1227,7 @@ def render_markdown(
 | 健康 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {score_cell(hardware_score, h["total"])} |
 | 安全 | {s["total"]} | {s["pass"]} | {s["fail"] + s["warn"]} | {score_cell(security_score, s["total"])} |
 
-## 原始报告
-
-### 设备基本信息
+## 设备基本信息
 
 | 项目 | 值 |
 |------|-----|
@@ -1230,17 +1235,17 @@ def render_markdown(
 | 网关 ID | {dev["gateway_id"]} |
 | 运行时间 | {dev["runtime"]} |
 
-### 检查项明细
+## 检查项明细
 
 {check_detail_section}
 
-### 优化建议
+## 优化建议
 
 | 优先级 | 检查项 | 建议 |
 |--------|--------|------|
 {suggestions_table}
 
-### 健康评分
+## 健康评分
 
 | 项目 | 评分 |
 |------|------|
@@ -1386,6 +1391,9 @@ def _wait_one(
         timeout=timeout,
         verbose=verbose,
     )
+    device_name = getattr(client, "device_name", "")
+    if isinstance(device_name, str) and device_name and not meta.get("device_name"):
+        meta["device_name"] = device_name
     with open(meta["ad_json_path"], encoding="utf-8") as f:
         data = json.load(f)
     analysis = analyze(data)

@@ -1067,7 +1067,8 @@ function commandExpectedFor(name, cfg) {
 
 function templateExpectedFor(name, cfg) {
   if (cfg.templateExpected) return cfg.templateExpected;
-  if (name.startsWith("r1")) return ["巡检结论", "巡检过程", "分类统计", "原始报告"];
+  if (name.startsWith("r1-all")) return ["巡检结论", "巡检过程", "分类统计", "原始报告"];
+  if (name.startsWith("r1")) return ["巡检结论", "分类统计", "设备基本信息", "检查项明细", "优化建议", "健康评分"];
   if (name.startsWith("r2")) return ["查询结论", "查询范围", "查询结果", "覆盖说明"];
   if (name.startsWith("r3")) return ["感知结论", "分析结果", "结论边界"];
   if (name.startsWith("r4")) return ["配置结论", "执行摘要", "生成产物", "安全确认", "下一步"];
@@ -1286,6 +1287,9 @@ function verify(run) {
       "heartbeat_state=",
       "shm_sem_state=",
     );
+    if (!run.name.startsWith("r1-all")) {
+      defaultVisibleForbidden.push("巡检过程", "原始报告");
+    }
   }
   const visibleForbidden = cfg.visibleForbidden || defaultVisibleForbidden;
   const visibleForbiddenFound = visibleForbidden.filter((token) => visibleText.includes(token));
@@ -1296,6 +1300,9 @@ function verify(run) {
         { name: "english thinking leaked", regex: /\b(?:According to the skill rules|The user|Let me start|I need to)\b/i },
       ]
     : [];
+  if (/^r1/.test(run.name) && !run.name.startsWith("r1-all")) {
+    visibleForbiddenRegexes.push({ name: "single target URL form", regex: /目标[：:][^\n]*\(\s*https?:\/\// });
+  }
   const visibleForbiddenRegexFound = visibleForbiddenRegexes
     .filter((item) => item.regex.test(visibleText))
     .map((item) => item.name);

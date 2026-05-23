@@ -196,11 +196,14 @@ class TestRenderMarkdown(unittest.TestCase):
                 {"priority": "高", "suggestion": "Test suggestion", "check": "CPU_CHECK"}
             ],
         }
-        meta = {"host": "https://10.0.0.1", "scene": "标准巡检", "start_time": "2026-01-01 00:00:00"}
+        meta = {"host": "https://10.0.0.1", "device_name": "AD1", "scene": "标准巡检", "start_time": "2026-01-01 00:00:00"}
         output = render_markdown(analysis, meta)
+        self.assertIn("- 目标：AD1 (10.0.0.1)", output)
         self.assertIn("优化建议", output)
         self.assertIn("健康评分", output)
         self.assertIn("100", output)
+        self.assertNotIn("## 巡检过程", output)
+        self.assertNotIn("## 原始报告", output)
 
     def test_render_marks_empty_dimensions_as_not_covered(self):
         analysis = analyze({"ad_appversion": "AD-1.0"})
@@ -235,6 +238,8 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertNotIn("enable_iplimit=", output)
         self.assertNotIn("ad.json", output)
         self.assertNotIn("## 重点异常", output)
+        self.assertNotIn("## 巡检过程", output)
+        self.assertNotIn("## 原始报告", output)
         self.assertNotRegex(output, r"\b(?:[A-Za-z][A-Za-z0-9_]*|82599)=")
         self.assertNotIn("❌ 异常", output)
         self.assertNotIn("⚠️ 异常", output)

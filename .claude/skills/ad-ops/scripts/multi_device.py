@@ -136,6 +136,7 @@ def run_multi(
                 username=d.get("user", "admin"),
                 password=pw,
             )
+            setattr(client, "device_name", d.get("name", ""))
             futures[ex.submit(func, client, **kwargs)] = d
 
         deadline = time.monotonic() + total_timeout
