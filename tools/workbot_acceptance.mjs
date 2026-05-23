@@ -446,6 +446,7 @@ const cases = {
     prompt: "对 AD2 设备的 test 虚拟服务进行流量趋势分析。",
     expected: ["connect.py", "AD2", "collector.py", "collect", "perception.py", "traffic", "test"],
     commandExpected: ["connect.py", "collector.py", "collect", "--collect-only", "perception.py", "traffic", "--vs", "test", "--require-db"],
+    visibleForbidden: ["| 风险 |", "ℹ️ 轻微", "⚠️ 明显", "❌ 严重"],
     requireTools: true,
     requireDevice: true,
   },
@@ -1409,6 +1410,12 @@ function verify(run) {
   }
   if (/^r2/.test(run.name)) {
     visibleForbiddenRegexes.push({ name: "query target URL scheme", regex: /目标设备?[：:][^\n]*https?:\/\// });
+  }
+  if (/^r3/.test(run.name)) {
+    visibleForbiddenRegexes.push({
+      name: "r3 anomaly status contradiction",
+      regex: /状态[：:]\s*(?:✅\s*)?未发现明显异常[\s\S]*(?:\b(?:ALERT|ERROR)\b|(?:上升|下降)\s+\d+(?:\.\d+)?%|(?:轻微|明显|严重))/,
+    });
   }
   const visibleForbiddenRegexFound = visibleForbiddenRegexes
     .filter((item) => item.regex.test(visibleText))

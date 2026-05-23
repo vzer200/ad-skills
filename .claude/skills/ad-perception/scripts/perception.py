@@ -302,6 +302,8 @@ def traffic_analysis(
         # Enough data for 3σ analysis
         result['anomalies'] = _analyze_traffic_rows(rows)
         result['source'] = 'sqlite'
+        if result['anomalies']:
+            result['status'] = 'warning'
     elif require_db:
         result['status'] = 'insufficient_data' if rows else 'error'
         result['source'] = 'sqlite'
@@ -326,6 +328,8 @@ def traffic_analysis(
                     if rows is not None and len(rows) >= 100:
                         result['anomalies'] = _analyze_traffic_rows(rows)
                         result['source'] = 'sqlite_injected'
+                        if result['anomalies']:
+                            result['status'] = 'warning'
                         return result
 
         # API fallback - insufficient data
@@ -819,7 +823,7 @@ def fetch_service_log_result(
     entries = data.get('items', [])
     total = data.get('total') or data.get('count') or len(entries)
     return {
-        'status': 'ok',
+        'status': 'warning' if entries else 'ok',
         'entries': entries,
         'total': total,
         'shown': len(entries),
@@ -985,24 +989,18 @@ def render_markdown(results: Dict[str, Any]) -> str:
             lines.append(f"- 历史范围：最近 {days_label} 天")
             lines.append(f"- 数据样本：{traffic.get('sample_count', 0)} 条")
             lines.append('')
-        if traffic.get('status') == 'ok':
+        if traffic.get('status') in ('ok', 'warning'):
             anomalies = traffic.get('anomalies', [])
             if anomalies:
-                lines.append('| 虚拟服务 | 指标 | 时间 | 当前值 | 基线值 | 偏离幅度 | 方向 | 风险 |')
-                lines.append('|---|---|---|---:|---:|---:|---|---|')
+                lines.append('| 虚拟服务 | 指标 | 时间 | 当前值 | 基线值 | 变化比例 |')
+                lines.append('|---|---|---|---:|---:|---|')
                 for a in anomalies:
                     ts_str = datetime.fromtimestamp(a['ts']).strftime('%m-%d %H:%M') if a.get('ts') else 'N/A'
                     baseline = a['baseline_mean']
                     value = a['value']
                     pct = ((value - baseline) / baseline * 100) if baseline != 0 else 0
-                    z = a['z']
-                    if z > 10:
-                        severity = '❌ 严重'
-                    elif z > 5:
-                        severity = '⚠️ 明显'
-                    else:
-                        severity = 'ℹ️ 轻微'
-                    lines.append(f"| {a['vs']} | {_metric_label(a['metric'])} | {ts_str} | {value:.1f} | {baseline:.1f} | {pct:+.1f}% | {a['direction']} | {severity} |")
+                    change_label = f"{a['direction']} {abs(pct):.1f}%"
+                    lines.append(f"| {a['vs']} | {_metric_label(a['metric'])} | {ts_str} | {value:.1f} | {baseline:.1f} | {change_label} |")
             else:
                 lines.append(f'✅ 最近 {days_label} 天内未检测到流量异常。')
         elif traffic.get('status') == 'insufficient_data':
@@ -1085,7 +1083,7 @@ def render_markdown(results: Dict[str, Any]) -> str:
 
     if show_logs:
         lines.append('## 日志线索')
-        if logs.get('status') == 'ok':
+        if logs.get('status') in ('ok', 'warning'):
             entries = logs.get('entries', [])
             levels = logs.get('levels') or []
             if logs.get('range'):

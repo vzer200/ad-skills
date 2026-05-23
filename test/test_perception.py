@@ -732,6 +732,7 @@ class TestServiceLogs(unittest.TestCase):
         self.assertEqual(result['levels'], ['ALERT', 'ERROR'])
         self.assertEqual(result['limit'], 20)
         self.assertEqual(result['range'], '最近 24 小时')
+        self.assertEqual(result['status'], 'warning')
 
     def test_render_logs_markdown_output(self):
         """render_logs_markdown should output the expected markdown table format."""
@@ -773,6 +774,7 @@ class TestServiceLogs(unittest.TestCase):
         result = _logs_one(self.client, limit=20)
         self.assertEqual(result['host'], 'https://10.0.0.1')
         self.assertEqual(result['total'], 2)
+        self.assertEqual(result['status'], 'warning')
         self.assertIsInstance(result['entries'], list)
         self.assertEqual(len(result['entries']), 2)
 
@@ -906,6 +908,35 @@ class TestState3Sigma(unittest.TestCase):
         self.assertIn('日志级别：ALERT、ERROR', output)
         self.assertIn('输出数量：最新 1 条（上限 20 条）', output)
         self.assertIn('2026-05-20 23:50:15', output)
+
+    def test_render_markdown_traffic_anomalies_need_attention(self):
+        output = render_markdown({
+            'device': 'https://10.0.0.1',
+            'traffic': {
+                'status': 'warning',
+                'source': 'sqlite',
+                'db_queried': True,
+                'sample_count': 120,
+                'days': 7,
+                'vs': 'test',
+                'anomalies': [{
+                    'ts': int(datetime.now().timestamp()) - 60,
+                    'vs': 'test',
+                    'metric': 'connection-rate',
+                    'value': 0.0,
+                    'baseline_mean': 100.0,
+                    'z': 4.0,
+                    'direction': '下降',
+                }],
+            },
+            '_scope': 'traffic',
+        })
+
+        self.assertIn('状态：⚠️ 需关注', output)
+        self.assertIn('| 虚拟服务 | 指标 | 时间 | 当前值 | 基线值 | 变化比例 |', output)
+        self.assertIn('下降 100.0%', output)
+        self.assertNotIn('风险', output)
+        self.assertNotIn('轻微', output)
 
     def test_state_analysis_missing_cpu_memory_not_fake_zero(self):
         client = MagicMock()

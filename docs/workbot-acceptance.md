@@ -356,8 +356,10 @@ Pass criteria:
 - `connect.py` validates the requested target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
 - The final conclusion is backed by `perception.py` output.
 - The VS traffic trend prompt uses AD2/192.168.8.31 `test`, must run `collector.py collect --collect-only` first, then call `perception.py traffic --vs test --require-db`. It must prove a database query path and must not answer from realtime API fallback or model memory.
+- VS traffic trend output must not include a `风险` column or subjective severity words such as `轻微/明显/严重`; show the change as a direct ratio such as `下降 79.9%` or `上升 12.3%`.
 - The log prompt must call `perception.py logs`, default to recent 24 hours, query both `ALERT` and `ERROR`, and cap visible output to the newest 20 rows sorted by time descending.
 - If the user gives a log window such as recent 5 days or 7 days, WorkBot must pass that range through with `--days N`.
+- R3 visible status must match the evidence: if the output lists traffic anomalies or `ALERT`/`ERROR` logs, the conclusion status must be `需关注`, not `未发现明显异常`.
 - R3 final answers use `感知结论 / 分析结果 / 结论边界`; subcommand outputs must not bypass the perception template.
 - R2/R3 boundary: `设备状态/硬件状态/资源状态查询` belongs to R2; R3 only owns prompts that explicitly ask for analysis, trend, log, conflict, or perception.
 - No root cause, anomaly, or trend is invented outside script stdout.
