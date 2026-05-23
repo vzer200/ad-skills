@@ -1,6 +1,6 @@
 ---
 name: ad-ops
-description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、虚拟服务 VS、Pool、节点、SSL 证书到期时间、设备状态、HA、硬件、流量和系统统计。用户提到查询配置、查看 VS、查看 Pool、证书到期、设备状态、流量、AD1 概览时触发。
+description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、虚拟服务 VS、Pool、节点、SSL 证书到期时间、设备状态、HA、硬件、流量和系统统计。用户提到查询配置、查看 VS、查看 Pool、证书到期、设备状态、流量、AD1 概览、AD1 当前情况、AD1 现在啥情况时触发。
 ---
 
 # AD 运维查询
@@ -18,6 +18,7 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 - 每一条新的用户查询都必须重新执行一次 `connect.py`。禁止复用上一轮 VS/Pool/证书查询里的连接预检结果。
 - 查询真实设备前必须先调用 `ad-connect`。
 - 用户要“配置、流量、状态、证书”整体视图时，必须使用 `overview.py all`。
+- 用户用口语问“AD1 现在啥情况 / 当前情况 / 设备概况 / 看一下 AD1 情况”，且没有明确说“感知、异常、分析、趋势、冲突、日志”时，按查询总览处理，必须使用 `overview.py all`，不要路由到 `ad-perception`。
 - 用户要特定维度时，必须先用 `connect.py` 验证目标设备，再使用 `overview.py vs|pool|cert|hardware|ha|traffic`；不要直接调用 `ad_api.py` 给用户生成查询结果。
 - 输出必须来自脚本结果。禁止模型自己拼接 VS、Pool、证书或状态表。
 - 支持 `devices.json` 中的 AD1/AD2。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-ops/devices.json` 或 `.claude/skills/ad-ops/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
