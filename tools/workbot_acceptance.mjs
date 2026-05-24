@@ -709,9 +709,25 @@ async function waitForConversation(page) {
   await page.locator("textarea.chat-input__textarea").waitFor({ state: "visible", timeout: 30000 });
 }
 
+async function waitForLoginOrConversation(page, timeoutMs = 45000) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    if (await page.locator("textarea.chat-input__textarea").count()) return "conversation";
+    const userInput = page.locator('input[name="username"], input[type="text"]').first();
+    const passwordInput = page.locator('input[name="password"], input[type="password"]').first();
+    if ((await userInput.count()) && (await passwordInput.count())) return "login";
+    await page.waitForTimeout(500);
+  }
+  return "timeout";
+}
+
 async function loginIfNeeded(page) {
   await page.goto(WORKBOT_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
-  await page.waitForTimeout(1500);
+  let state = await waitForLoginOrConversation(page);
+  if (state === "timeout") {
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+    state = await waitForLoginOrConversation(page, 30000);
+  }
   if (await page.locator("textarea.chat-input__textarea").count()) return;
 
   const userInput = page.locator('input[name="username"], input[type="text"]').first();
