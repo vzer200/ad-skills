@@ -413,6 +413,8 @@ Extended suite Stage A prompts, not part of the fixed R4 gate:
 在 AD1 上检查这份 VS 配置会不会撞现网。
 ```
 
+The collision/audit prompt is treated as a read-only YAML preflight, not as a create Stage A prompt. The operator uploads the completed YAML, then asks the collision question. WorkBot must run `plan-and-render`, `summarize-plan`, and `preflight-slb-plan`, must not run `apply-slb-plan`, and must still answer with the compact `配置结论 / 产出物 / 下一步` template.
+
 Human downloads WorkBot's YAML artifact, fills the required fields, uploads the completed YAML, then replies:
 
 ```text
@@ -446,6 +448,7 @@ YAML pass criteria:
 - After YAML completion, WorkBot generates the plan, runs GET preflight on every create target and every referenced-existing SLB resource, and asks whether to `真实下发` or `直接给出脚本`.
 - For resources that have a create operation in YAML, HTTP 404 is normal and means the resource will be created. For resources that are only referenced as existing objects, HTTP 404 is a blocker and requires a corrected YAML.
 - If same-name resources exist, WorkBot reuses the existing device resources, omits those create operations from the effective plan, and tells the user which resources were reused.
+- For audit-only prompts such as `检查这份 VS 配置会不会撞现网`, WorkBot must use the YAML plan preflight flow and must not replace it with `verify_slb_resource.py`.
 - If the user replies `不需要下发`, `先不下发`, or similar wording, WorkBot treats it as script-only mode: produce forward and rollback scripts, explain how to use them, and stop.
 - After delivery, WorkBot asks the user to inspect the device result and confirm rollback; the human reply is only `需要回滚。` or `是`.
 - If the user says `不符合预期` or similar wording after delivery, WorkBot must tell the user to rollback the current delivery and submit a corrected YAML. It must not patch the previous YAML in chat or continue mutating the device.
@@ -454,6 +457,7 @@ YAML pass criteria:
 Visible-output template criteria:
 
 - Every R4 answer uses the compact headings `配置结论 / 产出物 / 下一步`; delivery and rollback answers may include the verification sentence inside `配置结论`.
+- Audit-only answers use the same compact headings, explain the collision/preflight result in `配置结论`, list at least the YAML under `产出物`, and state that no device mutation was performed.
 - Stage A `产出物` lists only the YAML template artifact.
 - Stage A must not expand YAML fields in the visible answer. The answer should not list field tables, placeholders, examples, or optional-field explanations; the downloadable YAML carries those details.
 - After YAML completion, script-only, delivery, and rollback answers must list both `apply.py` and `rollback_apply.py` prominently under `产出物`; a run fails if either script is missing from the visible answer.

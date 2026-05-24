@@ -106,6 +106,18 @@ Same-name reuse safety: an existing resource is reused by name and is not overwr
 - 用户回复“真实下发”：进入阶段 C。
 - 阶段 B 及后续每次用户可见回答都必须在 `## 产出物` 表格里列出 `apply.py` 和 `rollback_apply.py`；不能只说“脚本已生成”。
 
+### 只审/撞现网预检
+
+如果用户表达“检查这份 VS 配置会不会撞现网”“只审不下发”“检查同名冲突”“检查是否会覆盖现网”等意图，且当前对话已有用户上传的 YAML 或已经生成的 `adops-bundle.yml`，这是 R4 只读预检流程：
+
+- 必须运行 `plan-and-render`、`summarize-plan`、`preflight-slb-plan`；禁止用 `verify_slb_resource.py` 代替 YAML 计划预检。
+- 必须只做 GET 预检，不执行 `apply-slb-plan`、不执行 `rollback-and-verify`。
+- 用户可见正文仍然必须使用 `## 配置结论`、`## 产出物`、`## 下一步` 三个标题；不要输出裸表格或命令过程。
+- `## 配置结论` 中用一句话说明待新建、复用已有、引用已确认或预检失败；发现同名资源时说明会复用，不要说会覆盖。
+- `## 产出物` 至少列出 YAML；如果脚本已经由 `plan-and-render` 生成，也可以列出 `apply.py` 和 `rollback_apply.py`，但不要引导用户下发，除非用户明确回复“真实下发”。
+
+如果用户要求撞现网检查但还没有可用 YAML，必须用固定三段模板提醒用户先上传已填写的 YAML，不能猜配置内容，也不能用上一次无关任务的 YAML 当作本次事实来源。
+
 ### 阶段 C：下发、人工检查、回滚兜底
 
 用户选择下发验证时，使用固定编排 `apply-slb-plan`，不要让模型自行拼接多个下发/验证命令。该命令会自动执行 preflight GET、复用同名资源、下发有效计划、保存 post-apply GET，并生成回滚清单。
@@ -240,6 +252,23 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 - 人工下发时运行 `apply.py`。
 - 需要回滚时运行 `rollback_apply.py`。
 - 流程结束。后续要调整配置，请重新提交 YAML。
+```
+
+### 只审/撞现网：预检完成，不下发
+
+```markdown
+## 配置结论
+- 设备：AD1
+- 阶段：预检已完成，未下发
+- 预检：<待新建资源/复用已有资源/引用资源已确认/失败；如无同名冲突，直接写无冲突>
+
+## 产出物
+| 产物 | 路径 |
+| --- | --- |
+| YAML | <adops-bundle.yml 路径> |
+
+## 下一步
+本次只做现网冲突检查，不下发。若确认要执行，请回复“真实下发”；否则流程结束。
 ```
 
 ### 阶段 C：已下发，等待人工确认

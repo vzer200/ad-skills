@@ -559,14 +559,13 @@ const cases = {
   },
   "r4-audit-script": {
     steps: [
-      "在 AD1 上检查这份 VS 配置会不会撞现网。",
       { upload: R4_YAML_PATH, name: "r4-yaml" },
-      "我写完了 YAML。",
-      "只审不下发。",
+      "在 AD1 上检查这份 VS 配置会不会撞现网。",
     ],
-    expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
+    expected: ["AD1", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
-    commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
+    commandForbidden: ["apply-slb-plan", "rollback-and-verify", "verify_slb_resource.py"],
+    visibleForbidden: ["操作计划", "计划摘要", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
     requireTools: true,
   },
   "r4-delivery": {
@@ -1265,6 +1264,38 @@ function stepRuleViolationsFor(name, cfg, responses) {
       if (responseCommands(item).includes("ad_ops_flow.py")) {
         violations.push(`r2r4 ${label} reran config workflow after rollback`);
       }
+    }
+    return violations;
+  }
+
+  if (name === "r4-audit-script") {
+    const violations = [];
+    const promptResponses = responses.filter((item) => !item.upload && !item.localVerification);
+    const audit = promptResponses[0] || {};
+    const auditVisible = `${audit.visibleText || ""}\n${audit.visibleAgentText || ""}`;
+    const auditCommands = extractStepToolCommands(audit).join("\n");
+    const compactTemplateRequired = ["配置结论", "产出物", "下一步"];
+    const verboseTemplateForbidden = ["操作计划", "计划摘要", "执行摘要", "安全确认"];
+    const internalArtifactForbidden = ["adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"];
+
+    for (const token of compactTemplateRequired) {
+      if (!auditVisible.includes(token)) violations.push(`r4 audit missing compact heading: ${token}`);
+    }
+    for (const token of [...verboseTemplateForbidden, ...internalArtifactForbidden]) {
+      if (auditVisible.includes(token)) violations.push(`r4 audit leaked verbose/internal content: ${token}`);
+    }
+    if (!auditVisible.includes("AD1")) violations.push("r4 audit did not keep target device AD1 visible");
+    if (!/(撞现网|冲突|预检|同名|无冲突|待新建|复用|未下发)/.test(auditVisible)) {
+      violations.push("r4 audit did not explain collision/preflight result");
+    }
+    if (!/(YAML|yaml|adops-bundle)/.test(auditVisible)) {
+      violations.push("r4 audit did not list or reference YAML artifact");
+    }
+    for (const token of ["plan-and-render", "summarize-plan", "preflight-slb-plan"]) {
+      if (!auditCommands.includes(token)) violations.push(`r4 audit missing command token: ${token}`);
+    }
+    for (const token of ["apply-slb-plan", "rollback-and-verify", "verify_slb_resource.py"]) {
+      if (auditCommands.includes(token)) violations.push(`r4 audit executed forbidden command: ${token}`);
     }
     return violations;
   }
