@@ -63,6 +63,7 @@ const CHROME_PATH = argValue(
   "--chrome",
   process.env.CHROME_PATH || "C:/Program Files/Google/Chrome/Application/chrome.exe",
 );
+let ACTIVE_AGENT_NAME = "";
 const FIXED_CASES = [
   "install",
   "r1",
@@ -714,13 +715,30 @@ async function waitForConversation(page) {
   await page.locator("textarea.chat-input__textarea").waitFor({ state: "visible", timeout: 30000 });
 }
 
+async function activeAgentName(page) {
+  return page.locator('li.user-item--active .user-item__name').innerText({ timeout: 1000 }).catch(() => "");
+}
+
+async function ensureActiveAgent(page, reason = "ensure-active-agent") {
+  if (!ACTIVE_AGENT_NAME) return false;
+  const active = await activeAgentName(page);
+  if (active.includes(ACTIVE_AGENT_NAME)) return false;
+  log("fresh-agent-reselect", { reason, expected: ACTIVE_AGENT_NAME, active });
+  await selectAgentByName(page, ACTIVE_AGENT_NAME);
+  return true;
+}
+
 async function ensureConversation(page, reason = "ensure-conversation") {
-  if (await page.locator("textarea.chat-input__textarea").count().catch(() => 0)) return;
+  if (await page.locator("textarea.chat-input__textarea").count().catch(() => 0)) {
+    await ensureActiveAgent(page, reason);
+    return;
+  }
   const conversationUrl = new URL("/workbot/#/conversation", WORKBOT_URL).toString();
   log("conversation-restore", { reason, currentUrl: page.url() });
   await page.goto(conversationUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
   await waitForConversation(page);
   await page.waitForTimeout(1000);
+  await ensureActiveAgent(page, reason);
 }
 
 async function waitForLoginOrConversation(page, timeoutMs = 45000) {
@@ -964,6 +982,7 @@ async function ensureFreshAgent(page) {
   const created = await createFreshAgent(page, agents, instanceId);
   created.verification = await verifyFreshAgent(page, created);
   await selectAgentByName(page, created.name);
+  ACTIVE_AGENT_NAME = created.name;
   log("fresh-agent-ready", { id: created.id, name: created.name, deleted: deleted.length });
   return { ...created, deleted };
 }
@@ -1625,7 +1644,10 @@ async function sendPromptOnce(page, name, prompt, attempt) {
   await page.locator("textarea.chat-input__textarea").fill(prompt);
   await page.locator('button[utid="send-btn"]').click();
   log("prompt-sent", { name, beforeLength: before.length, beforeAgentCount, attempt });
-  const after = await waitForIdleText(page, before, name);
+  let after = await waitForIdleText(page, before, name);
+  if (await ensureActiveAgent(page, `after-send:${name}`)) {
+    after = await text(page);
+  }
   const visibleDelta = after.startsWith(before) ? after.slice(before.length) : after;
   const visibleAgentText = await lastAgentAnswerText(page);
   await expandToolCalls(page);
