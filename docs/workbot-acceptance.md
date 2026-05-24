@@ -461,7 +461,7 @@ Visible-output template criteria:
 - Audit-only answers use the same compact headings, explain the collision/preflight result in `配置结论`, list at least the YAML under `产出物`, and state that no device mutation was performed.
 - Stage A `产出物` lists only the YAML template artifact.
 - Stage A must not expand YAML fields in the visible answer. The answer should not list field tables, placeholders, examples, or optional-field explanations; the downloadable YAML carries those details.
-- After YAML completion, script-only, delivery, and rollback answers must list both `apply.py` and `rollback_apply.py` prominently under `产出物`; a run fails if either script is missing from the visible answer.
+- After YAML completion, script-only, delivery, and rollback answers must list `adops-bundle.yml`, `apply.py`, and `rollback_apply.py` prominently under `产出物`; a run fails if any of the three deliverables is missing from the visible answer.
 - Tool evidence must prove the artifacts were actually generated. Stage A must show evidence for `adops-bundle.yml`; after YAML completion and every later R4 answer must show evidence for `adops-bundle.yml`, `apply.py`, and `rollback_apply.py` through tool stdout/artifact output or visible file links. The script workflow mirrors these three user deliverables into WorkBot outputs when `/opt/agent/data/outputs` is available; a run fails if the visible answer lists paths but WorkBot has no generation/output evidence for the files.
 - User-visible R4 output must not include long internal sections such as `操作计划`, `计划摘要`, `执行摘要`, or `安全确认`.
 - User-visible R4 output must not list internal files such as `adops-batch.json`, `adops-effective-plan.json`, `adops-post-apply.json`, `adops-post-rollback.json`, or `adops-rollback-compare.json` unless the user explicitly asks for troubleshooting details.
@@ -495,7 +495,7 @@ Pass criteria:
 - Stage B always runs `preflight-slb-plan` before script output or delivery. Same-name create targets found by GET are reused and omitted from the effective plan. Referenced-existing resources must also be confirmed by GET before delivery.
 - Stage B treats non-404 GET failures as blockers. WorkBot must stop before any mutating call if preflight cannot prove whether a same-name resource exists. For referenced-existing resources, HTTP 404 is also a blocker; for create targets, HTTP 404 is expected.
 - Same-name reuse is a name-based reuse policy, not an overwrite. If `reuse_compatibility_warning_count` is greater than zero, WorkBot must report the warning and include it in the manual inspection checklist.
-- Script-only mode lists `apply.py` and `rollback_apply.py`, gives a short usage note, then ends with no mutating call.
+- Script-only mode lists `adops-bundle.yml`, `apply.py`, and `rollback_apply.py`, gives a short usage note, then ends with no mutating call.
 - Delivery mode runs `apply-slb-plan`, writes `adops-execute-result.json`, `adops-rollback.json`, `adops-post-apply.json`, and then pauses for manual inspection.
 - Delivery acceptance independently verifies the real AD device through API after `apply-slb-plan`: the VS, Pool, node, HTTP Profile, and Pre Rule from the YAML must be present before the rollback prompt is sent.
 - Rollback runs only after explicit user confirmation. `rollback-and-verify` must write `adops-post-rollback.json` and `adops-rollback-compare.json`.
