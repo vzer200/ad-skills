@@ -462,7 +462,7 @@ Visible-output template criteria:
 - Stage A `产出物` lists only the YAML template artifact.
 - Stage A must not expand YAML fields in the visible answer. The answer should not list field tables, placeholders, examples, or optional-field explanations; the downloadable YAML carries those details.
 - After YAML completion, script-only, delivery, and rollback answers must list both `apply.py` and `rollback_apply.py` prominently under `产出物`; a run fails if either script is missing from the visible answer.
-- Tool evidence must prove the artifacts were actually generated. Stage A must show evidence for `adops-bundle.yml`; after YAML completion and every later R4 answer must show evidence for both `apply.py` and `rollback_apply.py` through tool stdout/artifact output or visible file links.
+- Tool evidence must prove the artifacts were actually generated. Stage A must show evidence for `adops-bundle.yml`; after YAML completion and every later R4 answer must show evidence for `adops-bundle.yml`, `apply.py`, and `rollback_apply.py` through tool stdout/artifact output or visible file links. The script workflow mirrors these three user deliverables into WorkBot outputs when `/opt/agent/data/outputs` is available; a run fails if the visible answer lists paths but WorkBot has no generation/output evidence for the files.
 - User-visible R4 output must not include long internal sections such as `操作计划`, `计划摘要`, `执行摘要`, or `安全确认`.
 - User-visible R4 output must not list internal files such as `adops-batch.json`, `adops-effective-plan.json`, `adops-post-apply.json`, `adops-post-rollback.json`, or `adops-rollback-compare.json` unless the user explicitly asks for troubleshooting details.
 

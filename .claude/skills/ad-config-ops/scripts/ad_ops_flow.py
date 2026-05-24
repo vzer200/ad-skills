@@ -5,6 +5,7 @@ import copy
 import hashlib
 import json
 import os
+import shutil
 import sys
 from pathlib import Path
 from typing import Any
@@ -58,6 +59,32 @@ from resolve_schema import definition_map
 from rollback import rollback_manifest, summarize_rollback
 from verify_slb_resource import parse_args as parse_verify_args
 from verify_slb_resource import verify_resources
+
+
+def workbot_output_dir() -> Path | None:
+    configured = os.environ.get("AD_OPS_OUTPUT_DIR") or os.environ.get("WORKBOT_OUTPUT_DIR")
+    output_dir = Path(configured) if configured else Path("/opt/agent/data/outputs")
+    if not configured and not output_dir.parent.exists():
+        return None
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return output_dir
+
+
+def mirror_user_outputs(**paths: Path | None) -> dict[str, str]:
+    output_dir = workbot_output_dir()
+    if output_dir is None:
+        return {}
+    mirrored: dict[str, str] = {}
+    for key, source in paths.items():
+        if source is None:
+            continue
+        source = Path(source)
+        if not source.exists() or not source.is_file():
+            continue
+        target = output_dir / source.name
+        shutil.copy2(source, target)
+        mirrored[key] = str(target)
+    return mirrored
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -171,6 +198,11 @@ def plan_and_render(args: argparse.Namespace) -> dict[str, object]:
         apply_script=script_path,
         rollback_script=rollback_script_path,
     )
+    user_outputs = mirror_user_outputs(
+        bundle=bundle_path,
+        apply_script=script_path,
+        rollback_script=rollback_script_path,
+    )
     return {
         "ok": True,
         "operation_count": operation_count(plan),
@@ -180,6 +212,7 @@ def plan_and_render(args: argparse.Namespace) -> dict[str, object]:
         "apply_script": str(script_path),
         "rollback_script": str(rollback_script_path),
         "artifacts": str(artifacts),
+        "user_outputs": user_outputs,
         "workflow_contract": "scripts_only",
         "must_not_parse_artifacts": True,
         "next_command": f"python3 skills/ad-config-ops/scripts/ad_ops_flow.py summarize-plan --plan {plan_path} --workdir {workdir}",
@@ -674,7 +707,7 @@ def run_preflight(
     base_url: str,
     auth: dict[str, Any],
     workdir: Path,
-) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]], dict[str, Path]]:
+) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]], dict[str, Any]]:
     configure_session(session, auth)
     preflight = capture_target_state(plan, session, base_url)
     preflight["source"] = workflow_source(base_url=base_url, username=auth.get("username"), plan=plan)
@@ -687,6 +720,11 @@ def run_preflight(
     artifact_paths = render_effective_artifacts(workdir, effective)
     artifact_paths["preflight"] = preflight_path
     update_artifacts(workdir, **artifact_paths)
+    artifact_paths["user_outputs"] = mirror_user_outputs(
+        bundle=workdir / "adops-bundle.yml",
+        apply_script=artifact_paths["apply_script"],
+        rollback_script=artifact_paths["rollback_script"],
+    )
     return preflight, effective, reused, artifact_paths
 
 
@@ -710,15 +748,16 @@ def preflight_slb_plan(args: argparse.Namespace) -> dict[str, object]:
         "batch": str(artifact_paths["batch"]),
         "apply_script": str(artifact_paths["apply_script"]),
         "rollback_script": str(artifact_paths["rollback_script"]),
-            "original_operation_count": operation_count(plan),
-            "effective_operation_count": operation_count(effective),
-            "reused_existing": reused,
-            "reused_count": len(reused),
-            "reuse_compatibility_warning_count": sum(1 for item in reused if item.get("compatibility_ok") is False),
-            "reuse_policy": "same-name resource is reused and not overwritten; review compatibility warnings manually",
-            "workflow_contract": "scripts_only",
-            "next_user_prompt": "请选择：仅产出脚本结束，或下发到设备并在验证后暂停等待人工检查。",
-        }
+        "user_outputs": artifact_paths.get("user_outputs", {}),
+        "original_operation_count": operation_count(plan),
+        "effective_operation_count": operation_count(effective),
+        "reused_existing": reused,
+        "reused_count": len(reused),
+        "reuse_compatibility_warning_count": sum(1 for item in reused if item.get("compatibility_ok") is False),
+        "reuse_policy": "same-name resource is reused and not overwritten; review compatibility warnings manually",
+        "workflow_contract": "scripts_only",
+        "next_user_prompt": "请选择：仅产出脚本结束，或下发到设备并在验证后暂停等待人工检查。",
+    }
 
 
 def verify_args_for_apply(args: argparse.Namespace) -> list[str]:

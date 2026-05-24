@@ -709,6 +709,15 @@ async function waitForConversation(page) {
   await page.locator("textarea.chat-input__textarea").waitFor({ state: "visible", timeout: 30000 });
 }
 
+async function ensureConversation(page, reason = "ensure-conversation") {
+  if (await page.locator("textarea.chat-input__textarea").count().catch(() => 0)) return;
+  const conversationUrl = new URL("/workbot/#/conversation", WORKBOT_URL).toString();
+  log("conversation-restore", { reason, currentUrl: page.url() });
+  await page.goto(conversationUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
+  await waitForConversation(page);
+  await page.waitForTimeout(1000);
+}
+
 async function waitForLoginOrConversation(page, timeoutMs = 45000) {
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
@@ -1368,11 +1377,11 @@ function stepRuleViolationsFor(name, cfg, responses) {
       violations.push("r4 yaml-complete step did not explain same-name/reference preflight result");
     }
     assertCompactTemplate("yaml-complete", yamlDoneVisible);
-    if (!yamlDoneVisible.includes("apply.py") || !yamlDoneVisible.includes("rollback_apply.py")) {
-      violations.push("r4 yaml-complete step did not list forward and rollback scripts");
+    if (!yamlDoneVisible.includes("adops-bundle.yml") || !yamlDoneVisible.includes("apply.py") || !yamlDoneVisible.includes("rollback_apply.py")) {
+      violations.push("r4 yaml-complete step did not list all three deliverables: adops-bundle.yml, apply.py, rollback_apply.py");
     }
-    if (!hasGeneratedArtifactEvidence(yamlDone, ["apply.py", "rollback_apply.py"])) {
-      violations.push("r4 yaml-complete step has no tool/page evidence that script artifacts were generated");
+    if (!hasGeneratedArtifactEvidence(yamlDone, ["adops-bundle.yml", "apply.py", "rollback_apply.py"])) {
+      violations.push("r4 yaml-complete step has no tool/page evidence that all three deliverables were generated");
     }
     if (!/(真实下发|直接给出脚本|不需要下发|先不下发|脚本)/.test(yamlDoneVisible)) {
       violations.push("r4 yaml-complete step did not ask the user to choose delivery or script-only mode");
@@ -1383,11 +1392,11 @@ function stepRuleViolationsFor(name, cfg, responses) {
       if (!choiceCommands.includes("apply-slb-plan")) violations.push("r4 delivery step missing apply-slb-plan");
       if (choiceCommands.includes("rollback-and-verify")) violations.push("r4 delivery step rolled back before user confirmation");
       assertCompactTemplate("delivery", choiceVisible);
-      if (!choiceVisible.includes("apply.py") || !choiceVisible.includes("rollback_apply.py")) {
-        violations.push("r4 delivery step did not list forward and rollback scripts");
+      if (!choiceVisible.includes("adops-bundle.yml") || !choiceVisible.includes("apply.py") || !choiceVisible.includes("rollback_apply.py")) {
+        violations.push("r4 delivery step did not list all three deliverables");
       }
-      if (!hasGeneratedArtifactEvidence(choice, ["apply.py", "rollback_apply.py"])) {
-        violations.push("r4 delivery step has no tool/page evidence that script artifacts were generated");
+      if (!hasGeneratedArtifactEvidence(choice, ["adops-bundle.yml", "apply.py", "rollback_apply.py"])) {
+        violations.push("r4 delivery step has no tool/page evidence that all three deliverables were generated");
       }
       if (!/(检查|验证|回滚)/.test(choiceVisible)) violations.push("r4 delivery step did not pause for manual inspection/rollback confirmation");
       const presentCheck = responses.find((item) => item.localVerification && item.localVerification.kind === "verify_present");
@@ -1396,11 +1405,11 @@ function stepRuleViolationsFor(name, cfg, responses) {
       }
       if (!rollbackCommands.includes("rollback-and-verify")) violations.push("r4 rollback step missing rollback-and-verify");
       assertCompactTemplate("rollback", rollbackVisible);
-      if (!rollbackVisible.includes("apply.py") || !rollbackVisible.includes("rollback_apply.py")) {
-        violations.push("r4 rollback step did not list forward and rollback scripts");
+      if (!rollbackVisible.includes("adops-bundle.yml") || !rollbackVisible.includes("apply.py") || !rollbackVisible.includes("rollback_apply.py")) {
+        violations.push("r4 rollback step did not list all three deliverables");
       }
-      if (!hasGeneratedArtifactEvidence(rollback, ["apply.py", "rollback_apply.py"])) {
-        violations.push("r4 rollback step has no tool/page evidence that script artifacts were generated");
+      if (!hasGeneratedArtifactEvidence(rollback, ["adops-bundle.yml", "apply.py", "rollback_apply.py"])) {
+        violations.push("r4 rollback step has no tool/page evidence that all three deliverables were generated");
       }
       if (!/回滚/.test(rollbackVisible)) violations.push("r4 rollback step did not report rollback");
     } else {
@@ -1408,11 +1417,11 @@ function stepRuleViolationsFor(name, cfg, responses) {
         if (choiceCommands.includes(token)) violations.push(`r4 script-only step executed forbidden command: ${token}`);
       }
       assertCompactTemplate("script-only", choiceVisible);
-      if (!choiceVisible.includes("apply.py") || !choiceVisible.includes("rollback_apply.py")) {
-        violations.push("r4 script-only step did not provide forward and rollback scripts");
+      if (!choiceVisible.includes("adops-bundle.yml") || !choiceVisible.includes("apply.py") || !choiceVisible.includes("rollback_apply.py")) {
+        violations.push("r4 script-only step did not provide all three deliverables");
       }
-      if (!hasGeneratedArtifactEvidence(choice, ["apply.py", "rollback_apply.py"])) {
-        violations.push("r4 script-only step has no tool/page evidence that script artifacts were generated");
+      if (!hasGeneratedArtifactEvidence(choice, ["adops-bundle.yml", "apply.py", "rollback_apply.py"])) {
+        violations.push("r4 script-only step has no tool/page evidence that all three deliverables were generated");
       }
       if (!/(使用|执行|运行)/.test(choiceVisible)) {
         violations.push("r4 script-only step did not explain how to use scripts");
@@ -1605,6 +1614,7 @@ function runLocalAdVerification(name, cfg, override = {}) {
 
 async function sendPrompt(page, name, prompt) {
   log("prompt-start", { name, promptLength: prompt.length });
+  await ensureConversation(page, `send:${name}`);
   const before = await text(page);
   const beforeAgentCount = await page.locator(".chat-messages__item.chat-messages__item--agent").count().catch(() => 0);
   await page.locator("textarea.chat-input__textarea").fill(prompt);
@@ -1648,10 +1658,12 @@ async function sendPrompt(page, name, prompt) {
 
 async function uploadFile(page, filePath, name = "upload") {
   log("upload-start", { name, file: filePath });
+  await ensureConversation(page, `upload:${name}`);
   const input = page.locator('input[type="file"].hidden-input');
   if (!(await input.count())) throw new Error("upload file input not found");
   await input.setInputFiles(filePath);
   await page.waitForTimeout(2000);
+  await ensureConversation(page, `post-upload:${name}`);
   const artifacts = await savePageArtifacts(page, name);
   log("upload-done", { name, artifacts });
   return { name, upload: filePath, text: "", agentText: "", visibleText: "", visibleAgentText: "", toolEvidence: { hasEvidence: false, candidates: [] }, artifacts };

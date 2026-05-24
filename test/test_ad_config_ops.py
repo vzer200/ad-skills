@@ -323,6 +323,29 @@ class TestVerifySlbResource(unittest.TestCase):
 
 
 class TestAdOpsFlowPreflight(unittest.TestCase):
+    def test_mirror_user_outputs_copies_deliverables_to_configured_dir(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            bundle = root / "adops-bundle.yml"
+            apply_script = root / "apply.py"
+            rollback_script = root / "rollback_apply.py"
+            bundle.write_text("bundle", encoding="utf-8")
+            apply_script.write_text("apply", encoding="utf-8")
+            rollback_script.write_text("rollback", encoding="utf-8")
+            output_dir = root / "outputs"
+
+            with mock.patch.dict(os.environ, {"AD_OPS_OUTPUT_DIR": str(output_dir)}):
+                mirrored = ad_ops_flow.mirror_user_outputs(
+                    bundle=bundle,
+                    apply_script=apply_script,
+                    rollback_script=rollback_script,
+                )
+
+            self.assertEqual(set(mirrored), {"bundle", "apply_script", "rollback_script"})
+            self.assertEqual((output_dir / "adops-bundle.yml").read_text(encoding="utf-8"), "bundle")
+            self.assertEqual((output_dir / "apply.py").read_text(encoding="utf-8"), "apply")
+            self.assertEqual((output_dir / "rollback_apply.py").read_text(encoding="utf-8"), "rollback")
+
     def test_preflight_reuses_same_name_create_targets_and_rerenders_effective_plan(self):
         plan = {
             "operations": [

@@ -97,6 +97,8 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py preflight-slb-plan \
   --workdir "$AD_OPS_WORKDIR"
 ```
 
+`plan-and-render` 和 `preflight-slb-plan` 会把 `adops-bundle.yml`、`apply.py`、`rollback_apply.py` 镜像到 WorkBot outputs 目录，并在 stdout 的 `user_outputs` 字段返回路径。用户可见 `## 产出物` 表格优先使用 `user_outputs` 中的路径；如果 `user_outputs` 为空，再使用 `$AD_OPS_WORKDIR` 内的路径。不能只在正文里声称脚本已生成，必须让用户能在产出物区域看到或按路径拿到三个文件。
+
 Preflight safety: create target HTTP 404 means absent and can proceed as a new resource; referenced-existing target HTTP 404 blocks the workflow because the YAML points to a resource that is not present. Any other GET failure blocks before script output or device mutation.
 Same-name reuse safety: an existing resource is reused by name and is not overwritten. If the preflight result reports `reuse_compatibility_warning_count > 0`, surface it to the user and require manual review during the device inspection step.
 
@@ -104,7 +106,7 @@ Same-name reuse safety: an existing resource is reused by name and is not overwr
 
 - 用户回复“直接给出脚本”“不需要下发”“先不下发”“只要脚本”：输出 `apply.py` 和 `rollback_apply.py`，说明如何使用，然后结束；禁止执行 `apply-slb-plan`。
 - 用户回复“真实下发”：进入阶段 C。
-- 阶段 B 及后续每次用户可见回答都必须在 `## 产出物` 表格里列出 `apply.py` 和 `rollback_apply.py`；不能只说“脚本已生成”。
+- 阶段 B 及后续每次用户可见回答都必须在 `## 产出物` 表格里列出 `adops-bundle.yml`、`apply.py` 和 `rollback_apply.py` 三个产物；不能只说“脚本已生成”。
 
 ### 只审/撞现网预检
 
