@@ -345,6 +345,10 @@ class TestAdOpsFlowPreflight(unittest.TestCase):
             self.assertEqual((output_dir / "adops-bundle.yml").read_text(encoding="utf-8"), "bundle")
             self.assertEqual((output_dir / "apply.py").read_text(encoding="utf-8"), "apply")
             self.assertEqual((output_dir / "rollback_apply.py").read_text(encoding="utf-8"), "rollback")
+            deliverables = ad_ops_flow.visible_user_deliverables(workdir=root, user_outputs=mirrored)
+            self.assertEqual(deliverables["adops-bundle.yml"], str(output_dir / "adops-bundle.yml"))
+            self.assertEqual(deliverables["apply.py"], str(output_dir / "apply.py"))
+            self.assertEqual(deliverables["rollback_apply.py"], str(output_dir / "rollback_apply.py"))
 
     def test_preflight_reuses_same_name_create_targets_and_rerenders_effective_plan(self):
         plan = {
@@ -563,6 +567,10 @@ class TestAdOpsFlowPreflight(unittest.TestCase):
 
         self.assertTrue(result["ok"])
         self.assertTrue(execute_mock.call_args.kwargs["allow_existing"])
+        self.assertEqual(
+            set(result["required_visible_deliverables"]),
+            {"adops-bundle.yml", "apply.py", "rollback_apply.py"},
+        )
 
     def test_compare_get_states_detects_rollback_mismatch(self):
         baseline = {

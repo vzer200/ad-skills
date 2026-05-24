@@ -17,6 +17,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from ad_ops_common import (
     DEFAULT_APPLY_SCRIPT_NAME,
     DEFAULT_BATCH_NAME,
+    DEFAULT_BUNDLE_NAME,
     DEFAULT_EFFECTIVE_PLAN_NAME,
     DEFAULT_EXECUTE_RESULT_NAME,
     DEFAULT_PLAN_NAME,
@@ -85,6 +86,15 @@ def mirror_user_outputs(**paths: Path | None) -> dict[str, str]:
         shutil.copy2(source, target)
         mirrored[key] = str(target)
     return mirrored
+
+
+def visible_user_deliverables(workdir: Path, user_outputs: dict[str, str] | None = None) -> dict[str, str]:
+    user_outputs = user_outputs or {}
+    return {
+        "adops-bundle.yml": user_outputs.get("bundle") or str(workdir / DEFAULT_BUNDLE_NAME),
+        "apply.py": user_outputs.get("apply_script") or str(workdir / DEFAULT_APPLY_SCRIPT_NAME),
+        "rollback_apply.py": user_outputs.get("rollback_script") or str(workdir / DEFAULT_ROLLBACK_SCRIPT_NAME),
+    }
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -858,6 +868,11 @@ def apply_slb_plan(args: argparse.Namespace) -> dict[str, object]:
             "verify_script": "verify_slb_resource.py" if verify_result is not None else None,
             "apply_script": str(artifact_paths["apply_script"]),
             "rollback_script": str(artifact_paths["rollback_script"]),
+            "user_outputs": artifact_paths.get("user_outputs", {}),
+            "required_visible_deliverables": visible_user_deliverables(
+                workdir,
+                artifact_paths.get("user_outputs", {}),
+            ),
             "artifacts": str(artifacts),
             "workflow_contract": "deliver_then_pause",
             "rollback_generated": rollback_path.exists(),
@@ -910,6 +925,11 @@ def rollback_and_verify(args: argparse.Namespace) -> dict[str, object]:
         post_rollback=post_rollback_path,
         rollback_compare=compare_path,
     )
+    user_outputs = mirror_user_outputs(
+        bundle=workdir / DEFAULT_BUNDLE_NAME,
+        apply_script=workdir / DEFAULT_APPLY_SCRIPT_NAME,
+        rollback_script=workdir / DEFAULT_ROLLBACK_SCRIPT_NAME,
+    )
     summary = summarize_rollback(result, manifest, result_path)
     summary.update(
         {
@@ -918,6 +938,8 @@ def rollback_and_verify(args: argparse.Namespace) -> dict[str, object]:
             "rollback_compare": str(compare_path),
             "rollback_gets_match_preflight": compare.get("ok"),
             "rollback_compare_diff_count": compare.get("diff_count"),
+            "user_outputs": user_outputs,
+            "required_visible_deliverables": visible_user_deliverables(workdir, user_outputs),
             "artifacts": str(artifacts),
             "workflow_contract": "rollback_verify",
         }

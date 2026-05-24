@@ -230,7 +230,6 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 | 正向脚本 | <apply.py 路径> |
 | 回滚脚本 | <rollback_apply.py 路径> |
 | YAML | <adops-bundle.yml 路径> |
-| YAML | <adops-bundle.yml 路径> |
 
 ## 下一步
 回复“真实下发”执行到设备验证；回复“直接给出脚本”或“不需要下发”则只保留脚本结束。
@@ -249,7 +248,6 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 | --- | --- |
 | 正向脚本 | <apply.py 路径> |
 | 回滚脚本 | <rollback_apply.py 路径> |
-| YAML | <adops-bundle.yml 路径> |
 | YAML | <adops-bundle.yml 路径> |
 
 ## 下一步
@@ -288,6 +286,7 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 | --- | --- |
 | 正向脚本 | <apply.py 路径> |
 | 回滚脚本 | <rollback_apply.py 路径> |
+| YAML | <adops-bundle.yml 路径> |
 
 ## 下一步
 请到设备侧确认配置是否符合预期；需要回滚请回复“是”或“需要回滚”。
@@ -306,6 +305,7 @@ python3 skills/ad-config-ops/scripts/discover_reuse.py \
 | --- | --- |
 | 正向脚本 | <apply.py 路径> |
 | 回滚脚本 | <rollback_apply.py 路径> |
+| YAML | <adops-bundle.yml 路径> |
 
 ## 下一步
 流程结束。后续要调整配置，请重新提交 YAML。
