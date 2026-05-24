@@ -196,7 +196,16 @@ function redactToolEvidence(toolEvidence) {
 }
 
 function isTransientProviderError(value) {
-  return /Provider error|Internal Server Error|network error|HTTP\s*5\d\d|\b5\d\d\b|\u7f51\u7edc\u9519\u8bef|\u9519\u8befid/i.test(String(value || ""));
+  const text = String(value || "");
+  return [
+    /Provider error/i,
+    /Internal Server Error/i,
+    /network error/i,
+    /HTTP\s*(?:status\s*)?5\d\d/i,
+    /(?:status|code|error code|response code|status code|状态码|错误码)[：:\s=]*5\d\d/i,
+    /\u7f51\u7edc\u9519\u8bef/i,
+    /\u9519\u8befid/i,
+  ].some((pattern) => pattern.test(text));
 }
 
 function parseRateLimitProviderError(value) {
