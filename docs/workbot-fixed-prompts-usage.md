@@ -10,6 +10,7 @@
 - WorkBot 输出时不要切换页面；若页面空白，等待输出结束后刷新查看完整内容。
 - WorkBot 工具调用里 AD1/AD2 必须使用内网地址 `192.168.8.30/192.168.8.31`，不能出现外网网关地址。
 - 用户正文里不要展示工具调用、命令、退出码、stdout/stderr。
+- 明确的语义或路由错误采用 fail-fast：记录失败原因后直接修复，不为了确认同一个错误重复测试第二次。
 
 ## R1 巡检
 
@@ -29,7 +30,7 @@
 | 全量巡检 | `请对 AD 所有设备做一次巡检。` -> `全量巡检` -> `强制` | 同上，避免逐设备长篇明细。 |
 | 安全巡检 | `请对 AD 所有设备做一次巡检。` -> `安全巡检` -> `强制` | 同上，重点列全局共性安全问题。 |
 
-R1 验收重点：必须先查历史或连接状态再询问是否强制；实际巡检使用进度轮询，不能一次长命令跑到 WorkBot 60 秒超时；多设备模板不能出现 `巡检过程`、`原始报告`、英文检查项名或脚本名。
+R1 验收重点：首轮只询问场景；用户选择场景后必须先做连接预检和历史巡检查询，再询问是否强制；实际巡检使用进度轮询，不能一次长命令跑到 WorkBot 60 秒超时；多设备模板不能出现 `巡检过程`、`原始报告`、英文检查项名或脚本名。
 
 ## R2 查询
 
@@ -89,11 +90,18 @@ R4 分两段：先由 WorkBot 生成 YAML 产物，人工填写后上传；再�
 
 R4 输出模板固定为 `配置结论 / 产出物 / 下一步`。`产出物` 必须列出 `adops-bundle.yml`、`apply.py`、`rollback_apply.py` 三个真实文件，不能只用文字说已经生成。不要输出 `操作计划`、`计划摘要`、`执行摘要`、`安全确认`，也不要列内部 JSON 文件。若同名资源已存在，WorkBot 应复用现有资源并说明复用对象；若预检无法确认现网状态，必须停止，不能下发。
 
-## 本轮自动化验收
+## 自动化验收记录
+
+最近一次完整验收时间：2026-05-24。三轮稳定性均使用新的数字员工、固定主线提示词、真实 WorkBot 工具调用和外网 AD 设备验证。
 
 | 阶段 | 结果 | 证据 |
 | --- | --- | --- |
 | Task 1 备选提示词 | 通过 | `workbot-results/workbot-acceptance-1779594346775.json` |
-| Task 2 R4 + R2 联动 | 通过 | `workbot-results/workbot-acceptance-1779595265546.json` |
-| Task 3 主线 gate | 通过 | `workbot-results/workbot-acceptance-1779597105863.json` |
-| Task 3 三次稳定性 | 待主线完整通过后执行 | `workbot-results/nightly/task3-stability3-*.log` |
+| Task 2 R4 下发 -> R2 查询 -> 回滚 -> R2 查询 | 通过 | `workbot-results/workbot-acceptance-1779618256096.json` |
+| R1/R2 主线 gate | 通过 | `workbot-results/nightly/fixed-mainline-20260524-182539.*.log` |
+| R3/R4 主线续跑 | 通过 | `workbot-results/workbot-acceptance-1779620776162.json` |
+| 稳定性 1/3 | 通过 | `workbot-results/workbot-acceptance-1779622617511.json` |
+| 稳定性 2/3 | 通过 | `workbot-results/workbot-acceptance-1779624958263.json` |
+| 稳定性 3/3 | 通过 | `workbot-results/workbot-acceptance-1779626798311.json` |
+
+备注：`workbot-results/workbot-acceptance-1779623044919.json` 是验收脚本误把读取 `ad-perception/SKILL.md` 当成路由错误的失败记录，已在 `83693cf` 修正；不作为业务失败证据。
