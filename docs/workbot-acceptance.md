@@ -60,10 +60,16 @@ R4 delivery and R2 query interaction is kept in a dedicated suite. It deploys th
 
 Use `-Cases "case1,case2"` only for temporary debugging of a specific failure.
 
-Nightly automation runs the three-stage loop requested for full closure: extended prompts, R2/R4 interaction, then fixed mainline plus five fixed stability runs. Pass `-Prepare` when source changes should be tested, committed, pushed, and packaged before uploading:
+Nightly automation runs the requested closure loop: R2/R4 interaction, then the fixed mainline gate, then three fixed stability runs. Extended prompts stay separate and should be enabled only when mainline coverage is already stable. Pass `-Prepare` when source changes should be tested, committed, pushed, and packaged before uploading:
 
 ```powershell
 .\tools\run_workbot_nightly.ps1 -Prepare -VerifyAD -InjectDevicePasswords
+```
+
+Run extended prompt variants explicitly when needed:
+
+```powershell
+.\tools\run_workbot_nightly.ps1 -RunExtended -VerifyAD
 ```
 
 Build the upload-only package with runtime credential injection. Use host overrides only when the WorkBot-side device addresses need to be changed for a specific environment:

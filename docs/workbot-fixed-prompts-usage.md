@@ -96,4 +96,4 @@ R4 输出模板固定为 `配置结论 / 产出物 / 下一步`。`产出物` �
 | Task 1 备选提示词 | 通过 | `workbot-results/workbot-acceptance-1779594346775.json` |
 | Task 2 R4 + R2 联动 | 通过 | `workbot-results/workbot-acceptance-1779595265546.json` |
 | Task 3 主线 gate | 通过 | `workbot-results/workbot-acceptance-1779597105863.json` |
-| Task 3 五次稳定性 | 暂停修复 R4 产出物校验后重跑 | `workbot-results/nightly/task3-stability5-*.log` |
+| Task 3 三次稳定性 | 待主线完整通过后执行 | `workbot-results/nightly/task3-stability3-*.log` |

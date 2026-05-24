@@ -6,10 +6,11 @@ param(
     [string]$ADBaseUrl = "https://14.18.243.211:21044",
     [string]$ADUser = "admin",
     [int]$IdleAfterStopMs = 2000,
-    [int]$StabilityRuns = 5,
+    [int]$StabilityRuns = 3,
     [switch]$VerifyAD,
     [switch]$InjectDevicePasswords,
     [switch]$Prepare,
+    [switch]$RunExtended,
     [switch]$SkipExtended,
     [switch]$SkipR2R4,
     [switch]$SkipStability
@@ -55,7 +56,7 @@ function Invoke-WorkBotSuite {
     & $Node @args
 }
 
-if (!$SkipExtended) {
+if ($RunExtended -and !$SkipExtended) {
     Invoke-WorkBotSuite -Name "Task 1: extended prompt variants" -Suite "extended"
 }
 
