@@ -1545,10 +1545,18 @@ function stepRuleViolationsFor(name, cfg, responses) {
   return violations;
 }
 
+function responseVisibleText(item) {
+  return joinUniqueTexts(item && item.visibleText, item && item.visibleAgentText);
+}
+
+function responseCommandText(item) {
+  return extractStepToolCommands(item || {}).join("\n");
+}
+
 function r2r4QueryViolations(label, item, spec, phase) {
   const violations = [];
-  const commands = responseCommands(item);
-  const visible = responseVisible(item);
+  const commands = responseCommandText(item);
+  const visible = responseVisibleText(item);
   for (const dimension of spec.dimensions || ["overview.py"]) {
     if (!commands.includes(dimension)) violations.push(`r2r4 ${label} missing command token: ${dimension}`);
   }
