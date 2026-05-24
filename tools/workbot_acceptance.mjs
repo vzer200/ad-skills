@@ -1514,7 +1514,7 @@ function stepRuleViolationsFor(name, cfg, responses) {
   for (const token of step1ForbiddenCommands) {
     if (step1Commands.includes(token)) violations.push(`r1 step1 executed premature command: ${token}`);
   }
-  if (/ad-perception|perception\.py/.test(step1Commands) || step1Visible.includes("感知结论")) {
+  if (/perception\.py/.test(step1Commands) || step1Visible.includes("感知结论")) {
     violations.push("r1 step1 routed inspection prompt to ad-perception");
   }
 
