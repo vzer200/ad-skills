@@ -237,6 +237,25 @@ const FRESH_AGENT_PROFILE =
 const FRESH_AGENT_INIT_PROMPT =
   "你是一个通用智能体，现在需要你进行初始化。你需要阅读技能 “Self-Improving + Proactive Agent” 与技能 “Proactivity (Proactive Agent)”，并执行初始化流程。";
 
+const R2R4_QUERY_SPECS = [
+  { label: "r2", prompt: "帮我查一下 AD1 的配置、流量、设备状态和 SSL 证书到期时间。", dimensions: ["overview.py"], visiblePresent: ["查询结论"] },
+  { label: "r2-config", prompt: "帮我查一下 AD1 的配置。", dimensions: ["overview.py", "config"], visiblePresent: ["wb_vs_workbot_flow_01", "wb_pool_workbot_flow_01"], forbidAfter: ["wb_vs_workbot_flow_01", "wb_pool_workbot_flow_01"] },
+  { label: "r2-config-all", prompt: "帮我查一下所有 AD 设备的配置。", dimensions: ["overview.py", "config"], visiblePresent: ["wb_vs_workbot_flow_01", "wb_pool_workbot_flow_01"], forbidAfter: ["wb_vs_workbot_flow_01", "wb_pool_workbot_flow_01"] },
+  { label: "r2-vs", prompt: "帮我查一下 AD1 的虚拟服务配置。", dimensions: ["overview.py", "vs"], visiblePresent: ["wb_vs_workbot_flow_01"], forbidAfter: ["wb_vs_workbot_flow_01"] },
+  { label: "r2-vs-all", prompt: "帮我查一下所有 AD 设备的虚拟服务配置。", dimensions: ["overview.py", "vs"], visiblePresent: ["wb_vs_workbot_flow_01"], forbidAfter: ["wb_vs_workbot_flow_01"] },
+  { label: "r2-node", prompt: "帮我查一下 AD1 的节点配置。", dimensions: ["overview.py", "node"], visiblePresent: ["查询结论"] },
+  { label: "r2-pool", prompt: "帮我查一下 AD1 的节点池配置。", dimensions: ["overview.py", "pool"], visiblePresent: ["wb_pool_workbot_flow_01"], forbidAfter: ["wb_pool_workbot_flow_01"] },
+  { label: "r2-pool-all", prompt: "帮我查一下所有 AD 设备的节点池配置。", dimensions: ["overview.py", "pool"], visiblePresent: ["wb_pool_workbot_flow_01"], forbidAfter: ["wb_pool_workbot_flow_01"] },
+  { label: "r2-cert", prompt: "帮我查一下 AD1 的 SSL 证书到期时间。", dimensions: ["overview.py", "cert"], visiblePresent: ["查询结论"] },
+  { label: "r2-cert-all", prompt: "帮我查一下所有 AD 设备的 SSL 证书到期时间。", dimensions: ["overview.py", "cert"], visiblePresent: ["查询结论"] },
+  { label: "r2-traffic", prompt: "帮我查一下 AD1 的流量情况。", dimensions: ["overview.py", "traffic"], visiblePresent: ["查询结论"] },
+  { label: "r2-traffic-all", prompt: "帮我查一下所有 AD 设备的流量情况。", dimensions: ["overview.py", "traffic"], visiblePresent: ["查询结论"] },
+  { label: "r2-status", prompt: "帮我查一下 AD1 的设备状态。", dimensions: ["overview.py", "hardware"], visiblePresent: ["查询结论"] },
+  { label: "r2-status-all", prompt: "帮我查一下所有 AD 设备的设备状态。", dimensions: ["overview.py", "hardware"], visiblePresent: ["查询结论"] },
+  { label: "r2-hardware", prompt: "帮我查一下 AD1 的硬件状态。", dimensions: ["overview.py", "hardware"], visiblePresent: ["查询结论"] },
+  { label: "r2-hardware-all", prompt: "帮我查一下所有 AD 设备的硬件状态。", dimensions: ["overview.py", "hardware"], visiblePresent: ["查询结论"] },
+];
+
 const cases = {
   cleanup: {
     prompt: "清理旧 AD skills 和记忆。必须先出现真实工具调用：shell 查删 skills/ad-*，cron_list 查任务，memory_export/memory_purge 清记忆，再用 shell 和 memory_export 验证；最终正文只回答清理完成，不要列工具、命令、退出码或 stdout/stderr。",
@@ -651,17 +670,10 @@ const cases = {
       "我写完了 YAML。",
       "真实下发。",
       { adVerify: "present", name: "r2r4-ad-present" },
-      "帮我查一下 AD1 的虚拟服务配置。",
-      "帮我查一下 AD1 的节点池配置。",
-      "帮我查一下 AD1 的配置。",
-      "帮我查一下 AD1 的流量情况。",
-      "帮我查一下 AD1 的设备状态。",
-      "帮我查一下 AD1 的 SSL 证书到期时间。",
+      ...R2R4_QUERY_SPECS.map((item) => item.prompt),
       "是。",
       { adVerify: "absent", name: "r2r4-ad-absent" },
-      "帮我查一下 AD1 的虚拟服务配置。",
-      "帮我查一下 AD1 的节点池配置。",
-      "帮我查一下 AD1 的配置。",
+      ...R2R4_QUERY_SPECS.map((item) => item.prompt),
     ],
     expected: ["apply-slb-plan", "rollback-and-verify", "overview.py", "wb_vs_workbot_flow_01", "wb_pool_workbot_flow_01"],
     commandExpected: ["ad_ops_flow.py", "apply-slb-plan", "overview.py", "rollback-and-verify"],
@@ -1270,16 +1282,10 @@ function stepRuleViolationsFor(name, cfg, responses) {
     const stageA = promptResponses[0] || {};
     const yamlDone = promptResponses[1] || {};
     const delivery = promptResponses[2] || {};
-    const beforeVs = promptResponses[3] || {};
-    const beforePool = promptResponses[4] || {};
-    const beforeConfig = promptResponses[5] || {};
-    const beforeTraffic = promptResponses[6] || {};
-    const beforeStatus = promptResponses[7] || {};
-    const beforeCert = promptResponses[8] || {};
-    const rollback = promptResponses[9] || {};
-    const afterVs = promptResponses[10] || {};
-    const afterPool = promptResponses[11] || {};
-    const afterConfig = promptResponses[12] || {};
+    const beforeStart = 3;
+    const rollbackIndex = beforeStart + R2R4_QUERY_SPECS.length;
+    const rollback = promptResponses[rollbackIndex] || {};
+    const afterStart = rollbackIndex + 1;
 
     for (const token of ["配置结论", "产出物", "下一步"]) {
       expectVisible("stageA", stageA, token);
@@ -1302,33 +1308,22 @@ function stepRuleViolationsFor(name, cfg, responses) {
       violations.push("r2r4 local AD absent verification did not pass after rollback");
     }
 
-    const beforeQueries = [
-      ["before-vs", beforeVs, "vs", ["wb_vs_workbot_flow_01"]],
-      ["before-pool", beforePool, "pool", ["wb_pool_workbot_flow_01"]],
-      ["before-config", beforeConfig, "config", ["wb_vs_workbot_flow_01", "wb_pool_workbot_flow_01"]],
-      ["before-traffic", beforeTraffic, "traffic", ["查询结论"]],
-      ["before-status", beforeStatus, "hardware", ["查询结论"]],
-      ["before-cert", beforeCert, "cert", ["查询结论"]],
-    ];
-    for (const [label, item, dimension, tokens] of beforeQueries) {
-      expectCommand(label, item, "overview.py");
-      expectCommand(label, item, dimension);
+    for (const [index, spec] of R2R4_QUERY_SPECS.entries()) {
+      const label = `before-${spec.label}`;
+      const item = promptResponses[beforeStart + index] || {};
+      for (const dimension of spec.dimensions || ["overview.py"]) expectCommand(label, item, dimension);
+      const tokens = spec.visiblePresent || ["查询结论"];
       for (const token of tokens) expectVisible(label, item, token);
       if (responseCommands(item).includes("ad_ops_flow.py")) {
         violations.push(`r2r4 ${label} reran config workflow during R2 query`);
       }
     }
 
-    const afterQueries = [
-      ["after-vs", afterVs, "vs"],
-      ["after-pool", afterPool, "pool"],
-      ["after-config", afterConfig, "config"],
-    ];
-    for (const [label, item, dimension] of afterQueries) {
-      expectCommand(label, item, "overview.py");
-      expectCommand(label, item, dimension);
-      forbidVisible(label, item, "wb_vs_workbot_flow_01");
-      forbidVisible(label, item, "wb_pool_workbot_flow_01");
+    for (const [index, spec] of R2R4_QUERY_SPECS.entries()) {
+      const label = `after-${spec.label}`;
+      const item = promptResponses[afterStart + index] || {};
+      for (const dimension of spec.dimensions || ["overview.py"]) expectCommand(label, item, dimension);
+      for (const token of spec.forbidAfter || []) forbidVisible(label, item, token);
       if (responseCommands(item).includes("ad_ops_flow.py")) {
         violations.push(`r2r4 ${label} reran config workflow after rollback`);
       }
