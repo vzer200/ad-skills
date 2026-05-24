@@ -54,6 +54,7 @@ const WORKBOT_FORBIDDEN_DEVICE_HOSTS = (argValue(
   .filter(Boolean);
 const IDLE_AFTER_STOP_MS = Number(argValue("--idle-after-stop-ms", process.env.WORKBOT_IDLE_AFTER_STOP_MS || "2000"));
 const WAIT_POLL_MS = Number(argValue("--wait-poll-ms", process.env.WORKBOT_WAIT_POLL_MS || "1000"));
+const PROMPT_TRANSIENT_RETRIES = Number(argValue("--prompt-transient-retries", process.env.WORKBOT_PROMPT_TRANSIENT_RETRIES || "2"));
 const FRESH_AGENT = hasFlag("--fresh-agent") || process.env.WORKBOT_FRESH_AGENT === "1";
 const FRESH_AGENT_PREFIX = argValue("--fresh-agent-prefix", process.env.WORKBOT_FRESH_AGENT_PREFIX || "AD验收临时");
 const MAX_DIGITAL_EMPLOYEES = Number(argValue("--max-digital-employees", process.env.WORKBOT_MAX_DIGITAL_EMPLOYEES || "5"));
@@ -191,6 +192,10 @@ function redactToolEvidence(toolEvidence) {
       text: redactSensitive(candidate.text || ""),
     })),
   };
+}
+
+function isTransientProviderError(value) {
+  return /Provider error|Internal Server Error|network error|HTTP\s*5\d\d|\b5\d\d\b|\u7f51\u7edc\u9519\u8bef|\u9519\u8befid/i.test(String(value || ""));
 }
 
 const NO_TOOL_FOLLOWUP =
@@ -1612,14 +1617,14 @@ function runLocalAdVerification(name, cfg, override = {}) {
   };
 }
 
-async function sendPrompt(page, name, prompt) {
-  log("prompt-start", { name, promptLength: prompt.length });
+async function sendPromptOnce(page, name, prompt, attempt) {
+  log("prompt-start", { name, promptLength: prompt.length, attempt });
   await ensureConversation(page, `send:${name}`);
   const before = await text(page);
   const beforeAgentCount = await page.locator(".chat-messages__item.chat-messages__item--agent").count().catch(() => 0);
   await page.locator("textarea.chat-input__textarea").fill(prompt);
   await page.locator('button[utid="send-btn"]').click();
-  log("prompt-sent", { name, beforeLength: before.length, beforeAgentCount });
+  log("prompt-sent", { name, beforeLength: before.length, beforeAgentCount, attempt });
   const after = await waitForIdleText(page, before, name);
   const visibleDelta = after.startsWith(before) ? after.slice(before.length) : after;
   const visibleAgentText = await lastAgentAnswerText(page);
@@ -1634,6 +1639,7 @@ async function sendPrompt(page, name, prompt) {
   const redactedVisibleAgentText = redactSensitive(visibleAgentText);
   log("prompt-done", {
     name,
+    attempt,
     afterLength: after.length,
     expandedLength: expanded.length,
     deltaLength: delta.length,
@@ -1647,6 +1653,7 @@ async function sendPrompt(page, name, prompt) {
   return {
     name,
     prompt,
+    attempt,
     text: redactedDelta.slice(-12000),
     agentText: redactedAgentText.slice(-12000),
     visibleText: redactedVisibleAgentText.slice(-12000),
@@ -1654,6 +1661,22 @@ async function sendPrompt(page, name, prompt) {
     toolEvidence,
     artifacts,
   };
+}
+
+async function sendPrompt(page, name, prompt) {
+  let lastResponse = null;
+  for (let attempt = 1; attempt <= PROMPT_TRANSIENT_RETRIES + 1; attempt += 1) {
+    const attemptName = attempt === 1 ? name : `${name}-retry${attempt - 1}`;
+    const response = await sendPromptOnce(page, attemptName, prompt, attempt);
+    lastResponse = { ...response, name };
+    const responseText = `${response.visibleText || ""}\n${response.visibleAgentText || ""}\n${response.text || ""}\n${response.agentText || ""}`;
+    if (!isTransientProviderError(responseText) || attempt > PROMPT_TRANSIENT_RETRIES) {
+      return lastResponse;
+    }
+    log("prompt-transient-retry", { name, attempt, nextAttempt: attempt + 1 });
+    await page.waitForTimeout(1500);
+  }
+  return lastResponse;
 }
 
 async function uploadFile(page, filePath, name = "upload") {
