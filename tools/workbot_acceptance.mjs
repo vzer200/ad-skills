@@ -199,6 +199,25 @@ function isTransientProviderError(value) {
   return /Provider error|Internal Server Error|network error|HTTP\s*5\d\d|\b5\d\d\b|\u7f51\u7edc\u9519\u8bef|\u9519\u8befid/i.test(String(value || ""));
 }
 
+function parseRateLimitProviderError(value) {
+  const text = String(value || "");
+  if (!/(?:Provider error:\s*)?429 Too Many Requests|Too Many Requests|\u4f7f\u7528\u4e0a\u9650|\u9650\u989d/.test(text)) return null;
+  const resetMatch = text.match(/(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s*\u91cd\u7f6e/);
+  return {
+    resetAt: resetMatch ? resetMatch[1] : "",
+  };
+}
+
+class WorkBotRateLimitError extends Error {
+  constructor(rateLimit, response) {
+    super(`WorkBot rate limit reached${rateLimit.resetAt ? `; resetAt=${rateLimit.resetAt}` : ""}`);
+    this.name = "WorkBotRateLimitError";
+    this.rateLimited = true;
+    this.resetAt = rateLimit.resetAt || "";
+    this.artifacts = response && response.artifacts;
+  }
+}
+
 const NO_TOOL_FOLLOWUP =
   "我没有看到工具调用记录。为什么没有调用工具？请说明原因，然后不要凭记忆回答，立即实际调用工具完成刚才的任务。最终正文只输出任务结果，不要列工具、命令、退出码或 stdout/stderr。";
 const DEVICE_FOLLOWUP =
@@ -1692,6 +1711,11 @@ async function sendPrompt(page, name, prompt) {
     const response = await sendPromptOnce(page, attemptName, prompt, attempt);
     lastResponse = { ...response, name };
     const responseText = `${response.visibleText || ""}\n${response.visibleAgentText || ""}\n${response.text || ""}\n${response.agentText || ""}`;
+    const rateLimit = parseRateLimitProviderError(responseText);
+    if (rateLimit) {
+      log("prompt-rate-limit", { name, attempt, resetAt: rateLimit.resetAt || "" });
+      throw new WorkBotRateLimitError(rateLimit, response);
+    }
     if (!isTransientProviderError(responseText) || attempt > PROMPT_TRANSIENT_RETRIES) {
       return lastResponse;
     }
@@ -2094,6 +2118,11 @@ async function main() {
   } catch (error) {
     failure = error;
     debug.error = error && error.stack ? error.stack : String(error);
+    if (error && error.rateLimited) {
+      debug.rateLimited = true;
+      debug.rateLimitResetAt = error.resetAt || "";
+      debug.rateLimitArtifacts = error.artifacts || null;
+    }
     if (page) debug.artifacts = await savePageArtifacts(page, "failure");
     log("failure", { message: error && error.message ? error.message : String(error), artifacts: debug.artifacts });
   } finally {
@@ -2108,6 +2137,8 @@ async function main() {
       caseSuite: CASE_SUITE,
       cases: CASES,
       results,
+      rateLimited: Boolean(failure && failure.rateLimited),
+      rateLimitResetAt: failure && failure.rateLimited ? failure.resetAt || "" : "",
       debug,
       created_at: new Date().toISOString(),
     };
