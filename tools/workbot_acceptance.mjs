@@ -1560,7 +1560,8 @@ function r2r4QueryViolations(label, item, spec, phase) {
   for (const dimension of spec.dimensions || ["overview.py"]) {
     if (!commands.includes(dimension)) violations.push(`r2r4 ${label} missing command token: ${dimension}`);
   }
-  for (const token of spec.visiblePresent || ["查询结论"]) {
+  const visibleRequired = phase === "after" ? spec.afterVisiblePresent || ["查询结论"] : spec.visiblePresent || ["查询结论"];
+  for (const token of visibleRequired) {
     if (!visible.includes(token)) violations.push(`r2r4 ${label} missing visible token: ${token}`);
   }
   for (const token of phase === "after" ? spec.forbidAfter || [] : []) {
