@@ -22,7 +22,7 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 - 查询维度按用户提示词硬隔离：提示词带“配置”只展示配置信息；提示词带“状态/硬件/资源/HA”才展示状态信息；提示词带“流量”才展示流量信息；没有明确维度时默认按配置处理，必须使用 `overview.py config`。
 - 用户用口语问“AD1 现在啥情况 / 当前情况 / 设备概况 / 看一下 AD1 情况”，且没有明确说“状态、流量、感知、异常、分析、趋势、冲突、日志”时，按默认配置查询处理，必须使用 `overview.py config`，不要路由到 `ad-perception`。
 - 如果你已经为“AD1 现在啥情况 / 当前情况 / 设备概况”等查询意图运行了 `ad-connect`，这只是前置校验；同一轮必须继续运行 `overview.py config`，禁止回答“是否进一步查看”或等待用户补充。
-- 用户要特定维度时，必须先用 `connect.py` 验证目标设备，再使用 `overview.py config|vs|pool|cert|hardware|ha|traffic`；不要直接调用 `ad_api.py` 给用户生成查询结果。
+- 用户要特定维度时，必须先用 `connect.py` 验证目标设备，再使用 `overview.py config|vs|node|pool|cert|hardware|ha|traffic`；不要直接调用 `ad_api.py` 给用户生成查询结果。
 - 输出必须来自脚本结果。禁止模型自己拼接 VS、Pool、证书或状态表。
 - 配置类查询只展示配置字段，禁止展示连接数、速率、吞吐量、CPU、内存、硬件、HA 等状态字段；用户明确查询“流量情况”时才使用 `overview.py traffic`，明确查询“设备状态/硬件状态/资源状态/HA 状态”时才使用状态类命令。
 - 查询类最终正文必须使用中文标题和中文表头；禁止出现 `AD Device Overview`、`Device Info`、`Virtual Services`、`SSL Certificates`、`Hardware Status`、`Connections`、`Rate` 等英文模板残留。
@@ -30,7 +30,7 @@ description: 深信服 AD 运维查询 skill。用于查询 AD 设备配置、�
 - 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动使用设备清单并加 `--device AD1`。
 - 用户说“所有 AD 设备 / 全部 AD / 多台设备”时，必须使用 `--devices skills/ad-ops/devices.json`，不要加 `--device AD1` 或 `--device AD2`，让脚本按设备清单查询全部设备。
 - 若设备清单中的地址不可达，但同一设备的内网地址可达，可以使用可达地址完成查询；必须在“查询范围”中简要说明地址切换原因，不要询问用户是否修改 `devices.json`。
-- “配置/设备概况/当前情况/现在啥情况”且未明确状态或流量时映射到 `overview.py config`；“虚拟服务配置/VS 配置”映射到 `overview.py vs`；“节点配置/节点池/Pool 配置”映射到 `overview.py pool`；整体配置、流量、状态、证书查询映射到 `overview.py all`。
+- “配置/设备概况/当前情况/现在啥情况”且未明确状态或流量时映射到 `overview.py config`；“虚拟服务配置/VS 配置”映射到 `overview.py vs`；“节点配置”映射到 `overview.py node`；“节点池配置/Pool 配置”映射到 `overview.py pool`；整体配置、流量、状态、证书查询映射到 `overview.py all`。
 - “SSL 证书/证书到期”映射到 `overview.py cert`；“流量情况”映射到 `overview.py traffic`；“HA 状态”映射到 `overview.py ha`；“设备状态/硬件状态”映射到 `overview.py hardware`。
 
 ## 总览查询
@@ -60,7 +60,10 @@ python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.jso
 # VS / 虚拟服务
 python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json && python3 skills/ad-ops/scripts/overview.py vs --devices skills/ad-ops/devices.json --device AD1 --format markdown
 
-# Pool / 节点池 / 节点配置
+# 节点配置
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json && python3 skills/ad-ops/scripts/overview.py node --devices skills/ad-ops/devices.json --device AD1 --format markdown
+
+# Pool / 节点池配置
 python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.json --device AD1 --format json && python3 skills/ad-ops/scripts/overview.py pool --devices skills/ad-ops/devices.json --device AD1 --format markdown
 
 # SSL 证书
@@ -83,7 +86,7 @@ python3 skills/ad-connect/scripts/connect.py --devices skills/ad-ops/devices.jso
 ```text
 ## 查询结论
 - 目标设备：<AD1（192.168.8.30）>
-- 维度：<配置 / 配置、流量、设备状态、SSL 证书 / 虚拟服务配置 / 节点池配置 / SSL 证书 / 流量状态 / 设备状态 / HA 状态>
+- 维度：<配置 / 配置、流量、设备状态、SSL 证书 / 虚拟服务配置 / 节点配置 / 节点池配置 / SSL 证书 / 流量状态 / 设备状态 / HA 状态>
 - 数据来源：设备实时查询
 - 状态：<成功/失败>
 

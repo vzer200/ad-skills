@@ -396,7 +396,8 @@ const cases = {
   },
   "r2-node": {
     prompt: "帮我查一下 AD1 的节点配置。",
-    expected: ["connect.py", "AD1", "overview.py", "pool"],
+    expected: ["connect.py", "AD1", "overview.py", "node"],
+    commandExpected: ["connect.py", "overview.py", "node"],
     requireTools: true,
     requireDevice: true,
   },
@@ -1544,6 +1545,52 @@ function stepRuleViolationsFor(name, cfg, responses) {
   return violations;
 }
 
+function r2r4QueryViolations(label, item, spec, phase) {
+  const violations = [];
+  const commands = responseCommands(item);
+  const visible = responseVisible(item);
+  for (const dimension of spec.dimensions || ["overview.py"]) {
+    if (!commands.includes(dimension)) violations.push(`r2r4 ${label} missing command token: ${dimension}`);
+  }
+  for (const token of spec.visiblePresent || ["查询结论"]) {
+    if (!visible.includes(token)) violations.push(`r2r4 ${label} missing visible token: ${token}`);
+  }
+  for (const token of phase === "after" ? spec.forbidAfter || [] : []) {
+    if (visible.includes(token)) violations.push(`r2r4 ${label} leaked forbidden visible token: ${token}`);
+  }
+  if (commands.includes("ad_ops_flow.py")) {
+    violations.push(`r2r4 ${label} reran config workflow ${phase === "after" ? "after rollback" : "during R2 query"}`);
+  }
+  return violations;
+}
+
+function failFastStepViolationsFor(name, cfg, responses) {
+  if (!(name.startsWith("r2r4") && cfg.steps)) return [];
+  const promptResponses = responses.filter((item) => !item.upload && !item.localVerification);
+  const promptIndex = promptResponses.length - 1;
+  if (promptIndex < 0) return [];
+  const beforeStart = 3;
+  const rollbackIndex = beforeStart + R2R4_QUERY_SPECS.length;
+  const afterStart = rollbackIndex + 1;
+
+  if (promptIndex >= beforeStart && promptIndex < rollbackIndex) {
+    const spec = R2R4_QUERY_SPECS[promptIndex - beforeStart];
+    return r2r4QueryViolations(`before-${spec.label}`, promptResponses[promptIndex], spec, "before");
+  }
+  if (promptIndex >= afterStart && promptIndex < afterStart + R2R4_QUERY_SPECS.length) {
+    const spec = R2R4_QUERY_SPECS[promptIndex - afterStart];
+    return r2r4QueryViolations(`after-${spec.label}`, promptResponses[promptIndex], spec, "after");
+  }
+  return [];
+}
+
+function r2r4NeedsRollbackAfterFailFast(name, responses) {
+  if (!name.startsWith("r2r4")) return false;
+  const hasPresent = responses.some((item) => item.localVerification && item.localVerification.kind === "verify_present" && item.localVerification.status === "ok");
+  const hasAbsent = responses.some((item) => item.localVerification && item.localVerification.kind === "verify_absent" && item.localVerification.status === "ok");
+  return hasPresent && !hasAbsent;
+}
+
 function commandExpectedFor(name, cfg) {
   if (cfg.commandExpected) return cfg.commandExpected;
   if (name.startsWith("r1")) return ["connect.py", "check.py", "history", "run", "progress", "wait"];
@@ -2008,6 +2055,27 @@ async function runCase(page, name) {
       });
     } else {
       throw new Error(`unsupported step for ${name}: ${JSON.stringify(step)}`);
+    }
+    const failFastViolations = failFastStepViolationsFor(name, cfg, responses);
+    if (failFastViolations.length) {
+      log("fail-fast", { name, step: label, violations: failFastViolations });
+      if (r2r4NeedsRollbackAfterFailFast(name, responses)) {
+        log("fail-fast-cleanup-start", { name, step: label });
+        responses.push(await sendPrompt(page, `${name}-failfast-rollback`, "是。"));
+        const target = cfg.verifyAbsent || cfg.verifyPresent;
+        const localVerification = runLocalAdVerification(`${name}-failfast-ad-absent`, cfg, { expect: "absent", target });
+        responses.push({
+          name: `${name}-failfast-ad-absent`,
+          text: JSON.stringify(localVerification, null, 2),
+          agentText: "",
+          visibleText: "",
+          visibleAgentText: "",
+          toolEvidence: { hasEvidence: false, candidates: [] },
+          localVerification,
+        });
+        log("fail-fast-cleanup-done", { name, step: label, localVerification: localVerification.status });
+      }
+      throw new Error(`${name} failed fast at ${label}; ${failFastViolations.join(" | ")}`);
     }
   }
   const stepViolationsBeforeRecovery = stepRuleViolationsFor(name, cfg, responses);

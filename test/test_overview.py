@@ -487,6 +487,39 @@ class TestOverviewAPI(unittest.TestCase):
         self.assertNotIn("当前连接数", md)
         self.assertNotIn("CPU 使用率", md)
 
+    def test_node_query_renders_node_config_only(self):
+        """Node queries must be distinct from pool queries."""
+        self.client.get_pools.return_value = {
+            "items": [
+                {
+                    "name": "pool_web",
+                    "state": "enable",
+                    "nodes": [
+                        {
+                            "name": "web1",
+                            "address": "192.168.1.1",
+                            "port": 80,
+                            "state": "ENABLE",
+                            "weight": 10,
+                        }
+                    ],
+                }
+            ]
+        }
+
+        overview = build_overview(self.client, "node")
+        md = render_markdown(overview)
+
+        self.client.get_pools.assert_called_once()
+        self.client.get_virtual_services.assert_not_called()
+        self.client.get_ssl_certificates.assert_not_called()
+        self.assertEqual(len(overview["nodes"]), 1)
+        self.assertIn("节点配置", md)
+        self.assertIn("web1", md)
+        self.assertIn("192.168.1.1:80", md)
+        self.assertIn("pool_web", md)
+        self.assertNotIn("节点池配置", md)
+
     def test_missing_hardware_does_not_render_fake_zero_usage(self):
         """Missing status fields must not be shown as zero usage."""
         self.client.get_sys_system.side_effect = Exception("hardware unavailable")

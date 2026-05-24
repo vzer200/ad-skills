@@ -7,6 +7,7 @@ Usage:
     python overview.py all      --host https://x.x.x.x --user admin --password xxx [--format json]
     python overview.py config   --host ... [--format json]
     python overview.py vs       --host ... [--format json]
+    python overview.py node     --host ... [--format json]
     python overview.py pool     --host ... [--format json]
     python overview.py cert     --host ... [--format json]
     python overview.py hardware --host ... [--format json]
@@ -123,6 +124,7 @@ API_GROUPS: Dict[str, List[str]] = {
     "all":      ["vs", "pool", "cert", "ha", "hardware", "traffic"],
     "config":   ["vs", "pool", "cert"],
     "vs":       ["vs"],
+    "node":     ["pool"],
     "pool":     ["pool"],
     "cert":     ["cert"],
     "hardware": ["hardware"],
@@ -156,6 +158,7 @@ def build_overview(client: ADClient, subcommand: str = "all") -> Dict[str, Any]:
         "device": {"host": client.host, "name": device_name},
         "virtual_services": [],
         "pools": [],
+        "nodes": [],
         "certificates": [],
         "hardware": {},
         "traffic": [],
@@ -217,7 +220,10 @@ def build_overview(client: ADClient, subcommand: str = "all") -> Dict[str, Any]:
     # ---------- Pools / Nodes ------------------------------------------------
     if pool_data is not None:
         for pool in pool_data.get("items", []):
-            overview["pools"].append(_process_pool(pool))
+            processed_pool = _process_pool(pool)
+            overview["pools"].append(processed_pool)
+            for member in processed_pool.get("members", []):
+                overview["nodes"].append(_process_node(member, processed_pool.get("name", "")))
 
     # ---------- Certificates ------------------------------------------------
     cert_data = raw.get("cert")
@@ -260,7 +266,10 @@ def _process_vs(vs: Dict[str, Any]) -> Dict[str, Any]:
 
 def _process_pool(pool: Dict[str, Any]) -> Dict[str, Any]:
     """Transform a pool entry into a user-facing config summary."""
-    members = pool.get("members") or []
+    members = pool.get("members")
+    if members is None:
+        members = pool.get("nodes")
+    members = members or []
     up = sum(1 for m in members if str(m.get("state", "")).lower() == "up")
     total = len(members)
     return {
@@ -272,13 +281,25 @@ def _process_pool(pool: Dict[str, Any]) -> Dict[str, Any]:
         "members": [
             {
                 "name": m.get("name", ""),
-                "ip": m.get("ip", ""),
+                "ip": m.get("ip", "") or m.get("address", ""),
                 "port": m.get("port", ""),
                 "status": m.get("state", ""),
                 "weight": m.get("weight", ""),
             }
             for m in members
         ],
+    }
+
+
+def _process_node(member: Dict[str, Any], pool_name: str) -> Dict[str, Any]:
+    """Transform a pool member into a flattened node config row."""
+    endpoint = f"{member.get('ip', '')}:{member.get('port', '')}".strip(":")
+    return {
+        "name": member.get("name", "") or endpoint,
+        "endpoint": endpoint,
+        "pool": pool_name,
+        "status": member.get("status", ""),
+        "weight": member.get("weight", ""),
     }
 
 
@@ -411,6 +432,7 @@ _QUERY_LABELS = {
     "all": "配置、流量、设备状态、SSL 证书",
     "config": "配置",
     "vs": "虚拟服务配置",
+    "node": "节点配置",
     "pool": "节点池配置",
     "cert": "SSL 证书",
     "hardware": "设备状态",
@@ -626,6 +648,26 @@ def render_markdown(overview: Dict[str, Any]) -> str:
                     )
         a("")
 
+    if query == "node":
+        a("### 节点配置")
+        node_error = api_errors.get("pool")
+        if node_error:
+            a(f"> ❌ 获取失败：{node_error}")
+        else:
+            nodes = overview.get("nodes", [])
+            if not nodes:
+                a("ℹ️ 暂无节点配置。")
+            else:
+                a("| 节点 | 地址/端口 | 所属节点池 | 是否启用 | 权重 |")
+                a("| --- | --- | --- | --- | ---: |")
+                for node in nodes:
+                    a(
+                        f"| {node.get('name', '')} | {_fmt_value(node.get('endpoint'))} | "
+                        f"{_fmt_value(node.get('pool'))} | {_status_badge(node.get('status'))} | "
+                        f"{_fmt_value(node.get('weight'))} |"
+                    )
+        a("")
+
     if query in ("all", "traffic"):
         a("### 流量状态")
         traffic_error = api_errors.get("traffic")
@@ -716,7 +758,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "subcommand",
         nargs="?",
-        choices=["all", "config", "vs", "pool", "cert", "hardware", "ha", "traffic"],
+        choices=["all", "config", "vs", "node", "pool", "cert", "hardware", "ha", "traffic"],
         default="all",
         help="概览维度 (默认: all)",
     )
@@ -820,7 +862,7 @@ def main() -> None:
 
     # -- Parameter validation -------------------------------------------------
     if not args.host:
-        print("用法: python overview.py {all|config|vs|pool|cert|hardware|ha|traffic}", file=sys.stderr)
+        print("用法: python overview.py {all|config|vs|node|pool|cert|hardware|ha|traffic}", file=sys.stderr)
         print("       --host HOST [--user USER] [--password PASS] [--format json]", file=sys.stderr)
         print("", file=sys.stderr)
         print("密码优先使用环境变量 AD_PASS, 其次 --password 参数", file=sys.stderr)
