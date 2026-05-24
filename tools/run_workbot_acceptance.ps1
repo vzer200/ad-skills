@@ -12,7 +12,7 @@ param(
     [switch]$InjectDeviceOverrides,
     [string]$ADBaseUrl = "https://14.18.243.211:21044",
     [string]$ADUser = "admin",
-    [ValidateSet("fixed", "extended", "all")]
+    [ValidateSet("fixed", "extended", "r4", "r2r4", "all")]
     [string]$CaseSuite = "fixed",
     [string]$Cases = "",
     [string]$R4Yaml = "test\fixtures\workbot\r4-slb-full.yml",

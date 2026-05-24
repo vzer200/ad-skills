@@ -52,7 +52,19 @@ Exploratory prompt variants are kept in a separate suite and must not be mixed i
 .\tools\run_workbot_acceptance.ps1 -VerifyAD -CaseSuite extended
 ```
 
+R4 delivery and R2 query interaction is kept in a dedicated suite. It deploys the R4 SLB fixture to AD1, verifies the resources from outside the WorkBot runtime, runs R2 queries while the resources exist, rolls back, verifies absence, and runs R2 queries again:
+
+```powershell
+.\tools\run_workbot_acceptance.ps1 -VerifyAD -CaseSuite r2r4
+```
+
 Use `-Cases "case1,case2"` only for temporary debugging of a specific failure.
+
+Nightly automation runs the three-stage loop requested for full closure: extended prompts, R2/R4 interaction, then fixed mainline plus five fixed stability runs. Pass `-Prepare` when source changes should be tested, committed, pushed, and packaged before uploading:
+
+```powershell
+.\tools\run_workbot_nightly.ps1 -Prepare -VerifyAD -InjectDevicePasswords
+```
 
 Build the upload-only package with runtime credential injection. Use host overrides only when the WorkBot-side device addresses need to be changed for a specific environment:
 

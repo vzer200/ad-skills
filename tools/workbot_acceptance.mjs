@@ -117,11 +117,16 @@ const R4_CASES = [
   "r4-pool-prerule-script",
   "r4-delivery",
 ].join(",");
+const R2R4_CASES = [
+  "install",
+  "r2r4-interaction",
+].join(",");
 const CASE_SUITES = {
   fixed: FIXED_CASES,
   extended: EXTENDED_CASES,
   r4: R4_CASES,
-  all: Array.from(new Set(`${FIXED_CASES},${EXTENDED_CASES},${R4_CASES}`.split(","))).join(","),
+  r2r4: R2R4_CASES,
+  all: Array.from(new Set(`${FIXED_CASES},${EXTENDED_CASES},${R4_CASES},${R2R4_CASES}`.split(","))).join(","),
 };
 const CASE_SUITE = argValue("--case-suite", process.env.WORKBOT_CASE_SUITE || "fixed");
 if (!CASE_SUITES[CASE_SUITE]) {
@@ -606,6 +611,37 @@ const cases = {
     ],
     expected: ["init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback-and-verify", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"],
+    requireTools: true,
+    verifyAbsent: {
+      vsName: "wb_vs_workbot_flow_01",
+      poolName: "wb_pool_workbot_flow_01",
+      nodeIp: "192.0.2.51",
+      httpProfile: "wb_http_profile_workbot_01",
+      preRule: "wb_pre_rule_workbot_01",
+    },
+  },
+  "r2r4-interaction": {
+    steps: [
+      "在 AD1 上帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
+      { upload: R4_YAML_PATH, name: "r4-yaml" },
+      "我写完了 YAML。",
+      "真实下发。",
+      { adVerify: "present", name: "r2r4-ad-present" },
+      "帮我查一下 AD1 的虚拟服务配置。",
+      "帮我查一下 AD1 的节点池配置。",
+      "帮我查一下 AD1 的配置。",
+      "帮我查一下 AD1 的流量情况。",
+      "帮我查一下 AD1 的设备状态。",
+      "帮我查一下 AD1 的 SSL 证书到期时间。",
+      "是。",
+      { adVerify: "absent", name: "r2r4-ad-absent" },
+      "帮我查一下 AD1 的虚拟服务配置。",
+      "帮我查一下 AD1 的节点池配置。",
+      "帮我查一下 AD1 的配置。",
+    ],
+    expected: ["apply-slb-plan", "rollback-and-verify", "overview.py", "wb_vs_workbot_flow_01", "wb_pool_workbot_flow_01"],
+    commandExpected: ["ad_ops_flow.py", "apply-slb-plan", "overview.py", "rollback-and-verify"],
+    visibleForbidden: ["工具调用", "退出码", "stdout", "stderr"],
     requireTools: true,
     verifyAbsent: {
       vsName: "wb_vs_workbot_flow_01",
@@ -1112,6 +1148,18 @@ function textOfResponse(response) {
   ].filter(Boolean).join("\n");
 }
 
+function joinUniqueTexts(...items) {
+  const seen = new Set();
+  const parts = [];
+  for (const item of items) {
+    const text = String(item || "").trim();
+    if (!text || seen.has(text)) continue;
+    seen.add(text);
+    parts.push(text);
+  }
+  return parts.join("\n");
+}
+
 function responseEvidenceText(response) {
   return [
     response && response.visibleText,
@@ -1137,6 +1185,90 @@ function hasGeneratedArtifactEvidence(response, names) {
 }
 
 function stepRuleViolationsFor(name, cfg, responses) {
+  if (name.startsWith("r2r4") && cfg.steps) {
+    const violations = [];
+    const promptResponses = responses.filter((item) => !item.upload && !item.localVerification);
+    const responseVisible = (item) => joinUniqueTexts(item && item.visibleText, item && item.visibleAgentText);
+    const responseCommands = (item) => extractStepToolCommands(item || {}).join("\n");
+    const expectCommand = (label, item, token) => {
+      if (!responseCommands(item).includes(token)) violations.push(`r2r4 ${label} missing command token: ${token}`);
+    };
+    const expectVisible = (label, item, token) => {
+      if (!responseVisible(item).includes(token)) violations.push(`r2r4 ${label} missing visible token: ${token}`);
+    };
+    const forbidVisible = (label, item, token) => {
+      if (responseVisible(item).includes(token)) violations.push(`r2r4 ${label} leaked forbidden visible token: ${token}`);
+    };
+
+    const stageA = promptResponses[0] || {};
+    const yamlDone = promptResponses[1] || {};
+    const delivery = promptResponses[2] || {};
+    const beforeVs = promptResponses[3] || {};
+    const beforePool = promptResponses[4] || {};
+    const beforeConfig = promptResponses[5] || {};
+    const beforeTraffic = promptResponses[6] || {};
+    const beforeStatus = promptResponses[7] || {};
+    const beforeCert = promptResponses[8] || {};
+    const rollback = promptResponses[9] || {};
+    const afterVs = promptResponses[10] || {};
+    const afterPool = promptResponses[11] || {};
+    const afterConfig = promptResponses[12] || {};
+
+    for (const token of ["配置结论", "产出物", "下一步"]) {
+      expectVisible("stageA", stageA, token);
+      expectVisible("yaml-complete", yamlDone, token);
+      expectVisible("delivery", delivery, token);
+      expectVisible("rollback", rollback, token);
+    }
+    for (const token of ["plan-and-render", "summarize-plan", "preflight-slb-plan"]) {
+      expectCommand("yaml-complete", yamlDone, token);
+    }
+    expectCommand("delivery", delivery, "apply-slb-plan");
+    expectCommand("rollback", rollback, "rollback-and-verify");
+
+    const presentCheck = responses.find((item) => item.localVerification && item.localVerification.kind === "verify_present");
+    const absentCheck = responses.find((item) => item.localVerification && item.localVerification.kind === "verify_absent");
+    if (!presentCheck || presentCheck.localVerification.status !== "ok") {
+      violations.push("r2r4 local AD present verification did not pass after delivery");
+    }
+    if (!absentCheck || absentCheck.localVerification.status !== "ok") {
+      violations.push("r2r4 local AD absent verification did not pass after rollback");
+    }
+
+    const beforeQueries = [
+      ["before-vs", beforeVs, "vs", ["wb_vs_workbot_flow_01"]],
+      ["before-pool", beforePool, "pool", ["wb_pool_workbot_flow_01"]],
+      ["before-config", beforeConfig, "config", ["wb_vs_workbot_flow_01", "wb_pool_workbot_flow_01"]],
+      ["before-traffic", beforeTraffic, "traffic", ["查询结论"]],
+      ["before-status", beforeStatus, "hardware", ["查询结论"]],
+      ["before-cert", beforeCert, "cert", ["查询结论"]],
+    ];
+    for (const [label, item, dimension, tokens] of beforeQueries) {
+      expectCommand(label, item, "overview.py");
+      expectCommand(label, item, dimension);
+      for (const token of tokens) expectVisible(label, item, token);
+      if (responseCommands(item).includes("ad_ops_flow.py")) {
+        violations.push(`r2r4 ${label} reran config workflow during R2 query`);
+      }
+    }
+
+    const afterQueries = [
+      ["after-vs", afterVs, "vs"],
+      ["after-pool", afterPool, "pool"],
+      ["after-config", afterConfig, "config"],
+    ];
+    for (const [label, item, dimension] of afterQueries) {
+      expectCommand(label, item, "overview.py");
+      expectCommand(label, item, dimension);
+      forbidVisible(label, item, "wb_vs_workbot_flow_01");
+      forbidVisible(label, item, "wb_pool_workbot_flow_01");
+      if (responseCommands(item).includes("ad_ops_flow.py")) {
+        violations.push(`r2r4 ${label} reran config workflow after rollback`);
+      }
+    }
+    return violations;
+  }
+
   if (name.startsWith("r4") && cfg.steps) {
     const violations = [];
     const promptResponses = responses.filter((item) => !item.upload && !item.localVerification);
@@ -1500,8 +1632,8 @@ function verify(run) {
     .flatMap((item) => (item.toolEvidence && item.toolEvidence.candidates) || [])
     .map((item) => item.text || "")
     .join("\n");
-  const visibleText = `${run.visibleText || ""}\n${run.visibleAgentText || ""}`;
-  const expandedText = `${run.text || ""}\n${run.agentText || ""}`;
+  const visibleText = joinUniqueTexts(run.visibleText, run.visibleAgentText);
+  const expandedText = joinUniqueTexts(run.text, run.agentText);
   const searchable = `${visibleText}\n${expandedText}\n${toolCommandText}\n${toolCandidateText}`;
   const found = tokens.filter((token) => searchable.includes(token));
   const missing = tokens.filter((token) => !searchable.includes(token));
