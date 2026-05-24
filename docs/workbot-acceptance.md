@@ -313,6 +313,7 @@ Pass criteria:
 - Multi-device VS/Pool/cert/traffic/status/hardware prompts must call `overview.py <dimension> --devices ...` and must not fall back to `--device AD1` or `--device AD2`.
 - Tool commands must not use `2>&1`; stderr must stay separate from stdout so the visible report remains script-controlled.
 - Visible R2 answers must not include `覆盖说明`; target lines should use `目标设备：AD1（192.168.8.30）` rather than exposing URL schemes such as `https://192.168.8.30`.
+- Visible R2 answers must not append configuration-workflow context such as `回滚已生效`, `之前下发`, or `已不在列表中`; R2 only reports the current `overview.py` query result.
 - Visible R2 answers must use Chinese section titles and table headers. English template leftovers such as `AD Device Overview`, `Device Info`, `Virtual Services`, `SSL Certificates`, `Hardware Status`, `Connections`, and `Rate` fail acceptance.
 - VS configuration queries must not show traffic/status metrics such as connection count, new connection rate, or throughput. Those fields belong only to `overview.py traffic` / traffic prompts.
 - HA can be tested manually when needed, but is intentionally skipped in the default acceptance batch.
