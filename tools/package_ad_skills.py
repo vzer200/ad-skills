@@ -23,8 +23,8 @@ def parse_args() -> argparse.Namespace:
         "--inject-device-passwords",
         action="store_true",
         help=(
-            "For upload artifacts only: replace devices.json password_from fields with "
-            "runtime environment password values. Values are not written to the manifest."
+            "Deprecated compatibility only: replace legacy password_from fields with "
+            "runtime environment password values before packaging."
         ),
     )
     parser.add_argument(
@@ -69,7 +69,7 @@ def _first_env(names: list[str]) -> str:
 def render_devices_json(path: Path, inject_passwords: bool, inject_overrides: bool = False) -> tuple[str, list[str], list[str]]:
     text = path.read_text(encoding="utf-8")
     data = json.loads(text)
-    injected_passwords: list[str] = []
+    credential_devices: list[str] = []
     injected_overrides: list[str] = []
     for device in data.get("devices", []):
         device_name = str(device.get("name") or "").strip()
@@ -82,7 +82,6 @@ def render_devices_json(path: Path, inject_passwords: bool, inject_overrides: bo
                     raise SystemExit(f"{env_name} is required for --inject-device-passwords")
                 device["password"] = password
                 device.pop("password_from", None)
-                injected_passwords.append(device_name or env_name)
         if inject_overrides and prefix:
             host = _first_env([f"{prefix}_HOST", f"{prefix}_PUBLIC_URL", f"{prefix}_BASE_URL"])
             user = _first_env([f"{prefix}_USER", f"{prefix}_USERNAME"])
@@ -92,13 +91,28 @@ def render_devices_json(path: Path, inject_passwords: bool, inject_overrides: bo
             if user:
                 device["user"] = user
                 injected_overrides.append(f"{device_name}.user")
-    return json.dumps(data, ensure_ascii=False, indent=2) + "\n", injected_passwords, injected_overrides
+        label = device_name or str(device.get("host") or "<unknown>")
+        if device.get("password_from"):
+            raise SystemExit(f"devices.json must store direct password for {label}; password_from is not allowed")
+        if not device.get("user"):
+            raise SystemExit(f"devices.json must store user for {label}")
+        if not device.get("password"):
+            raise SystemExit(f"devices.json must store password for {label}")
+        credential_devices.append(label)
+    return json.dumps(data, ensure_ascii=False, indent=2) + "\n", credential_devices, injected_overrides
 
 
 def devices_arc_names(skill_names: list[str]) -> list[Path]:
     names = [Path("devices.json"), Path("skills/devices.json")]
     names.extend(Path("skills") / skill_name / "devices.json" for skill_name in skill_names)
     return names
+
+
+def discover_skill_paths(skills_root: Path) -> list[Path]:
+    return sorted(
+        (path for path in skills_root.iterdir() if path.is_dir() and (path / "SKILL.md").is_file()),
+        key=lambda path: path.name,
+    )
 
 
 def main() -> int:
@@ -112,16 +126,18 @@ def main() -> int:
     manifest_out = (repo / args.manifest_out).resolve() if not args.manifest_out.is_absolute() else args.manifest_out
     out.parent.mkdir(parents=True, exist_ok=True)
 
-    skill_names = sorted(path.name for path in skills_root.iterdir() if path.is_dir())
+    skill_paths = discover_skill_paths(skills_root)
+    skill_names = [path.name for path in skill_paths]
     entries: list[str] = []
-    injected_devices: list[str] = []
+    credential_devices: list[str] = []
     injected_overrides: list[str] = []
     device_file_entries: list[str] = []
     with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-        entries.extend(add_tree(zf, skills_root, Path("skills")))
+        for skill_path in skill_paths:
+            entries.extend(add_tree(zf, skill_path, Path("skills") / skill_path.name))
         devices_path = repo / "devices.json"
         if devices_path.exists() and devices_path.is_file():
-            rendered, injected_devices, injected_overrides = render_devices_json(
+            rendered, credential_devices, injected_overrides = render_devices_json(
                 devices_path,
                 args.inject_device_passwords,
                 args.inject_device_overrides,
@@ -141,7 +157,8 @@ def main() -> int:
         "zip": str(out),
         "entry_count": len(entries),
         "skills": skill_names,
-        "device_passwords_injected": injected_devices,
+        "device_passwords_embedded": credential_devices,
+        "device_passwords_injected": credential_devices if args.inject_device_passwords else [],
         "device_overrides_injected": injected_overrides,
         "device_file_entries": device_file_entries,
     }

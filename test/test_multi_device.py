@@ -6,7 +6,6 @@ Covers:
   - overview.py: _overview_one, --hosts/--devices arg parsing, multi markdown output
   - perception.py: _analyze_one, --hosts arg parsing
   - check.py: _check_one (atomic run+wait+analyze), work_dir derivation, history multi
-  - blackbox.py: _blackbox_one, independent output dirs
   - collector.py: stop_event threading, RuntimeError instead of sys.exit(3)
 """
 
@@ -22,7 +21,7 @@ from unittest.mock import patch, MagicMock, call
 
 # Ensure all skill script directories are importable
 _test_dir = os.path.dirname(os.path.abspath(__file__))
-for skill in ("ad-ops", "ad-perception", "ad-check-analysis", "ad-blackbox-analysis"):
+for skill in ("ad-ops", "ad-perception", "ad-check-analysis"):
     _p = os.path.join(_test_dir, "..", ".claude", "skills", skill, "scripts")
     sys.path.insert(0, os.path.realpath(_p))
 
@@ -712,9 +711,9 @@ class TestCrossScriptMultiDevice(unittest.TestCase):
         for d in data["devices"]:
             self.assertIn("host", d)
             self.assertIn("name", d)
-            # password should NOT be in plaintext (use password_from)
-            if "password" in d:
-                self.fail(f"Device {d['name']} has plaintext password — use password_from")
+            self.assertIn("user", d)
+            self.assertIn("password", d)
+            self.assertNotIn("password_from", d)
 
 
 if __name__ == "__main__":

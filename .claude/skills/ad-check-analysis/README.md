@@ -75,8 +75,8 @@ python scripts/check.py history \
 
 | 设备名 | 管理地址来源 | 用户名 | 密码来源 |
 |--------|--------------|--------|----------|
-| AD1 | devices.json / AD1_HOST | admin | AD1_PASS |
-| AD2 | devices.json / AD2_HOST | admin | AD2_PASS |
+| AD1 | devices.json / AD1_HOST | admin | Stored in devices.json |
+| AD2 | devices.json / AD2_HOST | admin | Stored in devices.json |
 
 ## 巡检场景
 

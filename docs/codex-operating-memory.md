@@ -79,13 +79,11 @@ $env:PYTHONUTF8 = "1"
 Full pre-upload verification and package rebuild:
 
 ```powershell
-$env:AD1_PASS = "root1234+"
-$env:AD2_PASS = "root1234+"
 $env:PYTHONUTF8 = "1"
-.\tools\run_workbot_acceptance.ps1 -SkipWorkBot -InjectDevicePasswords
+.\tools\run_workbot_acceptance.ps1 -SkipWorkBot
 ```
 
-Expected local gate: all unit tests pass, all 6 skills validate, `ad-config-ops` smoke passes, and `dist\ad-skills-workbot.zip` is regenerated.
+Expected local gate: all unit tests pass, all 5 skills validate, `ad-config-ops` smoke passes, and `dist\ad-skills-workbot.zip` is regenerated.
 
 ## WorkBot Test Flow
 
@@ -94,10 +92,8 @@ Use a fresh temporary digital employee for each run. The automation enforces the
 Main command shape:
 
 ```powershell
-$env:AD1_PASS = "root1234+"
-$env:AD2_PASS = "root1234+"
 $env:PYTHONUTF8 = "1"
-.\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD -InjectDevicePasswords -Cases "<comma-separated-cases>"
+.\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD -Cases "<comma-separated-cases>"
 ```
 
 Use passed-case skipping:

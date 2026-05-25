@@ -740,6 +740,12 @@ def parse_log_levels(value: Optional[str] = None) -> List[str]:
     return levels or ["ALERT", "ERROR"]
 
 
+def parse_log_modules(value: Optional[str] = None) -> List[str]:
+    """Parse comma-separated AD service-log modules."""
+    raw = value or ""
+    return [part.strip().upper() for part in raw.split(",") if part.strip()]
+
+
 def build_log_window(
     days: int = 0,
     hours: int = 24,
@@ -765,6 +771,7 @@ def _fetch_service_log_data(
     from_time: str = "",
     to_time: str = "",
     levels: Optional[List[str]] = None,
+    modules: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     kwargs: Dict[str, Any] = {"limit": _normalize_log_limit(limit)}
     if from_time:
@@ -773,6 +780,8 @@ def _fetch_service_log_data(
         kwargs["to_time"] = to_time
     if levels:
         kwargs["levels"] = levels
+    if modules:
+        kwargs["modules"] = modules
     data = client.get_service_log(**kwargs)
     return data if isinstance(data, dict) else {"items": []}
 
@@ -783,6 +792,7 @@ def fetch_service_logs(
     from_time: str = "",
     to_time: str = "",
     levels: Optional[List[str]] = None,
+    modules: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
     """
     从设备获取服务日志。
@@ -800,6 +810,7 @@ def fetch_service_logs(
         from_time=from_time,
         to_time=to_time,
         levels=levels,
+        modules=modules,
     )
     return data.get('items', [])
 
@@ -810,6 +821,7 @@ def fetch_service_log_result(
     from_time: str = "",
     to_time: str = "",
     levels: Optional[List[str]] = None,
+    modules: Optional[List[str]] = None,
     range_label: str = "",
 ) -> Dict[str, Any]:
     """Fetch service logs with metadata used by the user-facing template."""
@@ -819,6 +831,7 @@ def fetch_service_log_result(
         from_time=from_time,
         to_time=to_time,
         levels=levels,
+        modules=modules,
     )
     entries = data.get('items', [])
     total = data.get('total') or data.get('count') or len(entries)
@@ -832,6 +845,7 @@ def fetch_service_log_result(
         'from_time': from_time,
         'to_time': to_time,
         'levels': levels or ["ALERT", "ERROR"],
+        'modules': modules or [],
     }
 
 
@@ -968,6 +982,8 @@ def render_markdown(results: Dict[str, Any]) -> str:
     if show_conflicts:
         scoped_statuses.append(conflicts.get('status', ''))
     status_text = _analysis_status_badge(scoped_statuses)
+    if scope == 'logs' and logs.get('status') == 'ok':
+        status_text = '✅ 成功'
 
     lines.append('## 感知结论')
     lines.append(f'- 目标设备：{device}')
@@ -1083,10 +1099,13 @@ def render_markdown(results: Dict[str, Any]) -> str:
         if logs.get('status') in ('ok', 'warning'):
             entries = logs.get('entries', [])
             levels = logs.get('levels') or []
+            modules = logs.get('modules') or []
             if logs.get('range'):
                 lines.append(f"- 查询范围：{logs.get('range')}")
             if levels:
                 lines.append(f"- 日志级别：{'、'.join(levels)}")
+            if modules:
+                lines.append(f"- 日志类型：{'、'.join(modules)}")
             if 'total' in logs or 'shown' in logs:
                 lines.append(f"- 输出数量：最新 {logs.get('shown', len(entries))} 条（上限 {logs.get('limit', 20)} 条）")
             if entries:
@@ -1328,6 +1347,7 @@ def _logs_one(
     from_time: str = "",
     to_time: str = "",
     levels: Optional[List[str]] = None,
+    modules: Optional[List[str]] = None,
     range_label: str = "",
 ) -> Dict[str, Any]:
     """单设备日志获取，供 ThreadPoolExecutor / run_multi 调用。"""
@@ -1337,6 +1357,7 @@ def _logs_one(
         from_time=from_time,
         to_time=to_time,
         levels=levels,
+        modules=modules,
         range_label=range_label,
     )
     return {'host': client.host, **log_result}
@@ -1380,6 +1401,7 @@ def main() -> None:
     logs_p.add_argument("--from-time", default="", help="开始时间，格式 YYYY-MM-DD HH:MM:SS")
     logs_p.add_argument("--to-time", default="", help="结束时间，格式 YYYY-MM-DD HH:MM:SS")
     logs_p.add_argument("--levels", default="ALERT,ERROR", help="逗号分隔日志级别 (default: ALERT,ERROR)")
+    logs_p.add_argument("--modules", default="", help="逗号分隔日志模块/类型，如 ALARM,APPD,RS_DETECT")
 
     args = parser.parse_args()
     cmd = args.command or "analyze"
@@ -1403,6 +1425,7 @@ def main() -> None:
             'from_time': from_time,
             'to_time': to_time,
             'levels': parse_log_levels(getattr(a, 'levels', 'ALERT,ERROR')),
+            'modules': parse_log_modules(getattr(a, 'modules', '')),
             'range_label': range_label,
         }
 

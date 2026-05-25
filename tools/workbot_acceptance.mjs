@@ -44,7 +44,7 @@ const VERIFY_AD = hasFlag("--verify-ad") || process.env.WORKBOT_VERIFY_AD === "1
 const PYTHON = argValue("--python", process.env.PYTHON || "python");
 const AD_VERIFY_BASE_URL = argValue("--ad-base-url", process.env.AD_VERIFY_BASE_URL || process.env.AD1_PUBLIC_URL || "https://14.18.243.211:21044");
 const AD_VERIFY_USERNAME = argValue("--ad-user", process.env.AD_VERIFY_USERNAME || process.env.AD1_USER || "admin");
-const AD_VERIFY_PASSWORD = argValue("--ad-password", process.env.AD_VERIFY_PASSWORD || process.env.AD1_PASS || process.env.AD_PASS || process.env.AD_PASSWORD);
+const AD_VERIFY_PASSWORD = argValue("--ad-password", process.env.AD_VERIFY_PASSWORD || process.env.AD1_PASS || process.env.AD_PASS || process.env.AD_PASSWORD || devicePasswordForName("AD1"));
 const WORKBOT_FORBIDDEN_DEVICE_HOSTS = (argValue(
   "--forbidden-workbot-device-hosts",
   process.env.WORKBOT_FORBIDDEN_DEVICE_HOSTS || "14.18.243.211:21044,14.18.243.211:21039",
@@ -161,6 +161,31 @@ function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function devicePasswordForName(name) {
+  try {
+    const data = JSON.parse(fs.readFileSync(path.resolve("devices.json"), "utf8"));
+    const device = (data.devices || []).find((item) => item && item.name === name);
+    return device && typeof device.password === "string" ? device.password : "";
+  } catch {
+    return "";
+  }
+}
+
+function devicePasswordsFromFile() {
+  const values = [];
+  for (const file of [path.resolve("devices.json")]) {
+    try {
+      const data = JSON.parse(fs.readFileSync(file, "utf8"));
+      for (const device of data.devices || []) {
+        if (device && typeof device.password === "string") values.push(device.password);
+      }
+    } catch {
+      // Best-effort redaction; packaging validation handles malformed device files.
+    }
+  }
+  return values;
+}
+
 const SENSITIVE_VALUES = Array.from(new Set([
   WORKBOT_PASSWORD,
   AD_VERIFY_PASSWORD,
@@ -169,6 +194,7 @@ const SENSITIVE_VALUES = Array.from(new Set([
   process.env.AD_PASS,
   process.env.AD_PASSWORD,
   process.env.WORKBOT_PASSWORD,
+  ...devicePasswordsFromFile(),
 ].filter((item) => item && String(item).length >= 4).map(String)));
 
 function redactSensitive(value) {
@@ -275,8 +301,8 @@ const cases = {
     requireTools: true,
   },
   install: {
-    prompt: "请安装我刚上传的 AD skills 包，并确认 6 个 skill 都可用。",
-    expected: ["ad-blackbox-analysis", "ad-check-analysis", "ad-config-ops", "ad-connect", "ad-ops", "ad-perception", "SKILL.md"],
+    prompt: "请安装我刚上传的 AD skills 包，并确认 5 个 skill 都可用。",
+    expected: ["ad-check-analysis", "ad-config-ops", "ad-connect", "ad-ops", "ad-perception", "SKILL.md"],
     requireTools: true,
   },
   r1: {
@@ -539,15 +565,15 @@ const cases = {
   },
   "r3-logs": {
     prompt: "对 AD1 设备的日志进行分析。",
-    expected: ["connect.py", "AD1", "perception.py", "logs", "ALERT", "ERROR"],
-    commandExpected: ["connect.py", "perception.py", "logs", "--limit", "20", "--levels", "ALERT,ERROR"],
+    expected: ["connect.py", "AD1", "perception.py", "logs", "ALERT", "ERROR", "ALARM"],
+    commandExpected: ["connect.py", "perception.py", "logs", "--limit", "20", "--levels", "ALERT,ERROR", "--modules", "ALARM"],
     requireTools: true,
     requireDevice: true,
   },
   "r3-logs-5d": {
     prompt: "对 AD1 设备近 5 天的日志进行分析。",
-    expected: ["connect.py", "AD1", "perception.py", "logs", "5", "ALERT", "ERROR"],
-    commandExpected: ["connect.py", "perception.py", "logs", "--days", "5", "--limit", "20", "--levels", "ALERT,ERROR"],
+    expected: ["connect.py", "AD1", "perception.py", "logs", "5", "ALERT", "ERROR", "ALARM"],
+    commandExpected: ["connect.py", "perception.py", "logs", "--days", "5", "--limit", "20", "--levels", "ALERT,ERROR", "--modules", "ALARM"],
     requireTools: true,
     requireDevice: true,
   },
@@ -1645,7 +1671,7 @@ function runLocalAdVerification(name, cfg, override = {}) {
   if (!AD_VERIFY_PASSWORD) {
     return {
       status: "skipped",
-      reason: "missing AD_VERIFY_PASSWORD, AD1_PASS, or AD_PASS",
+      reason: "missing AD verify password and devices.json AD1 password",
       baseUrl: AD_VERIFY_BASE_URL,
       username: AD_VERIFY_USERNAME,
     };

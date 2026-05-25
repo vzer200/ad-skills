@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from tools.package_ad_skills import devices_arc_names, render_devices_json
+from tools.package_ad_skills import devices_arc_names, discover_skill_paths, render_devices_json
 
 
 class TestPackageAdSkills(unittest.TestCase):
@@ -15,8 +15,39 @@ class TestPackageAdSkills(unittest.TestCase):
 
         self.assertEqual(hosts["AD1"], "https://192.168.8.30")
         self.assertEqual(hosts["AD2"], "https://192.168.8.31")
+        for device in data["devices"]:
+            self.assertIn("user", device)
+            self.assertIn("password", device)
+            self.assertNotIn("password_from", device)
 
-    def test_render_devices_json_keeps_password_from_by_default(self):
+    def test_render_devices_json_uses_direct_passwords_by_default(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            devices = Path(tmp) / "devices.json"
+            devices.write_text(
+                json.dumps(
+                    {
+                        "devices": [
+                            {
+                                "name": "AD1",
+                                "host": "https://example",
+                                "user": "admin",
+                                "password": "secret",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            rendered, credential_devices, overrides = render_devices_json(devices, inject_passwords=False)
+            data = json.loads(rendered)
+
+        self.assertEqual(credential_devices, ["AD1"])
+        self.assertEqual(overrides, [])
+        self.assertEqual(data["devices"][0]["password"], "secret")
+        self.assertNotIn("password_from", data["devices"][0])
+
+    def test_render_devices_json_rejects_password_from_without_injection(self):
         with tempfile.TemporaryDirectory() as tmp:
             devices = Path(tmp) / "devices.json"
             devices.write_text(
@@ -35,13 +66,8 @@ class TestPackageAdSkills(unittest.TestCase):
                 encoding="utf-8",
             )
 
-            rendered, injected, overrides = render_devices_json(devices, inject_passwords=False)
-            data = json.loads(rendered)
-
-        self.assertEqual(injected, [])
-        self.assertEqual(overrides, [])
-        self.assertEqual(data["devices"][0]["password_from"], "AD1_PASS")
-        self.assertNotIn("password", data["devices"][0])
+            with self.assertRaises(SystemExit):
+                render_devices_json(devices, inject_passwords=False)
 
     def test_render_devices_json_injects_password_from_environment(self):
         with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"AD1_PASS": "secret"}, clear=False):
@@ -82,7 +108,7 @@ class TestPackageAdSkills(unittest.TestCase):
                                 "name": "AD1",
                                 "host": "https://public",
                                 "user": "admin",
-                                "password_from": "AD1_PASS",
+                                "password": "secret",
                             }
                         ]
                     }
@@ -97,7 +123,7 @@ class TestPackageAdSkills(unittest.TestCase):
             )
             data = json.loads(rendered)
 
-        self.assertEqual(injected, [])
+        self.assertEqual(injected, ["AD1"])
         self.assertEqual(overrides, ["AD1.host", "AD1.user"])
         self.assertEqual(data["devices"][0]["host"], "https://192.168.8.30")
         self.assertEqual(data["devices"][0]["user"], "admin2")
@@ -114,6 +140,17 @@ class TestPackageAdSkills(unittest.TestCase):
                 "skills/ad-ops/devices.json",
             ],
         )
+
+    def test_discover_skill_paths_requires_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "real-skill").mkdir()
+            (root / "real-skill" / "SKILL.md").write_text("---\nname: real-skill\n---\n", encoding="utf-8")
+            (root / "residual-dir").mkdir()
+
+            names = [path.name for path in discover_skill_paths(root)]
+
+        self.assertEqual(names, ["real-skill"])
 
 
 if __name__ == "__main__":

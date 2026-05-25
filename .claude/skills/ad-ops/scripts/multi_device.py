@@ -98,7 +98,7 @@ def load_devices_json(path: str, device: str = "") -> List[Dict[str, Any]]:
     """Load device list from a JSON file.
 
     Expected format:
-        {"devices": [{"name": "AD1", "host": "https://...", "user": "admin", "password_from": "AD1_PASS"}]}
+        {"devices": [{"name": "AD1", "host": "https://...", "user": "admin", "password": "..."}]}
     """
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)

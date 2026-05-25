@@ -41,7 +41,7 @@ Write-Host "[1/7] Running unit tests"
 & $Python -m unittest discover -s test -p "test_*.py" -v
 
 Write-Host "[2/7] Validating skills"
-$skills = @("ad-connect", "ad-ops", "ad-check-analysis", "ad-perception", "ad-blackbox-analysis", "ad-config-ops")
+$skills = @("ad-connect", "ad-ops", "ad-check-analysis", "ad-perception", "ad-config-ops")
 foreach ($skill in $skills) {
     & $Python "C:\Users\Administrator\.codex\skills\.system\skill-creator\scripts\quick_validate.py" ".claude\skills\$skill"
 }
@@ -91,6 +91,7 @@ if ($CommitAndPush) {
 Write-Host "[5/7] Packaging AD skills"
 $packageArgs = @("tools\package_ad_skills.py", "--out", $Package)
 if ($InjectDevicePasswords) {
+    Write-Warning "-InjectDevicePasswords is deprecated; devices.json should store direct device passwords."
     $packageArgs += "--inject-device-passwords"
 }
 if ($InjectDeviceOverrides) {
@@ -118,6 +119,18 @@ try {
     }
     if ($deviceText -notmatch "192\.168\.8\.30" -or $deviceText -notmatch "192\.168\.8\.31") {
         throw "WorkBot package does not contain both intranet AD hosts 192.168.8.30 and 192.168.8.31"
+    }
+    if ($deviceText -match '"password_from"') {
+        throw "WorkBot package still contains password_from; devices.json must store direct credentials"
+    }
+    $deviceData = $deviceText | ConvertFrom-Json
+    foreach ($device in $deviceData.devices) {
+        if ([string]::IsNullOrWhiteSpace([string]$device.user)) {
+            throw "WorkBot package device entry is missing user"
+        }
+        if ([string]::IsNullOrWhiteSpace([string]$device.password)) {
+            throw "WorkBot package device entry is missing password"
+        }
     }
 } finally {
     $zip.Dispose()

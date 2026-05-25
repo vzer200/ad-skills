@@ -51,7 +51,6 @@ scope 标识变更影响的模块。本项目常用 scope：
 | `ad-ops` | AD 智能运维 |
 | `ad-check-analysis` | AD 系统巡检 |
 | `ad-perception` | AD 感知分析 |
-| `ad-blackbox-analysis` | AD 黑盒日志分析 |
 | `ad_api` | AD API 客户端（ad-ops 共用） |
 | `docs` | 项目文档 |
 | `test` | 测试体系 |

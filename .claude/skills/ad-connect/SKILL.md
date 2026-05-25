@@ -19,14 +19,14 @@ description: 深信服 AD 设备连接预检 skill。用于在巡检、查询、
 单设备：
 
 ```bash
-python3 skills/ad-connect/scripts/connect.py --host https://192.168.8.30 --user admin --password "$AD1_PASS"
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-connect/devices.json --device AD1 --format json
 ```
 
 多设备或设备清单：
 
 ```bash
 python3 skills/ad-connect/scripts/connect.py --devices skills/ad-connect/devices.json --format json
-python3 skills/ad-connect/scripts/connect.py --hosts "https://192.168.8.30,https://192.168.8.31" --user admin --password "$AD_PASS" --format json
+python3 skills/ad-connect/scripts/connect.py --devices skills/ad-connect/devices.json --format json
 ```
 
 ## 退出码

@@ -29,13 +29,13 @@ D:\workSpace\
 ```json
 {
   "devices": [
-    {"name": "AD1", "host": "https://192.168.8.30", "user": "admin", "password_from": "AD1_PASS"},
-    {"name": "AD2", "host": "https://192.168.8.31", "user": "admin", "password_from": "AD2_PASS"}
+    {"name": "AD1", "host": "https://192.168.8.30", "user": "admin", "password": "<stored-directly>"},
+    {"name": "AD2", "host": "https://192.168.8.31", "user": "admin", "password": "<stored-directly>"}
   ]
 }
 ```
 
-密码通过 `password_from` 引用环境变量，禁止明文存储。
+密码直接存放在 `devices.json`，用于 WorkBot 打包和脚本执行；日志、报告和回复中不得输出密码值。
 
 ## 测试
 
@@ -48,7 +48,6 @@ D:\workSpace\
 | `test_check.py` | check.py 巡检流程 |
 | `test_perception.py` | perception.py 感知分析 |
 | `test_collector.py` | collector.py 采集器 |
-| `test_blackbox.py` | blackbox.py 黑盒导出 |
 | `test_multi_device.py` | 多设备模式 |
 | `run_all.py` | 一键运行全部测试 |
 

@@ -12,7 +12,7 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["name", "host"],
+        "required": ["name", "host", "user", "password"],
         "properties": {
           "name": {
             "type": "string",
@@ -30,11 +30,7 @@
           },
           "password": {
             "type": "string",
-            "description": "Direct login password (mutually exclusive with password_from)."
-          },
-          "password_from": {
-            "type": "string",
-            "description": "Environment variable name whose value holds the login password (mutually exclusive with password)."
+            "description": "Direct login password used by WorkBot package scripts."
           }
         },
         "additionalProperties": false

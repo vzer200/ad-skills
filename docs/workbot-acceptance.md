@@ -25,9 +25,7 @@ Automated release flow:
 
 ```powershell
 $env:WORKBOT_PASSWORD = "<operator-provided password>"
-$env:AD1_PASS = "<operator-provided AD1 password>"
-$env:AD2_PASS = "<operator-provided AD2 password>"
-.\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD -InjectDevicePasswords
+.\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD
 ```
 
 The automation runs tests, validates skills, runs an SLB bundle smoke test, commits and pushes, packages `dist/ad-skills-workbot.zip`, uploads it to WorkBot, sends the fixed acceptance prompts, and writes a JSON evidence report under `workbot-results/`. The source `devices.json` is the WorkBot-facing authority and must use the intranet management addresses `https://192.168.8.30` and `https://192.168.8.31`; local Codex-side AD verification can still use the public gateway through `-ADBaseUrl`.
@@ -63,7 +61,7 @@ Use `-Cases "case1,case2"` only for temporary debugging of a specific failure.
 Nightly automation runs the requested closure loop: R2/R4 interaction, then the fixed mainline gate, then three fixed stability runs. Extended prompts stay separate and should be enabled only when mainline coverage is already stable. Pass `-Prepare` when source changes should be tested, committed, pushed, and packaged before uploading:
 
 ```powershell
-.\tools\run_workbot_nightly.ps1 -Prepare -VerifyAD -InjectDevicePasswords
+.\tools\run_workbot_nightly.ps1 -Prepare -VerifyAD
 ```
 
 Run extended prompt variants explicitly when needed:
@@ -72,28 +70,26 @@ Run extended prompt variants explicitly when needed:
 .\tools\run_workbot_nightly.ps1 -RunExtended -VerifyAD
 ```
 
-Build the upload-only package with runtime credential injection. Use host overrides only when the WorkBot-side device addresses need to be changed for a specific environment:
+Build the upload-only package from source `devices.json`. Use host overrides only when the WorkBot-side device addresses need to be changed for a specific environment:
 
 ```powershell
-$env:AD1_PASS = "<operator-provided AD1 password>"
-$env:AD2_PASS = "<operator-provided AD2 password>"
 $env:AD1_HOST = "https://192.168.8.30"
 $env:AD2_HOST = "https://192.168.8.31"
-.\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD -InjectDevicePasswords -InjectDeviceOverrides
+.\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD -InjectDeviceOverrides
 ```
 
-This replaces `password_from` with `password` and, when requested, applies `AD1_HOST`/`AD1_USER` style overrides only inside the ignored zip artifact; source `devices.json` and the package manifest do not store password values. The packager writes the rendered device file to `devices.json`, `skills/devices.json`, and each `skills/<skill>/devices.json` so WorkBot can still find it when the installer copies only skill directories.
+The source `devices.json` stores direct `user` and `password` fields for each device. When requested, the packager applies `AD1_HOST`/`AD1_USER` style overrides only inside the ignored zip artifact; reports and manifests must not print password values. The packager writes the rendered device file to `devices.json`, `skills/devices.json`, and each `skills/<skill>/devices.json` so WorkBot can still find it when the installer copies only skill directories.
 
 After attaching the AD skills zip, use this short install prompt:
 
 ```text
-请安装我刚上传的 AD skills 包，并确认 6 个 skill 都可用。
+请安装我刚上传的 AD skills 包，并确认 5 个 skill 都可用。
 ```
 
 Pass criteria:
 
 - WorkBot uses tool calls to unzip/install the uploaded package and inspect the installed files.
-- The final answer confirms `ad-blackbox-analysis`, `ad-check-analysis`, `ad-connect`, `ad-ops`, `ad-perception`, and `ad-config-ops`.
+- The final answer confirms `ad-check-analysis`, `ad-connect`, `ad-ops`, `ad-perception`, and `ad-config-ops`.
 - Each installed skill is verified by a tool call that checks `SKILL.md`; scripts directories are verified where expected.
 
 ## Interactive Follow-Up Rule
@@ -336,8 +332,8 @@ Fixed mainline prompts:
 | Case | Prompt | Expected command |
 | --- | --- | --- |
 | `r3-traffic-vs` | `对 AD2 设备的 test 虚拟服务进行流量趋势分析。` | `collector.py collect --collect-only` then `perception.py traffic --vs test --require-db` |
-| `r3-logs` | `对 AD1 设备的日志进行分析。` | `perception.py logs --levels ALERT,ERROR --limit 20` |
-| `r3-logs-5d` | `对 AD1 设备近 5 天的日志进行分析。` | `perception.py logs --days 5 --levels ALERT,ERROR --limit 20` |
+| `r3-logs` | `对 AD1 设备的日志进行分析。` | `perception.py logs --levels ALERT,ERROR --modules ALARM --limit 20` |
+| `r3-logs-5d` | `对 AD1 设备近 5 天的日志进行分析。` | `perception.py logs --days 5 --levels ALERT,ERROR --modules ALARM --limit 20` |
 
 Avoid vague R3 prompts such as `AD1 做个感知分析` or `AD1 有没有异常`. They are too broad for a stable mainline gate and can collide with R2 query routing.
 
@@ -367,7 +363,7 @@ Expected tool calls:
 connect.py
 collector.py collect --collect-only
 perception.py traffic --vs test --require-db
-perception.py logs --levels ALERT,ERROR --limit 20
+perception.py logs --levels ALERT,ERROR --modules ALARM --limit 20
 ```
 
 Pass criteria:
@@ -377,7 +373,7 @@ Pass criteria:
 - The VS traffic trend prompt uses AD2/192.168.8.31 `test`, must run `collector.py collect --collect-only` first, then call `perception.py traffic --vs test --require-db`. It must prove a database query path and must not answer from realtime API fallback or model memory.
 - VS traffic trend output must not include a `风险` column, arrows such as `↓`, or subjective severity words such as `轻微/明显/严重/显著`; show the change as a direct ratio such as `下降 79.9%` or `上升 12.3%`.
 - R3 visible output must preserve the `perception.py` markdown block instead of rewriting conclusions; do not add phrases such as `小结`, `三项核心指标`, `大幅偏离`, `连接数约为基线`, `当前值为 0`, or `降至 0` unless they are emitted by the script itself.
-- The log prompt must call `perception.py logs`, default to recent 24 hours, query both `ALERT` and `ERROR`, and cap visible output to the newest 20 rows sorted by time descending.
+- The log prompt must call `perception.py logs`, default to recent 24 hours, query both `ALERT` and `ERROR` with `--modules ALARM`, and cap visible output to the newest 20 rows sorted by time descending.
 - If the user gives a log window such as recent 5 days or 7 days, WorkBot must pass that range through with `--days N`.
 - R3 visible status must match the evidence: if the output lists traffic anomalies or `ALERT`/`ERROR` logs, the conclusion status must be `需关注`, not `未发现明显异常`.
 - R3 final answers use `感知结论 / 分析结果 / 结论边界`; subcommand outputs must not bypass the perception template.

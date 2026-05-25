@@ -30,7 +30,10 @@ if (!$env:WORKBOT_PASSWORD) {
 if ($Prepare) {
     $prepareArgs = @("-Python", $Python, "-Node", $Node, "-Package", $Package, "-CommitAndPush", "-SkipWorkBot")
     if ($VerifyAD) { $prepareArgs += "-VerifyAD" }
-    if ($InjectDevicePasswords) { $prepareArgs += "-InjectDevicePasswords" }
+    if ($InjectDevicePasswords) {
+        Write-Warning "-InjectDevicePasswords is deprecated; devices.json should store direct device passwords."
+        $prepareArgs += "-InjectDevicePasswords"
+    }
     & "$PSScriptRoot\run_workbot_acceptance.ps1" @prepareArgs
 }
 

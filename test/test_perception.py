@@ -734,6 +734,23 @@ class TestServiceLogs(unittest.TestCase):
         self.assertEqual(result['range'], '最近 24 小时')
         self.assertEqual(result['status'], 'warning')
 
+    def test_fetch_service_log_result_passes_module_filter(self):
+        """Specific log modules should be forwarded to the device API."""
+        result = fetch_service_log_result(
+            self.client,
+            limit=20,
+            levels=['ALERT', 'ERROR'],
+            modules=['ALARM'],
+            range_label='alarm logs',
+        )
+
+        self.client.get_service_log.assert_called_with(
+            limit=20,
+            levels=['ALERT', 'ERROR'],
+            modules=['ALARM'],
+        )
+        self.assertEqual(result['modules'], ['ALARM'])
+
     def test_render_logs_markdown_output(self):
         """render_logs_markdown should output the expected markdown table format."""
         entries = [
@@ -901,6 +918,7 @@ class TestState3Sigma(unittest.TestCase):
                 ],
                 'range': '最近 5 天',
                 'levels': ['ALERT', 'ERROR'],
+                'modules': ['ALARM'],
                 'shown': 1,
                 'limit': 20,
             },
@@ -909,6 +927,7 @@ class TestState3Sigma(unittest.TestCase):
 
         self.assertIn('查询范围：最近 5 天', output)
         self.assertIn('日志级别：ALERT、ERROR', output)
+        self.assertIn('ALARM', output)
         self.assertIn('输出数量：最新 1 条（上限 20 条）', output)
         self.assertIn('2026-05-20 23:50:15', output)
 
