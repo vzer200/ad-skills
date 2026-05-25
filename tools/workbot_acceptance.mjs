@@ -38,6 +38,8 @@ const WORKBOT_USER = argValue("--user", process.env.WORKBOT_USER);
 const WORKBOT_PASSWORD = argValue("--password", process.env.WORKBOT_PASSWORD);
 const ZIP_PATH = path.resolve(argValue("--zip", process.env.AD_SKILLS_ZIP || "dist/ad-skills-workbot.zip"));
 const R4_YAML_PATH = path.resolve(argValue("--r4-yaml", process.env.WORKBOT_R4_YAML || "test/fixtures/workbot/r4-slb-full.yml"));
+const R4_UPDATE_YAML_PATH = path.resolve(argValue("--r4-update-yaml", process.env.WORKBOT_R4_UPDATE_YAML || "test/fixtures/workbot/r4-slb-update.yml"));
+const R4_DELETE_YAML_PATH = path.resolve(argValue("--r4-delete-yaml", process.env.WORKBOT_R4_DELETE_YAML || "test/fixtures/workbot/r4-slb-delete.yml"));
 const OUT_DIR = path.resolve(argValue("--out-dir", "workbot-results"));
 const HEADLESS = hasFlag("--headless") || process.env.WORKBOT_HEADLESS === "1";
 const VERIFY_AD = hasFlag("--verify-ad") || process.env.WORKBOT_VERIFY_AD === "1";
@@ -100,6 +102,8 @@ const FIXED_CASES = [
   "r4-pool-profile-script",
   "r4-pool-prerule-script",
   "r4-delivery",
+  "r4-update-delivery",
+  "r4-delete-delivery",
 ].join(",");
 const EXTENDED_CASES = [
   "install",
@@ -122,6 +126,8 @@ const R4_CASES = [
   "r4-pool-profile-script",
   "r4-pool-prerule-script",
   "r4-delivery",
+  "r4-update-delivery",
+  "r4-delete-delivery",
 ].join(",");
 const R2R4_CASES = [
   "install",
@@ -157,8 +163,17 @@ if (!WORKBOT_PASSWORD) {
 if (!fs.existsSync(ZIP_PATH)) {
   throw new Error(`zip not found: ${ZIP_PATH}`);
 }
-if (CASES.some((name) => name.startsWith("r4-")) && !fs.existsSync(R4_YAML_PATH)) {
-  throw new Error(`R4 YAML fixture not found: ${R4_YAML_PATH}`);
+const REQUIRED_R4_FIXTURES = new Map();
+if (CASES.some((name) => name.startsWith("r4-"))) REQUIRED_R4_FIXTURES.set("R4 YAML", R4_YAML_PATH);
+if (CASES.includes("r4-update-delivery")) {
+  REQUIRED_R4_FIXTURES.set("R4 update YAML", R4_UPDATE_YAML_PATH);
+  REQUIRED_R4_FIXTURES.set("R4 delete YAML", R4_DELETE_YAML_PATH);
+}
+if (CASES.includes("r4-delete-delivery")) {
+  REQUIRED_R4_FIXTURES.set("R4 delete YAML", R4_DELETE_YAML_PATH);
+}
+for (const [label, fixturePath] of REQUIRED_R4_FIXTURES) {
+  if (!fs.existsSync(fixturePath)) throw new Error(`${label} fixture not found: ${fixturePath}`);
 }
 
 function escapeRegExp(value) {
@@ -310,6 +325,28 @@ const FRESH_AGENT_PROFILE =
   "6. 用户可见正文只能回答任务结果或必要问题，不要解释你遵守了哪个技能规则、工具规则或系统规则。";
 const FRESH_AGENT_INIT_PROMPT =
   "你是一个通用智能体，现在需要你进行初始化。你需要阅读技能 “Self-Improving + Proactive Agent” 与技能 “Proactivity (Proactive Agent)”，并执行初始化流程。";
+
+const R4_ACCEPTANCE_TARGET = {
+  vsName: "wb_vs_workbot_flow_01",
+  poolName: "wb_pool_workbot_flow_01",
+  nodeIp: "192.0.2.51",
+  httpProfile: "wb_http_profile_workbot_01",
+  preRule: "wb_pre_rule_workbot_01",
+};
+const R4_ACCEPTANCE_ORIGINAL_TARGET = {
+  ...R4_ACCEPTANCE_TARGET,
+  vsDescription: "WorkBot acceptance virtual service.",
+  poolDescription: "WorkBot acceptance node pool.",
+  httpProfileDescription: "WorkBot acceptance HTTP optimization profile.",
+  preRuleDescription: "WorkBot acceptance HTTP pre rule.",
+};
+const R4_ACCEPTANCE_UPDATED_TARGET = {
+  ...R4_ACCEPTANCE_TARGET,
+  vsDescription: "WorkBot acceptance UPDATED virtual service.",
+  poolDescription: "WorkBot acceptance UPDATED node pool.",
+  httpProfileDescription: "WorkBot acceptance UPDATED HTTP optimization profile.",
+  preRuleDescription: "WorkBot acceptance UPDATED HTTP pre rule.",
+};
 
 const R2R4_QUERY_SPECS = [
   { label: "r2", prompt: "帮我查一下 AD1 的配置、流量、设备状态和 SSL 证书到期时间。", dimensions: ["overview.py"], visiblePresent: ["查询结论"] },
@@ -704,13 +741,50 @@ const cases = {
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"],
     visibleForbidden: ["操作计划", "计划摘要", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
     requireTools: true,
-    verifyAbsent: {
-      vsName: "wb_vs_workbot_flow_01",
-      poolName: "wb_pool_workbot_flow_01",
-      nodeIp: "192.0.2.51",
-      httpProfile: "wb_http_profile_workbot_01",
-      preRule: "wb_pre_rule_workbot_01",
-    },
+    verifyAbsent: R4_ACCEPTANCE_TARGET,
+  },
+  "r4-update-delivery": {
+    steps: [
+      "在 AD1 上帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
+      { upload: R4_YAML_PATH, name: "r4-yaml-create" },
+      "我写完了 YAML。",
+      "真实下发。",
+      { adVerify: "present", name: "r4-update-create-present", target: R4_ACCEPTANCE_ORIGINAL_TARGET },
+      "在 AD1 上帮我修改这套 SLB 配置的说明字段。",
+      { upload: R4_UPDATE_YAML_PATH, name: "r4-yaml-update" },
+      "我写完了 YAML。",
+      "真实下发。",
+      { adVerify: "present", name: "r4-update-updated-present", target: R4_ACCEPTANCE_UPDATED_TARGET },
+      "需要回滚。",
+      { adVerify: "present", name: "r4-update-reset-present", target: R4_ACCEPTANCE_ORIGINAL_TARGET },
+      "在 AD1 上帮我删除这套 SLB 配置。",
+      { upload: R4_DELETE_YAML_PATH, name: "r4-yaml-delete" },
+      "我写完了 YAML。",
+      "真实下发。",
+      { adVerify: "absent", name: "r4-update-delete-absent", target: R4_ACCEPTANCE_TARGET },
+    ],
+    expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback-and-verify", "rollback_apply.py"],
+    commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"],
+    visibleForbidden: ["操作计划", "计划摘要", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
+    requireTools: true,
+  },
+  "r4-delete-delivery": {
+    steps: [
+      "在 AD1 上帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。",
+      { upload: R4_YAML_PATH, name: "r4-yaml-create" },
+      "我写完了 YAML。",
+      "真实下发。",
+      { adVerify: "present", name: "r4-delete-create-present", target: R4_ACCEPTANCE_ORIGINAL_TARGET },
+      "在 AD1 上帮我删除这套 SLB 配置。",
+      { upload: R4_DELETE_YAML_PATH, name: "r4-yaml-delete" },
+      "我写完了 YAML。",
+      "真实下发。",
+      { adVerify: "absent", name: "r4-delete-absent", target: R4_ACCEPTANCE_TARGET },
+    ],
+    expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "post_apply", "rollback_apply.py"],
+    commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan"],
+    visibleForbidden: ["操作计划", "计划摘要", "执行摘要", "安全确认", "adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"],
+    requireTools: true,
   },
   "r4-basic": {
     steps: [
@@ -1343,6 +1417,103 @@ function hasGeneratedArtifactEvidence(response, names) {
 }
 
 function stepRuleViolationsFor(name, cfg, responses) {
+  if ((name === "r4-update-delivery" || name === "r4-delete-delivery") && cfg.steps) {
+    const violations = [];
+    const promptResponses = responses.filter((item) => !item.upload && !item.localVerification);
+    const visible = (item) => `${(item && item.visibleText) || ""}\n${(item && item.visibleAgentText) || ""}`;
+    const commands = (item) => extractStepToolCommands(item || {}).join("\n");
+    const compactTemplateRequired = ["配置结论", "产出物", "下一步"];
+    const verboseTemplateForbidden = ["操作计划", "计划摘要", "执行摘要", "安全确认"];
+    const internalArtifactForbidden = ["adops-batch.json", "adops-effective-plan.json", "adops-post-apply.json", "adops-post-rollback.json", "adops-rollback-compare.json"];
+    const assertCompactTemplate = (label, item) => {
+      const text = visible(item);
+      for (const token of compactTemplateRequired) {
+        if (!text.includes(token)) violations.push(`r4 ${label} missing compact heading: ${token}`);
+      }
+      for (const token of [...verboseTemplateForbidden, ...internalArtifactForbidden]) {
+        if (text.includes(token)) violations.push(`r4 ${label} leaked verbose/internal content: ${token}`);
+      }
+    };
+    const assertStageA = (label, item) => {
+      const text = visible(item);
+      const commandText = commands(item);
+      assertCompactTemplate(label, item);
+      if (!text.includes("AD1")) violations.push(`r4 ${label} did not keep target device AD1 visible`);
+      if (!/YAML|yaml|adops-bundle/.test(text)) violations.push(`r4 ${label} did not produce or point to a YAML artifact`);
+      if (!commandText.includes("init_env.py")) violations.push(`r4 ${label} did not run init_env.py`);
+      if (!commandText.includes("--confirm-clean")) violations.push(`r4 ${label} did not clean residual artifacts with --confirm-clean`);
+      for (const token of ["plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"]) {
+        if (commandText.includes(token)) violations.push(`r4 ${label} executed premature command: ${token}`);
+      }
+      if (!hasGeneratedArtifactEvidence(item, ["adops-bundle.yml"])) {
+        violations.push(`r4 ${label} has no evidence that YAML artifact was generated`);
+      }
+    };
+    const assertYamlDone = (label, item) => {
+      const text = visible(item);
+      const commandText = commands(item);
+      assertCompactTemplate(label, item);
+      for (const token of ["plan-and-render", "summarize-plan", "preflight-slb-plan"]) {
+        if (!commandText.includes(token)) violations.push(`r4 ${label} missing command token: ${token}`);
+      }
+      for (const token of ["apply-slb-plan", "rollback-and-verify"]) {
+        if (commandText.includes(token)) violations.push(`r4 ${label} executed too early: ${token}`);
+      }
+      if (!text.includes("adops-bundle.yml") || !text.includes("apply.py") || !text.includes("rollback_apply.py")) {
+        violations.push(`r4 ${label} did not list all three deliverables`);
+      }
+      if (!hasGeneratedArtifactEvidence(item, ["adops-bundle.yml", "apply.py", "rollback_apply.py"])) {
+        violations.push(`r4 ${label} has no evidence that all three deliverables were generated`);
+      }
+    };
+    const assertDelivery = (label, item) => {
+      const text = visible(item);
+      const commandText = commands(item);
+      assertCompactTemplate(label, item);
+      if (!commandText.includes("apply-slb-plan")) violations.push(`r4 ${label} missing apply-slb-plan`);
+      if (commandText.includes("rollback-and-verify")) violations.push(`r4 ${label} rolled back before confirmation`);
+      if (!text.includes("adops-bundle.yml") || !text.includes("apply.py") || !text.includes("rollback_apply.py")) {
+        violations.push(`r4 ${label} did not list all three deliverables`);
+      }
+      if (!hasGeneratedArtifactEvidence(item, ["adops-bundle.yml", "apply.py", "rollback_apply.py"])) {
+        violations.push(`r4 ${label} has no evidence that all three deliverables were generated`);
+      }
+    };
+    const assertRollback = (label, item) => {
+      const text = visible(item);
+      const commandText = commands(item);
+      assertCompactTemplate(label, item);
+      if (!commandText.includes("rollback-and-verify")) violations.push(`r4 ${label} missing rollback-and-verify`);
+      if (!text.includes("adops-bundle.yml") || !text.includes("apply.py") || !text.includes("rollback_apply.py")) {
+        violations.push(`r4 ${label} did not list all three deliverables`);
+      }
+    };
+
+    assertStageA("create-stageA", promptResponses[0] || {});
+    assertYamlDone("create-yaml-complete", promptResponses[1] || {});
+    assertDelivery("create-delivery", promptResponses[2] || {});
+    if (name === "r4-update-delivery") {
+      assertStageA("update-stageA", promptResponses[3] || {});
+      assertYamlDone("update-yaml-complete", promptResponses[4] || {});
+      assertDelivery("update-delivery", promptResponses[5] || {});
+      assertRollback("update-rollback", promptResponses[6] || {});
+      assertStageA("delete-stageA", promptResponses[7] || {});
+      assertYamlDone("delete-yaml-complete", promptResponses[8] || {});
+      assertDelivery("delete-delivery", promptResponses[9] || {});
+    } else {
+      assertStageA("delete-stageA", promptResponses[3] || {});
+      assertYamlDone("delete-yaml-complete", promptResponses[4] || {});
+      assertDelivery("delete-delivery", promptResponses[5] || {});
+    }
+
+    for (const item of responses.filter((entry) => entry.localVerification)) {
+      if (item.localVerification.status !== "ok") {
+        violations.push(`r4 local AD ${item.localVerification.kind} verification did not pass for ${item.name}`);
+      }
+    }
+    return violations;
+  }
+
   if (name.startsWith("r2r4") && cfg.steps) {
     const violations = [];
     const promptResponses = responses.filter((item) => !item.upload && !item.localVerification);
@@ -1754,6 +1925,10 @@ function runLocalAdVerification(name, cfg, override = {}) {
             target.nodeIp,
             ...(target.httpProfile ? ["--http-profile", target.httpProfile] : []),
             ...(target.preRule ? ["--pre-rule", target.preRule] : []),
+            ...(target.vsDescription ? ["--vs-description", target.vsDescription] : []),
+            ...(target.poolDescription ? ["--pool-description", target.poolDescription] : []),
+            ...(target.httpProfileDescription ? ["--http-profile-description", target.httpProfileDescription] : []),
+            ...(target.preRuleDescription ? ["--pre-rule-description", target.preRuleDescription] : []),
           ],
         }
       : {

@@ -38,6 +38,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--node-ip", help="Backend node IP to verify. Checks the named pool when --pool-name is set.")
     parser.add_argument("--http-profile", help="HTTP profile name to verify.")
     parser.add_argument("--pre-rule", help="HTTP pre-rule name to verify.")
+    parser.add_argument("--vs-description", help="Expected virtual service description when present.")
+    parser.add_argument("--pool-description", help="Expected pool description when present.")
+    parser.add_argument("--http-profile-description", help="Expected HTTP profile description when present.")
+    parser.add_argument("--pre-rule-description", help="Expected HTTP pre-rule description when present.")
     parser.add_argument(
         "--expect",
         choices=("present", "absent"),
@@ -187,6 +191,15 @@ def requested_checks(args: argparse.Namespace) -> list[tuple[str, str]]:
     return checks
 
 
+def expected_description(args: argparse.Namespace, kind: str) -> str | None:
+    return {
+        "virtual_service": args.vs_description,
+        "pool": args.pool_description,
+        "http_profile": args.http_profile_description,
+        "pre_rule": args.pre_rule_description,
+    }.get(kind)
+
+
 def verify_resources(args: argparse.Namespace, session: Any | None = None) -> dict[str, Any]:
     base_url = normalize_base_url(args.base_url or "")
     username = (args.username or "").strip()
@@ -205,6 +218,7 @@ def verify_resources(args: argparse.Namespace, session: Any | None = None) -> di
     checked: list[dict[str, Any]] = []
     found: list[str] = []
     missing: list[str] = []
+    mismatched: list[str] = []
     payloads: dict[str, Any] = {}
 
     for kind, value in requested_checks(args):
@@ -214,6 +228,14 @@ def verify_resources(args: argparse.Namespace, session: Any | None = None) -> di
             check, payload = check_named_resource(session, base_url, kind, value, timeout)
             if kind == "pool":
                 payloads["pool"] = payload
+            description = expected_description(args, kind)
+            if check["found"] and description is not None:
+                actual_description = payload.get("description") if isinstance(payload, dict) else None
+                check["expected_description"] = description
+                check["actual_description"] = actual_description
+                check["description_ok"] = actual_description == description
+                if not check["description_ok"]:
+                    mismatched.append(resource_id(kind, value) + ":description")
         checked.append(check)
         target = resource_id(kind, value)
         if check["found"]:
@@ -229,12 +251,13 @@ def verify_resources(args: argparse.Namespace, session: Any | None = None) -> di
             seen.add(endpoint)
             endpoints.append(endpoint)
 
-    ok = not missing if args.expect == "present" else not found
+    ok = (not missing and not mismatched) if args.expect == "present" else not found
     return {
         "ok": ok,
         "expect": args.expect,
         "found": found,
         "missing": missing,
+        "mismatched": mismatched,
         "checked": checked,
         "endpoints": endpoints,
     }

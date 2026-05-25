@@ -547,21 +547,33 @@ def capture_target_state(
             check["payload"] = response_payload(response)
         elif getattr(response, "text", ""):
             check["error"] = response.text
+        action = str(operation.get("action", "")).lower()
         is_reference = str(operation.get("action", "")).lower() == "reference"
         if is_reference:
             check["reference_required"] = True
             check["reference_kind"] = operation.get("reference_kind")
             check["reference_from"] = operation.get("reference_from")
-        if (is_reference and not found) or (not found and getattr(response, "status_code", None) != 404):
+        requires_existing = action in {"patch", "replace", "delete"}
+        missing_existing_target = requires_existing and not found and getattr(response, "status_code", None) == 404
+        if (
+            (is_reference and not found)
+            or missing_existing_target
+            or (requires_existing and not found)
+            or (not found and getattr(response, "status_code", None) != 404)
+        ):
             errors.append(
                 {
                     "operation_id": operation.get("id"),
                     "target_path": target_path,
                     "status": getattr(response, "status_code", None),
-                    "error": check.get("error") or ("referenced resource not found" if is_reference else None),
+                    "error": (
+                        f"{action} target resource not found"
+                        if missing_existing_target
+                        else check.get("error") or ("referenced resource not found" if is_reference else None)
+                    ),
                 }
             )
-        if str(operation.get("action", "")).lower() == "create" and found:
+        if action == "create" and found:
             check["reuse_existing"] = True
             check["reuse_policy"] = "same-name"
             diffs = compare_expected(operation.get("payload") or {}, check.get("payload"))

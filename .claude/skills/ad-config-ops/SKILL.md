@@ -33,7 +33,7 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py status --workdir "$AD_OPS_WO
 
 ### 阶段 A：提示词到 YAML
 
-当用户要求新建或生成 SLB/VS 配置，例如“新增 VS”“VS + XFF”“VS + PRE_RULE”“VS + Pool + 节点”“VS 引用已有策略”等，第一步只做 YAML，不追问。
+当用户要求新建、修改或删除 SLB/VS 配置，例如“新增 VS”“修改这套 SLB 配置”“删除这套 SLB 配置”“VS + XFF”“VS + PRE_RULE”“VS + Pool + 节点”“VS 引用已有策略”等，第一步只做 YAML，不追问。
 
 - 阶段 A 第一条 shell 工具调用必须运行 `init_env.py --confirm-clean` 清理上轮残留产物，然后再生成本轮 YAML；禁止跳过清理或把清理挪到阶段 B。
 - 常见组合参数能从提示词识别时，使用 `render_slb_bundle.py` 生成 `adops-bundle.yml`。
@@ -160,6 +160,8 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py rollback-and-verify \
 
 Rollback safety: `rollback-and-verify` must use the rollback manifest and baseline created by the same `apply-slb-plan` run and the same AD host. A host/plan mismatch is a hard stop.
 
+Delete safety: YAML 中的 `delete` 操作必须包含 `rollback_method` 和 `rollback_path`，否则不能进入下发。删除下发前必须 GET 到待删除对象并保存快照；回滚清单使用保存的快照重建对象。
+
 如果用户在下发后回复“不符合预期”“有问题”等类似内容，必须先提示建议回滚当前下发并重新提交 YAML；禁止继续基于旧 YAML 二次修改或追加下发。用户确认回滚后执行 `rollback-and-verify`，然后回到阶段 A/阶段 B 等待新的 YAML。
 
 Supported composition examples:
@@ -172,6 +174,8 @@ Supported composition examples:
 | 新建 VS + 复用已有 Pre Rule | `--pre-rule <name>` |
 | 新建 VS + 新建 HTTP Pre Rule | `--create-pre-rule-http <name> --pre-rule-uri-pattern <pattern>` |
 | 新建 VS + XFF + HTTP Pre Rule | 同时使用 `--create-http-profile-xff` 和 `--create-pre-rule-http` |
+| 修改现有 VS/Pool/Profile/Pre Rule | 使用上传 YAML 中的 `patch` 操作；预检必须确认目标对象存在 |
+| 删除现有 VS/Pool/Profile/Pre Rule | 使用上传 YAML 中的 `delete` 操作；每个删除操作必须写明 `rollback_method` 和 `rollback_path` |
 
 `render_vs_xff_bundle.py` 只是兼容旧示例的快捷入口；新任务优先使用 `render_slb_bundle.py`。
 

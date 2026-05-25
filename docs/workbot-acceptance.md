@@ -388,6 +388,8 @@ Pass criteria:
 
 Requirement 4 is a general configuration-generation workflow. The minimum supported SLB matrix is VS + existing Pool, VS + Pool + nodes, VS + existing/new HTTP Profile, VS + existing/new HTTP Pre Rule, and combinations of those dependencies. XFF is only one example, not the only workflow.
 
+R4 acceptance covers create, patch/update, delete, rollback, and real-device API verification for the SLB resources in the supported WorkBot prompt matrix. This is not an exhaustive test of every SLB object exposed by the device API documentation. If a new SLB resource type is added to WorkBot prompts, it must be added to the YAML fixture, plan/script generation path, real-device verifier, and R2/R4 interaction checks.
+
 Requirement 4 is always staged. Prompt-to-YAML is a mandatory first flow and must not be replaced by parameter follow-up questions. Stage A prompts must name the target AD device. If the prompt is incomplete or ambiguous, WorkBot generates a YAML template with blanks and stops for manual completion. A completed YAML then enters the second flow: plan/script generation, same-name resource GET preflight against the target device, and a user choice between script-only output or delivery verification.
 
 Fixed Stage A mainline prompts:
@@ -444,6 +446,13 @@ Rollback choice:
 需要回滚。
 ```
 
+Update and delete mainline choices:
+
+```text
+在 AD1 上帮我修改这套 SLB 配置的说明字段。
+在 AD1 上帮我删除这套 SLB 配置。
+```
+
 YAML pass criteria:
 
 - WorkBot does not invent missing fields and does not ask detailed parameter questions in chat.
@@ -456,6 +465,8 @@ YAML pass criteria:
 - For audit-only prompts such as `检查这份 VS 配置会不会撞现网`, WorkBot must use the YAML plan preflight flow and must not replace it with `verify_slb_resource.py`.
 - If the user replies `不需要下发`, `先不下发`, or similar wording, WorkBot treats it as script-only mode: produce forward and rollback scripts, explain how to use them, and stop.
 - After delivery, WorkBot asks the user to inspect the device result and confirm rollback; the human reply is only `需要回滚。` or `是`.
+- Update delivery uses a completed YAML with `patch` operations and must run the same staged plan/preflight/apply flow as create. The independent AD verifier must confirm the updated `description` fields on VS, Pool, HTTP Profile, and HTTP Pre Rule before rollback.
+- Delete delivery uses a completed YAML with `delete` operations and explicit rollback metadata. The independent AD verifier must confirm the VS, Pool, node, HTTP Profile, and HTTP Pre Rule are absent after delete. Delete rollback requires `rollback_method` and `rollback_path` so the rollback manifest can recreate the previous snapshot.
 - If the user says `不符合预期` or similar wording after delivery, WorkBot must tell the user to rollback the current delivery and submit a corrected YAML. It must not patch the previous YAML in chat or continue mutating the device.
 - If completed YAML is invalid, WorkBot reports script validation errors and stops before any mutating call.
 
@@ -490,6 +501,14 @@ POST /api/ad/v3/slb/http-profile/
 POST /api/ad/v3/slb/pool/
 POST /api/ad/v3/slb/pre-rule/http/
 POST /api/ad/v3/slb/virtual-service/
+PATCH /api/ad/v3/slb/http-profile/{name}
+PATCH /api/ad/v3/slb/pool/{name}
+PATCH /api/ad/v3/slb/pre-rule/http/{name}
+PATCH /api/ad/v3/slb/virtual-service/{name}
+DELETE /api/ad/v3/slb/virtual-service/{name}
+DELETE /api/ad/v3/slb/pre-rule/http/{name}
+DELETE /api/ad/v3/slb/pool/{name}
+DELETE /api/ad/v3/slb/http-profile/{name}
 ```
 
 Pass criteria:
@@ -502,6 +521,8 @@ Pass criteria:
 - Script-only mode lists `adops-bundle.yml`, `apply.py`, and `rollback_apply.py`, gives a short usage note, then ends with no mutating call.
 - Delivery mode runs `apply-slb-plan`, writes `adops-execute-result.json`, `adops-rollback.json`, `adops-post-apply.json`, and then pauses for manual inspection.
 - Delivery acceptance independently verifies the real AD device through API after `apply-slb-plan`: the VS, Pool, node, HTTP Profile, and Pre Rule from the YAML must be present before the rollback prompt is sent.
+- Update acceptance independently verifies the real AD device through API after `apply-slb-plan`: the description fields from the update YAML must be present on the VS, Pool, HTTP Profile, and Pre Rule before rollback is accepted.
+- Delete acceptance independently verifies the real AD device through API after `apply-slb-plan`: the acceptance VS/Pool/node/Profile/Pre Rule must be absent after delete.
 - Rollback runs only after explicit user confirmation. `rollback-and-verify` must write `adops-post-rollback.json` and `adops-rollback-compare.json`.
 - Rollback must use the baseline and rollback manifest from the same AD host and plan. A mismatch is a hard failure.
 - The run passes only if post-rollback GET state matches the preflight baseline and the same external API verification confirms the acceptance VS/Pool/node/Profile/Pre Rule are absent again. If not, WorkBot must report the diff and must not claim rollback success.

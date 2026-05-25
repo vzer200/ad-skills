@@ -65,6 +65,10 @@ def render_bundle_template(index: dict[str, Any], operations: list[dict[str, str
         lines.append(f"    schema: {yaml_scalar(str(operation['schema']))}")
         if operation.get("document"):
             lines.append(f"    document: {yaml_scalar(str(operation['document']))}")
+        if operation.get("action") == "delete":
+            lines.append("    rollback:")
+            lines.append("      rollback_method: POST")
+            lines.append("      rollback_path: ")
         lines.append("    empty_reserve: []")
         lines.append("    payload:")
         lines.extend(indent_payload(render_template(index, str(operation["schema"]), operation.get("document"), include_header=False)))

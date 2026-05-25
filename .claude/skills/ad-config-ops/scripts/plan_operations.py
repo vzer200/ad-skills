@@ -594,6 +594,30 @@ def load_bundle(path: Path) -> list[dict[str, Any]]:
         operation_id = operation.get("id")
         if operation_id is not None and (not isinstance(operation_id, str) or not operation_id):
             raise PlanError(f"operations[{index}]: id must be a non-empty string")
+        rollback = operation.get("rollback")
+        if rollback is not None and not isinstance(rollback, dict):
+            raise PlanError(f"operations[{index}]: rollback must be an object")
+        rollback_fields: dict[str, Any] = {}
+        if isinstance(rollback, dict):
+            for key in ("method", "path", "rollback_method", "rollback_path"):
+                value = rollback.get(key)
+                if value is not None:
+                    if not isinstance(value, str) or not value.strip():
+                        raise PlanError(f"operations[{index}].rollback.{key} must be a non-empty string")
+                    rollback_fields[key] = value
+        for key in ("rollback_method", "rollback_path"):
+            value = operation.get(key)
+            if value is not None:
+                if not isinstance(value, str) or not value.strip():
+                    raise PlanError(f"operations[{index}].{key} must be a non-empty string")
+                rollback_fields[key] = value
+        if action == "delete":
+            rollback_method = rollback_fields.get("rollback_method") or rollback_fields.get("method")
+            rollback_path = rollback_fields.get("rollback_path") or rollback_fields.get("path")
+            if not rollback_method or not rollback_path:
+                raise PlanError(
+                    f"operations[{index}]: delete action requires rollback_method and rollback_path"
+                )
         payload = operation.get("payload")
         if payload is None:
             payload = {}
@@ -610,6 +634,7 @@ def load_bundle(path: Path) -> list[dict[str, Any]]:
                 "schema": schema_name,
                 "document": document,
                 "payload": payload,
+                **({"rollback": rollback_fields} if rollback_fields else {}),
             }
         )
     if not normalized:
@@ -643,6 +668,8 @@ def build_bundle_plan(
             operation_id = str(planned_operation.get("id"))
             if operation_id in seen_ids:
                 raise PlanError(f"duplicate operation id: {operation_id}")
+            if operation.get("rollback"):
+                planned_operation["rollback"] = operation["rollback"]
             seen_ids.add(operation_id)
             combined["operations"].append(planned_operation)
         combined["verify"].extend(plan["verify"])

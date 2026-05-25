@@ -21,7 +21,8 @@ sys.path.insert(0, str(SCRIPTS))
 
 from ad_ops_common import read_json, write_json  # noqa: E402
 from dependency_order import load_resource_order  # noqa: E402
-from plan_operations import build_bundle_plan  # noqa: E402
+from execute_plan import execute_plan  # noqa: E402
+from plan_operations import PlanError, build_bundle_plan  # noqa: E402
 from render_slb_bundle import build_bundle, parse_args  # noqa: E402
 from render_outputs import render_script  # noqa: E402
 from resolve_schema import definition_map  # noqa: E402
@@ -204,6 +205,74 @@ class TestRenderSlbBundle(unittest.TestCase):
         self.assertIn("--rollback-out", script)
         self.assertIn("execute_plan_operations(plan, auth, args.rollback_out)", script)
 
+    def test_patch_and_delete_bundle_plan_preserves_delete_rollback(self):
+        patch_bundle = {
+            "operations": [
+                {
+                    "id": "patch-vs-description",
+                    "action": "patch",
+                    "schema": "config.virtual_service",
+                    "document": "slb/virtual-service.js",
+                    "payload": {"name": "vs1", "description": "updated"},
+                }
+            ]
+        }
+        delete_bundle = {
+            "operations": [
+                {
+                    "id": "delete-vs",
+                    "action": "delete",
+                    "schema": "config.virtual_service",
+                    "document": "slb/virtual-service.js",
+                    "rollback": {
+                        "rollback_method": "POST",
+                        "rollback_path": "/api/ad/v3/slb/virtual-service/",
+                    },
+                    "payload": {"name": "vs1"},
+                }
+            ]
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            patch_path = root / "patch.yml"
+            delete_path = root / "delete.yml"
+            write_json(patch_path, patch_bundle)
+            write_json(delete_path, delete_bundle)
+            index = read_json(SKILL_ROOT / "references" / "api-index.json")
+            definitions = definition_map(index)
+
+            patch_plan = build_bundle_plan(index, definitions, patch_path, load_resource_order(SKILL_ROOT))
+            delete_plan = build_bundle_plan(index, definitions, delete_path, load_resource_order(SKILL_ROOT))
+
+        self.assertEqual(patch_plan["operations"][0]["action"], "patch")
+        self.assertEqual(patch_plan["operations"][0]["method"], "PATCH")
+        self.assertEqual(patch_plan["operations"][0]["path"], "/api/ad/v3/slb/virtual-service/vs1")
+        self.assertEqual(delete_plan["operations"][0]["action"], "delete")
+        self.assertEqual(delete_plan["operations"][0]["method"], "DELETE")
+        self.assertEqual(
+            delete_plan["operations"][0]["rollback"],
+            {"rollback_method": "POST", "rollback_path": "/api/ad/v3/slb/virtual-service/"},
+        )
+
+    def test_delete_bundle_requires_explicit_rollback_target(self):
+        bundle = {
+            "operations": [
+                {
+                    "id": "delete-vs",
+                    "action": "delete",
+                    "schema": "config.virtual_service",
+                    "document": "slb/virtual-service.js",
+                    "payload": {"name": "vs1"},
+                }
+            ]
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            bundle_path = Path(tmp) / "delete.yml"
+            write_json(bundle_path, bundle)
+            index = read_json(SKILL_ROOT / "references" / "api-index.json")
+            with self.assertRaisesRegex(PlanError, "delete action requires rollback_method and rollback_path"):
+                build_bundle_plan(index, definition_map(index), bundle_path, load_resource_order(SKILL_ROOT))
+
 
 class TestVerifySlbResource(unittest.TestCase):
     def test_verify_slb_resources_uses_read_only_gets(self):
@@ -303,6 +372,29 @@ class TestVerifySlbResource(unittest.TestCase):
         self.assertEqual(result["expect"], "absent")
         self.assertEqual(result["found"], [])
         self.assertEqual(result["missing"], ["virtual_service:vs-not-delivered"])
+
+    def test_verify_slb_resource_checks_expected_description(self):
+        args = verify_slb_resource.parse_args(
+            [
+                "--base-url",
+                "https://ad.example",
+                "--username",
+                "admin",
+                "--password",
+                "secret",
+                "--vs-name",
+                "vs1",
+                "--vs-description",
+                "updated description",
+            ]
+        )
+        session = FakeSession([FakeResponse(200, {"name": "vs1", "description": "old description"})])
+
+        result = verify_slb_resource.verify_resources(args, session=session)
+
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["mismatched"], ["virtual_service:vs1:description"])
+        self.assertFalse(result["checked"][0]["description_ok"])
 
     def test_verify_slb_resource_main_reads_env_and_prints_json(self):
         session = FakeSession([FakeResponse(200, {"name": "vs-env"})])
@@ -566,6 +658,85 @@ class TestAdOpsFlowPreflight(unittest.TestCase):
         self.assertEqual(preflight["error_count"], 1)
         self.assertEqual(preflight["errors"][0]["target_path"], "/api/ad/v3/slb/http-profile/missing_profile")
         self.assertEqual(preflight["errors"][0]["error"], "not found")
+
+    def test_preflight_blocks_missing_patch_and_delete_targets(self):
+        for action, method in [("patch", "PATCH"), ("delete", "DELETE")]:
+            with self.subTest(action=action):
+                operation = {
+                    "id": f"{action}-vs",
+                    "action": action,
+                    "method": method,
+                    "path": "/api/ad/v3/slb/virtual-service/vs1",
+                    "resource_path": "/api/ad/v3/slb/virtual-service/{name}",
+                    "path_parameters": {"name": "vs1"},
+                    "payload": {"name": "vs1"},
+                }
+                if action == "delete":
+                    operation["rollback"] = {
+                        "rollback_method": "POST",
+                        "rollback_path": "/api/ad/v3/slb/virtual-service/",
+                    }
+                plan = {"operations": [operation]}
+                session = FakeSession([FakeResponse(404, text="not found")])
+                with tempfile.TemporaryDirectory() as tmp:
+                    workdir = Path(tmp)
+                    with self.assertRaisesRegex(ValueError, "preflight GET failed"):
+                        ad_ops_flow.run_preflight(
+                            plan=plan,
+                            session=session,
+                            base_url="https://ad.example",
+                            auth={"host": "https://ad.example", "username": "admin", "password": "secret", "token": None},
+                            workdir=workdir,
+                        )
+                    preflight = read_json(workdir / "adops-preflight.json")
+
+                self.assertFalse(preflight["ok"])
+                self.assertEqual(preflight["error_count"], 1)
+                self.assertIn("target resource not found", preflight["errors"][0]["error"])
+
+    def test_execute_plan_delete_writes_recreate_rollback_action(self):
+        plan = {
+            "operations": [
+                {
+                    "id": "delete-vs",
+                    "action": "delete",
+                    "method": "DELETE",
+                    "path": "/api/ad/v3/slb/virtual-service/vs1",
+                    "resource_path": "/api/ad/v3/slb/virtual-service/{name}",
+                    "path_parameters": {"name": "vs1"},
+                    "rollback": {
+                        "rollback_method": "POST",
+                        "rollback_path": "/api/ad/v3/slb/virtual-service/",
+                    },
+                    "payload": {"name": "vs1"},
+                }
+            ]
+        }
+        session = FakeSession(
+            [
+                FakeResponse(200, {"name": "vs1", "description": "before"}),
+                FakeResponse(200, {}),
+                FakeResponse(404, text="not found"),
+            ]
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            rollback_path = Path(tmp) / "rollback.json"
+            result = execute_plan(
+                plan=plan,
+                session=session,
+                base_url="https://ad.example",
+                auth={"host": "https://ad.example", "username": "admin", "password": "secret", "token": None},
+                execute=True,
+                rollback_out=rollback_path,
+            )
+            rollback = read_json(rollback_path)
+
+        self.assertTrue(result["ok"])
+        self.assertEqual([call["method"] for call in session.calls], ["GET", "DELETE", "GET"])
+        self.assertEqual(rollback["actions"][0]["reason"], "recreate-previous-snapshot")
+        self.assertEqual(rollback["actions"][0]["method"], "POST")
+        self.assertEqual(rollback["actions"][0]["path"], "/api/ad/v3/slb/virtual-service/")
+        self.assertEqual(rollback["actions"][0]["payload"], {"name": "vs1", "description": "before"})
 
     def test_apply_slb_plan_honors_allow_existing_flag(self):
         plan = {
