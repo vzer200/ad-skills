@@ -13,6 +13,7 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from ad_ops_common import (  # noqa: E402
     DEFAULT_BUNDLE_NAME,
+    remove_generated_artifacts,
     require_workdir,
     short_summary,
     update_artifacts,
@@ -293,6 +294,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         workdir = require_workdir(args.workdir)
         out = args.out or workdir / DEFAULT_BUNDLE_NAME
+        cleaned = remove_generated_artifacts(workdir, keep={out})
         bundle = build_bundle(args)
         write_json(out, bundle)
         artifacts = update_artifacts(workdir, bundle=out)
@@ -305,6 +307,7 @@ def main(argv: list[str] | None = None) -> int:
             ok=True,
             bundle=str(out),
             artifacts=str(artifacts),
+            cleaned_count=len(cleaned),
             operation_count=len(bundle["operations"]),
             recipes=bundle["recipes"],
             workflow="slb-create-bundle",

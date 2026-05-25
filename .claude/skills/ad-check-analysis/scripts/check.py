@@ -90,6 +90,12 @@ def _extract_ip(host: str) -> str:
     return m.group(1) if m else host
 
 
+def _response_items(response: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Return API items only; pagination totals are metadata and must not drive logic."""
+    items = response.get("items", []) if isinstance(response, dict) else []
+    return items if isinstance(items, list) else []
+
+
 # ---------------------------------------------------------------------------
 # 巡检执行流程
 # ---------------------------------------------------------------------------
@@ -122,7 +128,7 @@ def start_check(
         history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
     except (ADConnectionError, ADAuthError, ADAPIError) as e:
         raise RuntimeError(f"API 调用失败: {e}")
-    pre_run_items = history.get("items", [])
+    pre_run_items = _response_items(history)
     count = len(pre_run_items)
     pre_run_latest_name = pre_run_items[0].get("name", "") if pre_run_items else ""
     need_force = count >= 5
@@ -215,7 +221,7 @@ def wait_and_download(
             history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
         except (ADConnectionError, ADAuthError, ADAPIError) as e:
             raise RuntimeError(f"API 调用失败: {e}")
-        items = history.get("items", [])
+        items = _response_items(history)
         if items:
             top = items[0]
             top_name = top.get("name", "")
@@ -1472,7 +1478,7 @@ def _progress_one(client: Any, **kw: Any) -> Dict[str, Any]:
     if result.get("state") == "NO_RUNNING":
         try:
             history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
-            items = history.get("items", [])
+            items = _response_items(history)
             if items:
                 latest = items[0]
                 result["history_latest"] = {

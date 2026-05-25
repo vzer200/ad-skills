@@ -55,6 +55,28 @@ class TestStartCheck(unittest.TestCase):
             start_check(self.client, "标准巡检", force=False, work_dir=self.work_dir)
         self.assertIn("上限", str(cm.exception))
 
+    def test_record_limit_ignores_total_when_items_are_empty(self):
+        self.client._request.side_effect = [
+            {"items": [{"name": "standard"}]},
+            {"total": 5, "items": []},
+            {"event_id": "ev-total-ignored"},
+        ]
+
+        result = start_check(self.client, "standard", force=False, work_dir=self.work_dir)
+
+        self.assertEqual(result["event_id"], "ev-total-ignored")
+
+    def test_record_limit_uses_items_even_when_total_is_lower(self):
+        self.client._request.side_effect = [
+            {"items": [{"name": "standard"}]},
+            {"total": 0, "items": [{}, {}, {}, {}, {}]},
+        ]
+
+        with self.assertRaises(RuntimeError) as cm:
+            start_check(self.client, "standard", force=False, work_dir=self.work_dir)
+
+        self.assertIn("上限", str(cm.exception))
+
     def test_record_limit_with_force(self):
         self.client._request.side_effect = [
             {"items": [{"name": "标准巡检"}]},

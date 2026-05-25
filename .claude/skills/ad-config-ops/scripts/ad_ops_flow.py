@@ -32,6 +32,7 @@ from ad_ops_common import (
     default_workdir_path,
     operation_count,
     read_json,
+    remove_generated_artifacts,
     require_workdir,
     resolve_file_path,
     short_summary,
@@ -94,6 +95,22 @@ def visible_user_deliverables(workdir: Path, user_outputs: dict[str, str] | None
         "adops-bundle.yml": user_outputs.get("bundle") or str(workdir / DEFAULT_BUNDLE_NAME),
         "apply.py": user_outputs.get("apply_script") or str(workdir / DEFAULT_APPLY_SCRIPT_NAME),
         "rollback_apply.py": user_outputs.get("rollback_script") or str(workdir / DEFAULT_ROLLBACK_SCRIPT_NAME),
+    }
+
+
+def deliverable_guidance(workdir: Path, user_outputs: dict[str, str] | None = None) -> dict[str, object]:
+    return {
+        "visible_deliverables": visible_user_deliverables(workdir, user_outputs),
+        "deliverable_purposes": {
+            "adops-bundle.yml": "本次配置编排的 YAML 源文件，用于复核需求或重新生成脚本。",
+            "apply.py": "正向下发脚本，用于把本次 YAML 对应的配置写入目标 AD 设备。",
+            "rollback_apply.py": "回滚脚本，用于撤销本次正向下发产生的配置变更。",
+        },
+        "script_usage": [
+            "确认要写入设备时，使用 apply.py；脚本默认不会下发，必须显式进入执行模式后才会修改设备。",
+            "下发后不符合预期或需要撤销时，使用 rollback_apply.py 回滚本次变更。",
+            "两类脚本都应使用同一台目标设备和本次生成的产出物，不要混用旧 workdir 或旧 YAML。",
+        ],
     }
 
 
@@ -188,6 +205,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 def plan_and_render(args: argparse.Namespace) -> dict[str, object]:
     bundle_path = resolve_file_path(args.bundle, "bundle YAML")
     workdir = require_workdir(args.workdir)
+    cleaned = remove_generated_artifacts(workdir, keep={bundle_path})
     paths = skill_paths(args.skill_root)
     index = read_json(paths.references / "api-index.json")
     plan = build_bundle_plan(index, definition_map(index), bundle_path, load_resource_order(paths.root))
@@ -213,8 +231,10 @@ def plan_and_render(args: argparse.Namespace) -> dict[str, object]:
         apply_script=script_path,
         rollback_script=rollback_script_path,
     )
+    guidance = deliverable_guidance(workdir, user_outputs)
     return {
         "ok": True,
+        "cleaned_count": len(cleaned),
         "operation_count": operation_count(plan),
         "bundle": str(bundle_path),
         "plan": str(plan_path),
@@ -223,6 +243,7 @@ def plan_and_render(args: argparse.Namespace) -> dict[str, object]:
         "rollback_script": str(rollback_script_path),
         "artifacts": str(artifacts),
         "user_outputs": user_outputs,
+        **guidance,
         "workflow_contract": "scripts_only",
         "must_not_parse_artifacts": True,
         "next_command": f"python3 skills/ad-config-ops/scripts/ad_ops_flow.py summarize-plan --plan {plan_path} --workdir {workdir}",
@@ -742,6 +763,7 @@ def preflight_slb_plan(args: argparse.Namespace) -> dict[str, object]:
     plan_path = plan_path_from_args(args)
     plan = read_json(plan_path)
     workdir = require_workdir(args.workdir)
+    cleaned = remove_generated_artifacts(workdir, keep={plan_path, workdir / DEFAULT_BUNDLE_NAME})
     auth = auth_from_args(args)
     preflight, effective, reused, artifact_paths = run_preflight(
         plan=plan,
@@ -750,8 +772,10 @@ def preflight_slb_plan(args: argparse.Namespace) -> dict[str, object]:
         auth=auth,
         workdir=workdir,
     )
+    guidance = deliverable_guidance(workdir, artifact_paths.get("user_outputs", {}))
     return {
         "ok": True,
+        "cleaned_count": len(cleaned),
         "plan": str(plan_path),
         "preflight": str(artifact_paths["preflight"]),
         "effective_plan": str(artifact_paths["effective_plan"]),
@@ -759,6 +783,7 @@ def preflight_slb_plan(args: argparse.Namespace) -> dict[str, object]:
         "apply_script": str(artifact_paths["apply_script"]),
         "rollback_script": str(artifact_paths["rollback_script"]),
         "user_outputs": artifact_paths.get("user_outputs", {}),
+        **guidance,
         "original_operation_count": operation_count(plan),
         "effective_operation_count": operation_count(effective),
         "reused_existing": reused,
@@ -798,6 +823,7 @@ def apply_slb_plan(args: argparse.Namespace) -> dict[str, object]:
     plan_path = plan_path_from_args(args)
     plan = read_json(plan_path)
     workdir = require_workdir(args.workdir)
+    cleaned = remove_generated_artifacts(workdir, keep={plan_path, workdir / DEFAULT_BUNDLE_NAME})
     auth = auth_from_args(args)
     result_path = workdir / DEFAULT_EXECUTE_RESULT_NAME
     rollback_path = workdir / DEFAULT_ROLLBACK_NAME
@@ -853,8 +879,10 @@ def apply_slb_plan(args: argparse.Namespace) -> dict[str, object]:
         rollback=rollback_path,
     )
     summary = summarize_result(result, effective_plan, result_path, rollback_path)
+    guidance = deliverable_guidance(workdir, artifact_paths.get("user_outputs", {}))
     summary.update(
         {
+            "cleaned_count": len(cleaned),
             "preflight": str(artifact_paths["preflight"]),
             "post_apply": str(post_apply_path),
             "effective_plan": str(artifact_paths["effective_plan"]),
@@ -873,6 +901,7 @@ def apply_slb_plan(args: argparse.Namespace) -> dict[str, object]:
                 workdir,
                 artifact_paths.get("user_outputs", {}),
             ),
+            **guidance,
             "artifacts": str(artifacts),
             "workflow_contract": "deliver_then_pause",
             "rollback_generated": rollback_path.exists(),
@@ -940,6 +969,7 @@ def rollback_and_verify(args: argparse.Namespace) -> dict[str, object]:
             "rollback_compare_diff_count": compare.get("diff_count"),
             "user_outputs": user_outputs,
             "required_visible_deliverables": visible_user_deliverables(workdir, user_outputs),
+            **deliverable_guidance(workdir, user_outputs),
             "artifacts": str(artifacts),
             "workflow_contract": "rollback_verify",
         }

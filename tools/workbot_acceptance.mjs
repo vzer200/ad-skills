@@ -1391,6 +1391,11 @@ function stepRuleViolationsFor(name, cfg, responses) {
     const yamlDoneCommands = extractStepToolCommands(yamlDone).join("\n");
     const choiceCommands = extractStepToolCommands(choice).join("\n");
     const rollbackCommands = extractStepToolCommands(rollback).join("\n");
+    const stageAInitIndex = stageACommands.indexOf("init_env.py");
+    const stageARenderIndexes = ["render_slb_bundle.py", "render_bundle_template.py"]
+      .map((token) => stageACommands.indexOf(token))
+      .filter((index) => index >= 0);
+    const stageAFirstRenderIndex = stageARenderIndexes.length ? Math.min(...stageARenderIndexes) : -1;
     const prematureStageACommands = ["plan-and-render", "summarize-plan", "preflight-slb-plan", "apply-slb-plan", "rollback-and-verify"];
     const compactTemplateRequired = ["配置结论", "产出物", "下一步"];
     const verboseTemplateForbidden = ["操作计划", "计划摘要", "执行摘要", "安全确认"];
@@ -1407,6 +1412,11 @@ function stepRuleViolationsFor(name, cfg, responses) {
 
     if (!stageAVisible.includes("AD1")) violations.push("r4 stageA did not keep target device AD1 visible");
     if (!/YAML|yaml|adops-bundle/.test(stageAVisible)) violations.push("r4 stageA did not produce or point to a YAML artifact");
+    if (stageAInitIndex < 0) violations.push("r4 stageA did not run init_env.py before rendering YAML");
+    if (!stageACommands.includes("--confirm-clean")) violations.push("r4 stageA did not clean residual artifacts with --confirm-clean");
+    if (stageAInitIndex >= 0 && stageAFirstRenderIndex >= 0 && stageAInitIndex > stageAFirstRenderIndex) {
+      violations.push("r4 stageA cleaned residual artifacts after YAML rendering");
+    }
     assertCompactTemplate("stageA", stageAVisible);
     if (!hasGeneratedArtifactEvidence(stageA, ["adops-bundle.yml"])) {
       violations.push("r4 stageA has no tool/page evidence that YAML artifact was generated");

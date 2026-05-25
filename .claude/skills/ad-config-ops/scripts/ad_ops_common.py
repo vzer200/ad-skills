@@ -136,10 +136,14 @@ def generated_artifacts(workdir: Path) -> list[Path]:
     return sorted(path for path in workdir.iterdir() if is_generated_artifact(path))
 
 
-def remove_generated_artifacts(workdir: Path) -> list[Path]:
-    removed = generated_artifacts(workdir)
-    for path in removed:
+def remove_generated_artifacts(workdir: Path, keep: set[Path] | None = None) -> list[Path]:
+    keep_resolved = {path.expanduser().resolve(strict=False) for path in (keep or set())}
+    removed: list[Path] = []
+    for path in generated_artifacts(workdir):
+        if path.expanduser().resolve(strict=False) in keep_resolved:
+            continue
         path.unlink()
+        removed.append(path)
     return removed
 
 

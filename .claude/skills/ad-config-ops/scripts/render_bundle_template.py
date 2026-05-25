@@ -11,7 +11,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from ad_ops_common import read_json, skill_paths, tmp_file_path, update_artifacts, workdir_path
+from ad_ops_common import read_json, remove_generated_artifacts, require_workdir, skill_paths, tmp_file_path, update_artifacts, workdir_path
 from dependency_order import load_resource_order, sorted_by_dependency_order
 from render_template import HEADER_LINES, render_template
 
@@ -84,10 +84,13 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     output_path = args.out or tmp_file_path()
+    active_workdir = require_workdir(args.workdir) if (args.workdir is not None or workdir_path() is not None) else None
     if output_path:
+        if active_workdir is not None:
+            remove_generated_artifacts(active_workdir, keep={output_path})
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(output, encoding="utf-8")
-        update_artifacts(workdir_path(args.workdir), bundle=output_path)
+        update_artifacts(active_workdir, bundle=output_path)
     else:
         print(output, end="")
     return 0

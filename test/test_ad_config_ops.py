@@ -350,6 +350,44 @@ class TestAdOpsFlowPreflight(unittest.TestCase):
             self.assertEqual(deliverables["apply.py"], str(output_dir / "apply.py"))
             self.assertEqual(deliverables["rollback_apply.py"], str(output_dir / "rollback_apply.py"))
 
+    def test_plan_and_render_cleans_stale_outputs_but_keeps_current_bundle(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            workdir = Path(tmp)
+            bundle_path = workdir / "adops-bundle.yml"
+            bundle = build_bundle(
+                parse_args(
+                    [
+                        "--vs-name",
+                        "vs-clean",
+                        "--vip",
+                        "10.0.0.10",
+                        "--vport",
+                        "80",
+                        "--pool",
+                        "pool-clean",
+                        "--node",
+                        "192.0.2.10:80",
+                    ]
+                )
+            )
+            write_json(bundle_path, bundle)
+            (workdir / "adops-post-apply.json").write_text("stale", encoding="utf-8")
+            (workdir / "apply.py").write_text("stale apply", encoding="utf-8")
+            (workdir / "rollback_apply.py").write_text("stale rollback", encoding="utf-8")
+
+            result = ad_ops_flow.plan_and_render(
+                argparse.Namespace(skill_root=SKILL_ROOT, bundle=bundle_path, workdir=workdir)
+            )
+
+            self.assertTrue(result["ok"])
+            self.assertGreaterEqual(result["cleaned_count"], 3)
+            self.assertTrue(bundle_path.exists())
+            self.assertFalse((workdir / "adops-post-apply.json").exists())
+            self.assertNotEqual((workdir / "apply.py").read_text(encoding="utf-8"), "stale apply")
+            self.assertIn("visible_deliverables", result)
+            self.assertIn("deliverable_purposes", result)
+            self.assertIn("script_usage", result)
+
     def test_preflight_reuses_same_name_create_targets_and_rerenders_effective_plan(self):
         plan = {
             "operations": [
