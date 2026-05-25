@@ -180,15 +180,29 @@ class TestADClientHTTP(unittest.TestCase):
             limit=20,
             from_time="2026-05-20 00:00:00",
             to_time="2026-05-21 23:59:59",
-            levels=["ALERT", "ERROR"],
+            levels=["ALERT"],
         )
         req = mock_urlopen.call_args[0][0]
         parsed = urllib.parse.parse_qs(urllib.parse.urlparse(req.full_url).query)
         self.assertEqual(parsed["top"], ["20"])
         self.assertEqual(parsed["from"], ["2026-05-20 00:00:00"])
         self.assertEqual(parsed["to"], ["2026-05-21 23:59:59"])
-        self.assertEqual(parsed["level"], ["ALERT", "ERROR"])
+        self.assertEqual(parsed["level"], ["ALERT"])
         self.assertEqual(result["items"][0]["date"], "2026-05-21")
+
+    def test_get_service_log_queries_each_level_separately(self):
+        self.client._request = MagicMock(side_effect=[
+            {"items": [{"date": "2026-05-20", "time": "10:00:00", "level": "ALERT", "log_id": "a"}]},
+            {"items": [{"date": "2026-05-21", "time": "09:00:00", "level": "ERROR", "log_id": "b"}]},
+        ])
+
+        result = self.client.get_service_log(limit=20, levels=["ALERT", "ERROR"])
+
+        calls = self.client._request.call_args_list
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(calls[0].kwargs["params"]["level"], "ALERT")
+        self.assertEqual(calls[1].kwargs["params"]["level"], "ERROR")
+        self.assertEqual([item["log_id"] for item in result["items"]], ["b", "a"])
 
     @patch("urllib.request.urlopen")
     def test_vs_trend_includes_explicit_time_range(self, mock_urlopen):

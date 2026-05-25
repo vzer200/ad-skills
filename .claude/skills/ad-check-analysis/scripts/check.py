@@ -28,6 +28,7 @@ try:
     from multi_device import (
         run_multi, parse_hosts_arg, load_devices_json,
         compute_multi_exit_code, render_multi_summary, host_slug,
+        resolve_device_pw,
     )
 except ImportError as e:
     print(f"错误: 无法导入 multi_device: {e}", file=sys.stderr)
@@ -67,17 +68,42 @@ class CheckDownloadError(CheckError):
     pass
 
 
-def render_interaction_prompt(stage: str, target: str, scene: str = "标准巡检") -> str:
+def _scene_names_from_response(response: Dict[str, Any]) -> List[str]:
+    """Extract scene names from the device offline-check scene API response."""
+    names: List[str] = []
+    for item in _response_items(response):
+        name = item.get("name") if isinstance(item, dict) else ""
+        if isinstance(name, str) and name.strip():
+            names.append(name.strip())
+    return names
+
+
+def fetch_scene_names(client: ADClient) -> List[str]:
+    """Fetch available inspection scenes from the device API."""
+    try:
+        response = client._request("GET", "/sys/offline-check/")
+    except (ADConnectionError, ADAuthError, ADAPIError) as e:
+        raise RuntimeError(f"API 调用失败: {e}")
+    names = _scene_names_from_response(response)
+    if not names:
+        raise RuntimeError("无法获取巡检场景列表")
+    return names
+
+
+def render_interaction_prompt(
+    stage: str,
+    target: str,
+    scene: str = "标准巡检",
+    scenes: Optional[List[str]] = None,
+) -> str:
     """Render user-visible interaction prompts so WorkBot does not improvise them."""
     target = (target or "AD1").strip()
     scene = (scene or "标准巡检").strip()
     if stage == "scene":
-        return "\n".join([
-            f"请问你要对 {target} 执行哪种巡检？",
-            "标准巡检",
-            "全量巡检",
-            "安全巡检",
-        ])
+        scene_names = [item.strip() for item in (scenes or []) if isinstance(item, str) and item.strip()]
+        if not scene_names:
+            scene_names = ["标准巡检", "全量巡检", "安全巡检"]
+        return "\n".join([f"请问你要对 {target} 执行哪种巡检？", *scene_names])
     if stage == "confirm":
         return f"已检查历史巡检记录，是否确认对 {target} 强制继续{scene}？"
     raise ValueError(f"unsupported prompt stage: {stage}")
@@ -94,6 +120,31 @@ def _response_items(response: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Return API items only; pagination totals are metadata and must not drive logic."""
     items = response.get("items", []) if isinstance(response, dict) else []
     return items if isinstance(items, list) else []
+
+
+def _prompt_scene_client(args: argparse.Namespace) -> Optional[ADClient]:
+    """Build a client for prompt-time scene lookup when device context is supplied."""
+    password_fallback = args.password or os.environ.get("AD_PASS", "")
+    if getattr(args, "devices", ""):
+        devices = load_devices_json(args.devices, getattr(args, "device", ""))
+        if not devices:
+            raise ValueError("设备列表为空")
+        device = devices[0]
+        password = resolve_device_pw(device, password_fallback)
+        if not password:
+            raise ValueError("未指定密码")
+        client = ADClient(
+            device["host"],
+            device.get("user", args.username),
+            password,
+        )
+        setattr(client, "device_name", device.get("name", ""))
+        return client
+    if getattr(args, "host", ""):
+        if not password_fallback:
+            raise ValueError("未指定密码")
+        return ADClient(args.host, args.username, password_fallback)
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -113,13 +164,7 @@ def start_check(
     os.makedirs(work_dir, exist_ok=True)
 
     # 步骤 1: 确认巡检场景
-    try:
-        scenes = client._request("GET", "/sys/offline-check/")
-    except (ADConnectionError, ADAuthError, ADAPIError) as e:
-        raise RuntimeError(f"API 调用失败: {e}")
-    scene_names = [s["name"] for s in scenes.get("items", [])]
-    if not scene_names:
-        raise RuntimeError("无法获取巡检场景列表")
+    scene_names = fetch_scene_names(client)
     if scene not in scene_names:
         raise CheckSceneNotFoundError(f"场景 '{scene}' 不存在，可用: {scene_names}")
 
@@ -1705,6 +1750,11 @@ def main() -> None:
     p_prompt.add_argument("--stage", required=True, choices=["scene", "confirm"])
     p_prompt.add_argument("--target", default="AD1")
     p_prompt.add_argument("--scene", default="标准巡检")
+    p_prompt.add_argument("--host", default="", help="设备地址；stage=scene 时用于从设备获取巡检场景")
+    p_prompt.add_argument("--devices", default="", help="设备清单 JSON；stage=scene 时用于从设备获取巡检场景")
+    p_prompt.add_argument("--device", default="", help="从 --devices 中选择单台设备")
+    p_prompt.add_argument("--username", default="admin")
+    p_prompt.add_argument("--password", default="")
 
     # run — 步骤 1-3：场景确认 + 上限检查 + 启动
     # 单设备 / --no-wait: 启动后立即退出
@@ -1771,7 +1821,19 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "prompt":
-        print(render_interaction_prompt(args.stage, args.target, args.scene))
+        scenes = None
+        if args.stage == "scene":
+            try:
+                client = _prompt_scene_client(args)
+                if client is not None:
+                    scenes = fetch_scene_names(client)
+            except ValueError as e:
+                print(f"错误: {e}，请使用 --password、AD_PASS 或 devices.json 中的 password 字段", file=sys.stderr)
+                sys.exit(4)
+            except RuntimeError as e:
+                print(f"❌ {e}", file=sys.stderr)
+                sys.exit(1)
+        print(render_interaction_prompt(args.stage, args.target, args.scene, scenes=scenes))
 
     elif args.command == "scenes":
         password = args.password or os.environ.get("AD_PASS", "")

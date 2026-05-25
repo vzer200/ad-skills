@@ -39,18 +39,18 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 已检查历史巡检记录，是否确认对全部 AD 设备强制继续标准巡检？
 ```
 
-上面的 `AD1` 可替换为 AD2，`标准巡检` 可替换为全量巡检或安全巡检。交互阶段如果平台要求每次对话必须调用工具，初次询问场景时调用 `check.py prompt --stage scene` 输出固定问题；用户选择场景后调用 `connect.py` 和 `check.py history` 查询真实设备历史，再调用 `check.py prompt --stage confirm` 输出固定确认问题。工具结果不能进入用户可见正文。
+上面的 `AD1` 可替换为 AD2，场景选项必须来自设备 GET `/sys/offline-check/` 返回的列表。交互阶段如果平台要求每次对话必须调用工具，初次询问场景时调用 `check.py prompt --stage scene --devices ... --device AD1/AD2` 输出设备真实场景列表；用户选择场景后调用 `connect.py` 和 `check.py history` 查询真实设备历史，再调用 `check.py prompt --stage confirm` 输出固定确认问题。工具结果不能进入用户可见正文。
 
 场景确认后的工具调用必须使用“连接预检 + 历史查询 + 确认问题”固定组合，不能只执行 `check.py history`。单设备必须包含 `skills/ad-connect/scripts/connect.py --device AD1/AD2`；全部设备必须包含 `skills/ad-connect/scripts/connect.py --devices skills/ad-check-analysis/devices.json --format json`。如果连接预检失败，不要进入强制确认，直接返回连接失败信息让用户处理。
 
 ## 强制规则
 
 - 路由优先级：只要用户文本或当前任务包含 `巡检`、`标准巡检`、`全量巡检`、`安全巡检`、`健康检查`、`巡检报告`，必须使用本 skill。禁止改用 `ad-ops`、`overview.py` 或“查询结论”模板回答巡检任务。
-- 场景未确定前必须调用 `check.py prompt --stage scene` 生成场景选择问题，禁止手写或凭记忆复述该问题；除此之外只允许读取技能说明或设备清单，禁止提前连接设备、执行 `overview.py` 或产出查询结果。用户补充场景后，必须先执行 `connect.py -> check.py history`，然后询问是否强制继续；用户确认强制继续后，才执行 `run -> progress -> wait`。
-- 交互硬停规则：用户只说“请对 AD1 做一次巡检”或“请对 AD 所有设备做一次巡检”时，最终正文只能询问巡检场景并列出 `标准巡检 / 全量巡检 / 安全巡检`，禁止执行 `connect.py`、`check.py`、`perception.py`、`overview.py`，禁止输出巡检/感知/查询报告。
-- 交互硬停规则：首轮询问场景必须先真实调用 `check.py prompt --stage scene`，单设备 target 使用 `AD1/AD2`，多设备 target 使用 `全部 AD 设备`。用户只回复 `标准巡检`、`全量巡检` 或 `安全巡检` 时，必须先执行 `connect.py` 和 `check.py history` 查询真实设备历史，然后最终正文只能询问是否强制继续；禁止执行 `check.py run`、`check.py progress`、`check.py wait`，禁止输出报告。只有用户随后明确回复 `强制`、`继续` 或 `强制继续` 后，才允许启动巡检。
+- 场景未确定前必须调用 `check.py prompt --stage scene --devices <设备清单> --device <AD1/AD2>` 生成场景选择问题，禁止手写或凭记忆复述该问题；这个命令会读取设备 GET `/sys/offline-check/` 的真实场景列表。除此之外只允许读取技能说明或设备清单，禁止提前执行 `overview.py` 或产出查询结果。用户补充场景后，必须先执行 `connect.py -> check.py history`，然后询问是否强制继续；用户确认强制继续后，才执行 `run -> progress -> wait`。
+- 交互硬停规则：用户只说“请对 AD1 做一次巡检”或“请对 AD 所有设备做一次巡检”时，最终正文只能询问巡检场景并列出设备 GET `/sys/offline-check/` 返回的场景，禁止执行 `check.py run`、`check.py progress`、`check.py wait`、`perception.py`、`overview.py`，禁止输出巡检/感知/查询报告。
+- 交互硬停规则：首轮询问场景必须先真实调用 `check.py prompt --stage scene --devices <设备清单>`，单设备同时加 `--device AD1/AD2`，多设备 target 使用 `全部 AD 设备` 并用设备清单中第一台设备的真实场景列表。用户只回复某个场景名时，必须先执行 `connect.py` 和 `check.py history` 查询真实设备历史，然后最终正文只能询问是否强制继续；禁止执行 `check.py run`、`check.py progress`、`check.py wait`，禁止输出报告。只有用户随后明确回复 `强制`、`继续` 或 `强制继续` 后，才允许启动巡检。
 - 用户可见正文不能解释“根据技能规则/根据技能的交互硬停规则/根据 ad-check-analysis/我需要遵守规则”，也不能写“下面汇总展示/报告均已获取成功”这类过程说明。交互阶段只给用户需要回答的问题；报告阶段只给报告本身；任何规则解释前缀都算失败。
-- 第一次询问场景时，正文必须完全匹配“用户可见交互模板”，第一句必须是 `请问你要对 <目标> 执行哪种巡检？`，只能列出 `标准巡检 / 全量巡检 / 安全巡检`。第二次确认时，正文必须完全匹配“用户可见交互模板”，第一句必须是 `已检查历史巡检记录，是否确认对 <目标> 强制继续<场景>？`。
+- 第一次询问场景时，正文必须完全匹配 `check.py prompt --stage scene` 的输出，第一句必须是 `请问你要对 <目标> 执行哪种巡检？`，其余行只能列出设备 API 返回的场景。第二次确认时，正文必须完全匹配“用户可见交互模板”，第一句必须是 `已检查历史巡检记录，是否确认对 <目标> 强制继续<场景>？`。
 - 巡检前必须先调用 `ad-connect` 做连接预检。
 - 多设备巡检和单设备巡检一样必须先调用 `ad-connect`；全部设备场景不能因为后续会执行 `check.py history` 就省略连接预检。
 - 所有业务逻辑必须由 `skills/ad-check-analysis/scripts/check.py` 执行。
@@ -59,7 +59,7 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 - 工具命令中绝对禁止出现 `sleep`、`Start-Sleep` 或 `sleep && python3 ... progress`。不要手动等待；`wait --poll-interval 5 --timeout 55` 自带短轮询，且不会超过平台 60 秒工具超时。
 - 脚本输出是唯一事实来源。禁止模型自行生成巡检结论、风险项、分数或报告内容。
 - 如果用户指定 AD1/AD2，优先使用设备清单中的主机和密码。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-check-analysis/devices.json` 或 `.claude/skills/ad-check-analysis/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
-- 验收交互必须像真实人工：不要要求用户补充命令参数。用户只说“请对 AD1 做一次巡检”时，先用短问题让用户选择场景；用户回答“标准巡检/全量巡检/安全巡检”后，先查连接和历史，再确认是否继续/强制；用户回答“强制”后执行脚本并加 `--force`。
+- 验收交互必须像真实人工：不要要求用户补充命令参数。用户只说“请对 AD1 做一次巡检”时，先用短问题让用户选择设备 API 返回的场景；用户回答某个场景名后，先查连接和历史，再确认是否继续/强制；用户回答“强制”后执行脚本并加 `--force`。
 - 如果用户首句已经明确“标准巡检/全量巡检/安全巡检”，不要再次追问场景，直接先查连接和历史，再追问“是否强制继续”。
 - 用户说“AD 所有设备/全部 AD 设备”时，使用设备清单批量巡检，不要加 `--device AD1`。
 - 评分准则：pass 按 1 分，warn 按 0.5 分，fail 按 0 分；综合评分只平均当前报告中实际出现的维度，不能让空的健康/安全/功能维度拉低分数。
@@ -76,7 +76,7 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 
 ```bash
 export AD_CHECK_WORKDIR="${AD_CHECK_WORKDIR:-/tmp/ad_check_ad1}"
-python3 skills/ad-check-analysis/scripts/check.py prompt --stage scene --target AD1
+python3 skills/ad-check-analysis/scripts/check.py prompt --stage scene --target AD1 --devices skills/ad-check-analysis/devices.json --device AD1
 python3 skills/ad-connect/scripts/connect.py --devices skills/ad-check-analysis/devices.json --device AD1 --format json
 python3 skills/ad-check-analysis/scripts/check.py history --devices skills/ad-check-analysis/devices.json --device AD1
 python3 skills/ad-check-analysis/scripts/check.py prompt --stage confirm --target AD1 --scene "标准巡检"
@@ -94,7 +94,7 @@ python3 skills/ad-check-analysis/scripts/check.py wait --devices skills/ad-check
 
 ```bash
 export AD_CHECK_WORKDIR="${AD_CHECK_WORKDIR:-/tmp/ad_check_all}"
-python3 skills/ad-check-analysis/scripts/check.py prompt --stage scene --target "全部 AD 设备"
+python3 skills/ad-check-analysis/scripts/check.py prompt --stage scene --target "全部 AD 设备" --devices skills/ad-check-analysis/devices.json
 python3 skills/ad-connect/scripts/connect.py --devices skills/ad-check-analysis/devices.json --format json
 python3 skills/ad-check-analysis/scripts/check.py history --devices skills/ad-check-analysis/devices.json
 python3 skills/ad-check-analysis/scripts/check.py prompt --stage confirm --target "全部 AD 设备" --scene "标准巡检"

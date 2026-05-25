@@ -600,18 +600,20 @@ const cases = {
     requireDevice: true,
   },
   "r3-logs": {
-    prompt: "对 AD1 设备的日志进行分析。",
-    expected: ["connect.py", "AD1", "perception.py", "logs", "ALERT", "ERROR", "ALARM"],
-    commandExpected: ["connect.py", "perception.py", "logs", "--limit", "20", "--levels", "ALERT,ERROR", "--modules", "ALARM"],
-    apiVerify: { kind: "service-log", device: "AD1", limit: 20, levels: ["ALERT", "ERROR"], modules: ["ALARM"], hours: 24 },
+    prompt: "对 AD2 设备的日志进行分析。",
+    expected: ["connect.py", "AD2", "perception.py", "logs", "ALERT", "ERROR"],
+    commandExpected: ["connect.py", "perception.py", "logs", "--limit", "20", "--levels", "ALERT,ERROR"],
+    commandForbidden: ["--modules"],
+    apiVerify: { kind: "service-log", device: "AD2", limit: 20, levels: ["ALERT", "ERROR"], hours: 24 },
     requireTools: true,
     requireDevice: true,
   },
   "r3-logs-5d": {
-    prompt: "对 AD1 设备近 5 天的日志进行分析。",
-    expected: ["connect.py", "AD1", "perception.py", "logs", "5", "ALERT", "ERROR", "ALARM"],
-    commandExpected: ["connect.py", "perception.py", "logs", "--days", "5", "--limit", "20", "--levels", "ALERT,ERROR", "--modules", "ALARM"],
-    apiVerify: { kind: "service-log", device: "AD1", limit: 20, levels: ["ALERT", "ERROR"], modules: ["ALARM"], days: 5 },
+    prompt: "对 AD2 设备近 5 天的日志进行分析。",
+    expected: ["connect.py", "AD2", "perception.py", "logs", "5", "ALERT", "ERROR"],
+    commandExpected: ["connect.py", "perception.py", "logs", "--days", "5", "--limit", "20", "--levels", "ALERT,ERROR"],
+    commandForbidden: ["--modules"],
+    apiVerify: { kind: "service-log", device: "AD2", limit: 20, levels: ["ALERT", "ERROR"], days: 5 },
     requireTools: true,
     requireDevice: true,
   },
@@ -1585,6 +1587,12 @@ function stepRuleViolationsFor(name, cfg, responses) {
   if (!/标准巡检/.test(step1Visible) || !/全量巡检/.test(step1Visible) || !/安全巡检/.test(step1Visible)) {
     violations.push("r1 step1 did not ask the user to choose 标准巡检/全量巡检/安全巡检");
   }
+  if (!/check\.py\b/.test(step1Commands) || !/\bprompt\b/.test(step1Commands) || !/--stage\s+scene|--stage=scene/.test(step1Commands)) {
+    violations.push("r1 step1 did not use check.py prompt --stage scene to fetch device scenes");
+  }
+  if (!/--devices\b|--host\b/.test(step1Commands)) {
+    violations.push("r1 step1 did not pass device context when fetching inspection scenes");
+  }
   for (const token of earlyForbiddenVisible) {
     if (step1Visible.includes(token)) violations.push(`r1 step1 produced premature ${token}`);
   }
@@ -1706,22 +1714,23 @@ function templateExpectedFor(name, cfg) {
 
 function runLocalAdVerification(name, cfg, override = {}) {
   if (!VERIFY_AD) return { status: "disabled" };
-  if (!AD_VERIFY_PASSWORD) {
+  const connection = deviceConnectionForName(override.device || (cfg && cfg.verifyDevice) || (cfg && cfg.apiVerify && cfg.apiVerify.device) || "AD1");
+  if (!connection.password) {
     return {
       status: "skipped",
-      reason: "missing AD verify password and devices.json AD1 password",
-      baseUrl: AD_VERIFY_BASE_URL,
-      username: AD_VERIFY_USERNAME,
+      reason: `missing AD verify password and devices.json ${connection.name} password`,
+      baseUrl: connection.host,
+      username: connection.username,
     };
   }
 
   const env = {
     ...process.env,
     PYTHONUTF8: "1",
-    AD_BASE_URL: AD_VERIFY_BASE_URL,
-    AD_USERNAME: AD_VERIFY_USERNAME,
-    AD_PASSWORD: AD_VERIFY_PASSWORD,
-    AD_PASS: AD_VERIFY_PASSWORD,
+    AD_BASE_URL: connection.host,
+    AD_USERNAME: connection.username,
+    AD_PASSWORD: connection.password,
+    AD_PASS: connection.password,
   };
   const target = override.target || (cfg && (cfg.verifyPresent || cfg.verifyAbsent));
   const expect = override.expect || (cfg && cfg.verifyPresent ? "present" : "absent");
@@ -1734,9 +1743,9 @@ function runLocalAdVerification(name, cfg, override = {}) {
             "--expect",
             expect,
             "--base-url",
-            AD_VERIFY_BASE_URL,
+            connection.host,
             "--username",
-            AD_VERIFY_USERNAME,
+            connection.username,
             "--vs-name",
             target.vsName,
             "--pool-name",
@@ -1752,15 +1761,15 @@ function runLocalAdVerification(name, cfg, override = {}) {
           args: [
             ".claude/skills/ad-connect/scripts/connect.py",
             "--host",
-            AD_VERIFY_BASE_URL,
+            connection.host,
             "--user",
-            AD_VERIFY_USERNAME,
+            connection.username,
             "--format",
             "json",
           ],
         };
 
-  const displayArgs = command.args.map((item) => (item === AD_VERIFY_PASSWORD ? "<redacted>" : item));
+  const displayArgs = command.args.map((item) => (item === connection.password ? "<redacted>" : item));
   log("ad-verify-start", { name, kind: command.kind, args: displayArgs });
   const result = spawnSync(PYTHON, command.args, {
     cwd: process.cwd(),
@@ -1787,8 +1796,8 @@ function runLocalAdVerification(name, cfg, override = {}) {
     stdout: stdout.slice(-8000),
     stderr: stderr.slice(-4000),
     parsed,
-    baseUrl: AD_VERIFY_BASE_URL,
-    username: AD_VERIFY_USERNAME,
+    baseUrl: connection.host,
+    username: connection.username,
   };
 }
 

@@ -375,21 +375,67 @@ class ADClient:
             modules: 日志模块过滤
             skip: 分页偏移
         """
-        params: Dict[str, Any] = {"top": max(1, int(limit)), "skip": max(0, int(skip))}
-        if from_time:
-            params["from"] = from_time
-        if to_time:
-            params["to"] = to_time
-        if levels:
-            params["level"] = [str(level).upper() for level in levels if str(level).strip()]
-        if modules:
-            params["module"] = [str(module) for module in modules if str(module).strip()]
+        limit = max(1, int(limit))
+        skip = max(0, int(skip))
+        clean_levels = [str(level).strip().upper() for level in (levels or []) if str(level).strip()]
+        clean_modules = [str(module).strip() for module in (modules or []) if str(module).strip()]
 
-        result = self._request("GET", "/log/service-log", params=params)
-        items = result.get("items", [])
+        def base_params() -> Dict[str, Any]:
+            params: Dict[str, Any] = {"top": limit, "skip": skip}
+            if from_time:
+                params["from"] = from_time
+            if to_time:
+                params["to"] = to_time
+            return params
+
+        queries: List[Dict[str, Any]] = []
+        if clean_levels and clean_modules:
+            for level in clean_levels:
+                for module in clean_modules:
+                    params = base_params()
+                    params["level"] = level
+                    params["module"] = module
+                    queries.append(params)
+        elif clean_levels:
+            for level in clean_levels:
+                params = base_params()
+                params["level"] = level
+                queries.append(params)
+        elif clean_modules:
+            for module in clean_modules:
+                params = base_params()
+                params["module"] = module
+                queries.append(params)
+        else:
+            queries.append(base_params())
+
+        merged: List[Dict[str, Any]] = []
+        result: Dict[str, Any] = {}
+        seen = set()
+        for params in queries:
+            response = self._request("GET", "/log/service-log", params=params)
+            if not result:
+                result = dict(response)
+            for item in response.get("items", []):
+                if not isinstance(item, dict):
+                    continue
+                identity = (
+                    item.get("log_id"),
+                    item.get("date"),
+                    item.get("time"),
+                    item.get("level"),
+                    item.get("module"),
+                    item.get("detail"),
+                )
+                if identity in seen:
+                    continue
+                seen.add(identity)
+                merged.append(item)
+
         # 按时间倒序，取最新 limit 条
-        items.sort(key=lambda x: f"{x.get('date', '')} {x.get('time', '')}", reverse=True)
-        result["items"] = items[:limit]
+        merged.sort(key=lambda x: f"{x.get('date', '')} {x.get('time', '')}", reverse=True)
+        result["items"] = merged[:limit]
+        result["total"] = len(merged)
         return result
 
     # -------------------------------------------------------------------------

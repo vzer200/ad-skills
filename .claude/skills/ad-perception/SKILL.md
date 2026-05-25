@@ -28,7 +28,7 @@ description: 深信服 AD 感知分析 skill。用于分析 VS 流量异常、CP
 - “流量趋势分析/流量分析/流量走势”映射到 `collector.py collect --collect-only` + `perception.py traffic --days 7 --require-db`。如果用户明确指定某个虚拟服务名称（例如 `test 虚拟服务`），必须加 `--vs test`，不要扩大到全部虚拟服务。8.31 设备上的 `test` 虚拟服务是主线验收样例。
 - “设备资源分析/资源状态异常/状态趋势/状态告警”映射到 `perception.py state`；只说“设备状态/硬件状态/资源状态查一下”仍属于 `ad-ops` 查询。
 - “地址冲突/地址端口冲突/冲突分析”映射到 `perception.py conflict`；冲突结论只能复述脚本返回的 `vs_overlaps` / `pool_overlaps`，没有冲突时明确说未发现冲突，不要编造正例。
-- “日志分析/服务日志/日志线索”映射到 `perception.py logs`。默认查最近 24 小时的告警日志，必须加 `--levels ALERT,ERROR --modules ALARM --limit 20`；用户明确说近 5 天/7 天等范围时加 `--days N`，用户指定其他日志类型时改用对应 `--modules`。输出只展示按时间倒序的最新 20 条，避免上下文过长。
+- “日志分析/服务日志/日志线索”映射到 `perception.py logs`。默认查最近 24 小时所有模块的告警/错误日志，必须加 `--levels ALERT,ERROR --limit 20`，不要默认加 `--modules ALARM`；只有用户明确指定日志类型/模块时才加对应 `--modules`。用户明确说近 5 天/7 天等范围时加 `--days N`。输出只展示按时间倒序的最新 20 条，避免上下文过长。
 
 ## 全量感知分析
 
@@ -51,10 +51,10 @@ python3 skills/ad-connect/scripts/connect.py --devices skills/ad-perception/devi
 python3 skills/ad-perception/scripts/perception.py conflict --devices skills/ad-perception/devices.json --device AD1 --format markdown
 
 python3 skills/ad-connect/scripts/connect.py --devices skills/ad-perception/devices.json --device AD1 --format json
-python3 skills/ad-perception/scripts/perception.py logs --devices skills/ad-perception/devices.json --device AD1 --levels ALERT,ERROR --modules ALARM --limit 20 --format markdown
+python3 skills/ad-perception/scripts/perception.py logs --devices skills/ad-perception/devices.json --device AD2 --levels ALERT,ERROR --limit 20 --format markdown
 
 python3 skills/ad-connect/scripts/connect.py --devices skills/ad-perception/devices.json --device AD1 --format json
-python3 skills/ad-perception/scripts/perception.py logs --devices skills/ad-perception/devices.json --device AD1 --days 5 --levels ALERT,ERROR --modules ALARM --limit 20 --format markdown
+python3 skills/ad-perception/scripts/perception.py logs --devices skills/ad-perception/devices.json --device AD2 --days 5 --levels ALERT,ERROR --limit 20 --format markdown
 ```
 
 ## 最终回答复制规范

@@ -208,6 +208,12 @@ class TestAnalyze(unittest.TestCase):
             "已检查历史巡检记录，是否确认对 AD1 强制继续全量巡检？",
         )
 
+    def test_interaction_prompt_can_use_api_scene_names(self):
+        self.assertEqual(
+            render_interaction_prompt("scene", "AD1", scenes=["功能巡检", "健康巡检"]),
+            "请问你要对 AD1 执行哪种巡检？\n功能巡检\n健康巡检",
+        )
+
 
 class TestRenderMarkdown(unittest.TestCase):
     """Test render_markdown output structure."""
@@ -547,6 +553,23 @@ class TestCheckMainSubcommands(unittest.TestCase):
                     from check import main
                     main()
                 self.assertEqual(cm.exception.code, 1)
+
+    def test_prompt_scene_uses_api_scenes_when_host_given(self):
+        with patch("sys.argv", ["check.py", "prompt", "--stage", "scene", "--target", "AD1", "--host", "https://10.0.0.1", "--password", "pw"]):
+            with patch("check.ADClient") as mock_cls:
+                mock_client = MagicMock()
+                mock_client._request.return_value = {"items": [{"name": "功能巡检"}, {"name": "安全巡检"}]}
+                mock_cls.return_value = mock_client
+                stdout = StringIO()
+                with redirect_stdout(stdout):
+                    from check import main
+                    main()
+
+                mock_client._request.assert_called_once_with("GET", "/sys/offline-check/")
+                output = stdout.getvalue()
+                self.assertIn("功能巡检", output)
+                self.assertIn("安全巡检", output)
+                self.assertNotIn("标准巡检", output)
 
     def test_history_success(self):
         with patch("sys.argv", ["check.py", "history", "--host", "https://10.0.0.1", "--password", "pw"]):
