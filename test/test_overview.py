@@ -164,6 +164,36 @@ class TestOverviewAPI(unittest.TestCase):
         vs_api = next(v for v in overview["virtual_services"] if v["name"] == "vs_api")
         self.assertEqual(vs_api["pool"], "pool_api")
 
+    def test_virtual_service_pool_field_from_real_api_is_rendered(self):
+        """VS config must read the real API's pool field, not only pool_name."""
+        self.client.get_virtual_services.return_value = {
+            "items": [
+                {
+                    "name": "vs_real",
+                    "state": "enable",
+                    "vips": ["1.2.3.1"],
+                    "vports": ["55"],
+                    "pool": "12",
+                }
+            ]
+        }
+        self.client.get_pools.return_value = {
+            "items": [
+                {
+                    "name": "12",
+                    "nodes": [],
+                }
+            ]
+        }
+
+        overview = build_overview(self.client, "config")
+        vs = overview["virtual_services"][0]
+        self.assertEqual(vs["pool"], "12")
+
+        md = render_markdown(overview)
+        self.assertIn("| vs_real | 1.2.3.1:55 | 12 | 是 |", md)
+        self.assertIn("| 12 | 是 | 0 | - |", md)
+
     # ------------------------------------------------------------------
     # Test 2: days-left calculation
     # ------------------------------------------------------------------

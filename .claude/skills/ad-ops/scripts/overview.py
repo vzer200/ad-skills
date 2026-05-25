@@ -254,7 +254,7 @@ def _process_vs(vs: Dict[str, Any]) -> Dict[str, Any]:
     # Cartesian product: every VIP × every VPort
     vip_ports = [f"{vip}:{vport}" for vip in vips for vport in vports]
 
-    pool_name = vs.get("pool_name", "")
+    pool_name = _first_non_empty(vs, ("pool", "pool_name", "default_pool_name"))
 
     return {
         "name": vs.get("name", ""),
@@ -274,7 +274,7 @@ def _process_pool(pool: Dict[str, Any]) -> Dict[str, Any]:
     total = len(members)
     return {
         "name": pool.get("name", ""),
-        "status": pool.get("state", ""),
+        "status": _first_non_empty(pool, ("state", "status", "enabled", "enable")) or "enable",
         "total": total,
         "up": up,
         "down": total - up,
@@ -289,6 +289,15 @@ def _process_pool(pool: Dict[str, Any]) -> Dict[str, Any]:
             for m in members
         ],
     }
+
+
+def _first_non_empty(source: Dict[str, Any], keys: tuple[str, ...]) -> Any:
+    """Return the first present non-empty value from a set of API field aliases."""
+    for key in keys:
+        value = source.get(key)
+        if value not in (None, ""):
+            return value
+    return ""
 
 
 def _process_node(member: Dict[str, Any], pool_name: str) -> Dict[str, Any]:
@@ -516,6 +525,18 @@ def _status_badge(status: Any) -> str:
     return f"{icon} {cn}".strip()
 
 
+def _enabled_text(status: Any, default: str = "否") -> str:
+    """Return 是/否 for table columns named 是否启用."""
+    if status is None or status == "":
+        return default
+    normalized = str(status).strip().lower()
+    if normalized in {"enable", "enabled", "up", "online", "running", "active", "true", "yes", "1"}:
+        return "是"
+    if normalized in {"disable", "disabled", "down", "offline", "stopped", "inactive", "false", "no", "0"}:
+        return "否"
+    return default
+
+
 def _usage_badge(value: Any) -> str:
     """Return a CPU/memory value with a simple health icon."""
     try:
@@ -618,7 +639,7 @@ def render_markdown(overview: Dict[str, Any]) -> str:
                     name = vs.get("name", "")
                     vip_ports = ", ".join(vs.get("vip_ports", [])) or "-"
                     pool = vs.get("pool", "") or "-"
-                    status = _status_badge(vs.get("status", ""))
+                    status = _enabled_text(vs.get("status", ""))
                     a(f"| {name} | {vip_ports} | {pool} | {status} |")
         a("")
 
@@ -643,7 +664,7 @@ def render_markdown(overview: Dict[str, Any]) -> str:
                         members.append(f"{member.get('name') or endpoint}（{endpoint}{weight_text}）")
                     member_text = "<br>".join(members) if members else "-"
                     a(
-                        f"| {pool.get('name', '')} | {_status_badge(pool.get('status'))} | "
+                        f"| {pool.get('name', '')} | {_enabled_text(pool.get('status'), default='是')} | "
                         f"{pool.get('total', 0)} | {member_text} |"
                     )
         a("")
@@ -663,7 +684,7 @@ def render_markdown(overview: Dict[str, Any]) -> str:
                 for node in nodes:
                     a(
                         f"| {node.get('name', '')} | {_fmt_value(node.get('endpoint'))} | "
-                        f"{_fmt_value(node.get('pool'))} | {_status_badge(node.get('status'))} | "
+                        f"{_fmt_value(node.get('pool'))} | {_enabled_text(node.get('status'))} | "
                         f"{_fmt_value(node.get('weight'))} |"
                     )
         a("")
