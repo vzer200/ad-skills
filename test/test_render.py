@@ -146,8 +146,10 @@ class TestRenderDeviceDetailBlock(unittest.TestCase):
         }
         output = _render_device_detail_block("https://192.168.8.30", result, "AD1")
 
-        self.assertIn("| 检查项 | 说明 | 状态 | 值 |", output)
-        self.assertIn("| DISK_CHECK | 原生 API 磁盘说明 | ❌ 异常 | 磁盘偏高 |", output)
+        self.assertIn("| 检查项 | 具体说明 | 状态 |", output)
+        self.assertNotIn("| 检查项 | 说明 | 状态 | 值 |", output)
+        self.assertIn("| DISK_CHECK | 原生 API 磁盘说明 | ❌ 异常 |", output)
+        self.assertNotIn("磁盘偏高 |", output)
 
     def test_all_pass_no_anomalies(self):
         result = {

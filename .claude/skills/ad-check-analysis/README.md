@@ -92,7 +92,7 @@ python scripts/check.py history \
 |------|--------|--------|
 | 设备来源 | 用户指定 / 询问用户 | 用户指定 / devices.json 全部 |
 | 场景选择 | 未指定→先让用户选择 | 未指定→先让用户选择 |
-| 历史检查 | 用户选场景后查 history，再询问是否强制继续 | 用户选场景后查 history，再询问是否强制继续 |
+| 历史检查 | 用户选场景后查 history，仅 `limit_reached=true` 时询问强制 | 用户选场景后查 history，仅任一设备 `limit_reached=true` 时询问强制 |
 
 详细流程见 [SKILL.md](SKILL.md) 工作流决策树。
 

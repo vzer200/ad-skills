@@ -1403,6 +1403,37 @@ function responseEvidenceText(response) {
   ].filter(Boolean).join("\n");
 }
 
+function promptSceneToolEvidenceText(response) {
+  const candidates = (((response && response.toolEvidence && response.toolEvidence.candidates) || [])
+    .map((item) => item.text || "")
+    .filter((text) => /check\.py\b/.test(text) && /\bprompt\b/.test(text) && /--stage(?:\s+|=)scene/.test(text)));
+  if (candidates.length) return candidates.join("\n");
+  return `${(response && response.agentText) || ""}\n${(response && response.text) || ""}`;
+}
+
+function extractInspectionSceneOptions(response) {
+  const evidence = promptSceneToolEvidenceText(response);
+  const options = new Set();
+  for (const token of ["标准巡检", "全量巡检", "安全巡检"]) {
+    if (evidence.includes(token)) options.add(token);
+  }
+  for (const line of String(evidence || "").split(/\r?\n/)) {
+    const cleaned = line
+      .replace(/^[\s\-*•\d.、]+/, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (
+      cleaned &&
+      cleaned.length <= 30 &&
+      /巡检$/.test(cleaned) &&
+      !/(请问|确认|历史|结论|执行结果|参数|command|check\.py|--stage|target|devices)/i.test(cleaned)
+    ) {
+      options.add(cleaned);
+    }
+  }
+  return Array.from(options);
+}
+
 function hasGeneratedArtifactEvidence(response, names) {
   const evidence = responseEvidenceText(response);
   return names.every((name) => {
@@ -1756,8 +1787,12 @@ function stepRuleViolationsFor(name, cfg, responses) {
 
   const step1Visible = `${step1.visibleText || ""}\n${step1.visibleAgentText || ""}`;
   const step1Commands = extractStepToolCommands(step1).join("\n");
-  if (!/标准巡检/.test(step1Visible) || !/全量巡检/.test(step1Visible) || !/安全巡检/.test(step1Visible)) {
-    violations.push("r1 step1 did not ask the user to choose 标准巡检/全量巡检/安全巡检");
+  const promptSceneEvidence = promptSceneToolEvidenceText(step1);
+  if (scene && !promptSceneEvidence.includes(scene)) {
+    violations.push(`r1 step1 prompt command output did not include expected scene option: ${scene}`);
+  }
+  if (scene && !step1Visible.includes(scene)) {
+    violations.push(`r1 step1 did not include expected scene option: ${scene}`);
   }
   if (!/check\.py\b/.test(step1Commands) || !/\bprompt\b/.test(step1Commands) || !/--stage\s+scene|--stage=scene/.test(step1Commands)) {
     violations.push("r1 step1 did not use check.py prompt --stage scene to fetch device scenes");
@@ -1777,36 +1812,62 @@ function stepRuleViolationsFor(name, cfg, responses) {
 
   const step2Visible = `${step2.visibleText || ""}\n${step2.visibleAgentText || ""}`;
   const step2Commands = extractStepToolCommands(step2).join("\n");
-  if (!/(强制|继续|覆盖)/.test(step2Visible)) {
-    violations.push("r1 step2 did not ask whether to force/continue");
-  }
-  if (!/历史/.test(step2Visible)) {
-    violations.push("r1 step2 did not tell the user history was checked before force confirmation");
+  const step2Evidence = `${step2.text || ""}\n${step2.agentText || ""}\n${step2Visible}`;
+  const historyHasNormalizedCount = /"record_count"\s*:/.test(step2Evidence) && /"limit_reached"\s*:/.test(step2Evidence);
+  const historyLimitReached = /"limit_reached"\s*:\s*true/.test(step2Evidence);
+  const historyNotLimitReached = /"limit_reached"\s*:\s*false/.test(step2Evidence);
+  const step2HasFinalReport = step2Visible.includes("巡检结论");
+  const step2RanFinalCommands = ["run", "progress", "wait"].every((token) => step2Commands.includes(token));
+  if (!historyHasNormalizedCount) {
+    violations.push("r1 step2 history output did not expose record_count/limit_reached normalized from items");
   }
   for (const token of earlyForbiddenVisible) {
-    if (step2Visible.includes(token)) violations.push(`r1 step2 produced premature ${token}`);
+    if (!step2HasFinalReport && step2Visible.includes(token)) violations.push(`r1 step2 produced premature ${token}`);
   }
   for (const token of step2RequiredCommands) {
     if (!step2Commands.includes(token)) violations.push(`r1 step2 missing pre-confirmation command token: ${token}`);
   }
-  for (const token of step2ForbiddenCommands) {
-    if (step2Commands.includes(token)) violations.push(`r1 step2 executed before force confirmation: ${token}`);
+  if (step2HasFinalReport || step2RanFinalCommands) {
+    if (historyLimitReached) violations.push("r1 step2 ran inspection even though history items reached the force limit");
+    if (!step2RanFinalCommands) violations.push("r1 step2 direct path did not run run/progress/wait");
+  } else {
+    if (!/(强制|继续|覆盖)/.test(step2Visible)) {
+      violations.push("r1 step2 did not ask whether to force/continue when history limit was reached");
+    }
+    if (!/历史/.test(step2Visible)) {
+      violations.push("r1 step2 did not tell the user history was checked before force confirmation");
+    }
+    if (historyNotLimitReached) {
+      violations.push("r1 step2 asked for force even though history items did not reach the limit");
+    }
+    for (const token of step2ForbiddenCommands) {
+      if (step2Commands.includes(token)) violations.push(`r1 step2 executed before force confirmation: ${token}`);
+    }
   }
 
-  const step3Visible = `${step3.visibleText || ""}\n${step3.visibleAgentText || ""}`;
-  const step3Commands = extractStepToolCommands(step3).join("\n");
+  const finalStep = step2HasFinalReport || step2RanFinalCommands ? step2 : step3;
+  const finalLabel = finalStep === step2 ? "step2" : "step3";
+  const finalVisible = `${finalStep.visibleText || ""}\n${finalStep.visibleAgentText || ""}`;
+  const finalCommands = extractStepToolCommands(finalStep).join("\n");
   const requiredFinalCommands = ["check.py", "run", "progress", "wait"];
   for (const token of requiredFinalCommands) {
-    if (!step3Commands.includes(token)) violations.push(`r1 step3 missing command token: ${token}`);
+    if (!finalCommands.includes(token)) violations.push(`r1 ${finalLabel} missing command token: ${token}`);
   }
   for (const token of ["perception.py", "overview.py", "2>&1"]) {
-    if (step3Commands.includes(token)) violations.push(`r1 step3 used forbidden command token: ${token}`);
+    if (finalCommands.includes(token)) violations.push(`r1 ${finalLabel} used forbidden command token: ${token}`);
   }
-  if (!step3Visible.includes("巡检结论")) {
-    violations.push("r1 step3 did not produce 巡检结论 report");
+  if (!finalVisible.includes("巡检结论")) {
+    violations.push(`r1 ${finalLabel} did not produce 巡检结论 report`);
   }
-  if (scene && !step3Visible.includes(scene)) {
-    violations.push(`r1 step3 report did not contain expected scene: ${scene}`);
+  if (scene && !finalVisible.includes(scene)) {
+    violations.push(`r1 ${finalLabel} report did not contain expected scene: ${scene}`);
+  }
+  if (!/目前巡检\s*\d+\s*\/\s*\d+/.test(finalVisible)) {
+    violations.push(`r1 ${finalLabel} did not show progress_text like 目前巡检 23/35`);
+  }
+  if (!name.startsWith("r1-all")) {
+    if (!finalVisible.includes("具体说明")) violations.push(`r1 ${finalLabel} check detail table missing 具体说明 column`);
+    if (finalVisible.includes("当前发现")) violations.push(`r1 ${finalLabel} leaked removed 当前发现 column`);
   }
   return violations;
 }
@@ -1817,6 +1878,12 @@ function responseVisibleText(item) {
 
 function responseCommandText(item) {
   return extractStepToolCommands(item || {}).join("\n");
+}
+
+function r1DirectReportCompleted(response) {
+  const visible = responseVisibleText(response || {});
+  const commands = responseCommandText(response || {});
+  return visible.includes("巡检结论") && ["run", "progress", "wait"].every((token) => commands.includes(token));
 }
 
 function r2r4QueryViolations(label, item, spec, phase) {
@@ -2339,7 +2406,7 @@ function verify(run) {
       "heartbeat_state=",
       "shm_sem_state=",
     );
-    defaultVisibleForbidden.push("巡检过程", "原始报告");
+    defaultVisibleForbidden.push("巡检过程", "原始报告", "当前发现");
     if (run.name.startsWith("r1-all")) {
       defaultVisibleForbidden.push("跨设备对比", "高频异常", "重点关注设备", "设备详情", "详细报告");
     }
@@ -2537,6 +2604,10 @@ async function runCase(page, name) {
       });
     } else {
       throw new Error(`unsupported step for ${name}: ${JSON.stringify(step)}`);
+    }
+    if (name.startsWith("r1") && cfg.steps && index === 1 && r1DirectReportCompleted(responses[responses.length - 1])) {
+      log("r1-direct-report-skip-force", { name, step: label });
+      break;
     }
     const failFastViolations = failFastStepViolationsFor(name, cfg, responses);
     if (failFastViolations.length) {

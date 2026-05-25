@@ -134,17 +134,17 @@ Expected human replies:
 
 ```text
 标准巡检
-强制
+（如果 history 的 limit_reached=false，WorkBot 直接巡检；如果 limit_reached=true，再回复“强制”）
 ```
 
 Additional single-device scene replies:
 
 ```text
 全量巡检
-强制
+（同上，只有 limit_reached=true 才回复“强制”）
 
 安全巡检
-强制
+（同上，只有 limit_reached=true 才回复“强制”）
 ```
 
 All-device prompt:
@@ -157,10 +157,10 @@ Expected human replies:
 
 ```text
 标准巡检 / 全量巡检 / 安全巡检
-强制
+（如果任一设备 limit_reached=true，再回复“强制”）
 ```
 
-If the first user prompt already includes a scene such as `请对 AD1 做一次标准巡检。`, WorkBot must not ask for the scene again. It must still run `connect.py` and `check.py history`, then ask for force/continue.
+If the first user prompt already includes a scene such as `请对 AD1 做一次标准巡检。`, WorkBot must not ask for the scene again. It must still run `connect.py` and `check.py history`; it asks for force/continue only when `limit_reached=true`.
 
 
 Expected tool calls:
@@ -177,18 +177,21 @@ Pass criteria:
 
 - Tool calls include the expected scripts in order.
 - WorkBot commands must not use manual waiting. `sleep`, `Start-Sleep`, or `sleep && check.py progress` is a failed run; use `progress -> wait --timeout 55` and retry that pair if needed.
-- The interactive steps are gated independently: the first prompt must only ask for `标准巡检 / 全量巡检 / 安全巡检`; the scene reply must run `connect.py` and `check.py history`, then only ask whether to force/continue; no report may appear before the final `强制` reply.
-- A later successful report does not mask a bad earlier step. If the first step executes `perception.py`/`overview.py`, outputs `感知结论`/`查询结论`/`巡检结论`, or the second step runs `check.py run/progress/wait` before force confirmation, the case fails immediately. Reading another skill's `SKILL.md` while choosing the route is not a failure by itself.
+- The interactive steps are gated independently: the first prompt must only ask for scenes returned by GET `/sys/offline-check/`; the scene reply must run `connect.py` and normalized `check.py history`. If `limit_reached=false`, WorkBot must directly run `run -> progress -> wait`; if `limit_reached=true`, it must only ask whether to force/continue and no report may appear before the final `强制` reply.
+- History record-limit decisions must be based on `items` only. `check.py history` exposes `record_count` and `limit_reached`; WorkBot must not use `total_items`, `total`, or pagination metadata to decide force. A response with `total_items: 5` and `items: []` means `record_count: 0`, `limit_reached: false`, so WorkBot must not ask the user to force.
+- A later successful report does not mask a bad earlier step. If the first step executes `perception.py`/`overview.py`, outputs `感知结论`/`查询结论`/`巡检结论`, asks for force when `limit_reached=false`, or runs `check.py run/progress/wait` while `limit_reached=true` before force confirmation, the case fails immediately. Reading another skill's `SKILL.md` while choosing the route is not a failure by itself.
 - `connect.py` validates the AD1 target from `devices.json` before inspection, including AD 内网设备资源 reachability/auth evidence.
 - All-device inspection uses `devices.json` without `--device AD1` and produces multi-device evidence.
-- All-device inspection follows the same human interaction as single-device inspection: ask scene, run `connect.py` and `history`, ask force/continue, then run `run -> progress -> wait`.
+- All-device inspection follows the same human interaction as single-device inspection: ask scene, run `connect.py` and normalized `history`, ask force/continue only if any device `limit_reached=true`, then run `run -> progress -> wait`.
 - `check.py run --wait` must not be used in WorkBot acceptance; it can exceed the platform's 60-second tool timeout.
 - The final report comes from `check.py wait` / downloaded report stdout, after `progress` confirms completion.
+- The final visible answer must include the progress line returned by `progress_text`, such as `目前巡检 23/35`.
 - The final answer does not add model-written inspection findings, wrapper phrases, or skill-policy explanations.
-- The final visible answer starts at `## 巡检结论` and must not append a second execution table or any phrase such as `工具调用`, `退出码`, `stdout`, `上方 stdout`, `connect.py`, or `check.py`.
+- Apart from the single progress line, the final visible answer starts at `## 巡检结论` and must not append a second execution table or any phrase such as `工具调用`, `退出码`, `stdout`, `上方 stdout`, `connect.py`, or `check.py`.
 - The final visible answer must not include phrases such as `根据技能`, `技能规则`, `根据 ad-check-analysis`, `下面汇总展示`, or `报告均已获取成功`.
 - The final visible answer must not include raw device field syntax such as `security_check_state=`, `remote_mt=`, `ssh_authority=`, `algorithm=`, `protocol=`, or `enable_iplimit=`; these must be rendered as Chinese operator-facing descriptions. It must also not mention internal report file names such as `ad.json`.
 - The final visible answer must not include `## 重点异常`, `## 巡检过程`, or `## 原始报告`. Single-device target line should look like `AD1 (192.168.8.30)`, not `AD1 (https://192.168.8.30)`. Single-device check item status cells must only use `✅ 正常` or `❌ 异常`.
+- Single-device `## 检查项明细` must use exactly `检查项 / 具体说明 / 状态`; `具体说明` uses the native report/API `description` when present and the script's check description fallback otherwise. The old `当前发现` column is forbidden.
 - Acceptance artifacts are redacted before saving; credential fields, tokens, cookies, and known runtime passwords must not be persisted in WorkBot result files.
 - WorkBot commands must not use `2>&1` for the final `wait` command. If stderr is needed for debugging, it stays inside tool evidence and is not copied into the user-visible answer.
 - Check items in final answers use Chinese labels, not internal IDs such as `DEVICE_SAFE_CHECK`.

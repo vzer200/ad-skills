@@ -9,6 +9,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -503,9 +504,64 @@ _CHECK_LABELS = {
 }
 
 
+_CHECK_DESCRIPTIONS = {
+    "APP_VERSION_CHECK": "应用版本检查用于确认当前 AD 应用版本是否已正确采集。",
+    "ADMIN_ROLE_CHECK": "管理员角色检查用于确认管理账号角色配置是否完整。",
+    "DEVICE_SAFE_CHECK": "设备安全状态检查用于确认设备安全检查功能是否开启。",
+    "DNS_DETECT_CHECK": "DNS 探测配置检查用于确认 DNS 代理和探测相关配置是否符合预期。",
+    "DNAT_CHECK": "DNAT 配置检查用于确认 DNAT 映射规则是否存在潜在风险。",
+    "HEARTBEAT_CHECK": "心跳状态检查用于确认双机或集群心跳链路是否正常。",
+    "STATIC_IP_CHECK": "静态 IP 配置检查用于确认静态地址配置是否存在规划风险。",
+    "DNS64_CHECK": "DNS64 检查用于确认 DNS64 功能是否按需开启。",
+    "POLICY_ROUTE_CHECK": "策略路由检查用于确认策略路由变更是否存在异常。",
+    "SNMP_ALARM_CHECK": "SNMP Trap 告警检查用于确认告警通知是否开启。",
+    "DNS_PRE_RULE_CHECK": "DNS 前置策略检查用于确认 DNS 前置策略配置是否符合预期。",
+    "DNS_SERVER_CHECK": "DNS 服务器检查用于确认 DNS 服务配置是否符合预期。",
+    "EMAIL_ALARM_CHECK": "邮件告警检查用于确认邮件告警通知是否开启。",
+    "PROXY_POLICY_CHECK": "代理策略检查用于确认代理策略配置是否存在风险。",
+    "SYSLOG_CHECK": "Syslog 检查用于确认日志外发配置是否开启。",
+    "AUTO_UPDATE_CHECK": "自动更新检查用于确认自动更新功能是否开启。",
+    "CPU_CHECK": "CPU 使用率检查用于确认巡检期间 CPU 使用率是否处于正常范围。",
+    "LOG_CHECK": "日志状态检查用于确认设备错误日志数量是否异常。",
+    "RUNNING_TIME_CHECK": "设备运行时间检查用于确认设备运行时长是否正常。",
+    "FILE_CHECK": "设备文件检查用于确认设备关键文件是否存在异常。",
+    "NIC_STATE_CHECK": "网卡状态检查用于确认物理网卡链路和状态是否正常。",
+    "CORE_PROCESS_CHECK": "核心进程检查用于确认设备核心进程是否正常运行。",
+    "KERNEL_LOG_CHECK": "内核日志检查用于确认内核日志中是否存在错误。",
+    "REMOTE_MT_CHECK": "远程维护检查用于确认远程维护功能状态是否符合要求。",
+    "BLACKBOX_LOG_CHECK": "黑匣子日志检查用于确认黑盒日志中是否存在异常。",
+    "KERNEL_BOOT_LOG_CHECK": "内核启动日志检查用于确认启动日志中是否存在异常。",
+    "DISK_CHECK": "磁盘使用率检查用于确认磁盘空间和采集状态是否正常。",
+    "CRASH_LOG_CHECK": "崩溃日志检查用于确认设备是否产生崩溃日志。",
+    "MEMORY_CHECK": "内存使用率检查用于确认巡检期间内存使用率是否处于正常范围。",
+    "SPEED_CARD_CHECK": "加速卡状态检查用于确认 SSL/压缩等硬件加速卡是否正常工作。",
+    "FAN_STATE_CHECK": "风扇状态检查用于确认风扇模块是否处于正常状态。",
+    "POWER_STATE_CHECK": "电源状态检查用于确认电源模块是否处于正常状态。",
+    "BIOS_VERSION_CHECK": "BIOS 版本检查用于确认 BIOS 版本是否需要关注。",
+    "ALARM_LOG_CHECK": "告警日志检查用于确认当前告警日志数量是否异常。",
+    "MEMORY_LEAK_CHECK": "内存泄漏风险检查用于确认共享内存和信号量是否存在异常。",
+    "DEVICE_CONNECTION_CHECK": "设备连接检查用于确认设备管理网口连通性是否正常。",
+    "CONFIG_ID_CONFLICT_CHECK": "配置 ID 冲突检查用于确认配置对象 ID 是否存在冲突。",
+    "NIC_HEALTH_CHECK": "网卡健康检查用于确认网卡健康状态是否正常。",
+    "SNAT_SPORT_EXHAUSTION_CHECK": "SNAT 源端口耗尽检查用于确认 SNAT 源端口是否存在耗尽风险。",
+    "SSH_API_CHECK": "SSH/API 访问控制检查用于确认 SSH 和 API 访问控制是否开启。",
+    "PATCH_INFO_CHECK": "补丁信息检查用于确认设备补丁信息是否可用。",
+    "REPORT_CHECK": "报表任务检查用于确认报表服务状态是否正常。",
+    "WEAK_PASSWORD_CHECK": "弱密码检查用于确认是否存在弱密码账号。",
+    "SSL_POLICY_CHECK": "SSL 安全策略检查用于确认是否启用了不安全算法或协议。",
+    "IP_LIMIT_CHECK": "管理登录 IP 限制检查用于确认管理登录来源限制是否开启。",
+    "OPEN_PORT_CHECK": "开放端口检查用于确认是否存在不必要的风险端口开放。",
+}
+
+
 def check_label(key: str) -> str:
     """Return a user-facing Chinese label for a check id."""
     return _CHECK_LABELS.get(key, key.replace("_CHECK", "").replace("_", " ").title())
+
+
+def check_description(key: str) -> str:
+    """Return the native/fallback user-facing description for a check id."""
+    return _CHECK_DESCRIPTIONS.get(key, f"{check_label(key)}用于确认该巡检项是否符合设备预期。")
 
 
 _CHECK_SOURCE_FIELDS = {
@@ -652,7 +708,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
             "status": status,
             "value": str(value),
             "detail": detail,
-            "description": native_description(name),
+            "description": native_description(name) or check_description(name),
         }
 
     # ─────────────────────────────────────────────────────────────────────
@@ -1468,12 +1524,11 @@ def render_markdown(
         for k in all_keys:
             if k in results:
                 r = results[k]
-                detail = _friendly_check_detail(k, r)
                 check_name = r.get("name") or check_label(k)
-                description = r.get("description") or "-"
+                description = r.get("description") or check_description(k)
                 rows.append(
                     f"| {_table_cell(check_name)} | {_table_cell(description)} | "
-                    f"{_table_cell(status_label(r['status']))} | {_table_cell(detail)} |"
+                    f"{_table_cell(status_label(r['status']))} |"
                 )
         return "\n".join(rows)
 
@@ -1526,12 +1581,15 @@ def render_markdown(
     else:
         check_time = raw_time
 
+    progress_text = str(meta.get("progress_text", "") or "").strip()
+    progress_line = f"- 巡检进度：{progress_text}\n" if progress_text else ""
+
     # ── 检查项详情渲染（单设备全量展示正常+异常） ────────
     has_anomaly = any(k in results and results[k]["status"] in ("fail", "warn") for k in all_keys)
     all_rows_text = all_check_rows()
     if all_rows_text:
-        check_detail_section = f"""| 检查项 | 说明 | 状态 | 当前发现 |
-|--------|------|------|------|
+        check_detail_section = f"""| 检查项 | 具体说明 | 状态 |
+|--------|----------|------|
 {all_rows_text}
 """
         if not has_anomaly:
@@ -1542,6 +1600,7 @@ def render_markdown(
     return f"""## 巡检结论
 - 目标：{device_label} ({device_ip})
 - 场景：{meta.get("scene", "?")}
+{progress_line}\
 - 总体状态：{overall_status()}
 - 综合评分：{score_icon} {overall}/100（{risk_label(overall)}）
 - 异常数量：{summary["fail"] + summary["warn"]} 项
@@ -1639,6 +1698,13 @@ def _is_new_report(top_item: Dict[str, Any], pre_run_latest_name: str, t0_int: i
 def _progress_one(client: Any, **kw: Any) -> Dict[str, Any]:
     """Single-device progress query for ThreadPoolExecutor, with NO_RUNNING fallback."""
     result = client._request("GET", "/debug/sys/offline-check", params={"type": "progress"})
+    retry_count = int(kw.get("retry_count", 4))
+    retry_interval = float(kw.get("retry_interval", 2))
+    for _ in range(retry_count):
+        if not _progress_needs_retry(result):
+            break
+        time.sleep(retry_interval)
+        result = client._request("GET", "/debug/sys/offline-check", params={"type": "progress"})
     if result.get("state") == "NO_RUNNING":
         try:
             history = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
@@ -1654,7 +1720,126 @@ def _progress_one(client: Any, **kw: Any) -> Dict[str, Any]:
                 }
         except Exception:
             pass
+    result["progress_text"] = _format_progress_text(result)
+    work_dir = kw.get("work_dir") or _default_work_dir_for_host(client.host)
+    result["work_dir"] = work_dir
+    _save_progress_text(work_dir, result["progress_text"], result)
     return result
+
+
+def _history_one(client: Any, **kw: Any) -> Dict[str, Any]:
+    """Single-device history query normalized for record-limit decisions."""
+    result = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
+    items = _response_items(result)
+    return {
+        "record_count": len(items),
+        "record_limit": 5,
+        "limit_reached": len(items) >= 5,
+        "items": items,
+    }
+
+
+def _to_int(value: Any) -> Optional[int]:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _format_progress_text(result: Dict[str, Any]) -> str:
+    """Render a concise user-facing progress line from the device progress API."""
+    finished = _to_int(result.get("finished"))
+    total = _to_int(result.get("total"))
+    state = str(result.get("state", "")).upper()
+    if total and total > 0 and finished is not None:
+        if state in ("FINISHED", "DONE", "SUCCESS") or finished >= total:
+            current = total
+        else:
+            current = min(finished + 1, total)
+        return f"目前巡检 {current}/{total}"
+    if result.get("history_latest", {}).get("finished"):
+        return "当前没有运行中的巡检任务，最近一次巡检已完成"
+    if state == "NO_RUNNING":
+        return "当前没有运行中的巡检任务"
+    return "巡检进度暂不可用"
+
+
+def _progress_needs_retry(result: Dict[str, Any]) -> bool:
+    state = str(result.get("state", "")).upper()
+    total = _to_int(result.get("total"))
+    finished = _to_int(result.get("finished"))
+    return state in ("WAITING", "PENDING", "STARTING") and (not total) and (finished in (None, 0))
+
+
+def _progress_text_has_count(progress_text: str) -> bool:
+    return bool(re.search(r"\d+\s*/\s*\d+", progress_text or ""))
+
+
+def _default_work_dir_for_host(host: str) -> str:
+    if not isinstance(host, str) or not host:
+        host = "unknown"
+    return os.path.join(tempfile.gettempdir(), f"ad_check_{host_slug(host)}")
+
+
+def _progress_json_path(work_dir: str) -> str:
+    return os.path.join(work_dir, "_progress.json")
+
+
+def _save_progress_text(work_dir: str, progress_text: str, result: Dict[str, Any]) -> None:
+    """Persist progress text so the later wait report can include it."""
+    if not work_dir or not progress_text:
+        return
+    try:
+        os.makedirs(work_dir, exist_ok=True)
+        snapshot = {
+            "progress_text": progress_text,
+            "state": result.get("state", ""),
+            "finished": result.get("finished"),
+            "total": result.get("total"),
+        }
+        with open(_progress_json_path(work_dir), "w", encoding="utf-8") as f:
+            json.dump(snapshot, f, ensure_ascii=False, indent=2)
+    except Exception:
+        # Progress display should never make the actual inspection fail.
+        return
+
+
+def _load_progress_text(work_dir: str) -> str:
+    if not work_dir:
+        return ""
+    path = _progress_json_path(work_dir)
+    if not os.path.exists(path):
+        return ""
+    try:
+        with open(path, encoding="utf-8") as f:
+            snapshot = json.load(f)
+    except Exception:
+        return ""
+    text = snapshot.get("progress_text", "")
+    return text if isinstance(text, str) else ""
+
+
+def _prepend_progress_text(
+    markdown: str,
+    work_dir: str,
+    meta: Optional[Dict[str, Any]] = None,
+    fallback_total: int = 0,
+) -> str:
+    progress_text = ""
+    if meta:
+        progress_text = meta.get("progress_text", "")
+    if not progress_text:
+        progress_text = _load_progress_text(work_dir)
+    if fallback_total and not _progress_text_has_count(progress_text):
+        progress_text = f"目前巡检 {fallback_total}/{fallback_total}"
+    if not progress_text:
+        return markdown
+    if meta is not None:
+        meta["progress_text"] = progress_text
+    stripped = markdown.lstrip()
+    if stripped.startswith(progress_text):
+        return markdown
+    return f"{progress_text}\n\n{stripped}"
 
 
 def _start_only(client: Any, scene: str = "标准巡检", force: bool = False, work_dir: Optional[str] = None) -> Dict[str, Any]:
@@ -1725,7 +1910,19 @@ def _wait_one(
     with open(meta["ad_json_path"], encoding="utf-8") as f:
         data = json.load(f)
     analysis = analyze(data)
+    fallback_total = len(analysis.get("check_results", {}))
+    progress_text = meta.get("progress_text", "") or _load_progress_text(work_dir)
+    if fallback_total and not _progress_text_has_count(progress_text):
+        progress_text = f"目前巡检 {fallback_total}/{fallback_total}"
+    if progress_text:
+        meta["progress_text"] = progress_text
     report = render_markdown(analysis, meta)
+    report = _prepend_progress_text(
+        report,
+        work_dir,
+        meta,
+        fallback_total=fallback_total,
+    )
     return {
         "meta": meta,
         "analysis": analysis,
@@ -1806,6 +2003,7 @@ def main() -> None:
     p_prog.add_argument("--device", default="", help="从 --devices 中选择单台设备名称，如 AD1")
     p_prog.add_argument("--username", default="admin")
     p_prog.add_argument("--password", default="")
+    p_prog.add_argument("--work-dir", default="", help="与 run/wait 使用的工作目录保持一致")
 
     # analyze
     p_analyze = sub.add_parser("analyze", help="分析已下载的巡检报告")
@@ -1987,7 +2185,7 @@ def main() -> None:
                 devices = load_devices_json(args.devices, args.device)
             else:
                 devices = parse_hosts_arg(args.hosts, args.username, args.password)
-            results = run_multi(devices, lambda client, **kw: client._request("GET", "/debug/sys/offline-check", params={"type": "history"}))
+            results = run_multi(devices, _history_one)
             output = {"mode": "multi", "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v), "failed": sum(1 for v in results.values() if "error" in v)}, "results": results}
             print(json.dumps(output, indent=2, ensure_ascii=False))
             sys.exit(compute_multi_exit_code(results))
@@ -2002,7 +2200,7 @@ def main() -> None:
             sys.exit(4)
         client = ADClient(args.host, args.username, password)
         try:
-            result = client._request("GET", "/debug/sys/offline-check", params={"type": "history"})
+            result = _history_one(client)
         except (ADConnectionError, ADAuthError, ADAPIError) as e:
             print(f"❌ API 调用失败: {e}", file=sys.stderr)
             sys.exit(1)
@@ -2014,7 +2212,7 @@ def main() -> None:
                 devices = load_devices_json(args.devices, args.device)
             else:
                 devices = parse_hosts_arg(args.hosts, args.username, args.password)
-            results = run_multi(devices, _progress_one)
+            results = run_multi(devices, _progress_one, work_dir=args.work_dir or None)
             output = {"mode": "multi", "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v), "failed": sum(1 for v in results.values() if "error" in v)}, "results": results}
             print(json.dumps(output, indent=2, ensure_ascii=False))
             sys.exit(compute_multi_exit_code(results))
@@ -2029,7 +2227,7 @@ def main() -> None:
             sys.exit(4)
         try:
             client = ADClient(args.host, args.username, password)
-            result = _progress_one(client)
+            result = _progress_one(client, work_dir=args.work_dir or None)
         except ADAuthError as e:
             print(f"认证失败: {e}", file=sys.stderr)
             sys.exit(2)

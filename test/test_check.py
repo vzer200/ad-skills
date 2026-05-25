@@ -265,13 +265,13 @@ class TestRenderMarkdown(unittest.TestCase):
             "dns_server_enabled": "",
         })
         output = render_markdown(analysis, {"host": "https://10.0.0.1", "scene": "标准巡检", "start_time": ""})
-        self.assertIn("管理员角色未正确配置", output)
-        self.assertIn("心跳状态：未通过", output)
+        self.assertIn("管理员角色配置异常，建议确认管理账号角色是否完整", output)
+        self.assertIn("心跳状态异常", output)
         self.assertIn("共享内存/信号量异常", output)
         self.assertIn("设备安全检查未开启", output)
-        self.assertIn("存在不安全算法和不安全协议", output)
-        self.assertIn("未启用管理登录 IP 限制", output)
-        self.assertIn("DNS 服务：未配置", output)
+        self.assertIn("SSL 策略存在不安全算法或协议", output)
+        self.assertIn("管理登录 IP 限制未启用", output)
+        self.assertIn("DNS 服务器检查用于确认 DNS 服务配置是否符合预期。", output)
         self.assertNotIn("admin=", output)
         self.assertNotIn("heartbeat_state=", output)
         self.assertNotIn("shm_sem_state=", output)
@@ -286,8 +286,9 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertNotIn("## 原始报告", output)
         self.assertNotRegex(output, r"\b(?:[A-Za-z][A-Za-z0-9_]*|82599)=")
         self.assertNotIn("⚠️ 异常", output)
-        self.assertIn("| 检查项 | 说明 | 状态 | 当前发现 |", output)
-        self.assertIn("| 设备安全状态检查 | - | ❌ 异常 | 设备安全检查未开启 |", output)
+        self.assertIn("| 检查项 | 具体说明 | 状态 |", output)
+        self.assertNotIn("当前发现", output)
+        self.assertIn("| 设备安全状态检查 | 设备安全状态检查用于确认设备安全检查功能是否开启。 | ❌ 异常 |", output)
         self.assertIn("✅ 正常", output)
 
     def test_render_check_detail_description_before_status(self):
@@ -299,9 +300,25 @@ class TestRenderMarkdown(unittest.TestCase):
         })
         output = render_markdown(analysis, {"host": "https://10.0.0.1", "scene": "标准巡检", "start_time": ""})
 
-        self.assertIn("| 检查项 | 说明 | 状态 | 当前发现 |", output)
-        self.assertIn("| 管理员角色检查 | 原生 API 管理员角色说明 | ❌ 异常 | 管理员角色未正确配置，可能影响设备管理权限完整性 |", output)
+        self.assertIn("| 检查项 | 具体说明 | 状态 |", output)
+        self.assertNotIn("当前发现", output)
+        self.assertIn("| 管理员角色检查 | 原生 API 管理员角色说明 | ❌ 异常 |", output)
         self.assertNotIn("| 管理员角色检查 | ❌ 异常 | 原生 API 管理员角色说明 |", output)
+
+    def test_render_progress_text_inside_report_header(self):
+        analysis = analyze({"ad_appversion": "1.0"})
+        output = render_markdown(
+            analysis,
+            {
+                "host": "https://10.0.0.1",
+                "scene": "标准巡检",
+                "start_time": "",
+                "progress_text": "目前巡检 8/35",
+            },
+        )
+
+        self.assertIn("- 巡检进度：目前巡检 8/35", output)
+        self.assertLess(output.index("- 巡检进度：目前巡检 8/35"), output.index("- 总体状态："))
 
     def test_render_check_details_and_suggestions_are_operator_facing(self):
         analysis = analyze({
@@ -317,13 +334,14 @@ class TestRenderMarkdown(unittest.TestCase):
         })
         output = render_markdown(analysis, {"host": "https://10.0.0.1", "scene": "标准巡检", "start_time": ""})
 
-        self.assertIn("管理员角色未正确配置，可能影响设备管理权限完整性", output)
-        self.assertIn("检测到 6 条错误日志，建议结合日志时间点排查", output)
-        self.assertIn("| 加速卡状态检查 | - | ✅ 正常 | 加速卡状态正常 |", output)
-        self.assertIn("| 电源状态检查 | - | ❌ 异常 | 未采集到明确正常的电源状态 |", output)
-        self.assertIn("2 个风险端口开放：TCP:85为报表服务, TCP:161为智能DNS服务", output)
+        self.assertIn("管理员角色配置异常，建议确认管理账号角色是否完整", output)
+        self.assertIn("检测到错误日志，建议优先查看最近时间段错误日志", output)
+        self.assertIn("| 加速卡状态检查 | 加速卡状态检查用于确认 SSL/压缩等硬件加速卡是否正常工作。 | ✅ 正常 |", output)
+        self.assertIn("| 电源状态检查 | 电源状态检查用于确认电源模块是否处于正常状态。 | ❌ 异常 |", output)
+        self.assertIn("存在风险端口开放，建议关闭不必要的端口", output)
         self.assertIn("管理登录 IP 限制未启用，建议开启管理来源限制", output)
         self.assertNotIn("| 电源状态检查 | - | ❌ 异常 | -1 |", output)
+        self.assertNotIn("当前发现", output)
         self.assertNotIn("状态异常，建议进一步排查", output)
 
         suggestion_checks = {item["check"] for item in analysis["suggestions"]}
@@ -509,6 +527,48 @@ class TestProgressOne(unittest.TestCase):
         result = _progress_one(client)
         self.assertEqual(result["state"], "RUNNING")
 
+    def test_running_progress_includes_user_visible_text(self):
+        from check import _progress_one
+        client = MagicMock()
+        client._request.return_value = {"state": "RUNNING", "finished": 22, "total": 35}
+        result = _progress_one(client)
+        self.assertEqual(result["progress_text"], "目前巡检 23/35")
+
+    def test_progress_one_persists_progress_text_for_wait_report(self):
+        from check import _progress_one
+        client = MagicMock()
+        client.host = "https://10.0.0.1"
+        client._request.return_value = {"state": "RUNNING", "finished": 22, "total": 35}
+        with tempfile.TemporaryDirectory() as work_dir:
+            result = _progress_one(client, work_dir=work_dir)
+            progress_path = os.path.join(work_dir, "_progress.json")
+
+            self.assertEqual(result["progress_text"], "目前巡检 23/35")
+            self.assertTrue(os.path.exists(progress_path))
+            with open(progress_path, encoding="utf-8") as f:
+                saved = json.load(f)
+            self.assertEqual(saved["progress_text"], "目前巡检 23/35")
+
+    def test_saved_progress_text_is_prefixed_to_wait_report(self):
+        from check import _prepend_progress_text
+        with tempfile.TemporaryDirectory() as work_dir:
+            with open(os.path.join(work_dir, "_progress.json"), "w", encoding="utf-8") as f:
+                json.dump({"progress_text": "目前巡检 23/35"}, f, ensure_ascii=False)
+
+            report = _prepend_progress_text("## 巡检结论\n- 目标：AD1", work_dir, {})
+
+            self.assertTrue(report.startswith("目前巡检 23/35\n\n## 巡检结论"))
+
+    def test_wait_report_uses_final_item_count_when_progress_has_no_numbers(self):
+        from check import _prepend_progress_text
+        with tempfile.TemporaryDirectory() as work_dir:
+            with open(os.path.join(work_dir, "_progress.json"), "w", encoding="utf-8") as f:
+                json.dump({"progress_text": "巡检进度暂不可用"}, f, ensure_ascii=False)
+
+            report = _prepend_progress_text("## 巡检结论\n- 目标：AD1", work_dir, {}, fallback_total=35)
+
+            self.assertTrue(report.startswith("目前巡检 35/35\n\n## 巡检结论"))
+
     def test_no_running_with_history(self):
         from check import _progress_one
         client = MagicMock()
@@ -529,6 +589,32 @@ class TestProgressOne(unittest.TestCase):
         ]
         result = _progress_one(client)
         self.assertNotIn("history_latest", result)
+
+
+class TestHistoryOne(unittest.TestCase):
+    """Test _history_one — history normalization for force decisions."""
+
+    def test_history_limit_uses_items_not_total_items(self):
+        from check import _history_one
+        client = MagicMock()
+        client._request.return_value = {"total_items": 5, "items": []}
+
+        result = _history_one(client)
+
+        self.assertEqual(result["record_count"], 0)
+        self.assertEqual(result["record_limit"], 5)
+        self.assertFalse(result["limit_reached"])
+        self.assertNotIn("total_items", result)
+
+    def test_history_limit_reached_when_items_has_five_records(self):
+        from check import _history_one
+        client = MagicMock()
+        client._request.return_value = {"total_items": 0, "items": [{}, {}, {}, {}, {}]}
+
+        result = _history_one(client)
+
+        self.assertEqual(result["record_count"], 5)
+        self.assertTrue(result["limit_reached"])
 
 
 class TestCheckMainSubcommands(unittest.TestCase):
