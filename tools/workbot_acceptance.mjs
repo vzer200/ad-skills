@@ -34,7 +34,7 @@ function resolvePlaywrightCore() {
 }
 
 const WORKBOT_URL = argValue("--url", process.env.WORKBOT_URL || "https://14.18.243.211:21048/");
-const WORKBOT_USER = argValue("--user", process.env.WORKBOT_USER || "workbot_user");
+const WORKBOT_USER = argValue("--user", process.env.WORKBOT_USER);
 const WORKBOT_PASSWORD = argValue("--password", process.env.WORKBOT_PASSWORD);
 const ZIP_PATH = path.resolve(argValue("--zip", process.env.AD_SKILLS_ZIP || "dist/ad-skills-workbot.zip"));
 const R4_YAML_PATH = path.resolve(argValue("--r4-yaml", process.env.WORKBOT_R4_YAML || "test/fixtures/workbot/r4-slb-full.yml"));
@@ -144,6 +144,9 @@ const CASES = (
   .map((item) => item.trim())
   .filter(Boolean);
 
+if (!WORKBOT_USER) {
+  throw new Error("WORKBOT_USER is required. Do not store it in the repository.");
+}
 if (!WORKBOT_PASSWORD) {
   throw new Error("WORKBOT_PASSWORD is required. Do not store it in the repository.");
 }
