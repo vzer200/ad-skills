@@ -37,6 +37,7 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py status --workdir "$AD_OPS_WO
 
 - 阶段 A 第一条 shell 工具调用必须运行 `init_env.py --confirm-clean` 清理上轮残留产物，然后再生成本轮 YAML；禁止跳过清理或把清理挪到阶段 B。
 - 用户提出新一轮“修改/删除/重新下发”意图时，即使对话里已有上一轮 `adops-bundle.yml`、`apply.py`、上传附件或资源名称，也必须视为新的阶段 A：先清理并生成本轮 YAML 模板，等待用户上传本轮填写完成的 YAML。未收到本轮 YAML 前，禁止复用上一轮产物运行 `plan-and-render`、`summarize-plan`、`preflight-slb-plan` 或任何下发/回滚命令。
+- “删除/下线/移除这套配置”是新的 delete 编排流程，不等同于“回滚上次下发”。只有用户明确说“回滚”“撤销上次下发”“恢复到下发前”时，才允许执行 `rollback-and-verify`；删除配置必须先走阶段 A 生成 delete YAML，等待用户上传后再进入阶段 B。
 - 常见组合参数能从提示词识别时，使用 `render_slb_bundle.py` 生成 `adops-bundle.yml`。
 - 提示词缺字段或组合超出快捷矩阵时，使用下面的 Stage A 通用模板命令生成 `adops-bundle.yml`，让用户人工补齐。不要回复“信息不足”“请补充参数”“VS 名称/VIP/端口是什么”等追问。
 - 阶段 A 结束时停止，告诉用户下载生成的 YAML、填写必要内容后重新上传；用户只需回复“我写完了 YAML”即可进入阶段 B。
