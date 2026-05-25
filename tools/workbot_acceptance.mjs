@@ -19,6 +19,7 @@ function resolvePlaywrightCore() {
   const candidates = [];
   const explicit = argValue("--node-modules", process.env.NODE_MODULES_DIR);
   if (explicit) candidates.push(explicit);
+  candidates.push(path.join(process.cwd(), ".codex-node", "node_modules"));
   candidates.push(path.join(process.cwd(), "node_modules"));
   candidates.push(path.resolve(process.cwd(), "..", "..", "browser_work", "node_modules"));
   candidates.push(path.resolve(process.cwd(), "..", "browser_work", "node_modules"));
