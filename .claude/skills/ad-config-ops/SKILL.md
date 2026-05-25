@@ -36,6 +36,7 @@ python3 skills/ad-config-ops/scripts/ad_ops_flow.py status --workdir "$AD_OPS_WO
 当用户要求新建、修改或删除 SLB/VS 配置，例如“新增 VS”“修改这套 SLB 配置”“删除这套 SLB 配置”“VS + XFF”“VS + PRE_RULE”“VS + Pool + 节点”“VS 引用已有策略”等，第一步只做 YAML，不追问。
 
 - 阶段 A 第一条 shell 工具调用必须运行 `init_env.py --confirm-clean` 清理上轮残留产物，然后再生成本轮 YAML；禁止跳过清理或把清理挪到阶段 B。
+- 用户提出新一轮“修改/删除/重新下发”意图时，即使对话里已有上一轮 `adops-bundle.yml`、`apply.py`、上传附件或资源名称，也必须视为新的阶段 A：先清理并生成本轮 YAML 模板，等待用户上传本轮填写完成的 YAML。未收到本轮 YAML 前，禁止复用上一轮产物运行 `plan-and-render`、`summarize-plan`、`preflight-slb-plan` 或任何下发/回滚命令。
 - 常见组合参数能从提示词识别时，使用 `render_slb_bundle.py` 生成 `adops-bundle.yml`。
 - 提示词缺字段或组合超出快捷矩阵时，使用下面的 Stage A 通用模板命令生成 `adops-bundle.yml`，让用户人工补齐。不要回复“信息不足”“请补充参数”“VS 名称/VIP/端口是什么”等追问。
 - 阶段 A 结束时停止，告诉用户下载生成的 YAML、填写必要内容后重新上传；用户只需回复“我写完了 YAML”即可进入阶段 B。

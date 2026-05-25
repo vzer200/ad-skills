@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import getpass
 import json
 import os
@@ -173,14 +174,19 @@ def rollback_restore_action(
     reason: str,
     method: str,
     path: str | None = None,
+    *,
+    exact: bool = True,
 ) -> dict[str, Any]:
+    verify = {"path": target_path, "expected": snapshot}
+    if exact:
+        verify["exact"] = True
     return {
         "operation_id": operation.get("id"),
         "reason": reason,
         "method": method.upper(),
         "path": path or target_path,
         "payload": snapshot,
-        "verify": {"path": target_path, "expected": snapshot, "exact": True},
+        "verify": verify,
     }
 
 
@@ -218,7 +224,35 @@ def rollback_action_for_existing_resource(
         raise ExecutionError("rollback_method must be one of POST, PATCH, PUT")
     if override_path is not None:
         override_path = validate_rollback_path(override_path)
+    if action == "patch":
+        return rollback_restore_action(
+            operation,
+            target_path,
+            patch_rollback_payload(operation, snapshot),
+            reason,
+            method,
+            override_path,
+            exact=False,
+        )
     return rollback_restore_action(operation, target_path, snapshot, reason, method, override_path)
+
+
+def patch_rollback_payload(operation: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any]:
+    payload = operation.get("payload")
+    if not isinstance(payload, dict):
+        return copy.deepcopy(snapshot)
+    rollback_payload: dict[str, Any] = {}
+    for key in payload:
+        if key in snapshot:
+            rollback_payload[key] = copy.deepcopy(snapshot[key])
+        elif key == "name":
+            rollback_payload[key] = payload[key]
+    if "name" not in rollback_payload:
+        if "name" in snapshot:
+            rollback_payload["name"] = copy.deepcopy(snapshot["name"])
+        elif "name" in payload:
+            rollback_payload["name"] = payload["name"]
+    return rollback_payload
 
 
 def verify_entries(plan: dict[str, Any], operation: dict[str, Any], target_path: str) -> list[dict[str, Any]]:

@@ -25,6 +25,7 @@ from execute_plan import execute_plan  # noqa: E402
 from plan_operations import PlanError, build_bundle_plan  # noqa: E402
 from render_slb_bundle import build_bundle, parse_args  # noqa: E402
 from render_outputs import render_script  # noqa: E402
+from rollback import rollback_manifest  # noqa: E402
 from resolve_schema import definition_map  # noqa: E402
 import ad_ops_flow  # noqa: E402
 import verify_slb_resource  # noqa: E402
@@ -737,6 +738,64 @@ class TestAdOpsFlowPreflight(unittest.TestCase):
         self.assertEqual(rollback["actions"][0]["method"], "POST")
         self.assertEqual(rollback["actions"][0]["path"], "/api/ad/v3/slb/virtual-service/")
         self.assertEqual(rollback["actions"][0]["payload"], {"name": "vs1", "description": "before"})
+
+    def test_execute_plan_patch_rollback_only_restores_changed_fields(self):
+        plan = {
+            "operations": [
+                {
+                    "id": "patch-pre-rule-description",
+                    "action": "patch",
+                    "method": "PATCH",
+                    "path": "/api/ad/v3/slb/pre-rule/http/rule1",
+                    "resource_path": "/api/ad/v3/slb/pre-rule/http/{name}",
+                    "path_parameters": {"name": "rule1"},
+                    "payload": {"name": "rule1", "description": "after"},
+                }
+            ]
+        }
+        baseline = {
+            "name": "rule1",
+            "description": "before",
+            "http_request_uri_rule": [{"match_type": "WILDCARD", "pattern": ""}],
+            "source_address": [],
+        }
+        session = FakeSession(
+            [
+                FakeResponse(200, baseline),
+                FakeResponse(200, {}),
+                FakeResponse(200, {**baseline, "description": "after"}),
+            ]
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            rollback_path = Path(tmp) / "rollback.json"
+            result = execute_plan(
+                plan=plan,
+                session=session,
+                base_url="https://ad.example",
+                auth={"host": "https://ad.example", "username": "admin", "password": "secret", "token": None},
+                execute=True,
+                rollback_out=rollback_path,
+            )
+            rollback = read_json(rollback_path)
+
+        self.assertTrue(result["ok"])
+        action = rollback["actions"][0]
+        self.assertEqual(action["method"], "PATCH")
+        self.assertEqual(action["path"], "/api/ad/v3/slb/pre-rule/http/rule1")
+        self.assertEqual(action["payload"], {"name": "rule1", "description": "before"})
+        self.assertNotIn("http_request_uri_rule", action["payload"])
+        self.assertIsNot(action["verify"].get("exact"), True)
+
+        rollback_session = FakeSession([FakeResponse(200, {}), FakeResponse(200, baseline)])
+        rollback_result = rollback_manifest(
+            manifest=rollback,
+            session=rollback_session,
+            base_url="https://ad.example",
+            auth={"host": "https://ad.example", "username": "admin", "password": "secret", "token": None},
+            execute=True,
+        )
+        self.assertTrue(rollback_result["ok"])
+        self.assertEqual(rollback_session.calls[0]["json"], {"name": "rule1", "description": "before"})
 
     def test_apply_slb_plan_honors_allow_existing_flag(self):
         plan = {
