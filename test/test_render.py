@@ -129,6 +129,26 @@ class TestRenderDeviceDetailBlock(unittest.TestCase):
         self.assertIn("FAN_STATE_CHECK", output)
         self.assertIn("统计汇总", output)
 
+    def test_detail_block_places_description_before_status(self):
+        result = {
+            "meta": {"host": "https://192.168.8.30", "scene": "标准巡检", "start_time": ""},
+            "analysis": _make_analysis(
+                check_results={
+                    "DISK_CHECK": {
+                        "status": "warn",
+                        "value": "/ 82%",
+                        "detail": "磁盘偏高",
+                        "description": "原生 API 磁盘说明",
+                    },
+                },
+                categories={"feature": [], "health": ["DISK_CHECK"], "secure": []},
+            ),
+        }
+        output = _render_device_detail_block("https://192.168.8.30", result, "AD1")
+
+        self.assertIn("| 检查项 | 说明 | 状态 | 值 |", output)
+        self.assertIn("| DISK_CHECK | 原生 API 磁盘说明 | ❌ 异常 | 磁盘偏高 |", output)
+
     def test_all_pass_no_anomalies(self):
         result = {
             "meta": {"host": "https://192.168.8.30", "start_time": ""},

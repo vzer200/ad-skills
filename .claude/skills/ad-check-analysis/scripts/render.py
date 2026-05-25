@@ -247,11 +247,12 @@ def _render_device_detail_block(
             continue
         lines.append("#### {} ({} 项异常)".format(cat_label, len(abnormal)))
         lines.append("")
-        lines.append("| 检查项 | 状态 | 值 |")
-        lines.append("|--------|------|-----|")
+        lines.append("| 检查项 | 说明 | 状态 | 值 |")
+        lines.append("|--------|------|------|-----|")
         for k, cr in abnormal:
-            lines.append("| {} | {} | {} |".format(
+            lines.append("| {} | {} | {} | {} |".format(
                 _check_label(k, cr),
+                _table_cell(cr.get("description") or "-"),
                 _status_label(cr["status"]),
                 _user_detail(cr.get("detail") or cr["value"]),
             ))

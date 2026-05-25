@@ -285,6 +285,8 @@ class ADClient:
         self,
         items: list = None,
         trend: str = "last-hour",
+        from_time: Optional[str] = None,
+        to_time: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         获取所有 VS 汇总趋势数据
@@ -295,14 +297,20 @@ class ADClient:
                           downstream-throughput, general-throughput, http-request-rate,
                           client-connection, server-connection, ssl-connection-rate, ssl-connection
             trend: 时间范围 (last-5m, last-30m, last-hour, last-6h, last-day)
+            from_time: 开始时间，格式 YYYY-MM-DD HH:MM:SS
+            to_time: 结束时间，格式 YYYY-MM-DD HH:MM:SS
         """
         if items is None:
             items = ["connection-rate", "connection", "general-throughput"]
-        items_json = json.dumps(items)
-        items_encoded = urllib.parse.quote(items_json)
+        params = {"trend": trend, "items": json.dumps(items), "netns": "default"}
+        if from_time:
+            params["from"] = from_time
+        if to_time:
+            params["to"] = to_time
         return self._request(
             "GET",
-            f"/stat/slb/virtual-service-summary/combine-items?trend={trend}&items={items_encoded}&netns=default&all_properties=true"
+            "/stat/slb/virtual-service-summary/combine-items",
+            params=params,
         )
 
     def get_vs_trend_by_name(
@@ -310,6 +318,8 @@ class ADClient:
         name: str,
         items: list = None,
         trend: str = "last-hour",
+        from_time: Optional[str] = None,
+        to_time: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         获取指定 VS 趋势数据
@@ -318,14 +328,20 @@ class ADClient:
             name: VS 名称
             items: 指标列表
             trend: 时间范围
+            from_time: 开始时间，格式 YYYY-MM-DD HH:MM:SS
+            to_time: 结束时间，格式 YYYY-MM-DD HH:MM:SS
         """
         if items is None:
             items = ["connection-rate", "connection", "general-throughput"]
-        items_json = json.dumps(items)
-        items_encoded = urllib.parse.quote(items_json)
+        params = {"trend": trend, "items": json.dumps(items), "netns": "default"}
+        if from_time:
+            params["from"] = from_time
+        if to_time:
+            params["to"] = to_time
         return self._request(
             "GET",
-            f"/stat/slb/virtual-service/{name}/combine-items?trend={trend}&items={items_encoded}&netns=default&all_properties=true"
+            f"/stat/slb/virtual-service/{name}/combine-items",
+            params=params,
         )
 
     def get_pool_node_stat(self, pool: str) -> Dict[str, Any]:
@@ -519,10 +535,21 @@ def _execute_command(client, args):
             return client.get_vs_stat_by_name(args.name)
         elif args.subcommand == "trend":
             items = args.items.split(",") if args.items else None
-            return client.get_vs_summary_trend(items=items, trend=args.trend)
+            return client.get_vs_summary_trend(
+                items=items,
+                trend=args.trend,
+                from_time=args.from_time,
+                to_time=args.to_time,
+            )
         elif args.subcommand == "vs-trend":
             items = args.items.split(",") if args.items else None
-            return client.get_vs_trend_by_name(args.name, items=items, trend=args.trend)
+            return client.get_vs_trend_by_name(
+                args.name,
+                items=items,
+                trend=args.trend,
+                from_time=args.from_time,
+                to_time=args.to_time,
+            )
         elif args.subcommand == "pool":
             return client.get_pool_node_stat(args.pool)
         elif args.subcommand == "nodes":
@@ -649,10 +676,14 @@ def main():
     stat_trend = stat_sub.add_parser("trend", help="所有 VS 汇总趋势")
     stat_trend.add_argument("--items", default="connection-rate,connection,general-throughput", help="逗号分隔的指标列表")
     stat_trend.add_argument("--trend", default="last-hour", help="时间范围 (last-5m, last-30m, last-hour, last-6h, last-day)")
+    stat_trend.add_argument("--from-time", default="", help="开始时间，格式 YYYY-MM-DD HH:MM:SS")
+    stat_trend.add_argument("--to-time", default="", help="结束时间，格式 YYYY-MM-DD HH:MM:SS")
     stat_vs_trend = stat_sub.add_parser("vs-trend", help="指定 VS 趋势")
     stat_vs_trend.add_argument("name", help="VS 名称")
     stat_vs_trend.add_argument("--items", default="connection-rate,connection,general-throughput", help="逗号分隔的指标列表")
     stat_vs_trend.add_argument("--trend", default="last-hour", help="时间范围")
+    stat_vs_trend.add_argument("--from-time", default="", help="开始时间，格式 YYYY-MM-DD HH:MM:SS")
+    stat_vs_trend.add_argument("--to-time", default="", help="结束时间，格式 YYYY-MM-DD HH:MM:SS")
     stat_pool = stat_sub.add_parser("pool", help="节点池节点状态")
     stat_pool.add_argument("pool", help="节点池名称")
     stat_sub.add_parser("nodes", help="全部节点状态")

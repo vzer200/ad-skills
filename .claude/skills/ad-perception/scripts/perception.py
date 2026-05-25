@@ -201,10 +201,21 @@ def _fetch_vs_names(client: Any) -> List[str]:
         return []
 
 
-def _fetch_trend_raw(client: Any, vs_name: str, trend: str = "last-hour") -> Optional[Dict[str, Any]]:
+def _fetch_trend_raw(
+    client: Any,
+    vs_name: str,
+    trend: str = "last-hour",
+    from_time: str = "",
+    to_time: str = "",
+) -> Optional[Dict[str, Any]]:
     """获取指定 VS 和趋势周期的原始趋势数据。"""
     try:
-        data = client.get_vs_trend_by_name(vs_name, trend=trend)
+        kwargs: Dict[str, Any] = {"trend": trend}
+        if from_time:
+            kwargs["from_time"] = from_time
+        if to_time:
+            kwargs["to_time"] = to_time
+        data = client.get_vs_trend_by_name(vs_name, **kwargs)
         return data
     except Exception:
         return None
@@ -249,12 +260,29 @@ def _extract_metric_values(item: Dict[str, Any]) -> List[float]:
     return [float(v) for v in vals if isinstance(v, (int, float)) and math.isfinite(v)]
 
 
+def build_traffic_window(
+    days: int = 7,
+    from_time: str = "",
+    to_time: str = "",
+) -> Tuple[str, str, str]:
+    """Build AD traffic trend query window and a user-facing range label."""
+    safe_days = max(1, int(days or 7))
+    now = datetime.now()
+    end = to_time or now.strftime("%Y-%m-%d %H:%M:%S")
+    if from_time:
+        return from_time, end, f"{from_time} 至 {end}"
+    start_dt = now - timedelta(days=safe_days)
+    return start_dt.strftime("%Y-%m-%d %H:%M:%S"), end, f"最近 {safe_days} 天"
+
+
 def traffic_analysis(
     client: Any,
     db_path: Optional[str] = None,
     vs_name: Optional[str] = None,
     days: int = 7,
     require_db: bool = False,
+    from_time: str = "",
+    to_time: str = "",
 ) -> Dict[str, Any]:
     """
     流量分析: 默认优先使用 SQLite 数据，必要时回退到 API。
@@ -265,12 +293,21 @@ def traffic_analysis(
         anomalies: 异常字典列表 (当 status == 'ok' 时)
         error: 错误信息或 None
     """
+    safe_days = max(1, int(days or 7))
+    trend_from, trend_to, range_label = build_traffic_window(
+        days=safe_days,
+        from_time=from_time,
+        to_time=to_time,
+    )
     result = {
         'status': 'ok',
         'anomalies': [],
         'error': None,
         'source': 'sqlite',
-        'days': max(1, int(days or 7)),
+        'days': safe_days,
+        'range': range_label,
+        'from_time': trend_from,
+        'to_time': trend_to,
         'vs': vs_name,
         'db_queried': False,
         'db_path': db_path,
@@ -344,7 +381,13 @@ def traffic_analysis(
         for vn in vs_names:
             trends = {}
             for trend_period in ('last-hour', 'last-day'):
-                trends[trend_period] = _fetch_trend_raw(client, vn, trend_period)
+                trends[trend_period] = _fetch_trend_raw(
+                    client,
+                    vn,
+                    trend_period,
+                    from_time=trend_from,
+                    to_time=trend_to,
+                )
             trends_by_vs[vn] = trends
 
         result['raw_trends'] = _build_metric_tables_from_trend(trends_by_vs)
@@ -1003,10 +1046,15 @@ def render_markdown(results: Dict[str, Any]) -> str:
         lines.append('## 流量分析')
         days_label = traffic.get('days', 7)
         vs_label = traffic.get('vs') or '全部虚拟服务'
+        range_label = traffic.get('range') or f"最近 {days_label} 天"
         if traffic.get('db_queried') or traffic.get('source') in ('sqlite', 'sqlite_injected'):
             lines.append(f"- 分析对象：{vs_label}")
-            lines.append(f"- 历史范围：最近 {days_label} 天")
+            lines.append(f"- 时间范围：{range_label}")
             lines.append(f"- 数据样本：{traffic.get('sample_count', 0)} 条")
+            lines.append('')
+        elif range_label:
+            lines.append(f"- 分析对象：{vs_label}")
+            lines.append(f"- 时间范围：{range_label}")
             lines.append('')
         if traffic.get('status') in ('ok', 'warning'):
             anomalies = traffic.get('anomalies', [])
@@ -1320,6 +1368,8 @@ def _traffic_one(
     vs_name: Optional[str] = None,
     days: int = 7,
     require_db: bool = False,
+    from_time: str = "",
+    to_time: str = "",
 ) -> Dict[str, Any]:
     traffic_result = traffic_analysis(
         client,
@@ -1327,6 +1377,8 @@ def _traffic_one(
         vs_name=vs_name,
         days=days,
         require_db=require_db,
+        from_time=from_time,
+        to_time=to_time,
     )
     return {'device': client.host, 'traffic': traffic_result, '_scope': 'traffic'}
 
@@ -1388,6 +1440,8 @@ def main() -> None:
     _add_common_args(traffic_p)
     traffic_p.add_argument("--vs", default="", help="VS name filter")
     traffic_p.add_argument("--days", type=int, default=7, help="历史流量库回溯天数 (默认7)")
+    traffic_p.add_argument("--from-time", default="", help="开始时间，格式 YYYY-MM-DD HH:MM:SS")
+    traffic_p.add_argument("--to-time", default="", help="结束时间，格式 YYYY-MM-DD HH:MM:SS")
     traffic_p.add_argument("--require-db", action="store_true", help="必须使用 SQLite 历史库，禁止实时 API 回退")
     state_p = subparsers.add_parser("state", help="Device state anomaly detection")
     _add_common_args(state_p); state_p.add_argument("--disk-source", default="", help="Check report directory with ad.json")
@@ -1466,6 +1520,8 @@ def main() -> None:
                 vs_name=vs_name,
                 days=getattr(args, 'days', 7),
                 require_db=getattr(args, 'require_db', False),
+                from_time=getattr(args, 'from_time', ''),
+                to_time=getattr(args, 'to_time', ''),
             )
 
             if output_format == "json":
@@ -1543,6 +1599,8 @@ def main() -> None:
                 vs_name=vs_name,
                 days=getattr(args, 'days', 7),
                 require_db=getattr(args, 'require_db', False),
+                from_time=getattr(args, 'from_time', ''),
+                to_time=getattr(args, 'to_time', ''),
             )
             result = {'device': host, 'traffic': traffic_result, '_scope': 'traffic'}
             _print_result(result, output_format)

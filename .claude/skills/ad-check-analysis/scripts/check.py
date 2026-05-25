@@ -463,6 +463,112 @@ def check_label(key: str) -> str:
     return _CHECK_LABELS.get(key, key.replace("_CHECK", "").replace("_", " ").title())
 
 
+_CHECK_SOURCE_FIELDS = {
+    "APP_VERSION_CHECK": ["ad_appversion"],
+    "ADMIN_ROLE_CHECK": ["admin"],
+    "DEVICE_SAFE_CHECK": ["security_check_state"],
+    "DNS_DETECT_CHECK": ["dns_proxy_enabled"],
+    "DNAT_CHECK": ["dnat_dst_ip2net_if"],
+    "HEARTBEAT_CHECK": ["heartbeat_state"],
+    "STATIC_IP_CHECK": ["static_ip_config"],
+    "CLUSTER_STATE_CHECK": ["cluster_state"],
+    "VIRTUAL_MAC_CHECK": ["cluster_virtual_mac"],
+    "DUAL_STATE_CHECK": ["ms_state"],
+    "POOL_PERSIST_CHECK": ["node_pool_persist"],
+    "STATIC_ROUTE_CHECK": ["static_route_health_check"],
+    "POOL_HEALTH_CHECK": ["node_pool_health_check_detect"],
+    "RS_LEVEL_CHECK": ["rs_level_check"],
+    "APP_GROUP_CHECK": ["cluster_appgroup_unit"],
+    "DNS_SERVER_STATE_CHECK": ["dns_server_health"],
+    "LINK_HEALTH_CHECK": ["link_health_check"],
+    "STATIC_PROXIMITY_CHECK": ["static_proximity_check"],
+    "DNS64_CHECK": ["dns64_enabled"],
+    "POLICY_ROUTE_CHECK": ["newly_added_policy_route"],
+    "MANAGE_IP_CHECK": ["ms_manage_ip_difference"],
+    "SNMP_TRAPS_CHECK": ["snmp_alarm_enabled"],
+    "DNS_REFLECT_CHECK": ["dns_pre_rule_exist"],
+    "DNS_SERVER_CHECK": ["dns_server_enabled"],
+    "DNAT_PORT_CHECK": ["dnat_port_and_proto"],
+    "SESSION_SYNC_CHECK": ["cluster_session_sync"],
+    "MAIL_WARN_CHECK": ["email_alarm_enabled"],
+    "VIP_POOL_CHECK": ["virtual_ip_pool_check"],
+    "PROXY_POLICY_CHECK": ["proxy_policy_check"],
+    "DNS_MAP_PS_CHECK": ["dns_map_persist_enable"],
+    "WAN_BANDWIDTH_CHECK": ["wan_max_bandwidth"],
+    "FAULT_SWITCH_CHECK": ["cluster_fault_switch_enabled"],
+    "SYSLOG_CHECK": ["syslog_enabled"],
+    "AUTO_UPDATE_CHECK": ["auto_update"],
+    "CPU_CHECK": ["base_cpu_usage", "base_cpu_mpstat"],
+    "LOG_CHECK": ["base_log_error_exist"],
+    "DEVICE_RUN_TIME": ["base_running_time"],
+    "DEVICE_FILE_CHECK": ["base_file_ds"],
+    "NIC_STATE_CHECK": ["base_eth_abnormal"],
+    "CORE_PROCESS_CHECK": ["base_core_process_lack"],
+    "KERNEL_LOG_CHECK": ["base_kernel_log"],
+    "REMOTE_MAINTAIN_CHECK": ["remote_mt"],
+    "BLACK_BOX_CHECK": ["base_blackbox_state"],
+    "DMESG_DATA_CHECK": ["base_blackbox_dmesg"],
+    "DISK_CHECK": ["disk_info"],
+    "CRASH_LOG_CHECK": ["base_crash_time"],
+    "MEMORY_CHECK": ["snmp_mem_rate"],
+    "SPEED_CARD_CHECK": ["acceleration"],
+    "FAN_STATE_CHECK": ["fan_state"],
+    "POWER_STATE_CHECK": ["power_state"],
+    "BIOS_VERSION_CHECK": ["bios_update_state"],
+    "WARN_LOG_CHECK": ["alarms_enabled"],
+    "MEMORY_LEAK_CHECK": ["shm_sem_state"],
+    "DEVICE_CONNECTION_CHECK": ["base_eth_info"],
+    "COREDUMP_INFO_CHECK": ["base_no_core"],
+    "CONFIG_ID_CONFLICT_CHECK": ["id_conflict_list"],
+    "NIC_HEALTH_CHECK": ["I350_nic_state", "82599_nic_state"],
+    "SNAT_SPORT_EXHAUSTION_CHECK": ["snat_sport_exhaustion_log_num"],
+    "SSH_API_CHECK": ["ssh_authority"],
+    "PATCH_INFO_CHECK": ["patch_info"],
+    "REPORT_CHECK": ["base_report_stab"],
+    "WEAK_PASSWORD_CHECK": ["weak_pwd"],
+    "SSL_POLICY_CHECK": ["unsafe_algorithm", "unsafe_protocol"],
+    "IP_LIMIT_CHECK": ["enable_iplimit"],
+    "OPEN_PORT_CHECK": ["dangerous_port"],
+}
+
+
+def _collect_native_descriptions(data: Dict[str, Any]) -> Dict[str, str]:
+    """Collect raw API description text keyed by native field/check names."""
+    descriptions: Dict[str, str] = {}
+
+    def add(key: Any, value: Any) -> None:
+        if not key or value is None:
+            return
+        text = str(value).strip()
+        if text:
+            descriptions.setdefault(str(key), text)
+
+    for container_key in ("descriptions", "description", "check_descriptions"):
+        container = data.get(container_key)
+        if isinstance(container, dict):
+            for key, value in container.items():
+                add(key, value)
+
+    for key, value in data.items():
+        if isinstance(value, dict):
+            add(key, value.get("description") or value.get("desc"))
+
+    for container_key in ("items", "check_items", "check_results"):
+        container = data.get(container_key)
+        if isinstance(container, dict):
+            for key, value in container.items():
+                if isinstance(value, dict):
+                    add(key, value.get("description") or value.get("desc"))
+        elif isinstance(container, list):
+            for item in container:
+                if not isinstance(item, dict):
+                    continue
+                key = item.get("field") or item.get("key") or item.get("name") or item.get("id") or item.get("check")
+                add(key, item.get("description") or item.get("desc"))
+
+    return descriptions
+
+
 def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     """
     根据 ad.json 内容进行结构化分析。
@@ -482,10 +588,18 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         }
     check_results = {}
     data_keys = set(data.keys())  # ad.json 中实际存在的字段集合
+    native_descriptions = _collect_native_descriptions(data)
 
     def has(*keys: str) -> bool:
         """检查 ad.json 中是否包含至少一个指定字段"""
         return any(k in data_keys for k in keys)
+
+    def native_description(name: str) -> str:
+        for key in [name, *_CHECK_SOURCE_FIELDS.get(name, [])]:
+            desc = native_descriptions.get(key)
+            if desc:
+                return desc
+        return ""
 
     def check(name: str, status: str, value: str = "", detail: str = "") -> None:
         check_results[name] = {
@@ -493,6 +607,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
             "status": status,
             "value": str(value),
             "detail": detail,
+            "description": native_description(name),
         }
 
     # ─────────────────────────────────────────────────────────────────────
@@ -1310,7 +1425,11 @@ def render_markdown(
                 r = results[k]
                 detail = _friendly_check_detail(k, r)
                 check_name = r.get("name") or check_label(k)
-                rows.append(f"| {_table_cell(check_name)} | {_table_cell(status_label(r['status']))} | {_table_cell(detail)} |")
+                description = r.get("description") or "-"
+                rows.append(
+                    f"| {_table_cell(check_name)} | {_table_cell(description)} | "
+                    f"{_table_cell(status_label(r['status']))} | {_table_cell(detail)} |"
+                )
         return "\n".join(rows)
 
     # ── 健康评分（优先使用 analyze 返回的 health_scores） ─────────────
@@ -1366,8 +1485,8 @@ def render_markdown(
     has_anomaly = any(k in results and results[k]["status"] in ("fail", "warn") for k in all_keys)
     all_rows_text = all_check_rows()
     if all_rows_text:
-        check_detail_section = f"""| 检查项 | 状态 | 当前发现 |
-|--------|------|------|
+        check_detail_section = f"""| 检查项 | 说明 | 状态 | 当前发现 |
+|--------|------|------|------|
 {all_rows_text}
 """
         if not has_anomaly:

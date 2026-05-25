@@ -533,7 +533,7 @@ class TestCollectOnce(unittest.TestCase):
         }
         call_count = [0]
 
-        def mock_trend(vn, trend='last-hour'):
+        def mock_trend(vn, trend='last-hour', **kwargs):
             call_count[0] += 1
             if vn == 'vs_a':
                 raise Exception("API error")

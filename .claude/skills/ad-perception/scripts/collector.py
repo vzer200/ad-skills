@@ -11,6 +11,7 @@ import sqlite3
 import sys
 import threading
 import time
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 # Cross-skill import: ad-ops provides ADClient
@@ -205,7 +206,13 @@ def _inject_trend_into_db(db_path: str, vs_name: str, trend_data: Dict[str, Any]
     return total
 
 
-def collect_once(client: Any, db_path: str) -> int:
+def _default_trend_window(hours: int = 1) -> Tuple[str, str]:
+    now = datetime.now()
+    start = now - timedelta(hours=max(1, int(hours or 1)))
+    return start.strftime("%Y-%m-%d %H:%M:%S"), now.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def collect_once(client: Any, db_path: str, from_time: str = "", to_time: str = "") -> int:
     """运行一次采集周期: 获取 VS 名称，拉取趋势数据，注入 SQLite。
 
     Args:
@@ -224,10 +231,21 @@ def collect_once(client: Any, db_path: str) -> int:
     if not vs_names:
         return 0
 
+    trend_from, trend_to = (from_time, to_time)
+    if not trend_from or not trend_to:
+        default_from, default_to = _default_trend_window()
+        trend_from = trend_from or default_from
+        trend_to = trend_to or default_to
+
     total = 0
     for vn in vs_names:
         try:
-            trend_data = client.get_vs_trend_by_name(vn, trend='last-hour')
+            trend_data = client.get_vs_trend_by_name(
+                vn,
+                trend='last-hour',
+                from_time=trend_from,
+                to_time=trend_to,
+            )
         except Exception:
             continue
         if trend_data:

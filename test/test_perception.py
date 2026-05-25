@@ -24,6 +24,7 @@ from perception import (
     fetch_service_log_result,
     render_logs_markdown,
     _logs_one,
+    build_traffic_window,
     render_markdown,
     render_json,
     _compute_exit_code,
@@ -325,6 +326,54 @@ class TestDBFallback(unittest.TestCase):
         finally:
             if os.path.isfile(db_path):
                 os.unlink(db_path)
+
+    def test_fetch_trend_passes_explicit_time_range(self):
+        _fetch_trend_raw(
+            self.client,
+            "vs_test",
+            "last-hour",
+            from_time="2026-05-20 00:00:00",
+            to_time="2026-05-20 01:00:00",
+        )
+
+        self.client.get_vs_trend_by_name.assert_called_with(
+            "vs_test",
+            trend="last-hour",
+            from_time="2026-05-20 00:00:00",
+            to_time="2026-05-20 01:00:00",
+        )
+
+    def test_traffic_analysis_applies_time_range_to_realtime_trends(self):
+        result = traffic_analysis(
+            self.client,
+            vs_name="vs_test",
+            from_time="2026-05-20 00:00:00",
+            to_time="2026-05-20 01:00:00",
+        )
+
+        self.assertEqual(result["from_time"], "2026-05-20 00:00:00")
+        self.assertEqual(result["to_time"], "2026-05-20 01:00:00")
+        self.client.get_vs_trend_by_name.assert_any_call(
+            "vs_test",
+            trend="last-hour",
+            from_time="2026-05-20 00:00:00",
+            to_time="2026-05-20 01:00:00",
+        )
+        self.client.get_vs_trend_by_name.assert_any_call(
+            "vs_test",
+            trend="last-day",
+            from_time="2026-05-20 00:00:00",
+            to_time="2026-05-20 01:00:00",
+        )
+
+    def test_build_traffic_window_defaults_to_days_range(self):
+        with patch("perception.datetime") as mock_datetime:
+            mock_datetime.now.return_value = datetime(2026, 5, 25, 10, 0, 0)
+            from_time, to_time, label = build_traffic_window(days=7)
+
+        self.assertEqual(from_time, "2026-05-18 10:00:00")
+        self.assertEqual(to_time, "2026-05-25 10:00:00")
+        self.assertEqual(label, "最近 7 天")
 
 
 class TestStateAnalysis(unittest.TestCase):

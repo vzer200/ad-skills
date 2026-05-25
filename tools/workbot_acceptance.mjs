@@ -45,6 +45,10 @@ const PYTHON = argValue("--python", process.env.PYTHON || "python");
 const AD_VERIFY_BASE_URL = argValue("--ad-base-url", process.env.AD_VERIFY_BASE_URL || process.env.AD1_PUBLIC_URL || "https://14.18.243.211:21044");
 const AD_VERIFY_USERNAME = argValue("--ad-user", process.env.AD_VERIFY_USERNAME || process.env.AD1_USER || "admin");
 const AD_VERIFY_PASSWORD = argValue("--ad-password", process.env.AD_VERIFY_PASSWORD || process.env.AD1_PASS || process.env.AD_PASS || process.env.AD_PASSWORD || devicePasswordForName("AD1"));
+const DEFAULT_PUBLIC_DEVICE_URLS = {
+  AD1: AD_VERIFY_BASE_URL,
+  AD2: process.env.AD2_PUBLIC_URL || process.env.AD2_BASE_URL || "https://14.18.243.211:21039",
+};
 const WORKBOT_FORBIDDEN_DEVICE_HOSTS = (argValue(
   "--forbidden-workbot-device-hosts",
   process.env.WORKBOT_FORBIDDEN_DEVICE_HOSTS || "14.18.243.211:21044,14.18.243.211:21039",
@@ -171,6 +175,36 @@ function devicePasswordForName(name) {
   }
 }
 
+function deviceEntryForName(name) {
+  try {
+    const data = JSON.parse(fs.readFileSync(path.resolve("devices.json"), "utf8"));
+    return (data.devices || []).find((item) => item && item.name === name) || {};
+  } catch {
+    return {};
+  }
+}
+
+function envDeviceValue(name, suffixes) {
+  const prefix = String(name || "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "").toUpperCase();
+  for (const suffix of suffixes) {
+    const value = process.env[`${prefix}_${suffix}`];
+    if (value) return value;
+  }
+  return "";
+}
+
+function deviceConnectionForName(name) {
+  const entry = deviceEntryForName(name);
+  const host =
+    envDeviceValue(name, ["PUBLIC_URL", "BASE_URL", "HOST"]) ||
+    DEFAULT_PUBLIC_DEVICE_URLS[name] ||
+    entry.host ||
+    AD_VERIFY_BASE_URL;
+  const username = envDeviceValue(name, ["USER", "USERNAME"]) || entry.user || AD_VERIFY_USERNAME;
+  const password = envDeviceValue(name, ["PASS", "PASSWORD"]) || entry.password || (name === "AD1" ? AD_VERIFY_PASSWORD : "");
+  return { name, host, username, password };
+}
+
 function devicePasswordsFromFile() {
   const values = [];
   for (const file of [path.resolve("devices.json")]) {
@@ -239,7 +273,9 @@ function isTransientProviderError(value) {
 
 function parseRateLimitProviderError(value) {
   const text = String(value || "");
-  if (!/(?:Provider error:\s*)?429 Too Many Requests|Too Many Requests|\u4f7f\u7528\u4e0a\u9650|\u9650\u989d/.test(text)) return null;
+  const explicit429 = /(?:Provider error:\s*)?429 Too Many Requests|Too Many Requests|\u4f7f\u7528\u4e0a\u9650/.test(text);
+  const exhaustedQuota = /(?:\u9650\u989d|\u989d\u5ea6)[^\n\u3002]{0,24}(?:\u4e0d\u8db3|\u7528\u5b8c|\u7528\u5c3d|\u5df2\u8fbe|\u8fbe\u5230|\u8d85\u51fa|\u8017\u5c3d)|(?:\u4e0d\u8db3|\u7528\u5b8c|\u7528\u5c3d|\u5df2\u8fbe|\u8fbe\u5230|\u8d85\u51fa|\u8017\u5c3d)[^\n\u3002]{0,24}(?:\u9650\u989d|\u989d\u5ea6)/.test(text);
+  if (!explicit429 && !exhaustedQuota) return null;
   const resetMatch = text.match(/(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s*\u91cd\u7f6e/);
   return {
     resetAt: resetMatch ? resetMatch[1] : "",
@@ -545,7 +581,7 @@ const cases = {
   "r3-traffic-vs": {
     prompt: "对 AD2 设备的 test 虚拟服务进行流量趋势分析。",
     expected: ["connect.py", "AD2", "collector.py", "collect", "perception.py", "traffic", "test"],
-    commandExpected: ["connect.py", "collector.py", "collect", "--collect-only", "perception.py", "traffic", "--vs", "test", "--require-db"],
+    commandExpected: ["connect.py", "collector.py", "collect", "--collect-only", "perception.py", "traffic", "--vs", "test", "--days", "7", "--require-db"],
     visibleForbidden: ["| 风险 |", "ℹ️ 轻微", "⚠️ 明显", "❌ 严重", "大幅偏离", "连接数约为基线", "三项核心指标", "显著下降", "降至 0", "当前值为 0", "小结", "↓", "general_throughput"],
     requireTools: true,
     requireDevice: true,
@@ -567,6 +603,7 @@ const cases = {
     prompt: "对 AD1 设备的日志进行分析。",
     expected: ["connect.py", "AD1", "perception.py", "logs", "ALERT", "ERROR", "ALARM"],
     commandExpected: ["connect.py", "perception.py", "logs", "--limit", "20", "--levels", "ALERT,ERROR", "--modules", "ALARM"],
+    apiVerify: { kind: "service-log", device: "AD1", limit: 20, levels: ["ALERT", "ERROR"], modules: ["ALARM"], hours: 24 },
     requireTools: true,
     requireDevice: true,
   },
@@ -574,6 +611,7 @@ const cases = {
     prompt: "对 AD1 设备近 5 天的日志进行分析。",
     expected: ["connect.py", "AD1", "perception.py", "logs", "5", "ALERT", "ERROR", "ALARM"],
     commandExpected: ["connect.py", "perception.py", "logs", "--days", "5", "--limit", "20", "--levels", "ALERT,ERROR", "--modules", "ALARM"],
+    apiVerify: { kind: "service-log", device: "AD1", limit: 20, levels: ["ALERT", "ERROR"], modules: ["ALARM"], days: 5 },
     requireTools: true,
     requireDevice: true,
   },
@@ -1754,6 +1792,205 @@ function runLocalAdVerification(name, cfg, override = {}) {
   };
 }
 
+function formatDateTimeLocal(date) {
+  const pad = (value) => String(value).padStart(2, "0");
+  return [
+    date.getFullYear(),
+    "-",
+    pad(date.getMonth() + 1),
+    "-",
+    pad(date.getDate()),
+    " ",
+    pad(date.getHours()),
+    ":",
+    pad(date.getMinutes()),
+    ":",
+    pad(date.getSeconds()),
+  ].join("");
+}
+
+function buildApiWindow(spec = {}) {
+  const now = new Date();
+  const end = spec.toTime || formatDateTimeLocal(now);
+  const startDate = new Date(now.getTime());
+  if (spec.fromTime) return { fromTime: spec.fromTime, toTime: end, label: `${spec.fromTime} 至 ${end}` };
+  if (spec.days && Number(spec.days) > 0) {
+    startDate.setDate(startDate.getDate() - Number(spec.days));
+    return { fromTime: formatDateTimeLocal(startDate), toTime: end, label: `最近 ${Number(spec.days)} 天` };
+  }
+  const hours = Math.max(1, Number(spec.hours || 24));
+  startDate.setHours(startDate.getHours() - hours);
+  return { fromTime: formatDateTimeLocal(startDate), toTime: end, label: `最近 ${hours} 小时` };
+}
+
+function parseJsonObject(raw) {
+  try {
+    return JSON.parse(raw || "{}");
+  } catch {
+    return null;
+  }
+}
+
+function entryText(entry) {
+  return String(
+    entry.detail ??
+    entry.message ??
+    entry.content ??
+    entry.description ??
+    entry.desc ??
+    entry.msg ??
+    entry.log ??
+    "",
+  ).replace(/\s+/g, " ").trim();
+}
+
+function stableSnippet(value, minLength = 6) {
+  const text = String(value || "")
+    .replace(/\[[^\]]+\]/g, " ")
+    .replace(/[^\p{L}\p{N}\u4e00-\u9fff]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (text.length < minLength) return "";
+  return text.slice(0, Math.min(20, Math.max(minLength, 12)));
+}
+
+function serviceLogEntryMatchers(entry) {
+  const tokens = [
+    entry.date,
+    entry.time,
+    entry.level,
+    entry.module,
+    stableSnippet(entryText(entry)),
+  ].map((item) => String(item || "").trim()).filter(Boolean);
+  return Array.from(new Set(tokens));
+}
+
+function runApiOutputVerification(name, cfg, responses) {
+  const spec = cfg && cfg.apiVerify;
+  if (!spec) return { status: "disabled" };
+  if (spec.kind !== "service-log") {
+    return { status: "fail", reason: `unsupported apiVerify kind: ${spec.kind}` };
+  }
+
+  const connection = deviceConnectionForName(spec.device || "AD1");
+  if (!connection.password) {
+    return { status: "fail", kind: spec.kind, reason: `missing password for ${connection.name}` };
+  }
+
+  const levels = spec.levels || ["ALERT", "ERROR"];
+  const modules = spec.modules || [];
+  const limit = Math.max(1, Number(spec.limit || 20));
+  const window = buildApiWindow(spec);
+  const args = [
+    ".claude/skills/ad-ops/scripts/ad_api.py",
+    "--host",
+    connection.host,
+    "--user",
+    connection.username,
+    "--json",
+    "log",
+    "service",
+    "--limit",
+    String(limit),
+    "--from-time",
+    window.fromTime,
+    "--to-time",
+    window.toTime,
+    "--levels",
+    levels.join(","),
+  ];
+  if (modules.length) args.push("--modules", modules.join(","));
+
+  const displayArgs = args.map((item) => item === connection.password ? "<redacted>" : item);
+  log("api-verify-start", { name, kind: spec.kind, device: connection.name, args: displayArgs });
+  const result = spawnSync(PYTHON, args, {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      PYTHONUTF8: "1",
+      AD_PASS: connection.password,
+    },
+    encoding: "utf8",
+    timeout: 120000,
+    windowsHide: true,
+  });
+
+  const stdout = redactSensitive(result.stdout || "");
+  const stderr = redactSensitive(result.stderr || "");
+  const parsed = parseJsonObject(result.stdout || "");
+  const items = parsed ? normalizeList(parsed) : [];
+  const visibleText = joinUniqueTexts(
+    ...responses.map((item) => item.visibleText || ""),
+    ...responses.map((item) => item.visibleAgentText || ""),
+  );
+  const toolCommands = extractToolCommands(responses, { includePageText: false });
+  const toolCommandText = toolCommands.join("\n");
+  const requiredCommandTokens = [
+    "perception.py",
+    "logs",
+    "--limit",
+    String(limit),
+    "--levels",
+    levels.join(","),
+    ...(modules.length ? ["--modules", modules.join(",")] : []),
+    ...(spec.days ? ["--days", String(spec.days)] : []),
+  ];
+  const missingCommandTokens = requiredCommandTokens.filter((token) => !toolCommandText.includes(token));
+
+  const visibleMatches = [];
+  let outputMatchesApi = false;
+  if (items.length > 0) {
+    for (const entry of items.slice(0, 5)) {
+      const tokens = serviceLogEntryMatchers(entry);
+      const found = tokens.filter((token) => visibleText.includes(token));
+      const detailToken = stableSnippet(entryText(entry));
+      const matched = found.length >= Math.min(2, tokens.length) && (!detailToken || found.includes(detailToken) || found.some((token) => /\d{2}:\d{2}/.test(token)));
+      visibleMatches.push({
+        date: entry.date || "",
+        time: entry.time || "",
+        level: entry.level || "",
+        module: entry.module || "",
+        tokens,
+        found,
+        matched,
+      });
+      if (matched) outputMatchesApi = true;
+    }
+  } else {
+    outputMatchesApi = /(?:未发现|没有|暂无|无)[^\n]{0,20}(?:日志|告警|记录)|0\s*条/.test(visibleText);
+  }
+
+  const ok = result.status === 0 && parsed && missingCommandTokens.length === 0 && outputMatchesApi;
+  log("api-verify-done", {
+    name,
+    kind: spec.kind,
+    status: result.status,
+    ok,
+    itemCount: items.length,
+    missingCommandTokens,
+    outputMatchesApi,
+  });
+
+  return {
+    status: ok ? "ok" : "fail",
+    kind: spec.kind,
+    device: connection.name,
+    command: [PYTHON, ...displayArgs].join(" "),
+    exitCode: result.status,
+    range: window.label,
+    fromTime: window.fromTime,
+    toTime: window.toTime,
+    levels,
+    modules,
+    itemCount: items.length,
+    missingCommandTokens,
+    outputMatchesApi,
+    visibleMatches,
+    stdout: stdout.slice(-8000),
+    stderr: stderr.slice(-4000),
+  };
+}
+
 async function sendPromptOnce(page, name, prompt, attempt) {
   log("prompt-start", { name, promptLength: prompt.length, attempt });
   await ensureConversation(page, `send:${name}`);
@@ -2026,6 +2263,7 @@ function verify(run) {
     : [];
   const deviceEvidenceOk = !cfg.requireDevice || hasDeviceEvidence(searchable);
   const localVerificationOk = !run.localVerification || run.localVerification.status !== "fail";
+  const apiVerificationOk = !run.apiVerification || run.apiVerification.status !== "fail";
   const cleanToolTriggerOk = !cfg.requireTools || !run.toolFollowupUsed;
   const cleanCommandTriggerOk = !cfg.requireTools || !run.commandFollowupUsed;
   return {
@@ -2054,10 +2292,11 @@ function verify(run) {
     cleanCommandTriggerOk,
     deviceEvidenceOk,
     localVerificationOk,
+    apiVerificationOk,
     toolFollowupUsed: Boolean(run.toolFollowupUsed),
     commandFollowupUsed: Boolean(run.commandFollowupUsed),
     deviceFollowupUsed: Boolean(run.deviceFollowupUsed),
-    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && commandForbiddenFound.length === 0 && visibleForbiddenFound.length === 0 && visibleForbiddenRegexFound.length === 0 && forbiddenWorkBotDeviceHostsFound.length === 0 && stepViolations.length === 0 && perStepToolEvidenceMissing.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk,
+    ok: missing.length === 0 && templateMissing.length === 0 && commandMissing.length === 0 && commandForbiddenFound.length === 0 && visibleForbiddenFound.length === 0 && visibleForbiddenRegexFound.length === 0 && forbiddenWorkBotDeviceHostsFound.length === 0 && stepViolations.length === 0 && perStepToolEvidenceMissing.length === 0 && !forbidden && toolEvidenceOk && cleanToolTriggerOk && cleanCommandTriggerOk && deviceEvidenceOk && localVerificationOk && apiVerificationOk,
     forbidden_execute: forbidden,
   };
 }
@@ -2079,6 +2318,7 @@ function assertGate(result, gateName) {
   if (!result.cleanCommandTriggerOk) reasons.push("command follow-up was needed");
   if (!result.deviceEvidenceOk) reasons.push("no device evidence");
   if (!result.localVerificationOk) reasons.push("local AD verification failed");
+  if (!result.apiVerificationOk) reasons.push("local API/output verification failed");
   throw new Error(`${gateName} failed; stopping before later cases. ${reasons.join("; ")}`);
 }
 
@@ -2167,6 +2407,7 @@ async function runCase(page, name) {
     combinedText = responses.map((item) => `${item.agentText}\n${item.text}`).join("\n");
   }
   const localVerification = !skipRecoveryFollowups && VERIFY_AD && (cfg.requireDevice || cfg.verifyPresent || cfg.verifyAbsent) ? runLocalAdVerification(name, cfg) : { status: "disabled" };
+  const apiVerification = !skipRecoveryFollowups ? runApiOutputVerification(name, cfg, responses) : { status: "disabled" };
 
   return verify({
     name,
@@ -2184,6 +2425,7 @@ async function runCase(page, name) {
     visibleAgentText: responses.map((item) => item.visibleAgentText ?? item.agentText).join("\n\n").slice(-20000),
     responses,
     localVerification,
+    apiVerification,
     toolFollowupUsed,
     commandFollowupUsed,
     deviceFollowupUsed,

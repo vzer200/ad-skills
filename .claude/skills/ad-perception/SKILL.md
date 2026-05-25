@@ -19,12 +19,13 @@ description: 深信服 AD 感知分析 skill。用于分析 VS 流量异常、CP
 - 逐字复制规则：如果脚本输出包含 `## 感知结论`，最终回答必须复制该区间内的脚本文字。不要把 `下降 82.1%` 改成 `↓ 82.1%`，不要给数字加千分位，不要把 `目标设备：192.168.8.31` 改成 `目标：AD2 (192.168.8.31)`。
 - 禁止在脚本块之外新增 `小结`、`总结`、`建议`、`下一步`、`三项核心指标`、`显著下降`、`降至 0`、`当前值为 0` 等模型自行概括内容。
 - 用户要求全量感知分析时，必须使用 `perception.py analyze`。
-- 用户要求虚拟服务流量趋势分析时，必须先运行 `collector.py collect --collect-only` 写入 SQLite 历史库，再运行 `perception.py traffic --require-db` 查询数据库；禁止只用实时 API 或模型记忆回答趋势。
+- 用户要求虚拟服务流量趋势分析时，必须先运行 `collector.py collect --collect-only` 写入 SQLite 历史库，再运行 `perception.py traffic --days 7 --require-db` 查询数据库；禁止只用实时 API 或模型记忆回答趋势。
+- 流量趋势必须设置时间范围：默认加 `--days 7`，脚本会把它转换成设备趋势 API 的 `from/to`；用户明确给出起止时间时改用 `--from-time "YYYY-MM-DD HH:MM:SS" --to-time "YYYY-MM-DD HH:MM:SS"`。
 - 用户指定 AD1/AD2 时，连接预检和分析命令都必须用 `--device` 限定单台设备。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-perception/devices.json` 或 `.claude/skills/ad-perception/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
 - 如果 `perception.py traffic --require-db` 返回历史样本不足，最终结论只能说明数据库样本不足；禁止回退到实时 API 编造趋势结论。
 - 验收提示词保持短句，不要要求用户补充命令参数。用户说 AD1 时自动先用设备清单加 `--device AD1` 做连接预检。
 - 每一条新的感知分析都必须重新执行一次 `connect.py`，包括 traffic/state/conflict/logs 分项分析。禁止复用上一轮查询或感知里的连接结果。
-- “流量趋势分析/流量分析/流量走势”映射到 `collector.py collect --collect-only` + `perception.py traffic --require-db`。如果用户明确指定某个虚拟服务名称（例如 `test 虚拟服务`），必须加 `--vs test`，不要扩大到全部虚拟服务。8.31 设备上的 `test` 虚拟服务是主线验收样例。
+- “流量趋势分析/流量分析/流量走势”映射到 `collector.py collect --collect-only` + `perception.py traffic --days 7 --require-db`。如果用户明确指定某个虚拟服务名称（例如 `test 虚拟服务`），必须加 `--vs test`，不要扩大到全部虚拟服务。8.31 设备上的 `test` 虚拟服务是主线验收样例。
 - “设备资源分析/资源状态异常/状态趋势/状态告警”映射到 `perception.py state`；只说“设备状态/硬件状态/资源状态查一下”仍属于 `ad-ops` 查询。
 - “地址冲突/地址端口冲突/冲突分析”映射到 `perception.py conflict`；冲突结论只能复述脚本返回的 `vs_overlaps` / `pool_overlaps`，没有冲突时明确说未发现冲突，不要编造正例。
 - “日志分析/服务日志/日志线索”映射到 `perception.py logs`。默认查最近 24 小时的告警日志，必须加 `--levels ALERT,ERROR --modules ALARM --limit 20`；用户明确说近 5 天/7 天等范围时加 `--days N`，用户指定其他日志类型时改用对应 `--modules`。输出只展示按时间倒序的最新 20 条，避免上下文过长。

@@ -190,6 +190,22 @@ class TestADClientHTTP(unittest.TestCase):
         self.assertEqual(parsed["level"], ["ALERT", "ERROR"])
         self.assertEqual(result["items"][0]["date"], "2026-05-21")
 
+    @patch("urllib.request.urlopen")
+    def test_vs_trend_includes_explicit_time_range(self, mock_urlopen):
+        mock_urlopen.return_value = _FakeResponse({"items": []})
+        self.client.get_vs_trend_by_name(
+            "vs_test",
+            trend="last-hour",
+            from_time="2026-05-20 00:00:00",
+            to_time="2026-05-20 01:00:00",
+        )
+        req = mock_urlopen.call_args[0][0]
+        parsed = urllib.parse.parse_qs(urllib.parse.urlparse(req.full_url).query)
+        self.assertEqual(parsed["trend"], ["last-hour"])
+        self.assertEqual(parsed["from"], ["2026-05-20 00:00:00"])
+        self.assertEqual(parsed["to"], ["2026-05-20 01:00:00"])
+        self.assertEqual(parsed["netns"], ["default"])
+
 
 class TestADClientInstance(unittest.TestCase):
     """Test ADClient instance creation and configuration."""
