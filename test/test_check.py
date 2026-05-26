@@ -168,6 +168,56 @@ class TestAnalyze(unittest.TestCase):
         self.assertEqual(hs["overall"], 50)
         self.assertEqual(result["summary"]["score"], 50)
 
+    def test_log_check_only_fails_above_100_error_logs(self):
+        self.assertEqual(analyze({"base_log_error_exist": 0})["check_results"]["LOG_CHECK"]["status"], "pass")
+        self.assertEqual(analyze({"base_log_error_exist": 100})["check_results"]["LOG_CHECK"]["status"], "warn")
+        self.assertEqual(analyze({"base_log_error_exist": 101})["check_results"]["LOG_CHECK"]["status"], "fail")
+
+    def test_memory_check_warns_at_80_and_fails_at_90(self):
+        self.assertEqual(analyze({"snmp_mem_rate": 79})["check_results"]["MEMORY_CHECK"]["status"], "pass")
+        self.assertEqual(analyze({"snmp_mem_rate": 80})["check_results"]["MEMORY_CHECK"]["status"], "warn")
+        self.assertEqual(analyze({"snmp_mem_rate": 90})["check_results"]["MEMORY_CHECK"]["status"], "fail")
+
+    def test_disk_check_uses_empty_and_usage_thresholds(self):
+        self.assertEqual(analyze({"disk_info": {}})["check_results"]["DISK_CHECK"]["status"], "warn")
+        self.assertEqual(analyze({"disk_info": {"root": "79%"}})["check_results"]["DISK_CHECK"]["status"], "pass")
+        self.assertEqual(analyze({"disk_info": {"root": "80%"}})["check_results"]["DISK_CHECK"]["status"], "warn")
+        self.assertEqual(analyze({"disk_info": {"root": "90%"}})["check_results"]["DISK_CHECK"]["status"], "fail")
+
+    def test_device_connection_check_accepts_any_connected_interface(self):
+        result = analyze({"base_eth_info": {"eth0": "Link detected: no", "eth1": "Link detected: yes"}})
+        self.assertEqual(result["check_results"]["DEVICE_CONNECTION_CHECK"]["status"], "pass")
+
+    def test_not_applicable_checks_do_not_affect_score_or_suggestions(self):
+        result = analyze({
+            "ad_appversion": "AD-1.0",
+            "cluster_state": "NOT_CLUSTER_MODE",
+            "cluster_virtual_mac": "CLUSTER_UNABLE",
+            "ms_state": "CLUSTER_UNABLE_OR_NOTIN",
+            "cluster_appgroup_unit": "CLUSTER_UNABLE",
+            "cluster_session_sync": "CLUSTER_UNABLE",
+            "cluster_fault_switch_enabled": "CLUSTER_UNABLE",
+            "fan_state": -1,
+            "power_state": -1,
+        })
+
+        self.assertEqual(result["check_results"]["CLUSTER_STATE_CHECK"]["status"], "not_applicable")
+        self.assertEqual(result["check_results"]["VIRTUAL_MAC_CHECK"]["status"], "not_applicable")
+        self.assertEqual(result["check_results"]["DUAL_STATE_CHECK"]["status"], "not_applicable")
+        self.assertEqual(result["check_results"]["APP_GROUP_CHECK"]["status"], "not_applicable")
+        self.assertEqual(result["check_results"]["SESSION_SYNC_CHECK"]["status"], "not_applicable")
+        self.assertEqual(result["check_results"]["FAULT_SWITCH_CHECK"]["status"], "not_applicable")
+        self.assertEqual(result["check_results"]["FAN_STATE_CHECK"]["status"], "not_applicable")
+        self.assertEqual(result["check_results"]["POWER_STATE_CHECK"]["status"], "not_applicable")
+        self.assertEqual(result["summary"]["total"], 1)
+        self.assertEqual(result["summary"]["pass"], 1)
+        self.assertEqual(result["summary"]["fail"], 0)
+        self.assertEqual(result["summary"]["warn"], 0)
+        self.assertEqual(result["summary"]["not_applicable"], 8)
+        self.assertEqual(result["summary"]["score"], 100)
+        self.assertEqual(result["health_scores"]["overall"], 100)
+        self.assertEqual(result["suggestions"], [])
+
     def test_security_details_are_user_facing(self):
         result = analyze({
             "security_check_state": False,
@@ -320,6 +370,18 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertIn("- 巡检进度：目前巡检 8/35", output)
         self.assertLess(output.index("- 巡检进度：目前巡检 8/35"), output.index("- 总体状态："))
 
+    def test_render_not_applicable_without_counting_anomaly(self):
+        analysis = analyze({
+            "ad_appversion": "1.0",
+            "cluster_state": "NOT_CLUSTER_MODE",
+            "power_state": -1,
+        })
+        output = render_markdown(analysis, {"host": "https://10.0.0.1", "scene": "标准巡检", "start_time": ""})
+
+        self.assertIn("➖ 不适用", output)
+        self.assertIn("- 异常数量：0 项", output)
+        self.assertNotIn("POWER_STATE_CHECK", "\n".join(item["check"] for item in analysis["suggestions"]))
+
     def test_render_check_details_and_suggestions_are_operator_facing(self):
         analysis = analyze({
             "admin": "false",
@@ -337,7 +399,7 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertIn("管理员角色配置异常，建议确认管理账号角色是否完整", output)
         self.assertIn("检测到错误日志，建议优先查看最近时间段错误日志", output)
         self.assertIn("| 加速卡状态检查 | 加速卡状态检查用于确认 SSL/压缩等硬件加速卡是否正常工作。 | ✅ 正常 |", output)
-        self.assertIn("| 电源状态检查 | 电源状态检查用于确认电源模块是否处于正常状态。 | ❌ 异常 |", output)
+        self.assertIn("| 电源状态检查 | 电源状态检查用于确认电源模块是否处于正常状态。（设备未提供该硬件传感器数据） | ➖ 不适用 |", output)
         self.assertIn("存在风险端口开放，建议关闭不必要的端口", output)
         self.assertIn("管理登录 IP 限制未启用，建议开启管理来源限制", output)
         self.assertNotIn("| 电源状态检查 | - | ❌ 异常 | -1 |", output)
@@ -345,7 +407,7 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertNotIn("状态异常，建议进一步排查", output)
 
         suggestion_checks = {item["check"] for item in analysis["suggestions"]}
-        self.assertIn("POWER_STATE_CHECK", suggestion_checks)
+        self.assertNotIn("POWER_STATE_CHECK", suggestion_checks)
         self.assertIn("OPEN_PORT_CHECK", suggestion_checks)
         self.assertNotIn("SPEED_CARD_CHECK", suggestion_checks)
 

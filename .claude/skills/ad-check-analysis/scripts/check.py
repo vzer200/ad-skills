@@ -41,7 +41,7 @@ except ImportError as e:
     sys.exit(9)
 
 import zipfile
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 # ---------------------------------------------------------------------------
@@ -670,6 +670,68 @@ def _collect_native_descriptions(data: Dict[str, Any]) -> Dict[str, str]:
     return descriptions
 
 
+def _extract_percent_values(value: Any, key_hint: str = "") -> List[float]:
+    values: List[float] = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            values.extend(_extract_percent_values(item, str(key)))
+        return values
+    if isinstance(value, (list, tuple, set)):
+        for item in value:
+            values.extend(_extract_percent_values(item, key_hint))
+        return values
+    if isinstance(value, str):
+        values.extend(float(match.group(1)) for match in re.finditer(r"(-?\d+(?:\.\d+)?)\s*%", value))
+        return values
+    key = key_hint.lower()
+    if isinstance(value, (int, float)) and any(token in key for token in ("percent", "pct", "usage", "used", "rate")):
+        values.append(float(value))
+    return values
+
+
+def _disk_check_status_and_detail(disk: Any) -> Tuple[str, str]:
+    if not disk:
+        return "warn", "无磁盘信息"
+
+    percents = _extract_percent_values(disk)
+    if not percents:
+        return "pass", "磁盘信息已采集"
+
+    max_percent = max(percents)
+    status = "fail" if max_percent >= 90 else ("warn" if max_percent >= 80 else "pass")
+    return status, f"最大使用率={max_percent:g}%"
+
+
+def _text_values(value: Any) -> List[str]:
+    if isinstance(value, dict):
+        texts: List[str] = []
+        for item in value.values():
+            texts.extend(_text_values(item))
+        return texts
+    if isinstance(value, (list, tuple, set)):
+        texts = []
+        for item in value:
+            texts.extend(_text_values(item))
+        return texts
+    return [str(value)]
+
+
+def _connection_check_status_and_detail(eth_info: Any) -> Tuple[str, str]:
+    texts = _text_values(eth_info)
+    has_yes = any(re.search(r"Link\s+detected:\s*yes", text, re.IGNORECASE) for text in texts)
+    has_no = any(re.search(r"Link\s+detected:\s*no", text, re.IGNORECASE) for text in texts)
+    if has_yes:
+        return "pass", "检测到已连接网口"
+    if has_no:
+        return "fail", "未检测到已连接网口"
+    return "warn", "未获取到明确网口连接状态"
+
+
+def _not_applicable_detail(value: Any, reason: str) -> str:
+    text = str(value).strip()
+    return f"{reason}；设备返回：{text}" if text else reason
+
+
 def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     """
     根据 ad.json 内容进行结构化分析。
@@ -683,8 +745,13 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
             "device_info": {},
             "check_results": {},
             "categories": {"feature": [], "health": [], "secure": []},
-            "summary": {"total": 0, "pass": 0, "fail": 0, "warn": 0, "score": 0},
-            "health_scores": {"feature": {"pass": 0, "total": 0, "score": 0}, "health": {"pass": 0, "total": 0, "score": 0}, "secure": {"pass": 0, "total": 0, "score": 0}, "overall": 0},
+            "summary": {"total": 0, "pass": 0, "fail": 0, "warn": 0, "not_applicable": 0, "score": 0},
+            "health_scores": {
+                "feature": {"pass": 0, "total": 0, "not_applicable": 0, "score": 0},
+                "health": {"pass": 0, "total": 0, "not_applicable": 0, "score": 0},
+                "secure": {"pass": 0, "total": 0, "not_applicable": 0, "score": 0},
+                "overall": 0,
+            },
             "suggestions": [],
         }
     check_results = {}
@@ -763,23 +830,29 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     if has("cluster_state"):
         # 9. CLUSTER_STATE_CHECK
         cluster = data.get("cluster_state", "NOT_CLUSTER_MODE")
+        cluster_na = cluster in ("NOT_CLUSTER_MODE", "CLUSTER_UNABLE", "CLUSTER_UNABLE_OR_NOTIN")
         check("CLUSTER_STATE_CHECK",
-              "pass" if cluster == "NORMAL" else "warn",
-              cluster)
+              "not_applicable" if cluster_na else ("pass" if cluster == "NORMAL" else "warn"),
+              cluster,
+              detail=_not_applicable_detail(cluster, "设备未启用集群，集群状态检查不适用") if cluster_na else "")
 
     if has("cluster_virtual_mac"):
         # 11. VIRTUAL_MAC_CHECK
         vmac = data.get("cluster_virtual_mac", "CLUSTER_UNABLE")
+        vmac_na = vmac == "CLUSTER_UNABLE"
         check("VIRTUAL_MAC_CHECK",
-              "pass" if vmac != "CLUSTER_UNABLE" else "warn",
-              vmac)
+              "not_applicable" if vmac_na else "pass",
+              vmac,
+              detail=_not_applicable_detail(vmac, "设备未启用集群，虚拟 MAC 检查不适用") if vmac_na else "")
 
     if has("ms_state"):
         # 12. DUAL_STATE_CHECK
         ms = data.get("ms_state", "CLUSTER_UNABLE_OR_NOTIN")
+        ms_na = ms in ("CLUSTER_UNABLE", "CLUSTER_UNABLE_OR_NOTIN", "NOT_CLUSTER_MODE")
         check("DUAL_STATE_CHECK",
-              "pass" if ms == "NORMAL" else "warn",
-              ms)
+              "not_applicable" if ms_na else ("pass" if ms == "NORMAL" else "warn"),
+              ms,
+              detail=_not_applicable_detail(ms, "设备未启用双机/集群，双机状态检查不适用") if ms_na else "")
 
     if has("node_pool_persist"):
         # 13. POOL_PERSIST_CHECK
@@ -810,9 +883,11 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     if has("cluster_appgroup_unit"):
         # 17. APP_GROUP_CHECK
         ag = data.get("cluster_appgroup_unit", "CLUSTER_UNABLE")
+        ag_na = ag == "CLUSTER_UNABLE"
         check("APP_GROUP_CHECK",
-              "pass" if ag != "CLUSTER_UNABLE" else "warn",
-              ag)
+              "not_applicable" if ag_na else "pass",
+              ag,
+              detail=_not_applicable_detail(ag, "设备未启用集群，应用组单元检查不适用") if ag_na else "")
 
     if has("dns_server_health"):
         # 18. DNS_SERVER_STATE_CHECK
@@ -849,9 +924,11 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     if has("ms_manage_ip_difference"):
         # 23. MANAGE_IP_CHECK
         mip = data.get("ms_manage_ip_difference", "CLUSTER_UNABLE")
+        mip_na = mip == "CLUSTER_UNABLE"
         check("MANAGE_IP_CHECK",
-              "pass" if mip == "CLUSTER_UNABLE" else "fail",
-              mip)
+              "not_applicable" if mip_na else "fail",
+              mip,
+              detail=_not_applicable_detail(mip, "设备未启用集群，管理 IP 一致性检查不适用") if mip_na else "")
 
     if has("snmp_alarm_enabled"):
         # 24. SNMP_TRAPS_CHECK
@@ -881,9 +958,11 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     if has("cluster_session_sync"):
         # 28. SESSION_SYNC_CHECK
         ss = data.get("cluster_session_sync", "CLUSTER_UNABLE")
+        ss_na = ss == "CLUSTER_UNABLE"
         check("SESSION_SYNC_CHECK",
-              "pass" if ss in ("NORMAL", "CLUSTER_UNABLE") else "warn",
-              ss)
+              "not_applicable" if ss_na else ("pass" if ss == "NORMAL" else "warn"),
+              ss,
+              detail=_not_applicable_detail(ss, "设备未启用集群，会话同步检查不适用") if ss_na else "")
 
     if has("email_alarm_enabled"):
         # 29. MAIL_WARN_CHECK
@@ -925,9 +1004,11 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     if has("cluster_fault_switch_enabled"):
         # 34. FAULT_SWITCH_CHECK
         fs = data.get("cluster_fault_switch_enabled", "CLUSTER_UNABLE")
+        fs_na = fs == "CLUSTER_UNABLE"
         check("FAULT_SWITCH_CHECK",
-              "pass" if fs == "CLUSTER_UNABLE" else "warn",
-              fs)
+              "not_applicable" if fs_na else ("pass" if fs == "true" else "warn"),
+              fs,
+              detail=_not_applicable_detail(fs, "设备未启用集群，故障切换检查不适用") if fs_na else "")
 
     if has("syslog_enabled"):
         # 35. SYSLOG_CHECK
@@ -957,7 +1038,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         # 38. LOG_CHECK
         le = data.get("base_log_error_exist", -1)
         check("LOG_CHECK",
-              "pass" if le == 0 else ("warn" if le < 5 else "fail"),
+              "pass" if le == 0 else ("warn" if le <= 100 else "fail"),
               f"{le} 条错误日志")
 
     if has("base_running_time"):
@@ -1010,9 +1091,8 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     if has("disk_info"):
         # 47. DISK_CHECK
         disk = data.get("disk_info", {})
-        check("DISK_CHECK",
-              "pass" if disk else "warn",
-              "正常" if disk else "无磁盘信息")
+        disk_status, disk_detail = _disk_check_status_and_detail(disk)
+        check("DISK_CHECK", disk_status, disk_detail)
 
     if has("base_crash_time"):
         # 48. CRASH_LOG_CHECK
@@ -1024,7 +1104,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         # 49. MEMORY_CHECK
         mr = data.get("snmp_mem_rate", 0)
         check("MEMORY_CHECK",
-              "pass" if mr < 95 else "warn",
+              "pass" if mr < 80 else ("warn" if mr < 90 else "fail"),
               f"使用率={mr}%")
 
     if has("acceleration"):
@@ -1037,16 +1117,20 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     if has("fan_state"):
         # 51. FAN_STATE_CHECK
         fan = data.get("fan_state", -1)
+        fan_na = fan == -1
         check("FAN_STATE_CHECK",
-              "pass" if fan == 1 else ("warn" if fan == -1 else "fail"),
-              str(fan))
+              "not_applicable" if fan_na else ("pass" if fan == 1 else "fail"),
+              str(fan),
+              detail="设备未提供该硬件传感器数据" if fan_na else "")
 
     if has("power_state"):
         # 52. POWER_STATE_CHECK
         ps = data.get("power_state", -1)
+        ps_na = ps == -1
         check("POWER_STATE_CHECK",
-              "pass" if ps == 1 else ("warn" if ps == -1 else "fail"),
-              str(ps))
+              "not_applicable" if ps_na else ("pass" if ps == 1 else "fail"),
+              str(ps),
+              detail="设备未提供该硬件传感器数据" if ps_na else "")
 
     if has("bios_update_state"):
         # 53. BIOS_VERSION_CHECK
@@ -1072,10 +1156,8 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     if has("base_eth_info"):
         # 56. DEVICE_CONNECTION_CHECK
         eth_info = data.get("base_eth_info", "")
-        link_detected = "Link detected: yes" in eth_info if eth_info else False
-        check("DEVICE_CONNECTION_CHECK",
-              "pass" if link_detected else "fail",
-              "eth0 已连通" if link_detected else "eth0 未连通")
+        conn_status, conn_detail = _connection_check_status_and_detail(eth_info)
+        check("DEVICE_CONNECTION_CHECK", conn_status, conn_detail)
 
     if has("base_no_core"):
         # 57. COREDUMP_INFO_CHECK
@@ -1203,7 +1285,8 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     pass_count = sum(1 for k, v in check_results.items() if v["status"] == "pass")
     fail_count = sum(1 for k, v in check_results.items() if v["status"] == "fail")
     warn_count = sum(1 for k, v in check_results.items() if v["status"] == "warn")
-    total = len(check_results)
+    not_applicable_count = sum(1 for k, v in check_results.items() if v["status"] == "not_applicable")
+    total = pass_count + fail_count + warn_count
     score = round((pass_count + warn_count * 0.5) / total * 100) if total else 0
 
     # ── 自动分类：根据检查项名称归入功能/健康/安全 ─────────────────────
@@ -1243,9 +1326,10 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     def _dimension_scores(keys: List[str]) -> Dict[str, int]:
         p = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "pass")
         w = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "warn")
-        t = len(keys)
+        n = sum(1 for k in keys if k in check_results and check_results[k]["status"] == "not_applicable")
+        t = sum(1 for k in keys if k in check_results and check_results[k]["status"] in ("pass", "fail", "warn"))
         s = round((p + w * 0.5) / t * 100) if t else 0
-        return {"pass": p, "total": t, "score": s}
+        return {"pass": p, "total": t, "not_applicable": n, "score": s}
 
     f_score = _dimension_scores(feature_keys)
     h_score = _dimension_scores(health_keys)
@@ -1285,6 +1369,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
             "pass": pass_count,
             "fail": fail_count,
             "warn": warn_count,
+            "not_applicable": not_applicable_count,
             "score": score,
         },
         "health_scores": {
@@ -1481,7 +1566,7 @@ def render_markdown(
     secure_keys = analysis.get("categories", {}).get("secure", [])
 
     def status_label(s: str) -> str:
-        return {"pass": "✅ 正常", "fail": "❌ 异常", "warn": "❌ 异常"}.get(s, s)
+        return {"pass": "✅ 正常", "fail": "❌ 异常", "warn": "❌ 异常", "not_applicable": "➖ 不适用"}.get(s, s)
 
     def score_icon_for(val: Union[int, float]) -> str:
         return "🟢" if val >= 90 else ("🟡" if val >= 70 else "🔴")
@@ -1508,9 +1593,10 @@ def render_markdown(
         p = sum(1 for k in keys if k in results and results[k]["status"] == "pass")
         f = sum(1 for k in keys if k in results and results[k]["status"] == "fail")
         w = sum(1 for k in keys if k in results and results[k]["status"] == "warn")
+        n = sum(1 for k in keys if k in results and results[k]["status"] == "not_applicable")
         t = p + f + w
         rate = round(p / max(t, 1) * 100)
-        return {"total": t, "pass": p, "fail": f, "warn": w, "rate": rate}
+        return {"total": t, "pass": p, "fail": f, "warn": w, "not_applicable": n, "rate": rate}
 
     f = cat_summary(feature_keys)
     h = cat_summary(health_keys)
@@ -1526,6 +1612,10 @@ def render_markdown(
                 r = results[k]
                 check_name = r.get("name") or check_label(k)
                 description = r.get("description") or check_description(k)
+                if r.get("status") == "not_applicable":
+                    reason = _user_detail(r.get("detail") or r.get("value") or "")
+                    if reason and reason not in description:
+                        description = f"{description}（{reason}）"
                 rows.append(
                     f"| {_table_cell(check_name)} | {_table_cell(description)} | "
                     f"{_table_cell(status_label(r['status']))} |"
@@ -1586,6 +1676,7 @@ def render_markdown(
 
     # ── 检查项详情渲染（单设备全量展示正常+异常） ────────
     has_anomaly = any(k in results and results[k]["status"] in ("fail", "warn") for k in all_keys)
+    has_not_applicable = any(k in results and results[k]["status"] == "not_applicable" for k in all_keys)
     all_rows_text = all_check_rows()
     if all_rows_text:
         check_detail_section = f"""| 检查项 | 具体说明 | 状态 |
@@ -1593,7 +1684,8 @@ def render_markdown(
 {all_rows_text}
 """
         if not has_anomaly:
-            check_detail_section = "> 所有检查项通过，无异常。\n\n" + check_detail_section
+            prefix = "> 未发现异常；不适用项已标记。\n\n" if has_not_applicable else "> 所有检查项通过，无异常。\n\n"
+            check_detail_section = prefix + check_detail_section
     else:
         check_detail_section = "> 本次报告未包含可分析检查项。\n"
 
