@@ -98,6 +98,7 @@ const FIXED_CASES = [
   "r3-traffic-vs",
   "r3-logs",
   "r3-logs-5d",
+  "r3-logs-address-conflict",
   "r4-script",
   "r4-vs-pool-node-script",
   "r4-pool-profile-script",
@@ -652,6 +653,15 @@ const cases = {
     commandExpected: ["connect.py", "perception.py", "logs", "--days", "5", "--limit", "20", "--levels", "ALERT,ERROR"],
     commandForbidden: ["--modules"],
     apiVerify: { kind: "service-log", device: "AD2", limit: 20, levels: ["ALERT", "ERROR"], days: 5 },
+    requireTools: true,
+    requireDevice: true,
+  },
+  "r3-logs-address-conflict": {
+    prompt: "对 AD2 设备近 24 小时的地址冲突类型日志进行分析。",
+    expected: ["connect.py", "AD2", "perception.py", "logs", "ALERT", "ERROR", "address-conflict"],
+    commandExpected: ["connect.py", "perception.py", "logs", "--limit", "20", "--levels", "ALERT,ERROR", "--log-type", "address-conflict"],
+    commandForbidden: ["--modules"],
+    apiVerify: { kind: "service-log", device: "AD2", limit: 20, levels: ["ALERT", "ERROR"], hours: 24, logType: "address-conflict" },
     requireTools: true,
     requireDevice: true,
   },
@@ -2117,6 +2127,91 @@ function serviceLogEntryMatchers(entry) {
   return Array.from(new Set(tokens));
 }
 
+const LOG_TYPE_DEFINITIONS = {
+  "address-conflict": {
+    label: "地址冲突",
+    aliases: new Set([
+      "address-conflict",
+      "address_conflict",
+      "ip-conflict",
+      "ip_conflict",
+      "conflict",
+      "地址冲突",
+      "地址端口冲突",
+      "ip冲突",
+      "ip地址冲突",
+    ]),
+    strongKeywords: [
+      "地址冲突",
+      "地址端口冲突",
+      "ip冲突",
+      "ip 地址冲突",
+      "vip冲突",
+      "vip 冲突",
+      "端口冲突",
+    ],
+    contextKeywords: [
+      "地址",
+      "ip",
+      "vip",
+      "端口",
+      "port",
+      "虚拟服务",
+      "virtual",
+      "slb",
+      "pool",
+      "节点",
+      "node",
+    ],
+    conflictKeywords: [
+      "冲突",
+      "重复",
+      "重叠",
+      "conflict",
+      "duplicate",
+      "overlap",
+    ],
+  },
+};
+
+function normalizeLogType(value = "") {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const lowered = raw.toLowerCase();
+  for (const [key, definition] of Object.entries(LOG_TYPE_DEFINITIONS)) {
+    if (lowered === key || definition.aliases.has(lowered) || definition.aliases.has(raw)) return key;
+  }
+  return lowered;
+}
+
+function serviceLogSemanticText(entry) {
+  return [
+    entry.module,
+    entry.detail,
+    entry.message,
+    entry.name,
+    entry.event,
+  ].map((item) => String(item || "").toLowerCase()).join(" ");
+}
+
+function serviceLogEntryMatchesType(entry, logType) {
+  const normalized = normalizeLogType(logType);
+  if (!normalized) return true;
+  const definition = LOG_TYPE_DEFINITIONS[normalized];
+  if (!definition) return false;
+  const text = serviceLogSemanticText(entry);
+  if (definition.strongKeywords.some((keyword) => text.includes(keyword.toLowerCase()))) return true;
+  const hasContext = definition.contextKeywords.some((keyword) => text.includes(keyword.toLowerCase()));
+  const hasConflict = definition.conflictKeywords.some((keyword) => text.includes(keyword.toLowerCase()));
+  return hasContext && hasConflict;
+}
+
+function filterServiceLogItemsByType(items, logType) {
+  const normalized = normalizeLogType(logType);
+  if (!normalized) return items;
+  return items.filter((entry) => entry && serviceLogEntryMatchesType(entry, normalized));
+}
+
 function runApiOutputVerification(name, cfg, responses) {
   const spec = cfg && cfg.apiVerify;
   if (!spec) return { status: "disabled" };
@@ -2131,7 +2226,9 @@ function runApiOutputVerification(name, cfg, responses) {
 
   const levels = spec.levels || ["ALERT", "ERROR"];
   const modules = spec.modules || [];
+  const logType = normalizeLogType(spec.logType || spec.log_type || "");
   const limit = Math.max(1, Number(spec.limit || 20));
+  const queryLimit = logType ? Math.max(limit, 100) : limit;
   const window = buildApiWindow(spec);
   const args = [
     ".claude/skills/ad-ops/scripts/ad_api.py",
@@ -2143,7 +2240,7 @@ function runApiOutputVerification(name, cfg, responses) {
     "log",
     "service",
     "--limit",
-    String(limit),
+    String(queryLimit),
     "--from-time",
     window.fromTime,
     "--to-time",
@@ -2170,7 +2267,9 @@ function runApiOutputVerification(name, cfg, responses) {
   const stdout = redactSensitive(result.stdout || "");
   const stderr = redactSensitive(result.stderr || "");
   const parsed = parseJsonObject(result.stdout || "");
-  const items = parsed ? normalizeList(parsed) : [];
+  let items = parsed ? normalizeList(parsed) : [];
+  const unfilteredItemCount = items.length;
+  if (logType) items = filterServiceLogItemsByType(items, logType).slice(0, limit);
   const visibleText = joinUniqueTexts(
     ...responses.map((item) => item.visibleText || ""),
     ...responses.map((item) => item.visibleAgentText || ""),
@@ -2184,6 +2283,7 @@ function runApiOutputVerification(name, cfg, responses) {
     String(limit),
     "--levels",
     levels.join(","),
+    ...(logType ? ["--log-type", logType] : []),
     ...(modules.length ? ["--modules", modules.join(",")] : []),
     ...(spec.days ? ["--days", String(spec.days)] : []),
   ];
@@ -2219,6 +2319,8 @@ function runApiOutputVerification(name, cfg, responses) {
     status: result.status,
     ok,
     itemCount: items.length,
+    unfilteredItemCount,
+    logType,
     missingCommandTokens,
     outputMatchesApi,
   });
@@ -2234,6 +2336,8 @@ function runApiOutputVerification(name, cfg, responses) {
     toTime: window.toTime,
     levels,
     modules,
+    logType,
+    unfilteredItemCount,
     itemCount: items.length,
     missingCommandTokens,
     outputMatchesApi,

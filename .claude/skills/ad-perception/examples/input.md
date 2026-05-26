@@ -58,6 +58,14 @@ python scripts/perception.py logs --host https://192.168.8.30 --password $env:AD
 
 期望 exit code: 0
 
+地址冲突类型日志使用语义过滤，不使用模块过滤：
+
+```bash
+python scripts/perception.py logs --host https://192.168.8.30 --password $env:AD_PASS --levels ALERT,ERROR --limit 20 --log-type address-conflict
+```
+
+期望 exit code: 0
+
 ---
 
 ## 场景 6: 指定数据库分析

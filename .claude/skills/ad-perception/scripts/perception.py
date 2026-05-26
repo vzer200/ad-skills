@@ -789,6 +789,107 @@ def parse_log_modules(value: Optional[str] = None) -> List[str]:
     return [part.strip().upper() for part in raw.split(",") if part.strip()]
 
 
+_LOG_TYPE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
+    "address-conflict": {
+        "label": "地址冲突",
+        "aliases": {
+            "address-conflict",
+            "address_conflict",
+            "ip-conflict",
+            "ip_conflict",
+            "conflict",
+            "地址冲突",
+            "地址端口冲突",
+            "ip冲突",
+            "ip地址冲突",
+        },
+        "strong_keywords": (
+            "地址冲突",
+            "地址端口冲突",
+            "ip冲突",
+            "ip 地址冲突",
+            "vip冲突",
+            "vip 冲突",
+            "端口冲突",
+        ),
+        "context_keywords": (
+            "地址",
+            "ip",
+            "vip",
+            "端口",
+            "port",
+            "虚拟服务",
+            "virtual",
+            "slb",
+            "pool",
+            "节点",
+            "node",
+        ),
+        "conflict_keywords": (
+            "冲突",
+            "重复",
+            "重叠",
+            "conflict",
+            "duplicate",
+            "overlap",
+        ),
+    },
+}
+
+
+def normalize_log_type(value: Optional[str] = None) -> str:
+    """Normalize a user-facing semantic log type to an internal key."""
+    raw = str(value or "").strip()
+    if not raw:
+        return ""
+    lowered = raw.lower()
+    for key, definition in _LOG_TYPE_DEFINITIONS.items():
+        aliases = definition.get("aliases", set())
+        if lowered == key or lowered in aliases or raw in aliases:
+            return key
+    supported = "、".join(d.get("label", k) for k, d in _LOG_TYPE_DEFINITIONS.items())
+    raise ValueError(f"不支持的日志类型：{raw}；当前支持：{supported}")
+
+
+def log_type_label(log_type: str) -> str:
+    definition = _LOG_TYPE_DEFINITIONS.get(log_type, {})
+    return str(definition.get("label") or log_type or "")
+
+
+def _log_entry_text(entry: Dict[str, Any]) -> str:
+    fields = [
+        entry.get("module", ""),
+        entry.get("detail", ""),
+        entry.get("message", ""),
+        entry.get("name", ""),
+        entry.get("event", ""),
+    ]
+    return " ".join(str(field) for field in fields if field is not None).lower()
+
+
+def log_entry_matches_type(entry: Dict[str, Any], log_type: str) -> bool:
+    """Return True when a service-log row matches a supported semantic type."""
+    normalized = normalize_log_type(log_type)
+    if not normalized:
+        return True
+    definition = _LOG_TYPE_DEFINITIONS.get(normalized)
+    if not definition:
+        return False
+    text = _log_entry_text(entry)
+    if any(str(keyword).lower() in text for keyword in definition.get("strong_keywords", ())):
+        return True
+    has_context = any(str(keyword).lower() in text for keyword in definition.get("context_keywords", ()))
+    has_conflict = any(str(keyword).lower() in text for keyword in definition.get("conflict_keywords", ()))
+    return has_context and has_conflict
+
+
+def filter_log_entries_by_type(entries: List[Dict[str, Any]], log_type: str) -> List[Dict[str, Any]]:
+    normalized = normalize_log_type(log_type)
+    if not normalized:
+        return entries
+    return [entry for entry in entries if isinstance(entry, dict) and log_entry_matches_type(entry, normalized)]
+
+
 def build_log_window(
     days: int = 0,
     hours: int = 24,
@@ -836,6 +937,7 @@ def fetch_service_logs(
     to_time: str = "",
     levels: Optional[List[str]] = None,
     modules: Optional[List[str]] = None,
+    log_type: str = "",
 ) -> List[Dict[str, Any]]:
     """
     从设备获取服务日志。
@@ -847,15 +949,22 @@ def fetch_service_logs(
     Returns:
         按日期+时间降序排列的日志条目字典列表
     """
+    normalized_type = normalize_log_type(log_type)
+    query_limit = _normalize_log_limit(limit)
+    if normalized_type:
+        query_limit = max(query_limit, 100)
     data = _fetch_service_log_data(
         client,
-        limit=limit,
+        limit=query_limit,
         from_time=from_time,
         to_time=to_time,
         levels=levels,
         modules=modules,
     )
-    return data.get('items', [])
+    entries = data.get('items', [])
+    if normalized_type:
+        entries = filter_log_entries_by_type(entries, normalized_type)
+    return entries[:_normalize_log_limit(limit)]
 
 
 def fetch_service_log_result(
@@ -865,30 +974,48 @@ def fetch_service_log_result(
     to_time: str = "",
     levels: Optional[List[str]] = None,
     modules: Optional[List[str]] = None,
+    log_type: str = "",
     range_label: str = "",
 ) -> Dict[str, Any]:
     """Fetch service logs with metadata used by the user-facing template."""
+    normalized_limit = _normalize_log_limit(limit)
+    normalized_type = normalize_log_type(log_type)
+    query_limit = normalized_limit
+    if normalized_type:
+        # Semantic filtering happens after API fetch; query a wider page so
+        # relevant rows are not lost when the newest generic logs are noisy.
+        query_limit = max(normalized_limit, 100)
     data = _fetch_service_log_data(
         client,
-        limit=limit,
+        limit=query_limit,
         from_time=from_time,
         to_time=to_time,
         levels=levels,
         modules=modules,
     )
     entries = data.get('items', [])
-    total = data.get('total') or data.get('count') or len(entries)
+    unfiltered_total = data.get('total') or data.get('count') or len(entries)
+    if normalized_type:
+        entries = filter_log_entries_by_type(entries, normalized_type)
+    filtered_total = len(entries)
+    shown_entries = entries[:normalized_limit]
+    total = filtered_total if normalized_type else unfiltered_total
     return {
-        'status': 'warning' if entries else 'ok',
-        'entries': entries,
+        'status': 'warning' if shown_entries else 'ok',
+        'entries': shown_entries,
         'total': total,
-        'shown': len(entries),
-        'limit': _normalize_log_limit(limit),
+        'shown': len(shown_entries),
+        'limit': normalized_limit,
+        'query_limit': query_limit,
         'range': range_label,
         'from_time': from_time,
         'to_time': to_time,
         'levels': levels or ["ALERT", "ERROR"],
         'modules': modules or [],
+        'log_type': normalized_type,
+        'log_type_label': log_type_label(normalized_type),
+        'semantic_filter': bool(normalized_type),
+        'unfiltered_total': unfiltered_total,
     }
 
 
@@ -1148,12 +1275,15 @@ def render_markdown(results: Dict[str, Any]) -> str:
             entries = logs.get('entries', [])
             levels = logs.get('levels') or []
             modules = logs.get('modules') or []
+            log_type_display = logs.get('log_type_label') or log_type_label(str(logs.get('log_type', '') or ''))
             if logs.get('range'):
                 lines.append(f"- 查询范围：{logs.get('range')}")
             if levels:
                 lines.append(f"- 日志级别：{'、'.join(levels)}")
+            if log_type_display:
+                lines.append(f"- 日志类型：{log_type_display}")
             if modules:
-                lines.append(f"- 日志类型：{'、'.join(modules)}")
+                lines.append(f"- 日志模块：{'、'.join(modules)}")
             if 'total' in logs or 'shown' in logs:
                 lines.append(f"- 输出数量：最新 {logs.get('shown', len(entries))} 条（上限 {logs.get('limit', 20)} 条）")
             if entries:
@@ -1247,6 +1377,9 @@ def _render_logs_multi_result(host: str, result: Dict[str, Any]) -> str:
             'limit': result.get('limit'),
             'range': result.get('range'),
             'levels': result.get('levels'),
+            'modules': result.get('modules'),
+            'log_type': result.get('log_type'),
+            'log_type_label': result.get('log_type_label'),
         },
         '_scope': 'logs',
     }
@@ -1400,6 +1533,7 @@ def _logs_one(
     to_time: str = "",
     levels: Optional[List[str]] = None,
     modules: Optional[List[str]] = None,
+    log_type: str = "",
     range_label: str = "",
 ) -> Dict[str, Any]:
     """单设备日志获取，供 ThreadPoolExecutor / run_multi 调用。"""
@@ -1410,6 +1544,7 @@ def _logs_one(
         to_time=to_time,
         levels=levels,
         modules=modules,
+        log_type=log_type,
         range_label=range_label,
     )
     return {'host': client.host, **log_result}
@@ -1456,6 +1591,7 @@ def main() -> None:
     logs_p.add_argument("--to-time", default="", help="结束时间，格式 YYYY-MM-DD HH:MM:SS")
     logs_p.add_argument("--levels", default="ALERT,ERROR", help="逗号分隔日志级别 (default: ALERT,ERROR)")
     logs_p.add_argument("--modules", default="", help="逗号分隔日志模块/类型，如 ALARM,APPD,RS_DETECT")
+    logs_p.add_argument("--log-type", "--type", dest="log_type", default="", help="日志语义类型，目前支持 address-conflict/地址冲突")
 
     args = parser.parse_args()
     cmd = args.command or "analyze"
@@ -1480,6 +1616,7 @@ def main() -> None:
             'to_time': to_time,
             'levels': parse_log_levels(getattr(a, 'levels', 'ALERT,ERROR')),
             'modules': parse_log_modules(getattr(a, 'modules', '')),
+            'log_type': normalize_log_type(getattr(a, 'log_type', '')),
             'range_label': range_label,
         }
 

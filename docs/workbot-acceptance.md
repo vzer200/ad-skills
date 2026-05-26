@@ -338,6 +338,7 @@ Fixed mainline prompts:
 | `r3-traffic-vs` | `对 AD2 设备的 test 虚拟服务进行流量趋势分析。` | `collector.py collect --collect-only` then `perception.py traffic --vs test --require-db` |
 | `r3-logs` | `对 AD2 设备的日志进行分析。` | `perception.py logs --levels ALERT,ERROR --limit 20` |
 | `r3-logs-5d` | `对 AD2 设备近 5 天的日志进行分析。` | `perception.py logs --days 5 --levels ALERT,ERROR --limit 20` |
+| `r3-logs-address-conflict` | `对 AD2 设备近 24 小时的地址冲突类型日志进行分析。` | `perception.py logs --levels ALERT,ERROR --limit 20 --log-type address-conflict` |
 
 Avoid vague R3 prompts such as `AD1 做个感知分析` or `AD1 有没有异常`. They are too broad for a stable mainline gate and can collide with R2 query routing.
 
@@ -368,6 +369,7 @@ connect.py
 collector.py collect --collect-only
 perception.py traffic --vs test --days 7 --require-db
 perception.py logs --levels ALERT,ERROR --limit 20
+perception.py logs --levels ALERT,ERROR --limit 20 --log-type address-conflict
 ```
 
 Pass criteria:
@@ -377,8 +379,9 @@ Pass criteria:
 - The VS traffic trend prompt uses AD2/192.168.8.31 `test`, must run `collector.py collect --collect-only` first, then call `perception.py traffic --vs test --days 7 --require-db`. It must prove a database query path and must not answer from realtime API fallback or model memory.
 - VS traffic trend output must not include a `风险` column, arrows such as `↓`, or subjective severity words such as `轻微/明显/严重/显著`; show the change as a direct ratio such as `下降 79.9%` or `上升 12.3%`.
 - R3 visible output must preserve the `perception.py` markdown block instead of rewriting conclusions; do not add phrases such as `小结`, `三项核心指标`, `大幅偏离`, `连接数约为基线`, `当前值为 0`, or `降至 0` unless they are emitted by the script itself.
-- The log prompt must call `perception.py logs`, default to recent 24 hours, query both `ALERT` and `ERROR` across all modules, and cap visible output to the newest 20 rows sorted by time descending. Do not add `--modules` unless the user explicitly names a log module/type.
-- The log prompt has an external API truth check: the acceptance runner independently calls `ad_api.py log service` with the same `limit/levels/time window` and any explicit module filter, then compares those API rows with WorkBot's tool-call command and visible `perception.py logs` output. A run fails if the command lacks the expected API filter or the visible output contradicts the direct API sample.
+- The log prompt must call `perception.py logs`, default to recent 24 hours, query both `ALERT` and `ERROR` across all modules, and cap visible output to the newest 20 rows sorted by time descending. Do not add `--modules` unless the user explicitly names an AD log module such as APPD/SYS/ALARM.
+- A semantic log type is not a module. The address-conflict log prompt must use `--log-type address-conflict`, must not use `--modules`, and the script filters the returned service-log rows by address/IP/VIP/port + conflict semantics.
+- The log prompt has an external API truth check: the acceptance runner independently calls `ad_api.py log service` with the same `levels/time window`, any explicit module filter, and a wider page when semantic filtering is requested; it then applies the same semantic filter and compares those API rows with WorkBot's tool-call command and visible `perception.py logs` output. A run fails if the command lacks the expected API filter or the visible output contradicts the direct API sample.
 - If the user gives a log window such as recent 5 days or 7 days, WorkBot must pass that range through with `--days N`.
 - R3 visible status must match the evidence: if the output lists traffic anomalies or `ALERT`/`ERROR` logs, the conclusion status must be `需关注`, not `未发现明显异常`.
 - R3 final answers use `感知结论 / 分析结果 / 结论边界`; subcommand outputs must not bypass the perception template.
@@ -540,7 +543,7 @@ For every acceptance run:
 - Verify the command actually ran and has an exit code/stdout/stderr.
 - Verify stdout contains the expected script JSON/Markdown, not a model-only answer.
 - For real-device cases, verify AD 内网设备资源 validation: `connect.py` uses `devices.json` AD1, reaches the target, authenticates, and the follow-on script output is real device data.
-- For API-backed cases, run the independent external API verifier and compare it to WorkBot output; logs are verified against `ad_api.py log service`, including `ALERT,ERROR`, limit, and time range. Module filters are verified only when the user explicitly requests a log module/type.
+- For API-backed cases, run the independent external API verifier and compare it to WorkBot output; logs are verified against `ad_api.py log service`, including `ALERT,ERROR`, output limit, and time range. Module filters are verified only when the user explicitly requests an AD log module. Semantic log types, currently `address-conflict`, are verified by querying a wider service-log page and filtering rows locally by the same semantic matcher used by `perception.py`.
 - In WorkBot tool calls, `devices.json` must resolve AD1/AD2 to the intranet management addresses `192.168.8.30/192.168.8.31`. Seeing `14.18.243.211:21044` or `14.18.243.211:21039` inside WorkBot tool evidence is a failed package/run and the automation stops.
 - For Requirement 4, verify the staged sequence: YAML generation, `plan-and-render`, `summarize-plan`, `preflight-slb-plan`, optional `apply-slb-plan`, and optional `rollback-and-verify`.
 

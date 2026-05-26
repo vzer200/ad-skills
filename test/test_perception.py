@@ -800,6 +800,36 @@ class TestServiceLogs(unittest.TestCase):
         )
         self.assertEqual(result['modules'], ['ALARM'])
 
+    def test_fetch_service_log_result_filters_address_conflict_semantically_without_modules(self):
+        """Address-conflict log type is a semantic filter, not an AD module filter."""
+        self.client.get_service_log.return_value = {
+            'items': [
+                {'date': '2026-05-20', 'time': '23:50:15', 'level': 'ALERT', 'module': 'APPD',
+                 'detail': '虚拟服务 vip 1.2.3.4:443 地址端口冲突', 'log_id': '1'},
+                {'date': '2026-05-20', 'time': '23:40:00', 'level': 'ERROR', 'module': 'SLB',
+                 'detail': 'pool node 10.0.0.1 port 80 conflict detected', 'log_id': '2'},
+                {'date': '2026-05-20', 'time': '22:10:00', 'level': 'INFO', 'module': 'AUTH',
+                 'detail': '用户 admin 登录成功', 'log_id': '3'},
+            ]
+        }
+
+        result = fetch_service_log_result(
+            self.client,
+            limit=20,
+            levels=['ALERT', 'ERROR'],
+            log_type='address-conflict',
+            range_label='最近 24 小时',
+        )
+
+        kwargs = self.client.get_service_log.call_args.kwargs
+        self.assertNotIn('modules', kwargs)
+        self.assertEqual(kwargs['levels'], ['ALERT', 'ERROR'])
+        self.assertGreaterEqual(kwargs['limit'], 20)
+        self.assertEqual(result['log_type'], 'address-conflict')
+        self.assertEqual(result['log_type_label'], '地址冲突')
+        self.assertEqual(result['shown'], 2)
+        self.assertEqual([item['log_id'] for item in result['entries']], ['1', '2'])
+
     def test_render_logs_markdown_output(self):
         """render_logs_markdown should output the expected markdown table format."""
         entries = [
@@ -968,6 +998,8 @@ class TestState3Sigma(unittest.TestCase):
                 'range': '最近 5 天',
                 'levels': ['ALERT', 'ERROR'],
                 'modules': ['ALARM'],
+                'log_type': 'address-conflict',
+                'log_type_label': '地址冲突',
                 'shown': 1,
                 'limit': 20,
             },
@@ -976,6 +1008,8 @@ class TestState3Sigma(unittest.TestCase):
 
         self.assertIn('查询范围：最近 5 天', output)
         self.assertIn('日志级别：ALERT、ERROR', output)
+        self.assertIn('日志类型：地址冲突', output)
+        self.assertIn('日志模块：ALARM', output)
         self.assertIn('ALARM', output)
         self.assertIn('输出数量：最新 1 条（上限 20 条）', output)
         self.assertIn('2026-05-20 23:50:15', output)
