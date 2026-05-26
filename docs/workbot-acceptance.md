@@ -89,7 +89,7 @@ After attaching the AD skills zip, use this short install prompt:
 Pass criteria:
 
 - WorkBot uses tool calls to unzip/install the uploaded package and inspect the installed files.
-- The final answer confirms `ad-check-analysis`, `ad-connect`, `ad-ops`, `ad-perception`, and `ad-config-ops`.
+- The final answer confirms `ad-check-analysis`, `ad-connect`, `ad-ops`, and `ad-perception`.
 - Each installed skill is verified by a tool call that checks `SKILL.md`; scripts directories are verified where expected.
 
 ## Interactive Follow-Up Rule

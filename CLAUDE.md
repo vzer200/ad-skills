@@ -14,7 +14,6 @@ The core implementation lives under `.claude/skills/`. The model must only sched
   ad-ops/                 ADClient, overview, config/status/cert/traffic queries
   ad-check-analysis/      standard and batch inspection workflows
   ad-perception/          traffic/state/conflict/log perception analysis
-  ad-config-ops/          offline config script generation and VS+XFF workflow
 ```
 
 Shared rule: every user-facing result must come from `scripts/` stdout or a generated script summary.
@@ -38,7 +37,6 @@ Device credentials are stored directly in `devices.json` for WorkBot packaging. 
 | `ad-ops` | `ad_api.py`, `overview.py`, `multi_device.py` | VS/Pool/cert/device/traffic/status queries |
 | `ad-check-analysis` | `check.py` | Standard and batch inspection: history, run, progress, wait |
 | `ad-perception` | `collector.py`, `perception.py` | Traffic anomaly, state threshold, IP:Port conflict, log correlation |
-| `ad-config-ops` | `render_slb_bundle.py`, `discover_reuse.py`, `ad_ops_flow.py`, `execute_plan.py` | Offline config generation for VS/Pool/Profile/Pre Rule bundles, batch JSON, apply script, rollback planning |
 
 ## Error Codes
 
@@ -60,12 +58,11 @@ Use a real Python executable, not the Windows Store `python.exe` alias. In this 
 & "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" -m unittest discover -s test -p "test_*.py" -v
 ```
 
-For skill validation on Windows, set UTF-8 mode and make PyYAML available:
+For skill validation on Windows, set UTF-8 mode:
 
 ```powershell
 $env:PYTHONUTF8="1"
-$env:PYTHONPATH=".claude\skills\ad-config-ops\scripts\_vendor"
-& "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" C:\Users\Administrator\.codex\skills\.system\skill-creator\scripts\quick_validate.py .claude\skills\ad-config-ops
+& "C:\Users\Administrator\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" C:\Users\Administrator\.codex\skills\.system\skill-creator\scripts\quick_validate.py .claude\skills\ad-ops
 ```
 
 ## WorkBot Acceptance

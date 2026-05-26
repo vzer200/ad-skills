@@ -4,7 +4,7 @@ param(
     [string]$Git = "C:\Program Files\Git\cmd\git.exe",
     [string]$Gh = "C:\Program Files\GitHub CLI\gh.exe",
     [string]$Package = "dist\ad-skills-workbot.zip",
-    [string]$CommitMessage = "feat(ad-config-ops): add SLB bundle workflow and WorkBot automation",
+    [string]$CommitMessage = "chore: update AD skills package",
     [switch]$CommitAndPush,
     [switch]$SkipWorkBot,
     [switch]$VerifyAD,
@@ -35,21 +35,16 @@ if (!(Test-Path $Git)) {
 }
 
 $env:PYTHONUTF8 = "1"
-$env:PYTHONPATH = ".claude\skills\ad-config-ops\scripts\_vendor"
-
 Write-Host "[1/7] Running unit tests"
 & $Python -m unittest discover -s test -p "test_*.py" -v
 
 Write-Host "[2/7] Validating skills"
-$skills = @("ad-connect", "ad-ops", "ad-check-analysis", "ad-perception", "ad-config-ops")
+$skills = @("ad-connect", "ad-ops", "ad-check-analysis", "ad-perception")
 foreach ($skill in $skills) {
     & $Python "C:\Users\Administrator\.codex\skills\.system\skill-creator\scripts\quick_validate.py" ".claude\skills\$skill"
 }
 
-Write-Host "[3/7] Running ad-config-ops smoke"
-& $Python ".claude\skills\ad-config-ops\scripts\render_slb_bundle.py" --vs-name wb_vs_combo_test_01 --vip 10.250.250.30 --vport 8082 --pool wb_pool_combo_test_01 --node 192.0.2.30:80 --create-http-profile-xff wb_xff_profile_02 --create-pre-rule-http wb_pre_rule_02 --pre-rule-uri-pattern "/" --pre-rule-uri-mode WILDCARD --workdir "adops_smoke\automation"
-& $Python ".claude\skills\ad-config-ops\scripts\ad_ops_flow.py" plan-and-render --skill-root ".claude\skills\ad-config-ops" --bundle "adops_smoke\automation\adops-bundle.yml" --workdir "adops_smoke\automation"
-& $Python ".claude\skills\ad-config-ops\scripts\ad_ops_flow.py" summarize-plan --plan "adops_smoke\automation\adops-plan.json" --workdir "adops_smoke\automation"
+Write-Host "[3/7] Skipping removed config delivery smoke"
 
 if ($CommitAndPush) {
     Write-Host "[4/7] Committing and pushing"

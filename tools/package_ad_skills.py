@@ -48,6 +48,8 @@ def add_tree(zf: zipfile.ZipFile, source: Path, arc_root: Path) -> list[str]:
     for file in sorted(source.rglob("*")):
         if not should_include(file):
             continue
+        if file.name == "devices.json":
+            continue
         arcname = (arc_root / file.relative_to(source)).as_posix()
         zf.write(file, arcname)
         names.append(arcname)

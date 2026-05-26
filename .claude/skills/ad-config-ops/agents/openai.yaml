@@ -1,3 +1,0 @@
-display_name: AD Config Ops
-short_description: Generate Sangfor AD SLB config bundles and apply scripts.
-default_prompt: Generate AD API configuration bundles for VS, Pool, HTTP Profile, Pre Rule, batch JSON, validation plans, and rollback plans.

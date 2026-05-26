@@ -99,13 +99,6 @@ const FIXED_CASES = [
   "r3-logs",
   "r3-logs-5d",
   "r3-logs-address-conflict",
-  "r4-script",
-  "r4-vs-pool-node-script",
-  "r4-pool-profile-script",
-  "r4-pool-prerule-script",
-  "r4-delivery",
-  "r4-update-delivery",
-  "r4-delete-delivery",
 ].join(",");
 const EXTENDED_CASES = [
   "install",
@@ -118,22 +111,12 @@ const EXTENDED_CASES = [
   "r3-traffic",
   "r3-conflict",
   "r3-conflict-port",
-  "r4-vs-pool-script",
-  "r4-audit-script",
 ].join(",");
 const R4_CASES = [
   "install",
-  "r4-script",
-  "r4-vs-pool-node-script",
-  "r4-pool-profile-script",
-  "r4-pool-prerule-script",
-  "r4-delivery",
-  "r4-update-delivery",
-  "r4-delete-delivery",
 ].join(",");
 const R2R4_CASES = [
   "install",
-  "r2r4-interaction",
 ].join(",");
 const CASE_SUITES = {
   fixed: FIXED_CASES,
@@ -381,8 +364,8 @@ const cases = {
     requireTools: true,
   },
   install: {
-    prompt: "请安装我刚上传的 AD skills 包，并确认 5 个 skill 都可用。",
-    expected: ["ad-check-analysis", "ad-config-ops", "ad-connect", "ad-ops", "ad-perception", "SKILL.md"],
+    prompt: "请安装我刚上传的 AD skills 包，并确认 4 个 skill 都可用。",
+    expected: ["ad-check-analysis", "ad-connect", "ad-ops", "ad-perception", "SKILL.md"],
     requireTools: true,
   },
   r1: {
@@ -2006,45 +1989,21 @@ function runLocalAdVerification(name, cfg, override = {}) {
     AD_PASS: connection.password,
   };
   const target = override.target || (cfg && (cfg.verifyPresent || cfg.verifyAbsent));
-  const expect = override.expect || (cfg && cfg.verifyPresent ? "present" : "absent");
-  const command =
-    target
-      ? {
-          kind: `verify_${expect}`,
-          args: [
-            ".claude/skills/ad-config-ops/scripts/verify_slb_resource.py",
-            "--expect",
-            expect,
-            "--base-url",
-            connection.host,
-            "--username",
-            connection.username,
-            "--vs-name",
-            target.vsName,
-            "--pool-name",
-            target.poolName,
-            "--node-ip",
-            target.nodeIp,
-            ...(target.httpProfile ? ["--http-profile", target.httpProfile] : []),
-            ...(target.preRule ? ["--pre-rule", target.preRule] : []),
-            ...(target.vsDescription ? ["--vs-description", target.vsDescription] : []),
-            ...(target.poolDescription ? ["--pool-description", target.poolDescription] : []),
-            ...(target.httpProfileDescription ? ["--http-profile-description", target.httpProfileDescription] : []),
-            ...(target.preRuleDescription ? ["--pre-rule-description", target.preRuleDescription] : []),
-          ],
-        }
-      : {
-          kind: "connect",
-          args: [
-            ".claude/skills/ad-connect/scripts/connect.py",
-            "--host",
-            connection.host,
-            "--user",
-            connection.username,
-            "--format",
-            "json",
-          ],
-        };
+  if (target) {
+    throw new Error("R4 local verification is unavailable because the config delivery skill has been removed.");
+  }
+  const command = {
+    kind: "connect",
+    args: [
+      ".claude/skills/ad-connect/scripts/connect.py",
+      "--host",
+      connection.host,
+      "--user",
+      connection.username,
+      "--format",
+      "json",
+    ],
+  };
 
   const displayArgs = command.args.map((item) => (item === connection.password ? "<redacted>" : item));
   log("ad-verify-start", { name, kind: command.kind, args: displayArgs });
