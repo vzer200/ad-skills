@@ -28,7 +28,7 @@ $env:WORKBOT_PASSWORD = "<operator-provided password>"
 .\tools\run_workbot_acceptance.ps1 -CommitAndPush -VerifyAD
 ```
 
-The automation runs tests, validates skills, runs an SLB bundle smoke test, commits and pushes, packages `dist/ad-skills-workbot.zip`, uploads it to WorkBot, sends the fixed acceptance prompts, and writes a JSON evidence report under `workbot-results/`. The source `devices.json` is the WorkBot-facing authority and must use the intranet management addresses `https://192.168.8.30` and `https://192.168.8.31`; local Codex-side AD verification can still use the public gateway through `-ADBaseUrl`.
+The automation runs tests, validates skills, runs a config-delivery smoke test, commits and pushes, packages `dist/ad-skills-workbot.zip`, uploads it to WorkBot, sends the fixed acceptance prompts, and writes a JSON evidence report under `workbot-results/`. The source `devices.json` is the WorkBot-facing authority and must use the intranet management addresses `https://192.168.8.30` and `https://192.168.8.31`; local Codex-side AD verification can still use the public gateway through `-ADBaseUrl`.
 
 Default WorkBot pacing waits 2 seconds after the stop button disappears before sending the next prompt.
 
@@ -42,7 +42,7 @@ Every temporary employee is created through the same WorkBot API used by the web
 
 Fresh-agent runs skip cleanup because the employee has empty AD-skill context. Cleanup is not part of the main orchestration and runs only when the `cleanup` case is explicitly requested for debugging an existing employee. Install is always a hard gate: if it needs a no-tool follow-up, misses required tool commands, or leaks tool/command text in the visible answer, the automation stops before requirement cases.
 
-The default `fixed` suite is the mainline gate. It uses only the agreed fixed prompts and covers the complete requirements flow in one WorkBot run: R1 standard/full/security on one device and all devices, R2 full/single-dimension/multi-device queries, R3 full/single-dimension perception analysis, and R4 script-only plus real delivery/rollback. HA is not part of the default run.
+The default `fixed` suite is the mainline gate. It uses only the agreed fixed prompts and covers R1 standard/full/security on one device and all devices, R2 full/single-dimension/multi-device queries, and R3 full/single-dimension perception analysis. The config-delivery skill is covered by local smoke during packaging; R4 WorkBot delivery prompts stay in a dedicated suite while the new `ad-config-ops` workflow is stabilized. HA is not part of the default run.
 
 Exploratory prompt variants are kept in a separate suite and must not be mixed into the mainline stability gate:
 
@@ -89,7 +89,7 @@ After attaching the AD skills zip, use this short install prompt:
 Pass criteria:
 
 - WorkBot uses tool calls to unzip/install the uploaded package and inspect the installed files.
-- The final answer confirms `ad-check-analysis`, `ad-connect`, `ad-ops`, and `ad-perception`.
+- The final answer confirms `ad-check-analysis`, `ad-config-ops`, `ad-connect`, `ad-ops`, and `ad-perception`.
 - Each installed skill is verified by a tool call that checks `SKILL.md`; scripts directories are verified where expected.
 
 ## Interactive Follow-Up Rule

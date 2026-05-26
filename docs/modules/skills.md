@@ -1,6 +1,6 @@
 # AD Skills Module
 
-`.claude/skills/` contains four AD operation skills. The common contract is simple: the model schedules scripts, scripts perform the work, and user-facing answers display script output or short script summaries.
+`.claude/skills/` contains five AD operation skills. The common contract is simple: the model schedules scripts, scripts perform the work, and user-facing answers display script output or short script summaries.
 
 ## Skill List
 
@@ -8,6 +8,7 @@
 | --- | --- | --- | --- |
 | `ad-connect` | `.claude/skills/ad-connect/` | Device reachability and auth precheck | `connect.py --devices devices.json --format json` |
 | `ad-ops` | `.claude/skills/ad-ops/` | Config, VS, Pool, cert, traffic, status queries | `overview.py all --host ... --format markdown` |
+| `ad-config-ops` | `.claude/skills/ad-config-ops/` | API-document driven config generation, apply verification, and rollback | `lookup_api.py --skill-root ... --query ... --summary` |
 | `ad-check-analysis` | `.claude/skills/ad-check-analysis/` | Standard and batch inspection | `check.py history/run/progress/wait` |
 | `ad-perception` | `.claude/skills/ad-perception/` | Traffic/state/conflict/log perception analysis | `perception.py analyze --host ...` |
 
@@ -30,7 +31,7 @@
 ## Dependency Direction
 
 ```text
-ad-connect -> ad-ops/ad-check-analysis/ad-perception real-device validation
+ad-connect -> ad-ops/ad-config-ops/ad-check-analysis/ad-perception real-device validation
 ad-ops/ad_api.py -> reused by query, inspection, and perception scripts
 ```
 
@@ -40,4 +41,5 @@ ad-ops/ad_api.py -> reused by query, inspection, and perception scripts
 | --- | --- | --- |
 | Standard inspection report | `ad-check-analysis` | `ad-perception` |
 | Config/status/cert/traffic overview | `ad-ops` | model-written tables |
+| Generate or deliver configuration scripts | `ad-config-ops` | model-written payloads or hand-rolled apply scripts |
 | Traffic/state/conflict/log anomaly analysis | `ad-perception` | `ad-check-analysis` |

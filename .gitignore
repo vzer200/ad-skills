@@ -16,3 +16,5 @@ ad_ops_workdir/
 dist/
 workbot-results/
 workbot-acceptance.*.log
+AD_API_new/
+AD_API_new.zip

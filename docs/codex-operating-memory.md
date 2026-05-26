@@ -83,7 +83,7 @@ $env:PYTHONUTF8 = "1"
 .\tools\run_workbot_acceptance.ps1 -SkipWorkBot
 ```
 
-Expected local gate: all unit tests pass, all 4 skills validate, and `dist\ad-skills-workbot.zip` is regenerated.
+Expected local gate: all unit tests pass, all 5 skills validate, config-delivery smoke passes, and `dist\ad-skills-workbot.zip` is regenerated.
 
 ## WorkBot Test Flow
 

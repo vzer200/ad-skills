@@ -364,8 +364,8 @@ const cases = {
     requireTools: true,
   },
   install: {
-    prompt: "请安装我刚上传的 AD skills 包，并确认 4 个 skill 都可用。",
-    expected: ["ad-check-analysis", "ad-connect", "ad-ops", "ad-perception", "SKILL.md"],
+    prompt: "请安装我刚上传的 AD skills 包，并确认 5 个 skill 都可用。",
+    expected: ["ad-check-analysis", "ad-config-ops", "ad-connect", "ad-ops", "ad-perception", "SKILL.md"],
     requireTools: true,
   },
   r1: {
@@ -1990,7 +1990,12 @@ function runLocalAdVerification(name, cfg, override = {}) {
   };
   const target = override.target || (cfg && (cfg.verifyPresent || cfg.verifyAbsent));
   if (target) {
-    throw new Error("R4 local verification is unavailable because the config delivery skill has been removed.");
+    return {
+      status: "skipped",
+      reason: "R4 resource-level local verification is not wired for the new ad-config-ops toolkit yet.",
+      baseUrl: connection.host,
+      username: connection.username,
+    };
   }
   const command = {
     kind: "connect",

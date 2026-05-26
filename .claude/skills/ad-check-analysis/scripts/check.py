@@ -1594,9 +1594,10 @@ def render_markdown(
         f = sum(1 for k in keys if k in results and results[k]["status"] == "fail")
         w = sum(1 for k in keys if k in results and results[k]["status"] == "warn")
         n = sum(1 for k in keys if k in results and results[k]["status"] == "not_applicable")
-        t = p + f + w
-        rate = round(p / max(t, 1) * 100)
-        return {"total": t, "pass": p, "fail": f, "warn": w, "not_applicable": n, "rate": rate}
+        applicable = p + f + w
+        total = applicable + n
+        rate = round(p / max(applicable, 1) * 100)
+        return {"total": total, "applicable": applicable, "pass": p, "fail": f, "warn": w, "not_applicable": n, "rate": rate}
 
     f = cat_summary(feature_keys)
     h = cat_summary(health_keys)
@@ -1701,11 +1702,11 @@ def render_markdown(
 - 巡检时间：{check_time or "-"}
 
 ## 分类统计
-| 类别 | 覆盖项 | ✅ 正常 | ❌ 异常 | 得分 |
-| --- | ---: | ---: | ---: | ---: |
-| 功能 | {f["total"]} | {f["pass"]} | {f["fail"] + f["warn"]} | {score_cell(stability_score, f["total"])} |
-| 健康 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {score_cell(hardware_score, h["total"])} |
-| 安全 | {s["total"]} | {s["pass"]} | {s["fail"] + s["warn"]} | {score_cell(security_score, s["total"])} |
+| 类别 | 检查项 | ✅ 正常 | ❌ 异常 | ➖ 不适用 | 得分 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 功能 | {f["total"]} | {f["pass"]} | {f["fail"] + f["warn"]} | {f["not_applicable"]} | {score_cell(stability_score, f["applicable"])} |
+| 健康 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {h["not_applicable"]} | {score_cell(hardware_score, h["applicable"])} |
+| 安全 | {s["total"]} | {s["pass"]} | {s["fail"] + s["warn"]} | {s["not_applicable"]} | {score_cell(security_score, s["applicable"])} |
 
 ## 设备基本信息
 
@@ -1729,9 +1730,9 @@ def render_markdown(
 
 | 维度 | 评分 | 风险 |
 |------|------:|------|
-| 系统稳定性 | {score_cell(stability_score, f["total"])} | {risk_cell(stability_score, f["total"])} |
-| 硬件健康 | {score_cell(hardware_score, h["total"])} | {risk_cell(hardware_score, h["total"])} |
-| 安全配置 | {score_cell(security_score, s["total"])} | {risk_cell(security_score, s["total"])} |
+| 系统稳定性 | {score_cell(stability_score, f["applicable"])} | {risk_cell(stability_score, f["applicable"])} |
+| 硬件健康 | {score_cell(hardware_score, h["applicable"])} | {risk_cell(hardware_score, h["applicable"])} |
+| 安全配置 | {score_cell(security_score, s["applicable"])} | {risk_cell(security_score, s["applicable"])} |
 | **综合评分** | {score_icon} **{overall}/100** | **{risk_label(overall)}** |
 
 **说明**: 以上结果全部来自设备巡检报告，严格按照巡检返回数据进行分析。

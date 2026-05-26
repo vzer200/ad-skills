@@ -35,16 +35,24 @@ if (!(Test-Path $Git)) {
 }
 
 $env:PYTHONUTF8 = "1"
+$env:PYTHONPATH = (Resolve-Path ".claude\skills\ad-config-ops\scripts\_vendor").Path
 Write-Host "[1/7] Running unit tests"
 & $Python -m unittest discover -s test -p "test_*.py" -v
 
 Write-Host "[2/7] Validating skills"
-$skills = @("ad-connect", "ad-ops", "ad-check-analysis", "ad-perception")
+$skills = @("ad-connect", "ad-ops", "ad-config-ops", "ad-check-analysis", "ad-perception")
 foreach ($skill in $skills) {
     & $Python "C:\Users\Administrator\.codex\skills\.system\skill-creator\scripts\quick_validate.py" ".claude\skills\$skill"
 }
 
-Write-Host "[3/7] Skipping removed config delivery smoke"
+Write-Host "[3/7] Running config delivery smoke"
+$smokeDir = "adops_smoke\acceptance"
+$lookupQuery = [string]::Concat([char]0x521B, [char]0x5EFA, " HTTP ", [char]0x865A, [char]0x62DF, [char]0x670D, [char]0x52A1)
+& $Python ".claude\skills\ad-config-ops\scripts\init_env.py" --workdir $smokeDir --confirm-clean
+& $Python ".claude\skills\ad-config-ops\scripts\lookup_api.py" --skill-root ".claude\skills\ad-config-ops" --query $lookupQuery --module slb --summary --out "$smokeDir\adops-lookup.json"
+& $Python ".claude\skills\ad-config-ops\scripts\ad_ops_flow.py" plan-and-render --skill-root ".claude\skills\ad-config-ops" --bundle "test\fixtures\workbot\r4-slb-full.yml" --workdir $smokeDir
+& $Python ".claude\skills\ad-config-ops\scripts\ad_ops_flow.py" summarize-plan --plan "$smokeDir\adops-plan.json" --workdir $smokeDir
+& $Python ".claude\skills\ad-config-ops\scripts\ad_ops_flow.py" status --workdir $smokeDir
 
 if ($CommitAndPush) {
     Write-Host "[4/7] Committing and pushing"
