@@ -1594,9 +1594,17 @@ def render_markdown(
         f = sum(1 for k in keys if k in results and results[k]["status"] == "fail")
         w = sum(1 for k in keys if k in results and results[k]["status"] == "warn")
         n = sum(1 for k in keys if k in results and results[k]["status"] == "not_applicable")
-        t = p + f + w
-        rate = round(p / max(t, 1) * 100)
-        return {"total": t, "pass": p, "fail": f, "warn": w, "not_applicable": n, "rate": rate}
+        applicable_total = p + f + w
+        rate = round(p / max(applicable_total, 1) * 100)
+        return {
+            "total": applicable_total + n,
+            "applicable_total": applicable_total,
+            "pass": p,
+            "fail": f,
+            "warn": w,
+            "not_applicable": n,
+            "rate": rate,
+        }
 
     f = cat_summary(feature_keys)
     h = cat_summary(health_keys)
@@ -1701,11 +1709,11 @@ def render_markdown(
 - 巡检时间：{check_time or "-"}
 
 ## 分类统计
-| 类别 | 覆盖项 | ✅ 正常 | ❌ 异常 | 得分 |
-| --- | ---: | ---: | ---: | ---: |
-| 功能 | {f["total"]} | {f["pass"]} | {f["fail"] + f["warn"]} | {score_cell(stability_score, f["total"])} |
-| 健康 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {score_cell(hardware_score, h["total"])} |
-| 安全 | {s["total"]} | {s["pass"]} | {s["fail"] + s["warn"]} | {score_cell(security_score, s["total"])} |
+| 类别 | 检查项 | ✅ 正常 | ❌ 异常 | ➖ 不适用 | 得分 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 功能 | {f["total"]} | {f["pass"]} | {f["fail"] + f["warn"]} | {f["not_applicable"]} | {score_cell(stability_score, f["applicable_total"])} |
+| 健康 | {h["total"]} | {h["pass"]} | {h["fail"] + h["warn"]} | {h["not_applicable"]} | {score_cell(hardware_score, h["applicable_total"])} |
+| 安全 | {s["total"]} | {s["pass"]} | {s["fail"] + s["warn"]} | {s["not_applicable"]} | {score_cell(security_score, s["applicable_total"])} |
 
 ## 设备基本信息
 

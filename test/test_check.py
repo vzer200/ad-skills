@@ -382,6 +382,18 @@ class TestRenderMarkdown(unittest.TestCase):
         self.assertIn("- 异常数量：0 项", output)
         self.assertNotIn("POWER_STATE_CHECK", "\n".join(item["check"] for item in analysis["suggestions"]))
 
+    def test_category_stats_include_not_applicable_check_items(self):
+        analysis = analyze({
+            "ad_appversion": "1.0",
+            "base_cpu_usage": [10],
+            "power_state": -1,
+        })
+        output = render_markdown(analysis, {"host": "https://10.0.0.1", "scene": "标准巡检", "start_time": ""})
+
+        self.assertIn("| 类别 | 检查项 | ✅ 正常 | ❌ 异常 | ➖ 不适用 | 得分 |", output)
+        self.assertIn("| 功能 | 1 | 1 | 0 | 0 | 🟢 100/100 |", output)
+        self.assertIn("| 健康 | 2 | 1 | 0 | 1 | 🟢 100/100 |", output)
+
     def test_render_check_details_and_suggestions_are_operator_facing(self):
         analysis = analyze({
             "admin": "false",
