@@ -170,21 +170,23 @@ connect.py
 check.py history
 check.py run
 check.py progress
+check.py progress --delay-seconds 30
 check.py wait --timeout 55
 ```
 
 Pass criteria:
 
 - Tool calls include the expected scripts in order.
-- WorkBot commands must not use manual waiting. `sleep`, `Start-Sleep`, or `sleep && check.py progress` is a failed run; use `progress -> wait --timeout 55` and retry that pair if needed.
-- The interactive steps are gated independently: the first prompt must only ask for scenes returned by GET `/sys/offline-check/`; the scene reply must run `connect.py` and normalized `check.py history`. If `limit_reached=false`, WorkBot must directly run `run -> progress -> wait`; if `limit_reached=true`, it must only ask whether to force/continue and no report may appear before the final `强制` reply.
+- WorkBot commands must not use manual waiting. `sleep`, `Start-Sleep`, or `sleep && check.py progress` is a failed run; after `run`, call `progress` once, then while progress is still `RUNNING` use `progress --delay-seconds 30` to poll the device progress API. `wait --timeout 55` is only allowed after progress returns `state=FINISHED` or `finished>=total`.
+- A normal R1 run must not leave `CheckTimeoutError` or `未检测到本次巡检的完成报告` in the WorkBot tool evidence. A later successful report does not mask this, because the user has already seen an unfriendly failed step.
+- The interactive steps are gated independently: the first prompt must only ask for scenes returned by GET `/sys/offline-check/`; the scene reply must run `connect.py` and normalized `check.py history`. If `limit_reached=false`, WorkBot must directly run `run -> progress 30s polling -> wait`; if `limit_reached=true`, it must only ask whether to force/continue and no report may appear before the final `强制` reply.
 - History record-limit decisions must be based on `items` only. `check.py history` exposes `record_count` and `limit_reached`; WorkBot must not use `total_items`, `total`, or pagination metadata to decide force. A response with `total_items: 5` and `items: []` means `record_count: 0`, `limit_reached: false`, so WorkBot must not ask the user to force.
 - A later successful report does not mask a bad earlier step. If the first step executes `perception.py`/`overview.py`, outputs `感知结论`/`查询结论`/`巡检结论`, asks for force when `limit_reached=false`, or runs `check.py run/progress/wait` while `limit_reached=true` before force confirmation, the case fails immediately. Reading another skill's `SKILL.md` while choosing the route is not a failure by itself.
 - `connect.py` validates the AD1 target from `devices.json` before inspection, including AD 内网设备资源 reachability/auth evidence.
 - All-device inspection uses `devices.json` without `--device AD1` and produces multi-device evidence.
-- All-device inspection follows the same human interaction as single-device inspection: ask scene, run `connect.py` and normalized `history`, ask force/continue only if any device `limit_reached=true`, then run `run -> progress -> wait`.
+- All-device inspection follows the same human interaction as single-device inspection: ask scene, run `connect.py` and normalized `history`, ask force/continue only if any device `limit_reached=true`, then run `run -> progress 30s polling -> wait`.
 - `check.py run --wait` must not be used in WorkBot acceptance; it can exceed the platform's 60-second tool timeout.
-- The final report comes from `check.py wait` / downloaded report stdout, after `progress` confirms completion.
+- The final report comes from `check.py wait` / downloaded report stdout, after `progress` confirms completion via device progress data.
 - The final visible answer must include the progress line returned by `progress_text`, such as `目前巡检 23/35`.
 - The final answer does not add model-written inspection findings, wrapper phrases, or skill-policy explanations.
 - Apart from the single progress line, the final visible answer starts at `## 巡检结论` and must not append a second execution table or any phrase such as `工具调用`, `退出码`, `stdout`, `上方 stdout`, `connect.py`, or `check.py`.

@@ -369,6 +369,9 @@ const R2R4_QUERY_SPECS = [
   { label: "r2-hardware-all", prompt: "帮我查一下所有 AD 设备的硬件状态。", dimensions: ["overview.py", "hardware"], visiblePresent: ["查询结论"] },
 ];
 
+const R1_WAIT_TIMEOUT_OUTPUT_RE =
+  /(?:执行结果[\s\S]{0,240}(?:Error:\s*)?❌\s*(?:CheckTimeoutError|未检测到本次巡检的完成报告))|(?:Error:\s*❌?\s*CheckTimeoutError)|(?:"error"\s*:\s*"CheckTimeoutError)/;
+
 const cases = {
   cleanup: {
     prompt: "清理旧 AD skills 和记忆。必须先出现真实工具调用：shell 查删 skills/ad-*，cron_list 查任务，memory_export/memory_purge 清记忆，再用 shell 和 memory_export 验证；最终正文只回答清理完成，不要列工具、命令、退出码或 stdout/stderr。",
@@ -1859,6 +1862,7 @@ function stepRuleViolationsFor(name, cfg, responses) {
   const finalLabel = finalStep === step2 ? "step2" : "step3";
   const finalVisible = `${finalStep.visibleText || ""}\n${finalStep.visibleAgentText || ""}`;
   const finalCommands = extractStepToolCommands(finalStep).join("\n");
+  const finalEvidence = `${finalStep.text || ""}\n${finalStep.agentText || ""}\n${finalVisible}`;
   const requiredFinalCommands = ["check.py", "run", "progress", "wait"];
   for (const token of requiredFinalCommands) {
     if (!finalCommands.includes(token)) violations.push(`r1 ${finalLabel} missing command token: ${token}`);
@@ -1874,6 +1878,17 @@ function stepRuleViolationsFor(name, cfg, responses) {
   }
   if (!/目前巡检\s*\d+\s*\/\s*\d+/.test(finalVisible)) {
     violations.push(`r1 ${finalLabel} did not show progress_text like 目前巡检 23/35`);
+  }
+  if (R1_WAIT_TIMEOUT_OUTPUT_RE.test(finalEvidence)) {
+    violations.push(`r1 ${finalLabel} produced an unfriendly wait timeout instead of progress polling`);
+  }
+  if (/"state"\s*:\s*"RUNNING"/.test(finalEvidence) && !/\bcheck\.py\b[^\n]*\bprogress\b[^\n]*--delay-seconds(?:=|\s+)30(?:\.0)?\b/i.test(finalCommands)) {
+    violations.push(`r1 ${finalLabel} did not poll progress with --delay-seconds 30 after RUNNING progress`);
+  }
+  const delayedProgressIndex = finalCommands.search(/\bcheck\.py\b[^\n]*\bprogress\b[^\n]*--delay-seconds/i);
+  const waitIndex = finalCommands.search(/\bcheck\.py\b[^\n]*\bwait\b/i);
+  if (/"state"\s*:\s*"RUNNING"/.test(finalEvidence) && waitIndex >= 0 && (delayedProgressIndex < 0 || waitIndex < delayedProgressIndex)) {
+    violations.push(`r1 ${finalLabel} called wait before 30-second progress polling completed`);
   }
   if (!name.startsWith("r1-all")) {
     if (!finalVisible.includes("具体说明")) violations.push(`r1 ${finalLabel} check detail table missing 具体说明 column`);
@@ -2470,6 +2485,12 @@ function verify(run) {
     const combinedProgress = /\b(?:sleep|Start-Sleep)\b[^\n]*\bcheck\.py\b[^\n]*\bprogress\b|\bcheck\.py\b[^\n]*\bprogress\b[^\n]*\b(?:sleep|Start-Sleep)\b/i;
     if (combinedProgress.test(toolCommandText)) commandForbiddenFound.push("sleep + check.py progress");
     if (/\b(?:sleep|Start-Sleep)\b/i.test(toolCommandText)) commandForbiddenFound.push("manual sleep");
+    if (R1_WAIT_TIMEOUT_OUTPUT_RE.test(searchable)) {
+      commandForbiddenFound.push("CheckTimeoutError during R1 progress workflow");
+    }
+    if (/"state"\s*:\s*"RUNNING"/.test(searchable) && !/\bcheck\.py\b[^\n]*\bprogress\b[^\n]*--delay-seconds(?:=|\s+)30(?:\.0)?\b/i.test(toolCommandText)) {
+      commandForbiddenFound.push("missing progress --delay-seconds 30 after RUNNING progress");
+    }
   }
   const defaultVisibleForbidden = /^r[1-4]/.test(run.name) ? [
     "工具调用",

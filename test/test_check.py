@@ -596,6 +596,18 @@ class TestProgressOne(unittest.TestCase):
         result = _progress_one(client)
         self.assertEqual(result["progress_text"], "目前巡检 23/35")
 
+    def test_progress_one_can_delay_before_querying_progress(self):
+        from check import _progress_one
+        client = MagicMock()
+        client.host = "https://10.0.0.1"
+        client._request.return_value = {"state": "RUNNING", "finished": 0, "total": 35}
+        slept = []
+
+        result = _progress_one(client, delay_seconds=30, _sleeper=slept.append)
+
+        self.assertEqual(slept, [30])
+        self.assertEqual(result["progress_text"], "目前巡检 1/35")
+
     def test_progress_one_persists_progress_text_for_wait_report(self):
         from check import _progress_one
         client = MagicMock()

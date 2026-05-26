@@ -198,7 +198,7 @@ def start_check(
     if not event_id:
         raise RuntimeError(f"巡检启动失败: {result}")
     print(f"         event_id={event_id}  state={result.get('state')}")
-    print("         巡检已在设备后台执行，请使用 progress 命令轮询进度。")
+    print("         巡检已在设备后台执行，请使用 progress 命令每 30 秒轮询进度。")
 
     check_start_time = result.get("start_time", "")
     device_name = getattr(client, "device_name", "")
@@ -1789,6 +1789,12 @@ def _is_new_report(top_item: Dict[str, Any], pre_run_latest_name: str, t0_int: i
 
 def _progress_one(client: Any, **kw: Any) -> Dict[str, Any]:
     """Single-device progress query for ThreadPoolExecutor, with NO_RUNNING fallback."""
+    delay_seconds = float(kw.get("delay_seconds", 0) or 0)
+    if delay_seconds < 0:
+        raise ValueError("delay_seconds must be non-negative")
+    if delay_seconds:
+        sleeper = kw.get("_sleeper", time.sleep)
+        sleeper(delay_seconds)
     result = client._request("GET", "/debug/sys/offline-check", params={"type": "progress"})
     retry_count = int(kw.get("retry_count", 4))
     retry_interval = float(kw.get("retry_interval", 2))
@@ -2096,6 +2102,8 @@ def main() -> None:
     p_prog.add_argument("--username", default="admin")
     p_prog.add_argument("--password", default="")
     p_prog.add_argument("--work-dir", default="", help="与 run/wait 使用的工作目录保持一致")
+    p_prog.add_argument("--delay-seconds", type=float, default=0.0,
+                        help="查询前等待指定秒数；WorkBot 进度轮询建议 30 秒")
 
     # analyze
     p_analyze = sub.add_parser("analyze", help="分析已下载的巡检报告")
@@ -2185,7 +2193,7 @@ def main() -> None:
             else:
                 meta = start_check(client, args.scene, force=args.force, work_dir=work_dir)
                 print(f"         工作目录: {work_dir}")
-                print(f"         后续请用 wait 命令轮询进度，或用 progress 命令单独查询")
+                print(f"         后续请用 progress 命令每 30 秒查询进度，完成后再用 wait 下载报告")
         except CheckSceneNotFoundError as e:
             print(f"❌ {e}", file=sys.stderr)
             sys.exit(4)
@@ -2304,7 +2312,13 @@ def main() -> None:
                 devices = load_devices_json(args.devices, args.device)
             else:
                 devices = parse_hosts_arg(args.hosts, args.username, args.password)
-            results = run_multi(devices, _progress_one, work_dir=args.work_dir or None)
+            results = run_multi(
+                devices,
+                _progress_one,
+                work_dir=args.work_dir or None,
+                delay_seconds=args.delay_seconds,
+                _timeout=min(max(args.delay_seconds + 20, 30), 75),
+            )
             output = {"mode": "multi", "summary": {"total": len(results), "success": sum(1 for v in results.values() if "error" not in v), "failed": sum(1 for v in results.values() if "error" in v)}, "results": results}
             print(json.dumps(output, indent=2, ensure_ascii=False))
             sys.exit(compute_multi_exit_code(results))
@@ -2319,7 +2333,11 @@ def main() -> None:
             sys.exit(4)
         try:
             client = ADClient(args.host, args.username, password)
-            result = _progress_one(client, work_dir=args.work_dir or None)
+            result = _progress_one(
+                client,
+                work_dir=args.work_dir or None,
+                delay_seconds=args.delay_seconds,
+            )
         except ADAuthError as e:
             print(f"认证失败: {e}", file=sys.stderr)
             sys.exit(2)
