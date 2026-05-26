@@ -371,6 +371,8 @@ const R2R4_QUERY_SPECS = [
 
 const R1_WAIT_TIMEOUT_OUTPUT_RE =
   /(?:执行结果[\s\S]{0,240}(?:Error:\s*)?❌\s*(?:CheckTimeoutError|未检测到本次巡检的完成报告))|(?:Error:\s*❌?\s*CheckTimeoutError)|(?:"error"\s*:\s*"CheckTimeoutError)/;
+const R1_PROGRESS_TEXT_RE = /目前巡检进度[：:]\s*\d+\s*\/\s*\d+/g;
+const R1_OLD_PROGRESS_TEXT_RE = /目前巡检\s+\d+\s*\/\s*\d+/;
 
 const cases = {
   cleanup: {
@@ -1860,7 +1862,7 @@ function stepRuleViolationsFor(name, cfg, responses) {
 
   const finalStep = step2HasFinalReport || step2RanFinalCommands ? step2 : step3;
   const finalLabel = finalStep === step2 ? "step2" : "step3";
-  const finalVisible = `${finalStep.visibleText || ""}\n${finalStep.visibleAgentText || ""}`;
+  const finalVisible = joinUniqueTexts(finalStep.visibleText, finalStep.visibleAgentText);
   const finalCommands = extractStepToolCommands(finalStep).join("\n");
   const finalEvidence = `${finalStep.text || ""}\n${finalStep.agentText || ""}\n${finalVisible}`;
   const requiredFinalCommands = ["check.py", "run", "progress", "wait"];
@@ -1876,8 +1878,15 @@ function stepRuleViolationsFor(name, cfg, responses) {
   if (scene && !finalVisible.includes(scene)) {
     violations.push(`r1 ${finalLabel} report did not contain expected scene: ${scene}`);
   }
-  if (!/目前巡检\s*\d+\s*\/\s*\d+/.test(finalVisible)) {
-    violations.push(`r1 ${finalLabel} did not show progress_text like 目前巡检 23/35`);
+  const finalProgressMatches = finalVisible.match(R1_PROGRESS_TEXT_RE) || [];
+  if (finalProgressMatches.length === 0) {
+    violations.push(`r1 ${finalLabel} did not show progress_text like 目前巡检进度：23/35`);
+  }
+  if (finalProgressMatches.length > 1) {
+    violations.push(`r1 ${finalLabel} showed multiple progress_text lines instead of replacing with the latest one`);
+  }
+  if (R1_OLD_PROGRESS_TEXT_RE.test(finalVisible)) {
+    violations.push(`r1 ${finalLabel} used old progress_text format 目前巡检 23/35`);
   }
   if (R1_WAIT_TIMEOUT_OUTPUT_RE.test(finalEvidence)) {
     violations.push(`r1 ${finalLabel} produced an unfriendly wait timeout instead of progress polling`);

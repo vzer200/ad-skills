@@ -56,7 +56,7 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 - 所有业务逻辑必须由 `skills/ad-check-analysis/scripts/check.py` 执行。
 - 用户选择场景后必须先查 `history`。历史上限只看脚本输出的 `record_count`/`limit_reached`，它们由 API `items` 数量计算；禁止用 `total_items`、`total` 或其它分页元数据判断是否需要强制。`limit_reached: false` 时不要询问强制，也不要给 `run` 加 `--force`。
 - `run` 只负责启动巡检，必须显式传 `--work-dir`；随后先调用一次 `progress` 获取状态。只要 `progress` 仍是 `RUNNING`，必须重复调用 `progress --delay-seconds 30` 做 30 秒进度轮询；只有 `progress` 返回 `state=FINISHED` 或 `finished>=total` 后，才能调用 `wait --timeout 55 --poll-interval 5` 下载和分析报告。禁止在巡检仍运行时用 `wait` 代替进度等待；正常 R1 流程里不能出现 wait 超时错误或报告未生成错误。
-- `progress` 输出中的 `progress_text` 必须展示给用户，例如 `目前巡检 23/35`；这个进度来自设备 progress API 的 `finished`/`total` 字段。
+- `progress` 输出中的 `progress_text` 必须使用 `目前巡检进度：23/35` 格式；这个进度来自设备 progress API 的 `finished`/`total` 字段。多次轮询时，用户可见正文只保留最后一次/最新一次进度，禁止拼接成 `13/35 26/35` 这类连续文本。
 - 工具命令中绝对禁止出现 `sleep`、`Start-Sleep` 或 `sleep && python3 ... progress`。不要手动等待；需要等 30 秒后再次查询进度时，只能使用 `check.py progress --delay-seconds 30`。
 - 脚本输出是唯一事实来源。禁止模型自行生成巡检结论、风险项、分数或报告内容。
 - 如果用户指定 AD1/AD2，优先使用设备清单中的主机和密码。设备清单可能位于 `devices.json`、`skills/devices.json`、`skills/ad-check-analysis/devices.json` 或 `.claude/skills/ad-check-analysis/devices.json`；必须先检查这些位置并选择存在的文件，不要因为根目录没有 `devices.json` 就向用户追问地址或密码。
@@ -67,7 +67,7 @@ description: 深信服 AD 巡检 skill。用于对 AD1/AD2 或批量设备执行
 - 用户要求标准巡检、全量巡检、安全巡检时，分别使用用户确认的场景名传给 `--scene`。
 - 面向用户的最终答案只展示巡检模板和脚本报告内容，不展示“工具调用”、脚本名、命令、退出码、stdout/stderr。工具调用证据只供后台验收查看。
 - 检查项必须显示中文名称，例如“设备安全状态检查”，不要在用户答案中显示 `DEVICE_SAFE_CHECK` 这类内部 ID。
-- 最终答复必须展示 `progress` 返回的 `progress_text`，然后从脚本输出的 `## 巡检结论` 开始，到脚本报告结束为止原样展示；不要在报告前后追加执行表、工具调用摘要、命令摘要、`上方 stdout 已展示` 这类说明。
+- 最终正文第一行必须是最后一次有效 `progress_text`，格式如 `目前巡检进度：35/35`；下一行开始从 `check.py wait` 输出的 `## 巡检结论` 复制到报告结束。`check.py wait` 的 stdout 本身从 `## 巡检结论` 开始，不要把较早 progress 输出或工具面板内容再粘贴进用户正文；如果前面已有较早进度（如 `13/35`），必须被最新进度覆盖，用户正文里只能出现一条 `目前巡检进度：x/y`。不要在报告前后追加执行表、工具调用摘要、命令摘要、`上方 stdout 已展示` 这类说明。
 - 最终答复必须直接复制 `check.py wait` 最后一次成功输出的报告，不要自己重写、合并或改写分数、异常数量、设备汇总和建议。如果前一次 `wait` 因工作目录错误显示失败，不能把失败报告混入最终答案；应使用 `run` 返回的实际 `work_dir=` 再执行一次 `wait`，只输出成功报告。
 - 最终正文的 `markdown-body` 是用户可见报告区，禁止出现 `## 工具调用`、`执行过程`、`命令摘要`、`connect.py`、`check.py`、`退出码`、`stdout`、`stderr`、`ad.json`。单设备巡检最终正文也禁止出现 `## 巡检过程` 和 `## 原始报告`。
 - 不要把工具面板内容重新整理成用户正文。正确做法是直接粘贴 `check.py wait` 输出中从 `## 巡检结论` 到报告结束的内容。

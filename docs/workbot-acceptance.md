@@ -187,7 +187,7 @@ Pass criteria:
 - All-device inspection follows the same human interaction as single-device inspection: ask scene, run `connect.py` and normalized `history`, ask force/continue only if any device `limit_reached=true`, then run `run -> progress 30s polling -> wait`.
 - `check.py run --wait` must not be used in WorkBot acceptance; it can exceed the platform's 60-second tool timeout.
 - The final report comes from `check.py wait` / downloaded report stdout, after `progress` confirms completion via device progress data.
-- The final visible answer must include the progress line returned by `progress_text`, such as `目前巡检 23/35`.
+- The final visible answer must start with exactly one latest progress line returned by `progress_text`, such as `目前巡检进度：23/35`, followed by the `check.py wait` report from `## 巡检结论`. If multiple `progress` calls returned different values, the newer value replaces the older one; concatenated progress text such as `目前巡检进度：13/35目前巡检进度：26/35` or the old `目前巡检 23/35` format is a failed run.
 - The final answer does not add model-written inspection findings, wrapper phrases, or skill-policy explanations.
 - Apart from the single progress line, the final visible answer starts at `## 巡检结论` and must not append a second execution table or any phrase such as `工具调用`, `退出码`, `stdout`, `上方 stdout`, `connect.py`, or `check.py`.
 - The final visible answer must not include phrases such as `根据技能`, `技能规则`, `根据 ad-check-analysis`, `下面汇总展示`, or `报告均已获取成功`.

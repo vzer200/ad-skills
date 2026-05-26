@@ -1672,7 +1672,8 @@ def render_markdown(
         check_time = raw_time
 
     progress_text = str(meta.get("progress_text", "") or "").strip()
-    progress_line = f"- 巡检进度：{progress_text}\n" if progress_text else ""
+    progress_value = _progress_count_value(progress_text) or progress_text
+    progress_line = f"- 巡检进度：{progress_value}\n" if progress_value else ""
 
     # ── 检查项详情渲染（单设备全量展示正常+异常） ────────
     has_anomaly = any(k in results and results[k]["status"] in ("fail", "warn") for k in all_keys)
@@ -1854,7 +1855,7 @@ def _format_progress_text(result: Dict[str, Any]) -> str:
             current = total
         else:
             current = min(finished + 1, total)
-        return f"目前巡检 {current}/{total}"
+        return f"目前巡检进度：{current}/{total}"
     if result.get("history_latest", {}).get("finished"):
         return "当前没有运行中的巡检任务，最近一次巡检已完成"
     if state == "NO_RUNNING":
@@ -1871,6 +1872,27 @@ def _progress_needs_retry(result: Dict[str, Any]) -> bool:
 
 def _progress_text_has_count(progress_text: str) -> bool:
     return bool(re.search(r"\d+\s*/\s*\d+", progress_text or ""))
+
+
+def _progress_count_value(progress_text: str) -> str:
+    match = re.search(r"(\d+)\s*/\s*(\d+)", progress_text or "")
+    if not match:
+        return ""
+    return f"{match.group(1)}/{match.group(2)}"
+
+
+_LEADING_PROGRESS_RE = re.compile(
+    r"^(?:(?:目前巡检进度[：:]\s*|目前巡检\s+)\d+\s*/\s*\d+\s*)+"
+)
+
+
+def _strip_leading_progress_text(markdown: str) -> str:
+    stripped = markdown.lstrip()
+    previous = None
+    while previous != stripped:
+        previous = stripped
+        stripped = _LEADING_PROGRESS_RE.sub("", stripped).lstrip()
+    return stripped
 
 
 def _default_work_dir_for_host(host: str) -> str:
@@ -1929,14 +1951,12 @@ def _prepend_progress_text(
     if not progress_text:
         progress_text = _load_progress_text(work_dir)
     if fallback_total and not _progress_text_has_count(progress_text):
-        progress_text = f"目前巡检 {fallback_total}/{fallback_total}"
+        progress_text = f"目前巡检进度：{fallback_total}/{fallback_total}"
     if not progress_text:
         return markdown
     if meta is not None:
         meta["progress_text"] = progress_text
-    stripped = markdown.lstrip()
-    if stripped.startswith(progress_text):
-        return markdown
+    stripped = _strip_leading_progress_text(markdown)
     return f"{progress_text}\n\n{stripped}"
 
 
@@ -2011,16 +2031,10 @@ def _wait_one(
     fallback_total = len(analysis.get("check_results", {}))
     progress_text = meta.get("progress_text", "") or _load_progress_text(work_dir)
     if fallback_total and not _progress_text_has_count(progress_text):
-        progress_text = f"目前巡检 {fallback_total}/{fallback_total}"
+        progress_text = f"目前巡检进度：{fallback_total}/{fallback_total}"
     if progress_text:
         meta["progress_text"] = progress_text
     report = render_markdown(analysis, meta)
-    report = _prepend_progress_text(
-        report,
-        work_dir,
-        meta,
-        fallback_total=fallback_total,
-    )
     return {
         "meta": meta,
         "analysis": analysis,

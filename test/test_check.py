@@ -363,12 +363,12 @@ class TestRenderMarkdown(unittest.TestCase):
                 "host": "https://10.0.0.1",
                 "scene": "标准巡检",
                 "start_time": "",
-                "progress_text": "目前巡检 8/35",
+                "progress_text": "目前巡检进度：8/35",
             },
         )
 
-        self.assertIn("- 巡检进度：目前巡检 8/35", output)
-        self.assertLess(output.index("- 巡检进度：目前巡检 8/35"), output.index("- 总体状态："))
+        self.assertIn("- 巡检进度：8/35", output)
+        self.assertLess(output.index("- 巡检进度：8/35"), output.index("- 总体状态："))
 
     def test_render_not_applicable_without_counting_anomaly(self):
         analysis = analyze({
@@ -594,7 +594,7 @@ class TestProgressOne(unittest.TestCase):
         client = MagicMock()
         client._request.return_value = {"state": "RUNNING", "finished": 22, "total": 35}
         result = _progress_one(client)
-        self.assertEqual(result["progress_text"], "目前巡检 23/35")
+        self.assertEqual(result["progress_text"], "目前巡检进度：23/35")
 
     def test_progress_one_can_delay_before_querying_progress(self):
         from check import _progress_one
@@ -606,7 +606,7 @@ class TestProgressOne(unittest.TestCase):
         result = _progress_one(client, delay_seconds=30, _sleeper=slept.append)
 
         self.assertEqual(slept, [30])
-        self.assertEqual(result["progress_text"], "目前巡检 1/35")
+        self.assertEqual(result["progress_text"], "目前巡检进度：1/35")
 
     def test_progress_one_persists_progress_text_for_wait_report(self):
         from check import _progress_one
@@ -617,21 +617,32 @@ class TestProgressOne(unittest.TestCase):
             result = _progress_one(client, work_dir=work_dir)
             progress_path = os.path.join(work_dir, "_progress.json")
 
-            self.assertEqual(result["progress_text"], "目前巡检 23/35")
+            self.assertEqual(result["progress_text"], "目前巡检进度：23/35")
             self.assertTrue(os.path.exists(progress_path))
             with open(progress_path, encoding="utf-8") as f:
                 saved = json.load(f)
-            self.assertEqual(saved["progress_text"], "目前巡检 23/35")
+            self.assertEqual(saved["progress_text"], "目前巡检进度：23/35")
 
     def test_saved_progress_text_is_prefixed_to_wait_report(self):
         from check import _prepend_progress_text
         with tempfile.TemporaryDirectory() as work_dir:
             with open(os.path.join(work_dir, "_progress.json"), "w", encoding="utf-8") as f:
-                json.dump({"progress_text": "目前巡检 23/35"}, f, ensure_ascii=False)
+                json.dump({"progress_text": "目前巡检进度：23/35"}, f, ensure_ascii=False)
 
             report = _prepend_progress_text("## 巡检结论\n- 目标：AD1", work_dir, {})
 
-            self.assertTrue(report.startswith("目前巡检 23/35\n\n## 巡检结论"))
+            self.assertTrue(report.startswith("目前巡检进度：23/35\n\n## 巡检结论"))
+
+    def test_latest_progress_text_replaces_stale_leading_progress_text(self):
+        from check import _prepend_progress_text
+        with tempfile.TemporaryDirectory() as work_dir:
+            with open(os.path.join(work_dir, "_progress.json"), "w", encoding="utf-8") as f:
+                json.dump({"progress_text": "目前巡检进度：26/35"}, f, ensure_ascii=False)
+
+            report = _prepend_progress_text("目前巡检进度：13/35\n\n## 巡检结论\n- 目标：AD1", work_dir, {})
+
+            self.assertTrue(report.startswith("目前巡检进度：26/35\n\n## 巡检结论"))
+            self.assertNotIn("目前巡检进度：13/35", report)
 
     def test_wait_report_uses_final_item_count_when_progress_has_no_numbers(self):
         from check import _prepend_progress_text
@@ -641,7 +652,31 @@ class TestProgressOne(unittest.TestCase):
 
             report = _prepend_progress_text("## 巡检结论\n- 目标：AD1", work_dir, {}, fallback_total=35)
 
-            self.assertTrue(report.startswith("目前巡检 35/35\n\n## 巡检结论"))
+            self.assertTrue(report.startswith("目前巡检进度：35/35\n\n## 巡检结论"))
+
+    def test_wait_one_markdown_starts_at_report_and_keeps_progress_in_header_only(self):
+        from check import _wait_one
+        client = MagicMock()
+        client.host = "https://10.0.0.1"
+        with tempfile.TemporaryDirectory() as work_dir:
+            ad_json_path = os.path.join(work_dir, "ad.json")
+            with open(ad_json_path, "w", encoding="utf-8") as f:
+                json.dump({"ad_appversion": "1.0"}, f, ensure_ascii=False)
+            with open(os.path.join(work_dir, "_progress.json"), "w", encoding="utf-8") as f:
+                json.dump({"progress_text": "目前巡检进度：23/35"}, f, ensure_ascii=False)
+            meta = {
+                "host": "https://10.0.0.1",
+                "scene": "标准巡检",
+                "start_time": "",
+                "ad_json_path": ad_json_path,
+            }
+
+            with patch("check.wait_and_download", return_value=meta):
+                result = _wait_one(client, work_dir=work_dir)
+
+            self.assertTrue(result["markdown"].startswith("## 巡检结论"))
+            self.assertIn("- 巡检进度：23/35", result["markdown"])
+            self.assertFalse(result["markdown"].startswith("目前巡检进度："))
 
     def test_no_running_with_history(self):
         from check import _progress_one
