@@ -11,9 +11,15 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
-from ad_ops_common import read_json, skill_paths, tmp_file_path, update_artifacts, workdir_path
+from ad_ops_common import read_json, resolve_output_path, skill_paths, tmp_file_path, update_artifacts, workdir_path
 from dependency_order import load_resource_order, sorted_by_dependency_order
-from render_template import HEADER_LINES, parse_presets, render_template
+from render_template import (
+    HEADER_LINES,
+    default_presets_for_schema_document,
+    merge_preset_maps,
+    parse_presets,
+    render_template,
+)
 
 
 SAFE_SCALAR_RE = re.compile(r"^[A-Za-z0-9_.\/-]+$")
@@ -58,7 +64,7 @@ def parse_operation(values: list[str]) -> dict[str, Any]:
     if action not in SUPPORTED_ACTIONS:
         raise ValueError(f"unsupported action for {operation_id}: {action}")
     operation = {"id": operation_id, "action": action, "schema": schema, "document": document}
-    presets = parse_presets(preset_args)
+    presets = merge_preset_maps(default_presets_for_schema_document(schema, document), parse_presets(preset_args))
     if presets:
         operation["presets"] = presets
     return operation
@@ -105,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
         print(str(exc), file=sys.stderr)
         return 1
 
-    output_path = args.out or tmp_file_path()
+    output_path = resolve_output_path(args.out or tmp_file_path(), args.workdir)
     if output_path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(output, encoding="utf-8")

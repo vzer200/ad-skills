@@ -65,6 +65,57 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_profile_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-profile",
+						"description": "查看当前已有的DNS策略配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/dns-virtual-service/dns-profile/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/dns-virtual-service/dns-profile/ 响应",
+						"description": "返回GET /api/ad/v4/dns/dns-virtual-service/dns-profile/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "dns_profile_1",
+									"description": "这是一个DNS策略",
+									"module_gslb": "ENABLE",
+									"module_zone": "ENABLE",
+									"module_ldns": "DISABLE",
+									"module_proxy": "DISABLE",
+									"policy": "REFUSE",
+									"return_ip": "example_string",
+									"record_rotate": "ENABLE",
+									"edns_cache_capacity_byte": 1232,
+									"edns_client_subnet_insert": "DISABLE",
+									"access_control": [
+										{
+											"source_address": {
+												"type": "ALL",
+												"address": "192.168.1.1/24",
+												"ref_custom_address_group": "{custom_address_group}"
+											},
+											"domain": "www.jd.com",
+											"record_type": "ALL",
+											"query_limit": 17770
+										}
+									],
+									"alert": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +133,57 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-profile",
+						"description": "新建一个DNS策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/dns-virtual-service/dns-profile/",
+							"body": {
+								"name": "AI_dns_profile_1_A",
+								"module_gslb": "ENABLE",
+								"module_zone": "ENABLE",
+								"module_ldns": "DISABLE",
+								"module_proxy": "DISABLE",
+								"policy": "REFUSE",
+								"edns_cache_capacity_byte": 1232,
+								"edns_client_subnet_insert": "DISABLE",
+								"alert": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/dns-virtual-service/dns-profile/ 响应",
+						"description": "返回POST /api/ad/v4/dns/dns-virtual-service/dns-profile/的响应数据",
+						"value": {
+							"name": "AI_dns_profile_1_A",
+							"description": "这是一个DNS策略",
+							"module_gslb": "ENABLE",
+							"module_zone": "ENABLE",
+							"module_ldns": "DISABLE",
+							"module_proxy": "DISABLE",
+							"policy": "REFUSE",
+							"return_ip": "example_string",
+							"record_rotate": "ENABLE",
+							"edns_cache_capacity_byte": 1232,
+							"edns_client_subnet_insert": "DISABLE",
+							"access_control": [
+								{
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"domain": "www.jd.com",
+									"record_type": "ALL",
+									"query_limit": 17770
+								}
+							],
+							"alert": "ENABLE"
+						}
 					}
 				}
 			},
@@ -138,6 +240,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-profile",
+						"description": "查看指定DNS策略配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/dns-virtual-service/dns-profile/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/dns-virtual-service/dns-profile/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/dns-virtual-service/dns-profile/{name}的响应数据",
+						"value": {
+							"name": "dns_profile_1",
+							"description": "这是一个DNS策略",
+							"module_gslb": "ENABLE",
+							"module_zone": "ENABLE",
+							"module_ldns": "DISABLE",
+							"module_proxy": "DISABLE",
+							"policy": "REFUSE",
+							"return_ip": "example_string",
+							"record_rotate": "ENABLE",
+							"edns_cache_capacity_byte": 1232,
+							"edns_client_subnet_insert": "DISABLE",
+							"access_control": [
+								{
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"domain": "www.jd.com",
+									"record_type": "ALL",
+									"query_limit": 17770
+								}
+							],
+							"alert": "ENABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -157,6 +299,57 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-profile",
+						"description": "新建指定的DNS策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/dns-virtual-service/dns-profile/{name}",
+							"body": {
+								"name": "AI_dns_profile_1_B",
+								"module_gslb": "ENABLE",
+								"module_zone": "ENABLE",
+								"module_ldns": "DISABLE",
+								"module_proxy": "DISABLE",
+								"policy": "REFUSE",
+								"edns_cache_capacity_byte": 1232,
+								"edns_client_subnet_insert": "DISABLE",
+								"alert": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/dns-virtual-service/dns-profile/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/dns-virtual-service/dns-profile/{name}的响应数据",
+						"value": {
+							"name": "AI_dns_profile_1_B",
+							"description": "这是一个DNS策略",
+							"module_gslb": "ENABLE",
+							"module_zone": "ENABLE",
+							"module_ldns": "DISABLE",
+							"module_proxy": "DISABLE",
+							"policy": "REFUSE",
+							"return_ip": "example_string",
+							"record_rotate": "ENABLE",
+							"edns_cache_capacity_byte": 1232,
+							"edns_client_subnet_insert": "DISABLE",
+							"access_control": [
+								{
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"domain": "www.jd.com",
+									"record_type": "ALL",
+									"query_limit": 17770
+								}
+							],
+							"alert": "ENABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -174,6 +367,57 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-profile",
+						"description": "修改指定的DNS策略配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/dns-virtual-service/dns-profile/{name}",
+							"body": {
+								"name": "dns_profile_1",
+								"module_gslb": "ENABLE",
+								"module_zone": "ENABLE",
+								"module_ldns": "DISABLE",
+								"module_proxy": "DISABLE",
+								"policy": "REFUSE",
+								"edns_cache_capacity_byte": 1232,
+								"edns_client_subnet_insert": "DISABLE",
+								"alert": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/dns-virtual-service/dns-profile/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/dns-virtual-service/dns-profile/{name}的响应数据",
+						"value": {
+							"name": "dns_profile_1",
+							"description": "这是一个DNS策略",
+							"module_gslb": "ENABLE",
+							"module_zone": "ENABLE",
+							"module_ldns": "DISABLE",
+							"module_proxy": "DISABLE",
+							"policy": "REFUSE",
+							"return_ip": "example_string",
+							"record_rotate": "ENABLE",
+							"edns_cache_capacity_byte": 1232,
+							"edns_client_subnet_insert": "DISABLE",
+							"access_control": [
+								{
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"domain": "www.jd.com",
+									"record_type": "ALL",
+									"query_limit": 17770
+								}
+							],
+							"alert": "ENABLE"
+						}
 					}
 				}
 			},
@@ -193,6 +437,57 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-profile",
+						"description": "修改指定的DNS策略配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/dns-virtual-service/dns-profile/{name}",
+							"body": {
+								"name": "dns_profile_1",
+								"module_gslb": "ENABLE",
+								"module_zone": "ENABLE",
+								"module_ldns": "DISABLE",
+								"module_proxy": "DISABLE",
+								"policy": "REFUSE",
+								"edns_cache_capacity_byte": 1232,
+								"edns_client_subnet_insert": "DISABLE",
+								"alert": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/dns-virtual-service/dns-profile/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/dns-virtual-service/dns-profile/{name}的响应数据",
+						"value": {
+							"name": "dns_profile_1",
+							"description": "这是一个DNS策略",
+							"module_gslb": "ENABLE",
+							"module_zone": "ENABLE",
+							"module_ldns": "DISABLE",
+							"module_proxy": "DISABLE",
+							"policy": "REFUSE",
+							"return_ip": "example_string",
+							"record_rotate": "ENABLE",
+							"edns_cache_capacity_byte": 1232,
+							"edns_client_subnet_insert": "DISABLE",
+							"access_control": [
+								{
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"domain": "www.jd.com",
+									"record_type": "ALL",
+									"query_limit": 17770
+								}
+							],
+							"alert": "ENABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -205,6 +500,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-profile",
+						"description": "删除指定的DNS策略配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/dns-virtual-service/dns-profile/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/dns-virtual-service/dns-profile/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/dns-virtual-service/dns-profile/{name}的响应数据",
+						"value": {
+							"name": "dns_profile_1",
+							"description": "这是一个DNS策略",
+							"module_gslb": "ENABLE",
+							"module_zone": "ENABLE",
+							"module_ldns": "DISABLE",
+							"module_proxy": "DISABLE",
+							"policy": "REFUSE",
+							"return_ip": "example_string",
+							"record_rotate": "ENABLE",
+							"edns_cache_capacity_byte": 1232,
+							"edns_client_subnet_insert": "DISABLE",
+							"access_control": [
+								{
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"domain": "www.jd.com",
+									"record_type": "ALL",
+									"query_limit": 17770
+								}
+							],
+							"alert": "ENABLE"
+						}
 					}
 				}
 			}

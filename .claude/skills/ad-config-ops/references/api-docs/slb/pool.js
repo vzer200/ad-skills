@@ -68,6 +68,59 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pool_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all pools",
+						"description": "查看当前已有的节点池配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/pool/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/pool/ 响应",
+						"description": "返回GET /api/ad/v3/slb/pool/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "mail_pool_1",
+									"description": "example_string",
+									"method": "WEIGHTED-LEAST-CONNECTIONS",
+									"is_strick_rr": "ENABLE",
+									"priority_level_available_node": 0,
+									"persist": "NONE",
+									"alternate_persist": "NONE",
+									"schedule_by_connect": "DISABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"node_up_delay": 0,
+									"slow_ramp_time": 10,
+									"nodes": [
+										"example_item"
+									],
+									"recover_by_manual": "DISABLE",
+									"recover_by_timer": "DISABLE",
+									"recover_time_min": 3,
+									"connection_statistic": "COMPLETED",
+									"busy_process_policy": "RETURN-FAILED",
+									"connection_queue_length": 1,
+									"connection_queue_timeout_ms": 1,
+									"pool_type": "NODE_POOL_TYPE",
+									"min_available_nodes": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -85,6 +138,69 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pool_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new pool",
+						"description": "新建一个节点池配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/pool/",
+							"body": {
+								"name": "AI_mail_pool_1_A",
+								"method": "WEIGHTED-LEAST-CONNECTIONS",
+								"is_strick_rr": "ENABLE",
+								"priority_level_available_node": 0,
+								"persist": "NONE",
+								"alternate_persist": "NONE",
+								"schedule_by_connect": "DISABLE",
+								"available_requirement": 0,
+								"node_up_delay": 0,
+								"slow_ramp_time": 10,
+								"recover_by_manual": "DISABLE",
+								"recover_by_timer": "DISABLE",
+								"recover_time_min": 3,
+								"connection_statistic": "COMPLETED",
+								"busy_process_policy": "RETURN-FAILED",
+								"connection_queue_length": 1,
+								"connection_queue_timeout_ms": 1,
+								"pool_type": "NODE_POOL_TYPE",
+								"min_available_nodes": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/pool/ 响应",
+						"description": "返回POST /api/ad/v3/slb/pool/的响应数据",
+						"value": {
+							"name": "AI_mail_pool_1_A",
+							"description": "example_string",
+							"method": "WEIGHTED-LEAST-CONNECTIONS",
+							"is_strick_rr": "ENABLE",
+							"priority_level_available_node": 0,
+							"persist": "NONE",
+							"alternate_persist": "NONE",
+							"schedule_by_connect": "DISABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"node_up_delay": 0,
+							"slow_ramp_time": 10,
+							"nodes": [
+								"example_item"
+							],
+							"recover_by_manual": "DISABLE",
+							"recover_by_timer": "DISABLE",
+							"recover_time_min": 3,
+							"connection_statistic": "COMPLETED",
+							"busy_process_policy": "RETURN-FAILED",
+							"connection_queue_length": 1,
+							"connection_queue_timeout_ms": 1,
+							"pool_type": "NODE_POOL_TYPE",
+							"min_available_nodes": 0
+						}
 					}
 				}
 			},
@@ -161,6 +277,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pool_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pool",
+						"description": "查看指定的节点池配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/pool/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/pool/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/pool/{name}的响应数据",
+						"value": {
+							"name": "mail_pool_1",
+							"description": "example_string",
+							"method": "WEIGHTED-LEAST-CONNECTIONS",
+							"is_strick_rr": "ENABLE",
+							"priority_level_available_node": 0,
+							"persist": "NONE",
+							"alternate_persist": "NONE",
+							"schedule_by_connect": "DISABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"node_up_delay": 0,
+							"slow_ramp_time": 10,
+							"nodes": [
+								"example_item"
+							],
+							"recover_by_manual": "DISABLE",
+							"recover_by_timer": "DISABLE",
+							"recover_time_min": 3,
+							"connection_statistic": "COMPLETED",
+							"busy_process_policy": "RETURN-FAILED",
+							"connection_queue_length": 1,
+							"connection_queue_timeout_ms": 1,
+							"pool_type": "NODE_POOL_TYPE",
+							"min_available_nodes": 0
+						}
+					}
 				}
 			},
 			"post": {
@@ -180,6 +338,69 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pool_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new pool",
+						"description": "新建指定的节点池配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/pool/{name}",
+							"body": {
+								"name": "AI_mail_pool_1_B",
+								"method": "WEIGHTED-LEAST-CONNECTIONS",
+								"is_strick_rr": "ENABLE",
+								"priority_level_available_node": 0,
+								"persist": "NONE",
+								"alternate_persist": "NONE",
+								"schedule_by_connect": "DISABLE",
+								"available_requirement": 0,
+								"node_up_delay": 0,
+								"slow_ramp_time": 10,
+								"recover_by_manual": "DISABLE",
+								"recover_by_timer": "DISABLE",
+								"recover_time_min": 3,
+								"connection_statistic": "COMPLETED",
+								"busy_process_policy": "RETURN-FAILED",
+								"connection_queue_length": 1,
+								"connection_queue_timeout_ms": 1,
+								"pool_type": "NODE_POOL_TYPE",
+								"min_available_nodes": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/pool/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/pool/{name}的响应数据",
+						"value": {
+							"name": "AI_mail_pool_1_B",
+							"description": "example_string",
+							"method": "WEIGHTED-LEAST-CONNECTIONS",
+							"is_strick_rr": "ENABLE",
+							"priority_level_available_node": 0,
+							"persist": "NONE",
+							"alternate_persist": "NONE",
+							"schedule_by_connect": "DISABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"node_up_delay": 0,
+							"slow_ramp_time": 10,
+							"nodes": [
+								"example_item"
+							],
+							"recover_by_manual": "DISABLE",
+							"recover_by_timer": "DISABLE",
+							"recover_time_min": 3,
+							"connection_statistic": "COMPLETED",
+							"busy_process_policy": "RETURN-FAILED",
+							"connection_queue_length": 1,
+							"connection_queue_timeout_ms": 1,
+							"pool_type": "NODE_POOL_TYPE",
+							"min_available_nodes": 0
+						}
+					}
 				}
 			},
 			"put": {
@@ -197,6 +418,69 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pool_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific pool",
+						"description": "修改指定的节点池配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/pool/{name}",
+							"body": {
+								"name": "mail_pool_1",
+								"method": "WEIGHTED-LEAST-CONNECTIONS",
+								"is_strick_rr": "ENABLE",
+								"priority_level_available_node": 0,
+								"persist": "NONE",
+								"alternate_persist": "NONE",
+								"schedule_by_connect": "DISABLE",
+								"available_requirement": 0,
+								"node_up_delay": 0,
+								"slow_ramp_time": 10,
+								"recover_by_manual": "DISABLE",
+								"recover_by_timer": "DISABLE",
+								"recover_time_min": 3,
+								"connection_statistic": "COMPLETED",
+								"busy_process_policy": "RETURN-FAILED",
+								"connection_queue_length": 1,
+								"connection_queue_timeout_ms": 1,
+								"pool_type": "NODE_POOL_TYPE",
+								"min_available_nodes": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/pool/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/pool/{name}的响应数据",
+						"value": {
+							"name": "mail_pool_1",
+							"description": "example_string",
+							"method": "WEIGHTED-LEAST-CONNECTIONS",
+							"is_strick_rr": "ENABLE",
+							"priority_level_available_node": 0,
+							"persist": "NONE",
+							"alternate_persist": "NONE",
+							"schedule_by_connect": "DISABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"node_up_delay": 0,
+							"slow_ramp_time": 10,
+							"nodes": [
+								"example_item"
+							],
+							"recover_by_manual": "DISABLE",
+							"recover_by_timer": "DISABLE",
+							"recover_time_min": 3,
+							"connection_statistic": "COMPLETED",
+							"busy_process_policy": "RETURN-FAILED",
+							"connection_queue_length": 1,
+							"connection_queue_timeout_ms": 1,
+							"pool_type": "NODE_POOL_TYPE",
+							"min_available_nodes": 0
+						}
 					}
 				}
 			},
@@ -216,6 +500,69 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pool_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific pool",
+						"description": "修改指定的节点池配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/pool/{name}",
+							"body": {
+								"name": "mail_pool_1",
+								"method": "WEIGHTED-LEAST-CONNECTIONS",
+								"is_strick_rr": "ENABLE",
+								"priority_level_available_node": 0,
+								"persist": "NONE",
+								"alternate_persist": "NONE",
+								"schedule_by_connect": "DISABLE",
+								"available_requirement": 0,
+								"node_up_delay": 0,
+								"slow_ramp_time": 10,
+								"recover_by_manual": "DISABLE",
+								"recover_by_timer": "DISABLE",
+								"recover_time_min": 3,
+								"connection_statistic": "COMPLETED",
+								"busy_process_policy": "RETURN-FAILED",
+								"connection_queue_length": 1,
+								"connection_queue_timeout_ms": 1,
+								"pool_type": "NODE_POOL_TYPE",
+								"min_available_nodes": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/pool/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/pool/{name}的响应数据",
+						"value": {
+							"name": "mail_pool_1",
+							"description": "example_string",
+							"method": "WEIGHTED-LEAST-CONNECTIONS",
+							"is_strick_rr": "ENABLE",
+							"priority_level_available_node": 0,
+							"persist": "NONE",
+							"alternate_persist": "NONE",
+							"schedule_by_connect": "DISABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"node_up_delay": 0,
+							"slow_ramp_time": 10,
+							"nodes": [
+								"example_item"
+							],
+							"recover_by_manual": "DISABLE",
+							"recover_by_timer": "DISABLE",
+							"recover_time_min": 3,
+							"connection_statistic": "COMPLETED",
+							"busy_process_policy": "RETURN-FAILED",
+							"connection_queue_length": 1,
+							"connection_queue_timeout_ms": 1,
+							"pool_type": "NODE_POOL_TYPE",
+							"min_available_nodes": 0
+						}
+					}
 				}
 			},
 			"delete": {
@@ -228,6 +575,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pool_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific pool",
+						"description": "删除指定的节点池配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/pool/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/pool/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/pool/{name}的响应数据",
+						"value": {
+							"name": "mail_pool_1",
+							"description": "example_string",
+							"method": "WEIGHTED-LEAST-CONNECTIONS",
+							"is_strick_rr": "ENABLE",
+							"priority_level_available_node": 0,
+							"persist": "NONE",
+							"alternate_persist": "NONE",
+							"schedule_by_connect": "DISABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"node_up_delay": 0,
+							"slow_ramp_time": 10,
+							"nodes": [
+								"example_item"
+							],
+							"recover_by_manual": "DISABLE",
+							"recover_by_timer": "DISABLE",
+							"recover_time_min": 3,
+							"connection_statistic": "COMPLETED",
+							"busy_process_policy": "RETURN-FAILED",
+							"connection_queue_length": 1,
+							"connection_queue_timeout_ms": 1,
+							"pool_type": "NODE_POOL_TYPE",
+							"min_available_nodes": 0
+						}
 					}
 				}
 			}
@@ -360,6 +749,16 @@ module.exports ={
 					],
 					"default": "WEIGHTED-LEAST-CONNECTIONS",
 					"example": "WEIGHTED-LEAST-CONNECTIONS"
+				},
+				"is_strick_rr": {
+					"description": "严格轮询开关，仅在轮询算法时有效",
+					"type": "string",
+					"enum": [
+						"ENABLE",
+						"DISABLE"
+					],
+					"default": "ENABLE",
+					"example": "DISABLE"
 				},
 				"priority_level_available_node": {
 					"description": "优先级调度最少可用节点条件，0表示禁用优先级调度，默认为0",

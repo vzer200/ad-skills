@@ -68,6 +68,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_srv_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-record-srv",
+						"description": "查看SRV记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/ 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"state": "ENABLE",
+									"domain": "example_string",
+									"zone": "com",
+									"type": "SRV",
+									"srv_records": [
+										{
+											"address": "192.168.1.212",
+											"port": 0,
+											"priority": 1,
+											"weight": 10,
+											"ttl": 60
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -85,6 +127,52 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_srv_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-srv",
+						"description": "创建SRV记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "SRV",
+								"srv_records": [
+									{
+										"address": "192.168.1.212",
+										"port": 0,
+										"priority": 1,
+										"weight": 10,
+										"ttl": 60
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/ 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/的响应数据",
+						"value": {
+							"name": "AI_example_string_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "SRV",
+							"srv_records": [
+								{
+									"address": "192.168.1.212",
+									"port": 0,
+									"priority": 1,
+									"weight": 10,
+									"ttl": 60
+								}
+							]
+						}
 					}
 				}
 			},
@@ -141,6 +229,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_srv_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-record-srv",
+						"description": "查看指定的SRV记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "SRV",
+							"srv_records": [
+								{
+									"address": "192.168.1.212",
+									"port": 0,
+									"priority": 1,
+									"weight": 10,
+									"ttl": 60
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -160,6 +279,52 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_srv_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-srv",
+						"description": "创建一个SRV记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "SRV",
+								"srv_records": [
+									{
+										"address": "192.168.1.212",
+										"port": 0,
+										"priority": 1,
+										"weight": 10,
+										"ttl": 60
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name}的响应数据",
+						"value": {
+							"name": "AI_example_string_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "SRV",
+							"srv_records": [
+								{
+									"address": "192.168.1.212",
+									"port": 0,
+									"priority": 1,
+									"weight": 10,
+									"ttl": 60
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -177,6 +342,52 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_srv_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-record-srv",
+						"description": "修改指定的SRV记录",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "SRV",
+								"srv_records": [
+									{
+										"address": "192.168.1.212",
+										"port": 0,
+										"priority": 1,
+										"weight": 10,
+										"ttl": 60
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "SRV",
+							"srv_records": [
+								{
+									"address": "192.168.1.212",
+									"port": 0,
+									"priority": 1,
+									"weight": 10,
+									"ttl": 60
+								}
+							]
+						}
 					}
 				}
 			},
@@ -196,6 +407,52 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_srv_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-record-srv",
+						"description": "增量修改指定的SRV记录",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "SRV",
+								"srv_records": [
+									{
+										"address": "192.168.1.212",
+										"port": 0,
+										"priority": 1,
+										"weight": 10,
+										"ttl": 60
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "SRV",
+							"srv_records": [
+								{
+									"address": "192.168.1.212",
+									"port": 0,
+									"priority": 1,
+									"weight": 10,
+									"ttl": 60
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -208,6 +465,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_srv_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-record-srv",
+						"description": "删除指定的SRV记录",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/srv/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "SRV",
+							"srv_records": [
+								{
+									"address": "192.168.1.212",
+									"port": 0,
+									"priority": 1,
+									"weight": 10,
+									"ttl": 60
+								}
+							]
+						}
 					}
 				}
 			}

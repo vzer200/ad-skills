@@ -68,6 +68,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_sip_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all persist-sip",
+						"description": "查看已有会话保持（SIP）配置信息列表",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/persist/sip/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/persist/sip/ 响应",
+						"description": "返回GET /api/ad/v3/slb/persist/sip/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "cookie_passive",
+									"description": "",
+									"type": "SIP",
+									"method": "CALL-ID",
+									"timeout": 180,
+									"busy_protect": "ENABLE",
+									"record_scope": "POOL",
+									"session_persist_synchronize": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -85,6 +120,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_sip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new persist-sip",
+						"description": "新建会话保持（SIP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/persist/sip/",
+							"body": {
+								"name": "AI_cookie_passive_sip_A",
+								"type": "SIP",
+								"method": "CALL-ID",
+								"timeout": 180,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL",
+								"session_persist_synchronize": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/persist/sip/ 响应",
+						"description": "返回POST /api/ad/v3/slb/persist/sip/的响应数据",
+						"value": {
+							"name": "AI_cookie_passive_sip_A",
+							"description": "",
+							"type": "SIP",
+							"method": "CALL-ID",
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
 					}
 				}
 			},
@@ -133,6 +201,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_sip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific persist-sip",
+						"description": "查看指定会话保持（SIP）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/persist/sip/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/persist/sip/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/persist/sip/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "SIP",
+							"method": "CALL-ID",
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -152,6 +244,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_sip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new persist-sip",
+						"description": "新建会话保持（SIP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/persist/sip/{name}",
+							"body": {
+								"name": "AI_cookie_passive_sip_B",
+								"type": "SIP",
+								"method": "CALL-ID",
+								"timeout": 180,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL",
+								"session_persist_synchronize": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/persist/sip/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/persist/sip/{name}的响应数据",
+						"value": {
+							"name": "AI_cookie_passive_sip_B",
+							"description": "",
+							"type": "SIP",
+							"method": "CALL-ID",
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -169,6 +294,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_sip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific persist-sip",
+						"description": "修改指定会话保持（SIP）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/persist/sip/{name}",
+							"body": {
+								"name": "cookie_passive",
+								"type": "SIP",
+								"method": "CALL-ID",
+								"timeout": 180,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL",
+								"session_persist_synchronize": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/persist/sip/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/persist/sip/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "SIP",
+							"method": "CALL-ID",
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
 					}
 				}
 			},
@@ -188,6 +346,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_sip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific persist-sip",
+						"description": "修改指定会话保持（SIP）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/persist/sip/{name}",
+							"body": {
+								"name": "cookie_passive",
+								"type": "SIP",
+								"method": "CALL-ID",
+								"timeout": 180,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL",
+								"session_persist_synchronize": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/persist/sip/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/persist/sip/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "SIP",
+							"method": "CALL-ID",
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -200,6 +391,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_sip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific persist-sip",
+						"description": "删除指定会话保持（SIP）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/persist/sip/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/persist/sip/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/persist/sip/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "SIP",
+							"method": "CALL-ID",
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
 					}
 				}
 			}

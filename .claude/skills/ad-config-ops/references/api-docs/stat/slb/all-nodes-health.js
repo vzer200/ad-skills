@@ -65,6 +65,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_node_health_status_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all nodes health",
+						"description": "获取节点状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/nodes/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/nodes/ 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/nodes/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"health": "NORMAL",
+									"pool": "pool1",
+									"name": "nodeA",
+									"netns": "netns1",
+									"address": "192.168.1.101",
+									"port": 25
+								}
+							]
+						}
+					}
 				}
 			}
 		}

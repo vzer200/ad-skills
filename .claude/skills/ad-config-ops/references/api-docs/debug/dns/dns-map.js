@@ -45,6 +45,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_dns_map_simulator"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "simulator dns-map result",
+						"description": "获取返回上次规则测试的结果",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/dns/dns-map/simulator"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/dns/dns-map/simulator 响应",
+						"description": "返回GET /api/ad/v3/debug/dns/dns-map/simulator的响应数据",
+						"value": {
+							"dns_map": "www.abc.com",
+							"local_dns": "10.0.1.2",
+							"simulate_trace": [
+								{
+									"operation": "example_string",
+									"object": "example_string",
+									"result": "example_string",
+									"description": "example_string"
+								}
+							],
+							"record_time": "YYYY-MM-DD hh:mm:ss"
+						}
+					}
 				}
 			},
 			"post": {
@@ -62,6 +89,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_debug_dns_map_simulator"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "simulator dns-map",
+						"description": "新建dns规则测试",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/dns/dns-map/simulator",
+							"body": {
+								"dns_map": "www.abc.com",
+								"local_dns": "10.0.1.2"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/dns/dns-map/simulator 响应",
+						"description": "返回POST /api/ad/v3/debug/dns/dns-map/simulator的响应数据",
+						"value": {
+							"dns_map": "www.abc.com",
+							"local_dns": "10.0.1.2",
+							"simulate_trace": [
+								{
+									"operation": "example_string",
+									"object": "example_string",
+									"result": "example_string",
+									"description": "example_string"
+								}
+							],
+							"record_time": "YYYY-MM-DD hh:mm:ss"
+						}
 					}
 				}
 			},

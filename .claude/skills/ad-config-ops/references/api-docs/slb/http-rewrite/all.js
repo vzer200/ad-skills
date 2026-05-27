@@ -65,6 +65,77 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_rewrite_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all http-rewrite",
+						"description": "查看所有HTTP改写策略的已有配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/http-rewrite/all/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/http-rewrite/all/ 响应",
+						"description": "返回GET /api/ad/v3/slb/http-rewrite/all/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "url-sched",
+									"description": "example_string",
+									"type": "REWRITE-REQUEST",
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"http_request_method": "ALL",
+									"http_request_version": "ALL",
+									"http_request_uri_rule": null,
+									"http_request_header_rules": [
+										"example_item"
+									],
+									"ssl_version_rule": "V1",
+									"ssl_variable_rules": [
+										"example_item"
+									],
+									"http_response_version": "ALL",
+									"http_response_state_code": null,
+									"http_response_header_rules": [
+										"example_item"
+									],
+									"action": "MODIFY-HTTP-URI",
+									"uri_operation": {
+										"pattern": "http://www.testA.com",
+										"replace": "https://www.testB.com"
+									},
+									"status_operation": {
+										"pattern": "",
+										"replace": ""
+									},
+									"header_operation": {
+										"header": "X-FORWARDED-FOR",
+										"pattern": "",
+										"replace": "${client_ip}"
+									},
+									"body_operation": {
+										"pattern": "http://www.testA.com",
+										"replace": "https://www.testB.com"
+									},
+									"rewrite_encode": "PLAIN",
+									"replace_http_content": "302 Moved Temporarily",
+									"netns": "default"
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -107,6 +178,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_rewrite_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific http-rewrite",
+						"description": "查看指定的HTTP改写策略的配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/http-rewrite/all/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/http-rewrite/all/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/http-rewrite/all/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"type": "REWRITE-REQUEST",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"http_request_method": "ALL",
+							"http_request_version": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"ssl_version_rule": "V1",
+							"ssl_variable_rules": [
+								"example_item"
+							],
+							"http_response_version": "ALL",
+							"http_response_state_code": null,
+							"http_response_header_rules": [
+								"example_item"
+							],
+							"action": "MODIFY-HTTP-URI",
+							"uri_operation": {
+								"pattern": "http://www.testA.com",
+								"replace": "https://www.testB.com"
+							},
+							"status_operation": {
+								"pattern": "",
+								"replace": ""
+							},
+							"header_operation": {
+								"header": "X-FORWARDED-FOR",
+								"pattern": "",
+								"replace": "${client_ip}"
+							},
+							"body_operation": {
+								"pattern": "http://www.testA.com",
+								"replace": "https://www.testB.com"
+							},
+							"rewrite_encode": "PLAIN",
+							"replace_http_content": "302 Moved Temporarily",
+							"netns": "default"
+						}
 					}
 				}
 			}

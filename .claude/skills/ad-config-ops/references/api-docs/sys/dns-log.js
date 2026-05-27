@@ -65,6 +65,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_log_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-log",
+						"description": "GET /sys/dns-log/",
+						"value": {
+							"method": "GET",
+							"path": "/sys/dns-log/"
+						}
+					},
+					"response": {
+						"summary": "GET /sys/dns-log/ 响应",
+						"description": "返回GET /sys/dns-log/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vs1_log",
+									"description": "example_string",
+									"virtual_service": [
+										"dns_vs1"
+									],
+									"log_template_state": "ENABLE",
+									"log_template": "",
+									"response_log_template_state": "ENABLE",
+									"response_log_template": "",
+									"syslog": {
+										"type": "SYSTEM",
+										"address": "10.1.1.1",
+										"port": 514,
+										"facility": "NONE",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +126,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_log_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-log",
+						"description": "POST /sys/dns-log/",
+						"value": {
+							"method": "POST",
+							"path": "/sys/dns-log/",
+							"body": {
+								"name": "AI_vs1_log_A",
+								"virtual_service": [
+									"dns_vs1"
+								],
+								"log_template_state": "ENABLE",
+								"log_template": "[dns_query][${query_time}][${query_id}][${src_ip_port}][${dst_ip_port}][${protocol}][${query_detail}][${query_flag}][${schedInfo}]",
+								"response_log_template_state": "ENABLE",
+								"response_log_template": "[dns_response][${response_time}][${query_id}][${src_ip_port}][${dst_ip_port}][${protocol}][${response_detail}][${response_flag}]"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /sys/dns-log/ 响应",
+						"description": "返回POST /sys/dns-log/的响应数据",
+						"value": {
+							"name": "AI_vs1_log_A",
+							"description": "example_string",
+							"virtual_service": [
+								"dns_vs1"
+							],
+							"log_template_state": "ENABLE",
+							"log_template": "",
+							"response_log_template_state": "ENABLE",
+							"response_log_template": "",
+							"syslog": {
+								"type": "SYSTEM",
+								"address": "10.1.1.1",
+								"port": 514,
+								"facility": "NONE",
+								"message_encode": "UTF8",
+								"network": "AUTO"
+							}
+						}
 					}
 				}
 			},
@@ -101,6 +188,60 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_log_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify dns-log",
+						"description": "The PATCH method updates specific properties of one config.",
+						"value": {
+							"method": "PATCH",
+							"path": "/sys/dns-log/",
+							"body": {
+								"name": "vs1_log",
+								"virtual_service": [
+									"dns_vs1"
+								],
+								"log_template_state": "ENABLE",
+								"log_template": "[dns_query][${query_time}][${query_id}][${src_ip_port}][${dst_ip_port}][${protocol}][${query_detail}][${query_flag}][${schedInfo}]",
+								"response_log_template_state": "ENABLE",
+								"response_log_template": "[dns_response][${response_time}][${query_id}][${src_ip_port}][${dst_ip_port}][${protocol}][${response_detail}][${response_flag}]"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /sys/dns-log/ 响应",
+						"description": "返回PATCH /sys/dns-log/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vs1_log",
+									"description": "example_string",
+									"virtual_service": [
+										"dns_vs1"
+									],
+									"log_template_state": "ENABLE",
+									"log_template": "",
+									"response_log_template_state": "ENABLE",
+									"response_log_template": "",
+									"syslog": {
+										"type": "SYSTEM",
+										"address": "10.1.1.1",
+										"port": 514,
+										"facility": "NONE",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								}
+							]
+						}
 					}
 				}
 			}
@@ -132,6 +273,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_log_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-log",
+						"description": "GET /sys/dns-log/{name}",
+						"value": {
+							"method": "GET",
+							"path": "/sys/dns-log/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /sys/dns-log/{name} 响应",
+						"description": "返回GET /sys/dns-log/{name}的响应数据",
+						"value": {
+							"name": "vs1_log",
+							"description": "example_string",
+							"virtual_service": [
+								"dns_vs1"
+							],
+							"log_template_state": "ENABLE",
+							"log_template": "",
+							"response_log_template_state": "ENABLE",
+							"response_log_template": "",
+							"syslog": {
+								"type": "SYSTEM",
+								"address": "10.1.1.1",
+								"port": 514,
+								"facility": "NONE",
+								"message_encode": "UTF8",
+								"network": "AUTO"
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -151,6 +325,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_log_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-log",
+						"description": "POST /sys/dns-log/{name}",
+						"value": {
+							"method": "POST",
+							"path": "/sys/dns-log/{name}",
+							"body": {
+								"name": "AI_vs1_log_B",
+								"virtual_service": [
+									"dns_vs1"
+								],
+								"log_template_state": "ENABLE",
+								"log_template": "[dns_query][${query_time}][${query_id}][${src_ip_port}][${dst_ip_port}][${protocol}][${query_detail}][${query_flag}][${schedInfo}]",
+								"response_log_template_state": "ENABLE",
+								"response_log_template": "[dns_response][${response_time}][${query_id}][${src_ip_port}][${dst_ip_port}][${protocol}][${response_detail}][${response_flag}]"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /sys/dns-log/{name} 响应",
+						"description": "返回POST /sys/dns-log/{name}的响应数据",
+						"value": {
+							"name": "AI_vs1_log_B",
+							"description": "example_string",
+							"virtual_service": [
+								"dns_vs1"
+							],
+							"log_template_state": "ENABLE",
+							"log_template": "",
+							"response_log_template_state": "ENABLE",
+							"response_log_template": "",
+							"syslog": {
+								"type": "SYSTEM",
+								"address": "10.1.1.1",
+								"port": 514,
+								"facility": "NONE",
+								"message_encode": "UTF8",
+								"network": "AUTO"
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -168,6 +385,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_log_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-log",
+						"description": "PUT /sys/dns-log/{name}",
+						"value": {
+							"method": "PUT",
+							"path": "/sys/dns-log/{name}",
+							"body": {
+								"name": "vs1_log",
+								"virtual_service": [
+									"dns_vs1"
+								],
+								"log_template_state": "ENABLE",
+								"log_template": "[dns_query][${query_time}][${query_id}][${src_ip_port}][${dst_ip_port}][${protocol}][${query_detail}][${query_flag}][${schedInfo}]",
+								"response_log_template_state": "ENABLE",
+								"response_log_template": "[dns_response][${response_time}][${query_id}][${src_ip_port}][${dst_ip_port}][${protocol}][${response_detail}][${response_flag}]"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /sys/dns-log/{name} 响应",
+						"description": "返回PUT /sys/dns-log/{name}的响应数据",
+						"value": {
+							"name": "vs1_log",
+							"description": "example_string",
+							"virtual_service": [
+								"dns_vs1"
+							],
+							"log_template_state": "ENABLE",
+							"log_template": "",
+							"response_log_template_state": "ENABLE",
+							"response_log_template": "",
+							"syslog": {
+								"type": "SYSTEM",
+								"address": "10.1.1.1",
+								"port": 514,
+								"facility": "NONE",
+								"message_encode": "UTF8",
+								"network": "AUTO"
+							}
+						}
 					}
 				}
 			},
@@ -187,6 +447,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_log_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-log",
+						"description": "The PATCH method updates specific properties of one config.",
+						"value": {
+							"method": "PATCH",
+							"path": "/sys/dns-log/{name}",
+							"body": {
+								"name": "vs1_log",
+								"virtual_service": [
+									"dns_vs1"
+								],
+								"log_template_state": "ENABLE",
+								"log_template": "[dns_query][${query_time}][${query_id}][${src_ip_port}][${dst_ip_port}][${protocol}][${query_detail}][${query_flag}][${schedInfo}]",
+								"response_log_template_state": "ENABLE",
+								"response_log_template": "[dns_response][${response_time}][${query_id}][${src_ip_port}][${dst_ip_port}][${protocol}][${response_detail}][${response_flag}]"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /sys/dns-log/{name} 响应",
+						"description": "返回PATCH /sys/dns-log/{name}的响应数据",
+						"value": {
+							"name": "vs1_log",
+							"description": "example_string",
+							"virtual_service": [
+								"dns_vs1"
+							],
+							"log_template_state": "ENABLE",
+							"log_template": "",
+							"response_log_template_state": "ENABLE",
+							"response_log_template": "",
+							"syslog": {
+								"type": "SYSTEM",
+								"address": "10.1.1.1",
+								"port": 514,
+								"facility": "NONE",
+								"message_encode": "UTF8",
+								"network": "AUTO"
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -199,6 +502,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_log_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-log",
+						"description": "DELETE /sys/dns-log/{name}",
+						"value": {
+							"method": "DELETE",
+							"path": "/sys/dns-log/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /sys/dns-log/{name} 响应",
+						"description": "返回DELETE /sys/dns-log/{name}的响应数据",
+						"value": {
+							"name": "vs1_log",
+							"description": "example_string",
+							"virtual_service": [
+								"dns_vs1"
+							],
+							"log_template_state": "ENABLE",
+							"log_template": "",
+							"response_log_template_state": "ENABLE",
+							"response_log_template": "",
+							"syslog": {
+								"type": "SYSTEM",
+								"address": "10.1.1.1",
+								"port": 514,
+								"facility": "NONE",
+								"message_encode": "UTF8",
+								"network": "AUTO"
+							}
+						}
 					}
 				}
 			}
@@ -407,8 +743,20 @@ module.exports ={
 							],
 							"default": "UTF8",
 							"example": "UTF8"
+						},
+						"network": {
+							"description": "选择的网络",
+							"type": "string",
+							"enum": [
+								"MANAGE_NET",
+								"SERVICE_NET",
+								"AUTO"
+							],
+							"default": "AUTO",
+							"example": "AUTO"
 						}
-					}
+					},
+					"required": []
 				}
 			}
 		}

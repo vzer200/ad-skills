@@ -65,6 +65,58 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_http_response_study_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all persist-http-response-study",
+						"description": "查看已有会话保持（HTTP应答被动）配置信息列表",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/persist/http-response-study/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/persist/http-response-study/ 响应",
+						"description": "返回GET /api/ad/v3/slb/persist/http-response-study/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "cookie_passive",
+									"description": "",
+									"type": "HTTP-RESPONSE-STUDY",
+									"request_seek_rules": [
+										{
+											"component": "URI",
+											"header": "cookie",
+											"keyword": "",
+											"offset": 0,
+											"terminator": ";"
+										}
+									],
+									"response_study_rules": [
+										{
+											"component": "HEADER",
+											"header": "cookie",
+											"keyword": "",
+											"offset": 0,
+											"terminator": ";"
+										}
+									],
+									"timeout": 180,
+									"busy_protect": "ENABLE",
+									"record_scope": "POOL",
+									"session_persist_synchronize": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +134,69 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_http_response_study_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new persist-http-response-study",
+						"description": "新建会话保持（HTTP应答被动）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/persist/http-response-study/",
+							"body": {
+								"name": "AI_cookie_passive_http_response_study_A",
+								"type": "HTTP-RESPONSE-STUDY",
+								"request_seek_rules": [
+									{
+										"component": "URI",
+										"keyword": "",
+										"offset": 0
+									}
+								],
+								"response_study_rules": [
+									{
+										"component": "HEADER",
+										"keyword": "",
+										"offset": 0
+									}
+								],
+								"timeout": 180,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL",
+								"session_persist_synchronize": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/persist/http-response-study/ 响应",
+						"description": "返回POST /api/ad/v3/slb/persist/http-response-study/的响应数据",
+						"value": {
+							"name": "AI_cookie_passive_http_response_study_A",
+							"description": "",
+							"type": "HTTP-RESPONSE-STUDY",
+							"request_seek_rules": [
+								{
+									"component": "URI",
+									"header": "cookie",
+									"keyword": "",
+									"offset": 0,
+									"terminator": ";"
+								}
+							],
+							"response_study_rules": [
+								{
+									"component": "HEADER",
+									"header": "cookie",
+									"keyword": "",
+									"offset": 0,
+									"terminator": ";"
+								}
+							],
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
 					}
 				}
 			},
@@ -134,6 +249,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_http_response_study_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific persist-http-response-study",
+						"description": "查看指定会话保持（HTTP应答被动）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/persist/http-response-study/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/persist/http-response-study/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/persist/http-response-study/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "HTTP-RESPONSE-STUDY",
+							"request_seek_rules": [
+								{
+									"component": "URI",
+									"header": "cookie",
+									"keyword": "",
+									"offset": 0,
+									"terminator": ";"
+								}
+							],
+							"response_study_rules": [
+								{
+									"component": "HEADER",
+									"header": "cookie",
+									"keyword": "",
+									"offset": 0,
+									"terminator": ";"
+								}
+							],
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -153,6 +309,69 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_http_response_study_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new persist-http-response-study",
+						"description": "新建会话保持（HTTP应答被动）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/persist/http-response-study/{name}",
+							"body": {
+								"name": "AI_cookie_passive_http_response_study_B",
+								"type": "HTTP-RESPONSE-STUDY",
+								"request_seek_rules": [
+									{
+										"component": "URI",
+										"keyword": "",
+										"offset": 0
+									}
+								],
+								"response_study_rules": [
+									{
+										"component": "HEADER",
+										"keyword": "",
+										"offset": 0
+									}
+								],
+								"timeout": 180,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL",
+								"session_persist_synchronize": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/persist/http-response-study/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/persist/http-response-study/{name}的响应数据",
+						"value": {
+							"name": "AI_cookie_passive_http_response_study_B",
+							"description": "",
+							"type": "HTTP-RESPONSE-STUDY",
+							"request_seek_rules": [
+								{
+									"component": "URI",
+									"header": "cookie",
+									"keyword": "",
+									"offset": 0,
+									"terminator": ";"
+								}
+							],
+							"response_study_rules": [
+								{
+									"component": "HEADER",
+									"header": "cookie",
+									"keyword": "",
+									"offset": 0,
+									"terminator": ";"
+								}
+							],
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -170,6 +389,69 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_http_response_study_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific persist-http-response-study",
+						"description": "修改指定会话保持（HTTP应答被动）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/persist/http-response-study/{name}",
+							"body": {
+								"name": "cookie_passive",
+								"type": "HTTP-RESPONSE-STUDY",
+								"request_seek_rules": [
+									{
+										"component": "URI",
+										"keyword": "",
+										"offset": 0
+									}
+								],
+								"response_study_rules": [
+									{
+										"component": "HEADER",
+										"keyword": "",
+										"offset": 0
+									}
+								],
+								"timeout": 180,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL",
+								"session_persist_synchronize": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/persist/http-response-study/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/persist/http-response-study/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "HTTP-RESPONSE-STUDY",
+							"request_seek_rules": [
+								{
+									"component": "URI",
+									"header": "cookie",
+									"keyword": "",
+									"offset": 0,
+									"terminator": ";"
+								}
+							],
+							"response_study_rules": [
+								{
+									"component": "HEADER",
+									"header": "cookie",
+									"keyword": "",
+									"offset": 0,
+									"terminator": ";"
+								}
+							],
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
 					}
 				}
 			},
@@ -189,6 +471,69 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_http_response_study_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific persist-http-response-study",
+						"description": "修改指定会话保持（HTTP应答被动）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/persist/http-response-study/{name}",
+							"body": {
+								"name": "cookie_passive",
+								"type": "HTTP-RESPONSE-STUDY",
+								"request_seek_rules": [
+									{
+										"component": "URI",
+										"keyword": "",
+										"offset": 0
+									}
+								],
+								"response_study_rules": [
+									{
+										"component": "HEADER",
+										"keyword": "",
+										"offset": 0
+									}
+								],
+								"timeout": 180,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL",
+								"session_persist_synchronize": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/persist/http-response-study/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/persist/http-response-study/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "HTTP-RESPONSE-STUDY",
+							"request_seek_rules": [
+								{
+									"component": "URI",
+									"header": "cookie",
+									"keyword": "",
+									"offset": 0,
+									"terminator": ";"
+								}
+							],
+							"response_study_rules": [
+								{
+									"component": "HEADER",
+									"header": "cookie",
+									"keyword": "",
+									"offset": 0,
+									"terminator": ";"
+								}
+							],
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -201,6 +546,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_http_response_study_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific persist-http-response-study",
+						"description": "删除指定会话保持（HTTP应答被动）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/persist/http-response-study/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/persist/http-response-study/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/persist/http-response-study/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "HTTP-RESPONSE-STUDY",
+							"request_seek_rules": [
+								{
+									"component": "URI",
+									"header": "cookie",
+									"keyword": "",
+									"offset": 0,
+									"terminator": ";"
+								}
+							],
+							"response_study_rules": [
+								{
+									"component": "HEADER",
+									"header": "cookie",
+									"keyword": "",
+									"offset": 0,
+									"terminator": ";"
+								}
+							],
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
 					}
 				}
 			}

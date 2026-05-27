@@ -65,6 +65,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_ip_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all virtual-ip",
+						"description": "查看当前已有的虚拟IP配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/virtual-ip/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/virtual-ip/ 响应",
+						"description": "返回GET /api/ad/v3/slb/virtual-ip/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "10.0.0.0_25",
+									"description": "example_string",
+									"vs_flow_state": "ENABLE",
+									"vip": "10.0.1.234",
+									"arp_nd_reply": "DEFAULT",
+									"icmp_echo_reply": "DEFAULT",
+									"distribute_policy": "DISABLE",
+									"distribute_delay": "AUTO",
+									"cost": 10,
+									"conn_limit": 0,
+									"auto_delete": "ENABLE",
+									"avaliable_policy": "ANY-ASSOCIATED-VS-AVAILABLE",
+									"inbound_links": [
+										"WAN_1"
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +124,50 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_ip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new virtual-ip",
+						"description": "新建一个虚拟IP配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/virtual-ip/",
+							"body": {
+								"name": "AI_10.0.0.0_25_A",
+								"vs_flow_state": "ENABLE",
+								"vip": "10.0.1.234",
+								"arp_nd_reply": "DEFAULT",
+								"icmp_echo_reply": "DEFAULT",
+								"distribute_policy": "DISABLE",
+								"distribute_delay": "AUTO",
+								"cost": 10,
+								"conn_limit": 0,
+								"auto_delete": "ENABLE",
+								"avaliable_policy": "ANY-ASSOCIATED-VS-AVAILABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/virtual-ip/ 响应",
+						"description": "返回POST /api/ad/v3/slb/virtual-ip/的响应数据",
+						"value": {
+							"name": "AI_10.0.0.0_25_A",
+							"description": "example_string",
+							"vs_flow_state": "ENABLE",
+							"vip": "10.0.1.234",
+							"arp_nd_reply": "DEFAULT",
+							"icmp_echo_reply": "DEFAULT",
+							"distribute_policy": "DISABLE",
+							"distribute_delay": "AUTO",
+							"cost": 10,
+							"conn_limit": 0,
+							"auto_delete": "ENABLE",
+							"avaliable_policy": "ANY-ASSOCIATED-VS-AVAILABLE",
+							"inbound_links": [
+								"WAN_1"
+							]
+						}
 					}
 				}
 			},
@@ -138,6 +224,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_ip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-ip",
+						"description": "查看指定的虚拟IP配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/virtual-ip/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/virtual-ip/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/virtual-ip/{name}的响应数据",
+						"value": {
+							"name": "10.0.0.0_25",
+							"description": "example_string",
+							"vs_flow_state": "ENABLE",
+							"vip": "10.0.1.234",
+							"arp_nd_reply": "DEFAULT",
+							"icmp_echo_reply": "DEFAULT",
+							"distribute_policy": "DISABLE",
+							"distribute_delay": "AUTO",
+							"cost": 10,
+							"conn_limit": 0,
+							"auto_delete": "ENABLE",
+							"avaliable_policy": "ANY-ASSOCIATED-VS-AVAILABLE",
+							"inbound_links": [
+								"WAN_1"
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -157,6 +274,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_ip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new virtual-ip",
+						"description": "新建指定的虚拟IP配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/virtual-ip/{name}",
+							"body": {
+								"name": "AI_10.0.0.0_25_B",
+								"vs_flow_state": "ENABLE",
+								"vip": "10.0.1.234",
+								"arp_nd_reply": "DEFAULT",
+								"icmp_echo_reply": "DEFAULT",
+								"distribute_policy": "DISABLE",
+								"distribute_delay": "AUTO",
+								"cost": 10,
+								"conn_limit": 0,
+								"auto_delete": "ENABLE",
+								"avaliable_policy": "ANY-ASSOCIATED-VS-AVAILABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/virtual-ip/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/virtual-ip/{name}的响应数据",
+						"value": {
+							"name": "AI_10.0.0.0_25_B",
+							"description": "example_string",
+							"vs_flow_state": "ENABLE",
+							"vip": "10.0.1.234",
+							"arp_nd_reply": "DEFAULT",
+							"icmp_echo_reply": "DEFAULT",
+							"distribute_policy": "DISABLE",
+							"distribute_delay": "AUTO",
+							"cost": 10,
+							"conn_limit": 0,
+							"auto_delete": "ENABLE",
+							"avaliable_policy": "ANY-ASSOCIATED-VS-AVAILABLE",
+							"inbound_links": [
+								"WAN_1"
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -174,6 +335,50 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_ip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific virtual-ip",
+						"description": "修改指定的虚拟IP配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/virtual-ip/{name}",
+							"body": {
+								"name": "10.0.0.0_25",
+								"vs_flow_state": "ENABLE",
+								"vip": "10.0.1.234",
+								"arp_nd_reply": "DEFAULT",
+								"icmp_echo_reply": "DEFAULT",
+								"distribute_policy": "DISABLE",
+								"distribute_delay": "AUTO",
+								"cost": 10,
+								"conn_limit": 0,
+								"auto_delete": "ENABLE",
+								"avaliable_policy": "ANY-ASSOCIATED-VS-AVAILABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/virtual-ip/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/virtual-ip/{name}的响应数据",
+						"value": {
+							"name": "10.0.0.0_25",
+							"description": "example_string",
+							"vs_flow_state": "ENABLE",
+							"vip": "10.0.1.234",
+							"arp_nd_reply": "DEFAULT",
+							"icmp_echo_reply": "DEFAULT",
+							"distribute_policy": "DISABLE",
+							"distribute_delay": "AUTO",
+							"cost": 10,
+							"conn_limit": 0,
+							"auto_delete": "ENABLE",
+							"avaliable_policy": "ANY-ASSOCIATED-VS-AVAILABLE",
+							"inbound_links": [
+								"WAN_1"
+							]
+						}
 					}
 				}
 			},
@@ -193,6 +398,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_ip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific virtual-ip",
+						"description": "修改指定的虚拟IP配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/virtual-ip/{name}",
+							"body": {
+								"name": "10.0.0.0_25",
+								"vs_flow_state": "ENABLE",
+								"vip": "10.0.1.234",
+								"arp_nd_reply": "DEFAULT",
+								"icmp_echo_reply": "DEFAULT",
+								"distribute_policy": "DISABLE",
+								"distribute_delay": "AUTO",
+								"cost": 10,
+								"conn_limit": 0,
+								"auto_delete": "ENABLE",
+								"avaliable_policy": "ANY-ASSOCIATED-VS-AVAILABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/virtual-ip/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/virtual-ip/{name}的响应数据",
+						"value": {
+							"name": "10.0.0.0_25",
+							"description": "example_string",
+							"vs_flow_state": "ENABLE",
+							"vip": "10.0.1.234",
+							"arp_nd_reply": "DEFAULT",
+							"icmp_echo_reply": "DEFAULT",
+							"distribute_policy": "DISABLE",
+							"distribute_delay": "AUTO",
+							"cost": 10,
+							"conn_limit": 0,
+							"auto_delete": "ENABLE",
+							"avaliable_policy": "ANY-ASSOCIATED-VS-AVAILABLE",
+							"inbound_links": [
+								"WAN_1"
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -205,6 +454,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_ip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific virtual-ip",
+						"description": "删除指定的虚拟IP配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/virtual-ip/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/virtual-ip/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/virtual-ip/{name}的响应数据",
+						"value": {
+							"name": "10.0.0.0_25",
+							"description": "example_string",
+							"vs_flow_state": "ENABLE",
+							"vip": "10.0.1.234",
+							"arp_nd_reply": "DEFAULT",
+							"icmp_echo_reply": "DEFAULT",
+							"distribute_policy": "DISABLE",
+							"distribute_delay": "AUTO",
+							"cost": 10,
+							"conn_limit": 0,
+							"auto_delete": "ENABLE",
+							"avaliable_policy": "ANY-ASSOCIATED-VS-AVAILABLE",
+							"inbound_links": [
+								"WAN_1"
+							]
+						}
 					}
 				}
 			}
@@ -357,6 +637,17 @@ module.exports ={
 					],
 					"default": "DISABLE",
 					"example": "ANY-ASSOCIATED-VS-AVAILABLE"
+				},
+				"distribute_delay": {
+					"type": "string",
+					"description": "虚拟IP路由注入延迟",
+					"enum": [
+						"AUTO",
+						"ENABLE",
+						"DISABLE"
+					],
+					"default": "AUTO",
+					"example": "AUTO"
 				},
 				"cost": {
 					"description": "路由代价值",

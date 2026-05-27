@@ -3324,7 +3324,119 @@
       "get",
       "post"
     ],
-    "document": "slb/virtual-service.js"
+    "document": "slb/virtual-service/8583.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/any.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/dns.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/ftp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/http.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/ip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/radius.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/sip-tcp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/sip-udp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/ssl-offload-https.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/ssl-offload.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/tcp-forward.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/tcp-proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/udp-forward.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "document": "slb/virtual-service/udp-proxy.js"
   },
   {
     "path": "/api/ad/v3/slb/virtual-service/{name}",
@@ -3335,7 +3447,161 @@
       "patch",
       "delete"
     ],
-    "document": "slb/virtual-service.js"
+    "document": "slb/virtual-service/8583.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/any.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/dns.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/ftp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/http.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/ip.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/radius.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/sip-tcp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/sip-udp.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/ssl-offload-https.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/ssl-offload.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/tcp-forward.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/tcp-proxy.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/udp-forward.js"
+  },
+  {
+    "path": "/api/ad/v3/slb/virtual-service/{name}",
+    "methods": [
+      "get",
+      "post",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "document": "slb/virtual-service/udp-proxy.js"
   },
   {
     "path": "/api/ad/v3/slb/virtual-service/{virtual_service_name}/pre-rule/",
@@ -4693,6 +4959,15 @@
       "patch"
     ],
     "document": "sys/web-service.js"
+  },
+  {
+    "path": "/api/ad/v3/sys/whitelist",
+    "methods": [
+      "get",
+      "put",
+      "patch"
+    ],
+    "document": "sys/whitelist.js"
   },
   {
     "path": "/api/ad/v3/token/",

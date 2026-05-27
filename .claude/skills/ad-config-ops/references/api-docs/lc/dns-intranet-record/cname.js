@@ -62,6 +62,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_cname_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-intranet-record-cname",
+						"description": "查看DNS CNAME记录配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/dns-intranet-record/cname/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/dns-intranet-record/cname/ 响应",
+						"description": "返回GET /api/ad/v3/lc/dns-intranet-record/cname/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "localhost",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "CNAME",
+									"cname_records": [
+										{
+											"cname": "example_string",
+											"ttl": 0
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +116,43 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_cname_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-intranet-record-cname",
+						"description": "新建DNS CNAME记录配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/lc/dns-intranet-record/cname/",
+							"body": {
+								"name": "AI_localhost_A",
+								"state": "ENABLE",
+								"type": "CNAME",
+								"cname_records": [
+									{
+										"cname": "example_string",
+										"ttl": 0
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/lc/dns-intranet-record/cname/ 响应",
+						"description": "返回POST /api/ad/v3/lc/dns-intranet-record/cname/的响应数据",
+						"value": {
+							"name": "AI_localhost_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "CNAME",
+							"cname_records": [
+								{
+									"cname": "example_string",
+									"ttl": 0
+								}
+							]
+						}
 					}
 				}
 			},
@@ -124,6 +198,32 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_cname_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-intranet-record-cname",
+						"description": "查看单个DNS CNAME记录配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/dns-intranet-record/cname/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/dns-intranet-record/cname/{name} 响应",
+						"description": "返回GET /api/ad/v3/lc/dns-intranet-record/cname/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "CNAME",
+							"cname_records": [
+								{
+									"cname": "example_string",
+									"ttl": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -143,6 +243,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_cname_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-intranet-record-cname",
+						"description": "新建DNS CNAME记录配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/lc/dns-intranet-record/cname/{name}",
+							"body": {
+								"name": "AI_localhost_B",
+								"state": "ENABLE",
+								"type": "CNAME",
+								"cname_records": [
+									{
+										"cname": "example_string",
+										"ttl": 0
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/lc/dns-intranet-record/cname/{name} 响应",
+						"description": "返回POST /api/ad/v3/lc/dns-intranet-record/cname/{name}的响应数据",
+						"value": {
+							"name": "AI_localhost_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "CNAME",
+							"cname_records": [
+								{
+									"cname": "example_string",
+									"ttl": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -160,6 +297,43 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_cname_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-intranet-record-cname",
+						"description": "更新DNS CNAME记录配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/lc/dns-intranet-record/cname/{name}",
+							"body": {
+								"name": "localhost",
+								"state": "ENABLE",
+								"type": "CNAME",
+								"cname_records": [
+									{
+										"cname": "example_string",
+										"ttl": 0
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/lc/dns-intranet-record/cname/{name} 响应",
+						"description": "返回PUT /api/ad/v3/lc/dns-intranet-record/cname/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "CNAME",
+							"cname_records": [
+								{
+									"cname": "example_string",
+									"ttl": 0
+								}
+							]
+						}
 					}
 				}
 			},
@@ -179,6 +353,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_cname_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-intranet-record-cname",
+						"description": "更新DNS CNAME记录配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/lc/dns-intranet-record/cname/{name}",
+							"body": {
+								"name": "localhost",
+								"state": "ENABLE",
+								"type": "CNAME",
+								"cname_records": [
+									{
+										"cname": "example_string",
+										"ttl": 0
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/lc/dns-intranet-record/cname/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/lc/dns-intranet-record/cname/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "CNAME",
+							"cname_records": [
+								{
+									"cname": "example_string",
+									"ttl": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +402,32 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_cname_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-intranet-record-cname",
+						"description": "删除DNS CNAME记录配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/lc/dns-intranet-record/cname/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/lc/dns-intranet-record/cname/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/lc/dns-intranet-record/cname/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "CNAME",
+							"cname_records": [
+								{
+									"cname": "example_string",
+									"ttl": 0
+								}
+							]
+						}
 					}
 				}
 			}

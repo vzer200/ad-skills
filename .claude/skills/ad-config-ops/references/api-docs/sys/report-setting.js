@@ -51,6 +51,26 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_report_setting_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get report-setting",
+						"description": "查看当前已有的报表设置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/report-setting"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/report-setting 响应",
+						"description": "返回GET /api/ad/v3/sys/report-setting的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"response_timeout": 8,
+							"disk_usage_threshold": 45,
+							"clear_earliest_data_day": 3
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +89,32 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_report_setting_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace report-setting",
+						"description": "修改报表设置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/report-setting",
+							"body": {
+								"state": "ENABLE",
+								"response_timeout": 8,
+								"disk_usage_threshold": 45,
+								"clear_earliest_data_day": 3
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/report-setting 响应",
+						"description": "返回PUT /api/ad/v3/sys/report-setting的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"response_timeout": 8,
+							"disk_usage_threshold": 45,
+							"clear_earliest_data_day": 3
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +132,32 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_report_setting_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify report-setting",
+						"description": "修改报表设置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/report-setting",
+							"body": {
+								"state": "ENABLE",
+								"response_timeout": 8,
+								"disk_usage_threshold": 45,
+								"clear_earliest_data_day": 3
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/report-setting 响应",
+						"description": "返回PATCH /api/ad/v3/sys/report-setting的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"response_timeout": 8,
+							"disk_usage_threshold": 45,
+							"clear_earliest_data_day": 3
+						}
 					}
 				}
 			},

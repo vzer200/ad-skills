@@ -51,6 +51,21 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_interface_mode_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get interface-mode stat",
+						"description": "获取网口协商模式信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/interface-mode"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/interface-mode 响应",
+						"description": "返回GET /api/ad/v3/stat/net/interface-mode的响应数据",
+						"value": null
+					}
 				}
 			}
 		}

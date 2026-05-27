@@ -43,7 +43,24 @@ module.exports ={
 				],
 				"summary": "netns-alarm",
 				"description": "根据提供的netns列表发送告警",
-				"operationId": "netns_alarm"
+				"operationId": "netns_alarm",
+				"x-examples": {
+					"request": {
+						"summary": "netns-alarm",
+						"description": "根据提供的netns列表发送告警",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/net/netns-alarm"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/net/netns-alarm 响应",
+						"description": "返回POST /api/ad/v3/debug/net/netns-alarm的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			}
 		}
 	},

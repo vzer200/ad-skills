@@ -65,6 +65,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_8583_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all pre-rule",
+						"description": "查看当前已有的前置策略（8583）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/pre-rule/8583/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/pre-rule/8583/ 响应",
+						"description": "返回GET /api/ad/v3/slb/pre-rule/8583/的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "8583",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"tcp_stream_rule": {
+								"mode": "CONTAIN",
+								"case_sensitive": "DISABLE",
+								"pattern": "One"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +116,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_8583_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new pre-rule",
+						"description": "新建一个前置策略（8583）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/pre-rule/8583/",
+							"body": {
+								"name": "AI_url-sched_A",
+								"service": "8583",
+								"action": "SCHED-POOL",
+								"notify_status_to_vs": "ENABLE",
+								"sched_failure": "NEXT-RULE",
+								"sched_pool": "web_oa_80_pool"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/pre-rule/8583/ 响应",
+						"description": "返回POST /api/ad/v3/slb/pre-rule/8583/的响应数据",
+						"value": {
+							"name": "AI_url-sched_A",
+							"description": "example_string",
+							"service": "8583",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"tcp_stream_rule": {
+								"mode": "CONTAIN",
+								"case_sensitive": "DISABLE",
+								"pattern": "One"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE"
+						}
 					}
 				}
 			},
@@ -130,6 +206,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_8583_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pre-rule",
+						"description": "查看指定的前置策略（8583）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/pre-rule/8583/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/pre-rule/8583/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/pre-rule/8583/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "8583",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"tcp_stream_rule": {
+								"mode": "CONTAIN",
+								"case_sensitive": "DISABLE",
+								"pattern": "One"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +259,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_8583_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new pre-rule",
+						"description": "新建指定的前置策略（8583）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/pre-rule/8583/{name}",
+							"body": {
+								"name": "AI_url-sched_B",
+								"service": "8583",
+								"action": "SCHED-POOL",
+								"notify_status_to_vs": "ENABLE",
+								"sched_failure": "NEXT-RULE",
+								"sched_pool": "web_oa_80_pool"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/pre-rule/8583/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/pre-rule/8583/{name}的响应数据",
+						"value": {
+							"name": "AI_url-sched_B",
+							"description": "example_string",
+							"service": "8583",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"tcp_stream_rule": {
+								"mode": "CONTAIN",
+								"case_sensitive": "DISABLE",
+								"pattern": "One"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +318,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_8583_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific pre-rule",
+						"description": "修改指定的前置策略（8583）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/pre-rule/8583/{name}",
+							"body": {
+								"name": "url-sched",
+								"service": "8583",
+								"action": "SCHED-POOL",
+								"notify_status_to_vs": "ENABLE",
+								"sched_failure": "NEXT-RULE",
+								"sched_pool": "web_oa_80_pool"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/pre-rule/8583/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/pre-rule/8583/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "8583",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"tcp_stream_rule": {
+								"mode": "CONTAIN",
+								"case_sensitive": "DISABLE",
+								"pattern": "One"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE"
+						}
 					}
 				}
 			},
@@ -185,6 +379,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_8583_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific pre-rule",
+						"description": "修改指定的前置策略（8583）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/pre-rule/8583/{name}",
+							"body": {
+								"name": "url-sched",
+								"service": "8583",
+								"action": "SCHED-POOL",
+								"notify_status_to_vs": "ENABLE",
+								"sched_failure": "NEXT-RULE",
+								"sched_pool": "web_oa_80_pool"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/pre-rule/8583/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/pre-rule/8583/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "8583",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"tcp_stream_rule": {
+								"mode": "CONTAIN",
+								"case_sensitive": "DISABLE",
+								"pattern": "One"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +433,40 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_8583_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific pre-rule",
+						"description": "删除指定的前置策略（8583）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/pre-rule/8583/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/pre-rule/8583/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/pre-rule/8583/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "8583",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"tcp_stream_rule": {
+								"mode": "CONTAIN",
+								"case_sensitive": "DISABLE",
+								"pattern": "One"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE"
+						}
 					}
 				}
 			}

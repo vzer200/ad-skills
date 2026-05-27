@@ -62,6 +62,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_access_control_profile_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all access-control-profile",
+						"description": "查看当前已有的应用访问控制策略配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/access-control-profile/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/access-control-profile/ 响应",
+						"description": "返回GET /api/ad/v3/slb/access-control-profile/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"state": "ENABLE",
+									"virtual_service": "example_string",
+									"rule": [
+										{
+											"uri": "/index.html",
+											"users": [
+												"example_string"
+											]
+										}
+									],
+									"pool": "example_string"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +119,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_access_control_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new access-control-profile",
+						"description": "新建一个应用访问控制策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/access-control-profile/",
+							"body": {
+								"name": "AI_example_string_A",
+								"state": "ENABLE",
+								"virtual_service": "example_string",
+								"rule": [
+									{
+										"uri": "/index.html",
+										"users": [
+											"example_string"
+										]
+									}
+								],
+								"pool": "example_string"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/access-control-profile/ 响应",
+						"description": "返回POST /api/ad/v3/slb/access-control-profile/的响应数据",
+						"value": {
+							"name": "AI_example_string_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"virtual_service": "example_string",
+							"rule": [
+								{
+									"uri": "/index.html",
+									"users": [
+										"example_string"
+									]
+								}
+							],
+							"pool": "example_string"
+						}
 					}
 				}
 			},
@@ -128,6 +211,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_access_control_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific access-control-profile",
+						"description": "查看指定的应用访问控制策略配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/access-control-profile/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/access-control-profile/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/access-control-profile/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"virtual_service": "example_string",
+							"rule": [
+								{
+									"uri": "/index.html",
+									"users": [
+										"example_string"
+									]
+								}
+							],
+							"pool": "example_string"
+						}
+					}
 				}
 			},
 			"post": {
@@ -147,6 +259,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_access_control_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new access-control-profile",
+						"description": "新建指定的应用访问控制策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/access-control-profile/{name}",
+							"body": {
+								"name": "AI_example_string_B",
+								"state": "ENABLE",
+								"virtual_service": "example_string",
+								"rule": [
+									{
+										"uri": "/index.html",
+										"users": [
+											"example_string"
+										]
+									}
+								],
+								"pool": "example_string"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/access-control-profile/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/access-control-profile/{name}的响应数据",
+						"value": {
+							"name": "AI_example_string_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"virtual_service": "example_string",
+							"rule": [
+								{
+									"uri": "/index.html",
+									"users": [
+										"example_string"
+									]
+								}
+							],
+							"pool": "example_string"
+						}
+					}
 				}
 			},
 			"put": {
@@ -164,6 +319,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_access_control_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific access-control-profile",
+						"description": "修改指定的应用访问控制策略配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/access-control-profile/{name}",
+							"body": {
+								"name": "example_string",
+								"state": "ENABLE",
+								"virtual_service": "example_string",
+								"rule": [
+									{
+										"uri": "/index.html",
+										"users": [
+											"example_string"
+										]
+									}
+								],
+								"pool": "example_string"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/access-control-profile/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/access-control-profile/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"virtual_service": "example_string",
+							"rule": [
+								{
+									"uri": "/index.html",
+									"users": [
+										"example_string"
+									]
+								}
+							],
+							"pool": "example_string"
+						}
 					}
 				}
 			},
@@ -183,6 +381,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_access_control_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific access-control-profile",
+						"description": "修改指定的应用访问控制策略配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/access-control-profile/{name}",
+							"body": {
+								"name": "example_string",
+								"state": "ENABLE",
+								"virtual_service": "example_string",
+								"rule": [
+									{
+										"uri": "/index.html",
+										"users": [
+											"example_string"
+										]
+									}
+								],
+								"pool": "example_string"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/access-control-profile/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/access-control-profile/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"virtual_service": "example_string",
+							"rule": [
+								{
+									"uri": "/index.html",
+									"users": [
+										"example_string"
+									]
+								}
+							],
+							"pool": "example_string"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -195,6 +436,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_access_control_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific access-control-profile",
+						"description": "删除指定的应用访问控制策略配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/access-control-profile/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/access-control-profile/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/access-control-profile/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"virtual_service": "example_string",
+							"rule": [
+								{
+									"uri": "/index.html",
+									"users": [
+										"example_string"
+									]
+								}
+							],
+							"pool": "example_string"
+						}
 					}
 				}
 			}

@@ -62,6 +62,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_static_route_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all static-route",
+						"description": "获取静态路由信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/static-route/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/static-route/ 响应",
+						"description": "返回GET /api/ad/v3/stat/net/static-route/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "example_string",
+									"subnet": "192.168.0.0/16",
+									"health": "UNKNOWN",
+									"status": "Destination Host Unreachable."
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -91,6 +122,26 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_static_route_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific static-route",
+						"description": "获取指定静态路由信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/static-route/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/static-route/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/net/static-route/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"subnet": "192.168.0.0/16",
+							"health": "UNKNOWN",
+							"status": "Destination Host Unreachable."
+						}
 					}
 				}
 			}

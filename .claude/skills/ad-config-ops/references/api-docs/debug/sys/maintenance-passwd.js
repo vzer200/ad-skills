@@ -50,6 +50,24 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_maintenance_passwd"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "maintenance-passwd",
+						"description": "修改后台维护密码",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/maintenance-passwd",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/maintenance-passwd 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/maintenance-passwd的响应数据",
+						"value": {
+							"has_set_passwd": "false"
+						}
+					}
 				}
 			},
 			"get": {
@@ -62,6 +80,23 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_debug_maintenance_passwd"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "maintenance-passwd",
+						"description": "查询是否设置后台维护密码",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/sys/maintenance-passwd"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/sys/maintenance-passwd 响应",
+						"description": "返回GET /api/ad/v3/debug/sys/maintenance-passwd的响应数据",
+						"value": {
+							"has_set_passwd": "false"
+						}
 					}
 				}
 			},

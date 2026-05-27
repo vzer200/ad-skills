@@ -51,6 +51,23 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_arp_broadcast_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get arp-broadcast",
+						"description": "arp广播配置获取",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/arp-broadcast"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/arp-broadcast 响应",
+						"description": "返回GET /api/ad/v3/net/arp-broadcast的响应数据",
+						"value": {
+							"broadcast_interval_min": 5
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +86,26 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_arp_broadcast_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace arp-broadcast",
+						"description": "arp广播配置修改",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/arp-broadcast",
+							"body": {
+								"broadcast_interval_min": 5
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/arp-broadcast 响应",
+						"description": "返回PUT /api/ad/v3/net/arp-broadcast的响应数据",
+						"value": {
+							"broadcast_interval_min": 5
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +123,26 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_arp_broadcast_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify arp-broadcast",
+						"description": "arp广播配置修改",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/arp-broadcast",
+							"body": {
+								"broadcast_interval_min": 5
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/arp-broadcast 响应",
+						"description": "返回PATCH /api/ad/v3/net/arp-broadcast的响应数据",
+						"value": {
+							"broadcast_interval_min": 5
+						}
 					}
 				}
 			},
@@ -131,11 +188,11 @@ module.exports ={
 			"properties": {
 				"broadcast_interval_min": {
 					"type": "integer",
-					"description": "广播时间设置，单位是分钟，必须为5~3600之间的整数。",
+					"description": "广播时间设置，单位是分钟，必须为1~3600之间的整数。",
 					"default": 5,
 					"example": 5,
 					"maximum": 3600,
-					"minimum": 5
+					"minimum": 1
 				}
 			}
 		}

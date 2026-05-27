@@ -62,6 +62,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_log_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all http-log",
+						"description": "查看已有的HTTP日志配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/http-log/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/http-log/ 响应",
+						"description": "返回GET /api/ad/v3/sys/http-log/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vs1_log",
+									"description": "example_string",
+									"virtual_service": [
+										"vs1"
+									],
+									"log_template": "",
+									"syslog": {
+										"type": "SYSTEM",
+										"address": "10.1.1.1",
+										"port": 514,
+										"facility": "NONE",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +120,43 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_log_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new http-log",
+						"description": "新建HTTP日志配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/http-log/",
+							"body": {
+								"name": "AI_vs1_log_A",
+								"virtual_service": [
+									"vs1"
+								],
+								"log_template": "[${time}][${client_ip}:${client_port}][${method}][${uri}][${user_agent}]"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/http-log/ 响应",
+						"description": "返回POST /api/ad/v3/sys/http-log/的响应数据",
+						"value": {
+							"name": "AI_vs1_log_A",
+							"description": "example_string",
+							"virtual_service": [
+								"vs1"
+							],
+							"log_template": "",
+							"syslog": {
+								"type": "SYSTEM",
+								"address": "10.1.1.1",
+								"port": 514,
+								"facility": "NONE",
+								"message_encode": "UTF8",
+								"network": "AUTO"
+							}
+						}
 					}
 				}
 			},
@@ -128,6 +206,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_log_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific http-log",
+						"description": "查看指定的HTTP日志配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/http-log/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/http-log/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/http-log/{name}的响应数据",
+						"value": {
+							"name": "vs1_log",
+							"description": "example_string",
+							"virtual_service": [
+								"vs1"
+							],
+							"log_template": "",
+							"syslog": {
+								"type": "SYSTEM",
+								"address": "10.1.1.1",
+								"port": 514,
+								"facility": "NONE",
+								"message_encode": "UTF8",
+								"network": "AUTO"
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -147,6 +255,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_log_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new http-log",
+						"description": "新建指定的HTTP日志配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/http-log/{name}",
+							"body": {
+								"name": "AI_vs1_log_B",
+								"virtual_service": [
+									"vs1"
+								],
+								"log_template": "[${time}][${client_ip}:${client_port}][${method}][${uri}][${user_agent}]"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/http-log/{name} 响应",
+						"description": "返回POST /api/ad/v3/sys/http-log/{name}的响应数据",
+						"value": {
+							"name": "AI_vs1_log_B",
+							"description": "example_string",
+							"virtual_service": [
+								"vs1"
+							],
+							"log_template": "",
+							"syslog": {
+								"type": "SYSTEM",
+								"address": "10.1.1.1",
+								"port": 514,
+								"facility": "NONE",
+								"message_encode": "UTF8",
+								"network": "AUTO"
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -164,6 +309,43 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_log_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific http-log",
+						"description": "修改指定的HTTP日志配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/http-log/{name}",
+							"body": {
+								"name": "vs1_log",
+								"virtual_service": [
+									"vs1"
+								],
+								"log_template": "[${time}][${client_ip}:${client_port}][${method}][${uri}][${user_agent}]"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/http-log/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/http-log/{name}的响应数据",
+						"value": {
+							"name": "vs1_log",
+							"description": "example_string",
+							"virtual_service": [
+								"vs1"
+							],
+							"log_template": "",
+							"syslog": {
+								"type": "SYSTEM",
+								"address": "10.1.1.1",
+								"port": 514,
+								"facility": "NONE",
+								"message_encode": "UTF8",
+								"network": "AUTO"
+							}
+						}
 					}
 				}
 			},
@@ -183,6 +365,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_log_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific http-log",
+						"description": "修改指定的HTTP日志配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/http-log/{name}",
+							"body": {
+								"name": "vs1_log",
+								"virtual_service": [
+									"vs1"
+								],
+								"log_template": "[${time}][${client_ip}:${client_port}][${method}][${uri}][${user_agent}]"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/http-log/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/http-log/{name}的响应数据",
+						"value": {
+							"name": "vs1_log",
+							"description": "example_string",
+							"virtual_service": [
+								"vs1"
+							],
+							"log_template": "",
+							"syslog": {
+								"type": "SYSTEM",
+								"address": "10.1.1.1",
+								"port": 514,
+								"facility": "NONE",
+								"message_encode": "UTF8",
+								"network": "AUTO"
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -195,6 +414,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_log_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific http-log",
+						"description": "删除指定的HTTP日志配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/http-log/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/http-log/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/http-log/{name}的响应数据",
+						"value": {
+							"name": "vs1_log",
+							"description": "example_string",
+							"virtual_service": [
+								"vs1"
+							],
+							"log_template": "",
+							"syslog": {
+								"type": "SYSTEM",
+								"address": "10.1.1.1",
+								"port": 514,
+								"facility": "NONE",
+								"message_encode": "UTF8",
+								"network": "AUTO"
+							}
+						}
 					}
 				}
 			}

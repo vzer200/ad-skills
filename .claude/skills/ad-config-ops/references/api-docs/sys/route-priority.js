@@ -53,6 +53,31 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_route_priority_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get route-priority",
+						"description": "GET /sys/route-priority",
+						"value": {
+							"method": "GET",
+							"path": "/sys/route-priority"
+						}
+					},
+					"response": {
+						"summary": "GET /sys/route-priority 响应",
+						"description": "返回GET /sys/route-priority的响应数据",
+						"value": {
+							"proute_higher_than_main": "DISABLE",
+							"routes": [
+								"STATIC_PRIORITY",
+								"STATIC_PRIORITY",
+								"STATIC_PRIORITY",
+								"STATIC_PRIORITY",
+								"STATIC_PRIORITY"
+							],
+							"state": "DISABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -71,6 +96,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_route_priority_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace route-priority",
+						"description": "PUT /sys/route-priority",
+						"value": {
+							"method": "PUT",
+							"path": "/sys/route-priority",
+							"body": {
+								"proute_higher_than_main": "DISABLE",
+								"routes": [
+									"STATIC_PRIORITY",
+									"STATIC_PRIORITY",
+									"STATIC_PRIORITY",
+									"STATIC_PRIORITY",
+									"STATIC_PRIORITY"
+								],
+								"state": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /sys/route-priority 响应",
+						"description": "返回PUT /sys/route-priority的响应数据",
+						"value": {
+							"proute_higher_than_main": "DISABLE",
+							"routes": [
+								"STATIC_PRIORITY",
+								"STATIC_PRIORITY",
+								"STATIC_PRIORITY",
+								"STATIC_PRIORITY",
+								"STATIC_PRIORITY"
+							],
+							"state": "DISABLE"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -88,6 +149,42 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_route_priority_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify route-priority",
+						"description": "The PATCH method updates specific properties of one config.",
+						"value": {
+							"method": "PATCH",
+							"path": "/sys/route-priority",
+							"body": {
+								"proute_higher_than_main": "DISABLE",
+								"routes": [
+									"STATIC_PRIORITY",
+									"STATIC_PRIORITY",
+									"STATIC_PRIORITY",
+									"STATIC_PRIORITY",
+									"STATIC_PRIORITY"
+								],
+								"state": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /sys/route-priority 响应",
+						"description": "返回PATCH /sys/route-priority的响应数据",
+						"value": {
+							"proute_higher_than_main": "DISABLE",
+							"routes": [
+								"STATIC_PRIORITY",
+								"STATIC_PRIORITY",
+								"STATIC_PRIORITY",
+								"STATIC_PRIORITY",
+								"STATIC_PRIORITY"
+							],
+							"state": "DISABLE"
+						}
 					}
 				}
 			}
@@ -122,62 +219,53 @@ module.exports ={
 	},
 	"definitions": {
 		"config.network_setting": {
-			"type": "object",
+			"description": "路由优先级调整",
 			"properties": {
-				"connection_setting": {
-					"type": "object",
-					"properties": {
-						"state": {
-							"type": "string",
-							"enum": [
-								"ENABLE",
-								"DISABLE"
-							],
-							"default": "DISABLE",
-							"example": "DISABLE"
-						},
-						"proute_higher_than_main": {
-							"type": "string",
-							"enum": [
-								"ENABLE",
-								"DISABLE"
-							],
-							"default": "DISABLE",
-							"example": "DISABLE"
-						},
-						"route": {
-							"type": "array",
-							"example": "[STATIC_PRIORITY, EBGP_PRIORITY, OSPF_PRIORITY, RIP_PRIORITY, IBGP_PRIORITY]",
-							"items": {
-								"type": "object",
-								"properties": {
-									"operation": {
-										"type": "string"
-									},
-									"object": {
-										"type": "string",
-										"example": "STATIC_PRIORITY"
-									},
-									"result": {
-										"type": "string",
-										"enum": [
-											"STATIC_PRIORITY",
-											"EBGP_PRIORITY",
-											"OSPF_PRIORITY",
-											"RIP_PRIORITY",
-											"IBGP_PRIORITY"
-										],
-										"example": "STATIC_PRIORITY"
-									},
-									"description": {
-										"type": "string"
-									}
-								}
-							}
-						}
-					}
+				"proute_higher_than_main": {
+					"default": "DISABLE",
+					"description": "设置非默认智能路由优先级比主路由表高的开关",
+					"enum": [
+						"ENABLE",
+						"DISABLE"
+					],
+					"example": "DISABLE",
+					"type": "string"
+				},
+				"routes": {
+					"description": "主路由表优先级",
+					"items": {
+						"description": "主路由表路由优先级",
+						"enum": [
+							"STATIC_PRIORITY",
+							"EBGP_PRIORITY",
+							"OSPF_PRIORITY",
+							"RIP_PRIORITY",
+							"IBGP_PRIORITY"
+						],
+						"type": "string"
+					},
+					"maxItems": 5,
+					"minItems": 5,
+					"type": "array",
+					"uniqueItems": true
+				},
+				"state": {
+					"default": "DISABLE",
+					"description": "路由优先级调整开关",
+					"enum": [
+						"ENABLE",
+						"DISABLE"
+					],
+					"example": "DISABLE",
+					"type": "string"
 				}
-			}
+			},
+			"required": [
+				"state",
+				"proute_higher_than_main",
+				"routes"
+			],
+			"type": "object"
 		}
 	}
 }

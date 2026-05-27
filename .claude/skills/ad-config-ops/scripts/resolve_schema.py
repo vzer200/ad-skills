@@ -32,7 +32,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Resolve and flatten an AD API schema from api-index.json.")
     parser.add_argument("--skill-root", required=True, type=Path, help="AD-OPS skill root.")
     parser.add_argument("--schema", required=True, help="Schema name, for example config.virtual_service.")
-    parser.add_argument("--document", help="Optional document constraint, for example slb/virtual-service.js.")
+    parser.add_argument("--document", help="Optional document constraint, for example slb/virtual-service/http.js.")
     return parser.parse_args(argv)
 
 

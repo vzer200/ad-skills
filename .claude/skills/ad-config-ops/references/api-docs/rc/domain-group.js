@@ -62,6 +62,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_domain_group_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all domain-group",
+						"description": "获取域名集配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/domain-group/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/domain-group/ 响应",
+						"description": "返回GET /api/ad/v3/rc/domain-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "ip_set_1",
+									"description": "example_string",
+									"domains": [
+										"192.168.1.100"
+									],
+									"default": "NON-DEFAULT"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +112,32 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_domain_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new domain-group",
+						"description": "新建域名集配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/domain-group/",
+							"body": {
+								"name": "AI_ip_set_1_A",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/domain-group/ 响应",
+						"description": "返回POST /api/ad/v3/rc/domain-group/的响应数据",
+						"value": {
+							"name": "AI_ip_set_1_A",
+							"description": "example_string",
+							"domains": [
+								"192.168.1.100"
+							],
+							"default": "NON-DEFAULT"
+						}
 					}
 				}
 			},
@@ -98,6 +157,43 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_domain_group_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify domain-group",
+						"description": "修改域名集配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/domain-group/",
+							"body": {
+								"name": "ip_set_1",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/domain-group/ 响应",
+						"description": "返回PATCH /api/ad/v3/rc/domain-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "ip_set_1",
+									"description": "example_string",
+									"domains": [
+										"192.168.1.100"
+									],
+									"default": "NON-DEFAULT"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -147,6 +243,28 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_domain_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific domain-group",
+						"description": "获取域名集配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/domain-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/domain-group/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/domain-group/{name}的响应数据",
+						"value": {
+							"name": "ip_set_1",
+							"description": "example_string",
+							"domains": [
+								"192.168.1.100"
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"post": {
@@ -166,6 +284,32 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_domain_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new domain-group",
+						"description": "新建域名集配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/domain-group/{name}",
+							"body": {
+								"name": "AI_ip_set_1_B",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/domain-group/{name} 响应",
+						"description": "返回POST /api/ad/v3/rc/domain-group/{name}的响应数据",
+						"value": {
+							"name": "AI_ip_set_1_B",
+							"description": "example_string",
+							"domains": [
+								"192.168.1.100"
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"put": {
@@ -183,6 +327,32 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_domain_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific domain-group",
+						"description": "修改域名集配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/rc/domain-group/{name}",
+							"body": {
+								"name": "ip_set_1",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/rc/domain-group/{name} 响应",
+						"description": "返回PUT /api/ad/v3/rc/domain-group/{name}的响应数据",
+						"value": {
+							"name": "ip_set_1",
+							"description": "example_string",
+							"domains": [
+								"192.168.1.100"
+							],
+							"default": "NON-DEFAULT"
+						}
 					}
 				}
 			},
@@ -202,6 +372,32 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_domain_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific domain-group",
+						"description": "修改域名集配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/domain-group/{name}",
+							"body": {
+								"name": "ip_set_1",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/domain-group/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/rc/domain-group/{name}的响应数据",
+						"value": {
+							"name": "ip_set_1",
+							"description": "example_string",
+							"domains": [
+								"192.168.1.100"
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -214,6 +410,28 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_domain_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific domain-group",
+						"description": "删除域名集配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/rc/domain-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/rc/domain-group/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/rc/domain-group/{name}的响应数据",
+						"value": {
+							"name": "ip_set_1",
+							"description": "example_string",
+							"domains": [
+								"192.168.1.100"
+							],
+							"default": "NON-DEFAULT"
+						}
 					}
 				}
 			}

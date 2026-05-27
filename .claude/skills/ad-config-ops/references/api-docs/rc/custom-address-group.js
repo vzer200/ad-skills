@@ -65,6 +65,41 @@ module.exports ={
 					"404": {
 						"$ref": "/api/{common}.yaml#/responses/default"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all custom-address-group",
+						"description": "获取用户地址集配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/custom-address-group/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/custom-address-group/ 响应",
+						"description": "返回GET /api/ad/v3/rc/custom-address-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "ip_set_1",
+									"description": "example_string",
+									"addresses": [
+										"192.168.1.100-192.168.1.200"
+									],
+									"addresses_ipv6": [
+										"2001::100-2001::1000"
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +117,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_custom_address_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new custom-address-group",
+						"description": "新建用户地址集配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/custom-address-group/",
+							"body": {
+								"name": "AI_ip_set_1_A"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/custom-address-group/ 响应",
+						"description": "返回POST /api/ad/v3/rc/custom-address-group/的响应数据",
+						"value": {
+							"name": "AI_ip_set_1_A",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							]
+						}
 					}
 				}
 			},
@@ -101,6 +163,44 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_custom_address_group_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify custom-address-group",
+						"description": "修改用户地址集配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/custom-address-group/",
+							"body": {
+								"name": "ip_set_1"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/custom-address-group/ 响应",
+						"description": "返回PATCH /api/ad/v3/rc/custom-address-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "ip_set_1",
+									"description": "example_string",
+									"addresses": [
+										"192.168.1.100-192.168.1.200"
+									],
+									"addresses_ipv6": [
+										"2001::100-2001::1000"
+									]
+								}
+							]
+						}
 					}
 				}
 			},
@@ -150,6 +250,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_custom_address_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific custom-address-group",
+						"description": "获取用户地址集配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/custom-address-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/custom-address-group/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/custom-address-group/{name}的响应数据",
+						"value": {
+							"name": "ip_set_1",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -169,6 +293,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_custom_address_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new custom-address-group",
+						"description": "新建用户地址集配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/custom-address-group/{name}",
+							"body": {
+								"name": "AI_ip_set_1_B"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/custom-address-group/{name} 响应",
+						"description": "返回POST /api/ad/v3/rc/custom-address-group/{name}的响应数据",
+						"value": {
+							"name": "AI_ip_set_1_B",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -186,6 +337,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_custom_address_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific custom-address-group",
+						"description": "修改用户地址集配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/rc/custom-address-group/{name}",
+							"body": {
+								"name": "ip_set_1"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/rc/custom-address-group/{name} 响应",
+						"description": "返回PUT /api/ad/v3/rc/custom-address-group/{name}的响应数据",
+						"value": {
+							"name": "ip_set_1",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							]
+						}
 					}
 				}
 			},
@@ -205,6 +383,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_custom_address_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific custom-address-group",
+						"description": "修改用户地址集配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/custom-address-group/{name}",
+							"body": {
+								"name": "ip_set_1"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/custom-address-group/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/rc/custom-address-group/{name}的响应数据",
+						"value": {
+							"name": "ip_set_1",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -222,6 +427,30 @@ module.exports ={
 				"externalDocs": {
 					"description": "JSON Schema",
 					"url": "./schema/rc/config.custom_address_group_list.json"
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific custom-address-group",
+						"description": "删除用户地址集配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/rc/custom-address-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/rc/custom-address-group/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/rc/custom-address-group/{name}的响应数据",
+						"value": {
+							"name": "ip_set_1",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							]
+						}
+					}
 				}
 			}
 		}
@@ -331,7 +560,7 @@ module.exports ={
 						"description": "Format: {IP-Address} | {IP-Range} | {IP-Subnet}",
 						"example": "192.168.1.100-192.168.1.200"
 					},
-					"maxItems": 100,
+					"maxItems": 128,
 					"minItems": 0
 				},
 				"addresses_ipv6": {
@@ -342,7 +571,7 @@ module.exports ={
 						"description": "Format: {IP-Address} | {IP-Range} | {IP-Subnet}",
 						"example": "2001::100-2001::1000"
 					},
-					"maxItems": 100,
+					"maxItems": 128,
 					"minItems": 0
 				}
 			}

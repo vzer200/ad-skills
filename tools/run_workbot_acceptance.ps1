@@ -40,7 +40,7 @@ Write-Host "[1/7] Running unit tests"
 & $Python -m unittest discover -s test -p "test_*.py" -v
 
 Write-Host "[2/7] Validating skills"
-$skills = @("ad-connect", "ad-ops", "ad-config-ops", "ad-check-analysis", "ad-perception")
+$skills = @("ad-connect", "ad-ops", "ad-config-ops", "sangforad-cli", "ad-check-analysis", "ad-perception")
 foreach ($skill in $skills) {
     & $Python "C:\Users\Administrator\.codex\skills\.system\skill-creator\scripts\quick_validate.py" ".claude\skills\$skill"
 }
@@ -53,6 +53,7 @@ $lookupQuery = [string]::Concat([char]0x521B, [char]0x5EFA, " HTTP ", [char]0x86
 & $Python ".claude\skills\ad-config-ops\scripts\ad_ops_flow.py" plan-and-render --skill-root ".claude\skills\ad-config-ops" --bundle "test\fixtures\workbot\r4-slb-full.yml" --workdir $smokeDir
 & $Python ".claude\skills\ad-config-ops\scripts\ad_ops_flow.py" summarize-plan --plan "$smokeDir\adops-plan.json" --workdir $smokeDir
 & $Python ".claude\skills\ad-config-ops\scripts\ad_ops_flow.py" status --workdir $smokeDir
+& $Python ".claude\skills\sangforad-cli\scripts\render_cli.py" --plan "$smokeDir\adops-plan.json" --workdir $smokeDir
 
 if ($CommitAndPush) {
     Write-Host "[4/7] Committing and pushing"

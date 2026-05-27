@@ -65,6 +65,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_interface_adapter_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all interface",
+						"description": "查询可用网络接口适配列表",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/interface-adapter/{module}/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/interface-adapter/{module}/ 响应",
+						"description": "返回GET /api/ad/v3/net/interface-adapter/{module}/的响应数据",
+						"value": {
+							"items_length": 8,
+							"items": [
+								{
+									"name": "NET1",
+									"type": "PHYSICAL",
+									"device": "eth1",
+									"occupied_by": "NONE",
+									"occupier": [
+										"bond_1_2"
+									]
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -96,6 +124,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_interface_adapter_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get interface-adapter",
+						"description": "GET /api/ad/v3/net/interface-adapter/{module}/{name}",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/interface-adapter/{module}/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/interface-adapter/{module}/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/interface-adapter/{module}/{name}的响应数据",
+						"value": {
+							"name": "NET1",
+							"type": "PHYSICAL",
+							"device": "eth1",
+							"occupied_by": "NONE",
+							"occupier": [
+								"bond_1_2"
+							]
+						}
 					}
 				}
 			}

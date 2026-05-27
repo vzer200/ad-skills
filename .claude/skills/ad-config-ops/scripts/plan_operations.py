@@ -60,7 +60,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Plan validated AD API operations from a filled YAML payload.")
     parser.add_argument("--skill-root", required=True, type=Path, help="AD-OPS skill root.")
     parser.add_argument("--schema", help="Schema name, for example config.virtual_service.")
-    parser.add_argument("--document", help="Optional document constraint, for example slb/virtual-service.js.")
+    parser.add_argument("--document", help="Optional document constraint, for example slb/virtual-service/http.js.")
     parser.add_argument("--action", choices=sorted(ACTION_METHODS), help="Operation action.")
     parser.add_argument("--input", type=Path, help="Filled YAML input.")
     parser.add_argument("--bundle", type=Path, help="Filled YAML bundle with an operations list.")

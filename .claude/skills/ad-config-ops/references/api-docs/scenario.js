@@ -51,6 +51,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_scenario_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get scenario",
+						"description": "查看场景状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/scenario"
+						}
+					},
+					"response": {
+						"summary": "GET /scenario 响应",
+						"description": "返回GET /scenario的响应数据",
+						"value": {
+							"slb_scenario": "DISABLE",
+							"slb_homepage_option": {
+								"title": "",
+								"prior_virtual_service_detail": [
+									"connection"
+								],
+								"security_pool_title": "security_pool_80",
+								"prior_security_pool_detail": [
+									"connection"
+								]
+							},
+							"prior_virtual_services": [
+								"http_80_portal"
+							],
+							"prior_security_pool": [
+								"security_pool_81"
+							],
+							"lc_scenario": "DISABLE",
+							"lc_homepage_option": {
+								"link_title": "",
+								"policy_route_title": ""
+							},
+							"prior_links": [
+								"wan_unicom"
+							],
+							"dns_scenario": "DISABLE",
+							"dns_homepage_option": {
+								"title": ""
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +114,56 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_scenario_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace scenario",
+						"description": "更新场景信息配置",
+						"value": {
+							"method": "PUT",
+							"path": "/scenario",
+							"body": {
+								"slb_scenario": "DISABLE",
+								"lc_scenario": "DISABLE",
+								"dns_scenario": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /scenario 响应",
+						"description": "返回PUT /scenario的响应数据",
+						"value": {
+							"slb_scenario": "DISABLE",
+							"slb_homepage_option": {
+								"title": "",
+								"prior_virtual_service_detail": [
+									"connection"
+								],
+								"security_pool_title": "security_pool_80",
+								"prior_security_pool_detail": [
+									"connection"
+								]
+							},
+							"prior_virtual_services": [
+								"http_80_portal"
+							],
+							"prior_security_pool": [
+								"security_pool_81"
+							],
+							"lc_scenario": "DISABLE",
+							"lc_homepage_option": {
+								"link_title": "",
+								"policy_route_title": ""
+							},
+							"prior_links": [
+								"wan_unicom"
+							],
+							"dns_scenario": "DISABLE",
+							"dns_homepage_option": {
+								"title": ""
+							}
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +181,56 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_scenario_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify scenario",
+						"description": "更新场景信息配置指定属性",
+						"value": {
+							"method": "PATCH",
+							"path": "/scenario",
+							"body": {
+								"slb_scenario": "DISABLE",
+								"lc_scenario": "DISABLE",
+								"dns_scenario": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /scenario 响应",
+						"description": "返回PATCH /scenario的响应数据",
+						"value": {
+							"slb_scenario": "DISABLE",
+							"slb_homepage_option": {
+								"title": "",
+								"prior_virtual_service_detail": [
+									"connection"
+								],
+								"security_pool_title": "security_pool_80",
+								"prior_security_pool_detail": [
+									"connection"
+								]
+							},
+							"prior_virtual_services": [
+								"http_80_portal"
+							],
+							"prior_security_pool": [
+								"security_pool_81"
+							],
+							"lc_scenario": "DISABLE",
+							"lc_homepage_option": {
+								"link_title": "",
+								"policy_route_title": ""
+							},
+							"prior_links": [
+								"wan_unicom"
+							],
+							"dns_scenario": "DISABLE",
+							"dns_homepage_option": {
+								"title": ""
+							}
+						}
 					}
 				}
 			},

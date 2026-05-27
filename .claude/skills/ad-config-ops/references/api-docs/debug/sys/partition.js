@@ -59,6 +59,32 @@ module.exports ={
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "activate partition",
+						"description": "激活磁盘分区",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/partition/{name}/activate",
+							"body": {
+								"migrate_config": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/partition/{name}/activate 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/partition/{name}/activate的响应数据",
+						"value": {
+							"event_id": 0,
+							"operation": "/debug/sys/maintenance/restart-service",
+							"state": "WAITING",
+							"start_time": "2018-04-02 08:30:21",
+							"finish_time": "2018-04-02 08:31:05",
+							"triggered_by": "admin",
+							"data": {}
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

@@ -62,6 +62,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_aaaa_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-intranet-record-aaaa",
+						"description": "查看DNS AAAA记录配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/dns-intranet-record/aaaa/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/dns-intranet-record/aaaa/ 响应",
+						"description": "返回GET /api/ad/v3/lc/dns-intranet-record/aaaa/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "localhost",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "AAAA",
+									"aaaa_records": [
+										{
+											"address": "example_string",
+											"ttl": 0
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +116,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_aaaa_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-intranet-record-aaaa",
+						"description": "新建DNS AAAA记录配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/lc/dns-intranet-record/aaaa/",
+							"body": {
+								"name": "AI_localhost_A",
+								"state": "ENABLE",
+								"type": "AAAA"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/lc/dns-intranet-record/aaaa/ 响应",
+						"description": "返回POST /api/ad/v3/lc/dns-intranet-record/aaaa/的响应数据",
+						"value": {
+							"name": "AI_localhost_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "AAAA",
+							"aaaa_records": [
+								{
+									"address": "example_string",
+									"ttl": 0
+								}
+							]
+						}
 					}
 				}
 			},
@@ -124,6 +192,32 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_aaaa_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-intranet-record-aaaa",
+						"description": "查看DNS AAAA记录配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/dns-intranet-record/aaaa/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/dns-intranet-record/aaaa/{name} 响应",
+						"description": "返回GET /api/ad/v3/lc/dns-intranet-record/aaaa/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "AAAA",
+							"aaaa_records": [
+								{
+									"address": "example_string",
+									"ttl": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -143,6 +237,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_aaaa_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-intranet-record-aaaa",
+						"description": "新建DNS AAAA记录配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/lc/dns-intranet-record/aaaa/{name}",
+							"body": {
+								"name": "AI_localhost_B",
+								"state": "ENABLE",
+								"type": "AAAA"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/lc/dns-intranet-record/aaaa/{name} 响应",
+						"description": "返回POST /api/ad/v3/lc/dns-intranet-record/aaaa/{name}的响应数据",
+						"value": {
+							"name": "AI_localhost_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "AAAA",
+							"aaaa_records": [
+								{
+									"address": "example_string",
+									"ttl": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -160,6 +285,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_aaaa_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-intranet-record-aaaa",
+						"description": "更新DNS AAAA记录配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/lc/dns-intranet-record/aaaa/{name}",
+							"body": {
+								"name": "localhost",
+								"state": "ENABLE",
+								"type": "AAAA"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/lc/dns-intranet-record/aaaa/{name} 响应",
+						"description": "返回PUT /api/ad/v3/lc/dns-intranet-record/aaaa/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "AAAA",
+							"aaaa_records": [
+								{
+									"address": "example_string",
+									"ttl": 0
+								}
+							]
+						}
 					}
 				}
 			},
@@ -179,6 +335,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_aaaa_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-intranet-record-aaaa",
+						"description": "更新DNS AAAA记录配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/lc/dns-intranet-record/aaaa/{name}",
+							"body": {
+								"name": "localhost",
+								"state": "ENABLE",
+								"type": "AAAA"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/lc/dns-intranet-record/aaaa/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/lc/dns-intranet-record/aaaa/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "AAAA",
+							"aaaa_records": [
+								{
+									"address": "example_string",
+									"ttl": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +378,32 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_aaaa_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-intranet-record-aaaa",
+						"description": "删除DNS AAAA记录配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/lc/dns-intranet-record/aaaa/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/lc/dns-intranet-record/aaaa/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/lc/dns-intranet-record/aaaa/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "AAAA",
+							"aaaa_records": [
+								{
+									"address": "example_string",
+									"ttl": 0
+								}
+							]
+						}
 					}
 				}
 			}

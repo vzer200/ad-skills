@@ -15,7 +15,10 @@ METHODS = ("get", "post", "put", "patch", "delete", "head", "options")
 REQUIRED_DOCS = ("toc.js", "{common}.js", "token.js")
 TMP_FILE_ENV = "TMP_FILE"
 WORKDIR_ENV = "AD_OPS_WORKDIR"
+OUTPUT_DIR_ENV = "AD_OPS_OUTPUT_DIR"
+WORKBOT_OUTPUTS_ENV = "AD_OPS_WORKBOT_OUTPUTS"
 DEFAULT_WORKDIR_NAME = "ad_ops_workdir"
+WORKBOT_OUTPUTS_WORKDIR = Path("/opt/agent/data/outputs")
 GENERATED_FILE_PREFIX = "adops-"
 ARTIFACTS_NAME = f"{GENERATED_FILE_PREFIX}artifacts.json"
 DEFAULT_BUNDLE_NAME = f"{GENERATED_FILE_PREFIX}bundle.yml"
@@ -88,14 +91,32 @@ def resolve_file_path(path: Path | None, purpose: str, env_var: str = TMP_FILE_E
 
 def workdir_path(path: Path | None = None, env_var: str = WORKDIR_ENV) -> Path | None:
     if path is not None:
-        return path.expanduser()
+        resolved = path.expanduser()
+        if str(resolved) in {"", "."} and not os.environ.get(env_var):
+            workbot_workdir = workbot_outputs_workdir()
+            if workbot_workdir is not None:
+                return workbot_workdir
+        return resolved
     value = os.environ.get(env_var)
     if value:
         return Path(value).expanduser()
     return None
 
 
+def workbot_outputs_workdir() -> Path | None:
+    for env_name in (OUTPUT_DIR_ENV, WORKBOT_OUTPUTS_ENV):
+        override = os.environ.get(env_name)
+        if override:
+            return Path(override).expanduser()
+    if os.name != "nt" and (WORKBOT_OUTPUTS_WORKDIR.exists() or WORKBOT_OUTPUTS_WORKDIR.parent.exists()):
+        return WORKBOT_OUTPUTS_WORKDIR
+    return None
+
+
 def default_workdir_path() -> Path:
+    workbot_workdir = workbot_outputs_workdir()
+    if workbot_workdir is not None:
+        return workbot_workdir
     return Path.cwd() / DEFAULT_WORKDIR_NAME
 
 
@@ -113,9 +134,29 @@ def artifacts_path(workdir: Path) -> Path:
     return workdir / ARTIFACTS_NAME
 
 
+def generated_artifact_name(name: str) -> bool:
+    return name.startswith(GENERATED_FILE_PREFIX) or name in LEGACY_GENERATED_FILE_NAMES
+
+
 def is_generated_artifact(path: Path) -> bool:
-    name = path.name
-    return path.is_file() and (name.startswith(GENERATED_FILE_PREFIX) or name in LEGACY_GENERATED_FILE_NAMES)
+    return path.is_file() and generated_artifact_name(path.name)
+
+
+def root_anchored_generated_path(path: Path) -> bool:
+    expanded = path.expanduser()
+    if getattr(expanded, "drive", ""):
+        return False
+    return bool(expanded.anchor) and len(expanded.parts) == 2 and generated_artifact_name(expanded.name)
+
+
+def resolve_output_path(path: Path | None, workdir: Path | None = None) -> Path | None:
+    if path is None:
+        return None
+    resolved = path.expanduser()
+    active_workdir = workdir_path(workdir)
+    if active_workdir is not None and root_anchored_generated_path(resolved):
+        return active_workdir / resolved.name
+    return resolved
 
 
 def generated_artifacts(workdir: Path) -> list[Path]:
@@ -128,6 +169,24 @@ def remove_generated_artifacts(workdir: Path) -> list[Path]:
     removed = generated_artifacts(workdir)
     for path in removed:
         path.unlink()
+    return removed
+
+
+def remove_directory_contents(directory: Path) -> list[Path]:
+    directory = directory.expanduser()
+    if not directory.exists():
+        directory.mkdir(parents=True, exist_ok=True)
+        return []
+    if not directory.is_dir():
+        raise ValueError(f"output path is not a directory: {directory}")
+    removed = sorted(directory.iterdir(), key=lambda path: path.name)
+    for path in removed:
+        if path.is_symlink() or path.is_file():
+            path.unlink()
+        elif path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink(missing_ok=True)
     return removed
 
 

@@ -62,6 +62,61 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l4_forward_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all tcp-profile",
+						"description": "查看当前已有的四层tcp策略配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/tcp-profile/l4-forward/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/tcp-profile/l4-forward/ 响应",
+						"description": "返回GET /api/ad/v3/slb/tcp-profile/l4-forward/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "DEFAULT-L4",
+									"description": "example_string",
+									"default": "NON-DEFAULT",
+									"type": "L4-FORWARD",
+									"loose_initiation": "ENABLE",
+									"loose_close": "DISABLE",
+									"loose_close_timeout_ms": 5000,
+									"idle_timeout": 300,
+									"maximum_segment_size": 1460,
+									"timewait_timeout_ms": 10000,
+									"idle_timeout_reset_connection": "DISABLE",
+									"syn_flood": {
+										"state": "GLOBAL",
+										"packet_pre_second_threshold": 4096
+									},
+									"flow_offload": "ENABLE",
+									"flow_offload_delay": 8,
+									"node_fault_close_connection": "DISABLE",
+									"time_stamp": "PRESERVE",
+									"seq_adjust": "DISABLE",
+									"service_unavailable_refuse_connection": "NONE",
+									"tcp_option_address": {
+										"state": "DISABLE",
+										"toa_tcp_option_kind": 120,
+										"toa_insert_mode": "HANDSHAKE_PACK",
+										"toa_insert_format": "ONLY_IP",
+										"toa_cover_opt_state": "DISABLE"
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +134,68 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l4_forward_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new tcp-profile",
+						"description": "新建一个四层tcp策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/tcp-profile/l4-forward/",
+							"body": {
+								"name": "AI_DEFAULT-L4_A",
+								"default": "NON-DEFAULT",
+								"type": "L4-FORWARD",
+								"loose_initiation": "ENABLE",
+								"loose_close": "DISABLE",
+								"loose_close_timeout_ms": 5000,
+								"idle_timeout": 300,
+								"maximum_segment_size": 1460,
+								"timewait_timeout_ms": 10000,
+								"idle_timeout_reset_connection": "DISABLE",
+								"flow_offload": "ENABLE",
+								"flow_offload_delay": 8,
+								"node_fault_close_connection": "DISABLE",
+								"time_stamp": "PRESERVE",
+								"seq_adjust": "DISABLE",
+								"service_unavailable_refuse_connection": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/tcp-profile/l4-forward/ 响应",
+						"description": "返回POST /api/ad/v3/slb/tcp-profile/l4-forward/的响应数据",
+						"value": {
+							"name": "AI_DEFAULT-L4_A",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L4-FORWARD",
+							"loose_initiation": "ENABLE",
+							"loose_close": "DISABLE",
+							"loose_close_timeout_ms": 5000,
+							"idle_timeout": 300,
+							"maximum_segment_size": 1460,
+							"timewait_timeout_ms": 10000,
+							"idle_timeout_reset_connection": "DISABLE",
+							"syn_flood": {
+								"state": "GLOBAL",
+								"packet_pre_second_threshold": 4096
+							},
+							"flow_offload": "ENABLE",
+							"flow_offload_delay": 8,
+							"node_fault_close_connection": "DISABLE",
+							"time_stamp": "PRESERVE",
+							"seq_adjust": "DISABLE",
+							"service_unavailable_refuse_connection": "NONE",
+							"tcp_option_address": {
+								"state": "DISABLE",
+								"toa_tcp_option_kind": 120,
+								"toa_insert_mode": "HANDSHAKE_PACK",
+								"toa_insert_format": "ONLY_IP",
+								"toa_cover_opt_state": "DISABLE"
+							}
+						}
 					}
 				}
 			},
@@ -124,6 +241,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l4_forward_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific tcp-profile",
+						"description": "查看指定的四层tcp策略配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/tcp-profile/l4-forward/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/tcp-profile/l4-forward/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/tcp-profile/l4-forward/{name}的响应数据",
+						"value": {
+							"name": "DEFAULT-L4",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L4-FORWARD",
+							"loose_initiation": "ENABLE",
+							"loose_close": "DISABLE",
+							"loose_close_timeout_ms": 5000,
+							"idle_timeout": 300,
+							"maximum_segment_size": 1460,
+							"timewait_timeout_ms": 10000,
+							"idle_timeout_reset_connection": "DISABLE",
+							"syn_flood": {
+								"state": "GLOBAL",
+								"packet_pre_second_threshold": 4096
+							},
+							"flow_offload": "ENABLE",
+							"flow_offload_delay": 8,
+							"node_fault_close_connection": "DISABLE",
+							"time_stamp": "PRESERVE",
+							"seq_adjust": "DISABLE",
+							"service_unavailable_refuse_connection": "NONE",
+							"tcp_option_address": {
+								"state": "DISABLE",
+								"toa_tcp_option_kind": 120,
+								"toa_insert_mode": "HANDSHAKE_PACK",
+								"toa_insert_format": "ONLY_IP",
+								"toa_cover_opt_state": "DISABLE"
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -143,6 +304,68 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l4_forward_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new tcp-profile",
+						"description": "新建指定的四层tcp策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/tcp-profile/l4-forward/{name}",
+							"body": {
+								"name": "AI_DEFAULT-L4_B",
+								"default": "NON-DEFAULT",
+								"type": "L4-FORWARD",
+								"loose_initiation": "ENABLE",
+								"loose_close": "DISABLE",
+								"loose_close_timeout_ms": 5000,
+								"idle_timeout": 300,
+								"maximum_segment_size": 1460,
+								"timewait_timeout_ms": 10000,
+								"idle_timeout_reset_connection": "DISABLE",
+								"flow_offload": "ENABLE",
+								"flow_offload_delay": 8,
+								"node_fault_close_connection": "DISABLE",
+								"time_stamp": "PRESERVE",
+								"seq_adjust": "DISABLE",
+								"service_unavailable_refuse_connection": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/tcp-profile/l4-forward/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/tcp-profile/l4-forward/{name}的响应数据",
+						"value": {
+							"name": "AI_DEFAULT-L4_B",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L4-FORWARD",
+							"loose_initiation": "ENABLE",
+							"loose_close": "DISABLE",
+							"loose_close_timeout_ms": 5000,
+							"idle_timeout": 300,
+							"maximum_segment_size": 1460,
+							"timewait_timeout_ms": 10000,
+							"idle_timeout_reset_connection": "DISABLE",
+							"syn_flood": {
+								"state": "GLOBAL",
+								"packet_pre_second_threshold": 4096
+							},
+							"flow_offload": "ENABLE",
+							"flow_offload_delay": 8,
+							"node_fault_close_connection": "DISABLE",
+							"time_stamp": "PRESERVE",
+							"seq_adjust": "DISABLE",
+							"service_unavailable_refuse_connection": "NONE",
+							"tcp_option_address": {
+								"state": "DISABLE",
+								"toa_tcp_option_kind": 120,
+								"toa_insert_mode": "HANDSHAKE_PACK",
+								"toa_insert_format": "ONLY_IP",
+								"toa_cover_opt_state": "DISABLE"
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -160,6 +383,68 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l4_forward_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific tcp-profile",
+						"description": "修改指定的四层tcp策略配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/tcp-profile/l4-forward/{name}",
+							"body": {
+								"name": "DEFAULT-L4",
+								"default": "NON-DEFAULT",
+								"type": "L4-FORWARD",
+								"loose_initiation": "ENABLE",
+								"loose_close": "DISABLE",
+								"loose_close_timeout_ms": 5000,
+								"idle_timeout": 300,
+								"maximum_segment_size": 1460,
+								"timewait_timeout_ms": 10000,
+								"idle_timeout_reset_connection": "DISABLE",
+								"flow_offload": "ENABLE",
+								"flow_offload_delay": 8,
+								"node_fault_close_connection": "DISABLE",
+								"time_stamp": "PRESERVE",
+								"seq_adjust": "DISABLE",
+								"service_unavailable_refuse_connection": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/tcp-profile/l4-forward/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/tcp-profile/l4-forward/{name}的响应数据",
+						"value": {
+							"name": "DEFAULT-L4",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L4-FORWARD",
+							"loose_initiation": "ENABLE",
+							"loose_close": "DISABLE",
+							"loose_close_timeout_ms": 5000,
+							"idle_timeout": 300,
+							"maximum_segment_size": 1460,
+							"timewait_timeout_ms": 10000,
+							"idle_timeout_reset_connection": "DISABLE",
+							"syn_flood": {
+								"state": "GLOBAL",
+								"packet_pre_second_threshold": 4096
+							},
+							"flow_offload": "ENABLE",
+							"flow_offload_delay": 8,
+							"node_fault_close_connection": "DISABLE",
+							"time_stamp": "PRESERVE",
+							"seq_adjust": "DISABLE",
+							"service_unavailable_refuse_connection": "NONE",
+							"tcp_option_address": {
+								"state": "DISABLE",
+								"toa_tcp_option_kind": 120,
+								"toa_insert_mode": "HANDSHAKE_PACK",
+								"toa_insert_format": "ONLY_IP",
+								"toa_cover_opt_state": "DISABLE"
+							}
+						}
 					}
 				}
 			},
@@ -179,6 +464,68 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l4_forward_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific tcp-profile",
+						"description": "修改指定的四层tcp策略配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/tcp-profile/l4-forward/{name}",
+							"body": {
+								"name": "DEFAULT-L4",
+								"default": "NON-DEFAULT",
+								"type": "L4-FORWARD",
+								"loose_initiation": "ENABLE",
+								"loose_close": "DISABLE",
+								"loose_close_timeout_ms": 5000,
+								"idle_timeout": 300,
+								"maximum_segment_size": 1460,
+								"timewait_timeout_ms": 10000,
+								"idle_timeout_reset_connection": "DISABLE",
+								"flow_offload": "ENABLE",
+								"flow_offload_delay": 8,
+								"node_fault_close_connection": "DISABLE",
+								"time_stamp": "PRESERVE",
+								"seq_adjust": "DISABLE",
+								"service_unavailable_refuse_connection": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/tcp-profile/l4-forward/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/tcp-profile/l4-forward/{name}的响应数据",
+						"value": {
+							"name": "DEFAULT-L4",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L4-FORWARD",
+							"loose_initiation": "ENABLE",
+							"loose_close": "DISABLE",
+							"loose_close_timeout_ms": 5000,
+							"idle_timeout": 300,
+							"maximum_segment_size": 1460,
+							"timewait_timeout_ms": 10000,
+							"idle_timeout_reset_connection": "DISABLE",
+							"syn_flood": {
+								"state": "GLOBAL",
+								"packet_pre_second_threshold": 4096
+							},
+							"flow_offload": "ENABLE",
+							"flow_offload_delay": 8,
+							"node_fault_close_connection": "DISABLE",
+							"time_stamp": "PRESERVE",
+							"seq_adjust": "DISABLE",
+							"service_unavailable_refuse_connection": "NONE",
+							"tcp_option_address": {
+								"state": "DISABLE",
+								"toa_tcp_option_kind": 120,
+								"toa_insert_mode": "HANDSHAKE_PACK",
+								"toa_insert_format": "ONLY_IP",
+								"toa_cover_opt_state": "DISABLE"
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +538,50 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l4_forward_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific tcp-profile",
+						"description": "删除指定的四层tcp策略配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/tcp-profile/l4-forward/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/tcp-profile/l4-forward/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/tcp-profile/l4-forward/{name}的响应数据",
+						"value": {
+							"name": "DEFAULT-L4",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L4-FORWARD",
+							"loose_initiation": "ENABLE",
+							"loose_close": "DISABLE",
+							"loose_close_timeout_ms": 5000,
+							"idle_timeout": 300,
+							"maximum_segment_size": 1460,
+							"timewait_timeout_ms": 10000,
+							"idle_timeout_reset_connection": "DISABLE",
+							"syn_flood": {
+								"state": "GLOBAL",
+								"packet_pre_second_threshold": 4096
+							},
+							"flow_offload": "ENABLE",
+							"flow_offload_delay": 8,
+							"node_fault_close_connection": "DISABLE",
+							"time_stamp": "PRESERVE",
+							"seq_adjust": "DISABLE",
+							"service_unavailable_refuse_connection": "NONE",
+							"tcp_option_address": {
+								"state": "DISABLE",
+								"toa_tcp_option_kind": 120,
+								"toa_insert_mode": "HANDSHAKE_PACK",
+								"toa_insert_format": "ONLY_IP",
+								"toa_cover_opt_state": "DISABLE"
+							}
+						}
 					}
 				}
 			}
@@ -374,6 +765,46 @@ module.exports ={
 					"default": "DISABLE",
 					"example": "ENABLE"
 				},
+				"syn_flood": {
+					"description": "synflood防护",
+					"type": "object",
+					"properties": {
+						"state": {
+							"description": "synflood防护启禁用",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE",
+								"GLOBAL"
+							],
+							"default": "GLOBAL"
+						},
+						"packet_pre_second_threshold": {
+							"description": "syncookie触发阈值, 必须为0~2147483647之间的整数",
+							"type": "integer",
+							"default": 4096,
+							"minimum": 0,
+							"maximum": 2147483647
+						}
+					}
+				},
+				"flow_offload": {
+					"description": "硬件加速开关",
+					"type": "string",
+					"enum": [
+						"ENABLE",
+						"DISABLE"
+					],
+					"default": "ENABLE",
+					"example": "ENABLE"
+				},
+				"flow_offload_delay": {
+					"description": "延迟下发流表, 必须为0~128之间的整数",
+					"type": "integer",
+					"default": 8,
+					"maximum": 128,
+					"minimum": 0
+				},
 				"node_fault_close_connection": {
 					"description": "可选参数；指定是否节点失效关闭连接，enable表示启用，disable表示禁用，默认为禁用",
 					"type": "string",
@@ -415,6 +846,68 @@ module.exports ={
 					],
 					"default": "NONE",
 					"example": "NONE"
+				},
+				"tcp_option_address": {
+					"type": "object",
+					"description": "TOA功能",
+					"title": "TOA功能",
+					"required": [],
+					"properties": {
+						"state": {
+							"type": "string",
+							"description": "TOA功能启禁用状态",
+							"title": "TOA启/禁用状态",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "DISABLE",
+							"example": "ENABLE"
+						},
+						"toa_tcp_option_kind": {
+							"type": "integer",
+							"description": "TOA插入tcp option的kind(十进制)，必须为1~254之间的整数,且不能是RFC规定的常用无二义性kind",
+							"title": "TOA tcp option kind",
+							"maximum": 254,
+							"minimum": 1,
+							"default": 120,
+							"example": 120
+						},
+						"toa_insert_mode": {
+							"type": "string",
+							"description": "TOA插入方式，合法输入为HANDSHAKE_PACK和PER_PACK",
+							"title": "TOA插入方式",
+							"enum": [
+								"HANDSHAKE_PACK",
+								"PER_PACK"
+							],
+							"default": "HANDSHAKE_PACK",
+							"example": "HANDSHAKE_PACK"
+						},
+						"toa_insert_format": {
+							"type": "string",
+							"description": "TOA插入内容，合法输入为ONLY_IP、PORT_AND_IP和IP_AND_PORT",
+							"title": "TOA插入内容",
+							"enum": [
+								"ONLY_IP",
+								"PORT_AND_IP",
+								"IP_AND_PORT"
+							],
+							"default": "ONLY_IP",
+							"example": "ONLY_IP"
+						},
+						"toa_cover_opt_state": {
+							"type": "string",
+							"description": "是否覆盖客户端TOA选项",
+							"title": "覆盖客户端TOA启/禁用状态",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "DISABLE",
+							"example": "ENABLE"
+						}
+					}
 				}
 			}
 		}

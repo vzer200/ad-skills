@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from ad_ops_common import read_json, skill_paths, tmp_file_path, update_artifacts, workdir_path
+from ad_ops_common import read_json, resolve_output_path, skill_paths, tmp_file_path, update_artifacts, workdir_path
 from resolve_schema import resolve_schema
 
 
@@ -24,7 +24,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render a fillable YAML template for an AD API schema.")
     parser.add_argument("--skill-root", required=True, type=Path, help="AD-OPS skill root.")
     parser.add_argument("--schema", required=True, help="Schema name, for example config.virtual_service.")
-    parser.add_argument("--document", help="Optional document constraint, for example slb/virtual-service.js.")
+    parser.add_argument("--document", help="Optional document constraint, for example slb/virtual-service/http.js.")
     parser.add_argument("--out", type=Path, help="Optional YAML output path. Defaults to TMP_FILE when set.")
     parser.add_argument("--workdir", type=Path, help="Artifact work directory. Defaults to AD_OPS_WORKDIR, then ./ad_ops_workdir.")
     parser.add_argument(
@@ -40,6 +40,66 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
 class PresetValue:
     def __init__(self, raw: str) -> None:
         self.raw = raw
+
+
+PRE_RULE_DOCUMENT_SERVICE_DEFAULTS = {
+    "slb/pre-rule/8583.js": "8583",
+    "slb/pre-rule/any.js": "ANY",
+    "slb/pre-rule/dns.js": "DNS",
+    "slb/pre-rule/ftp.js": "FTP",
+    "slb/pre-rule/http.js": "HTTP",
+    "slb/pre-rule/ip.js": "IP",
+    "slb/pre-rule/radius.js": "RADIUS",
+    "slb/pre-rule/sip.js": "SIP",
+    "slb/pre-rule/ssl-offload.js": "SSL-OFFLOAD",
+    "slb/pre-rule/ssl-offload-https.js": "SSL-OFFLOAD-HTTPS",
+    "slb/pre-rule/tcp-forward.js": "TCP-FORWARD",
+    "slb/pre-rule/tcp-proxy.js": "TCP-PROXY",
+    "slb/pre-rule/udp-forward.js": "UDP-FORWARD",
+    "slb/pre-rule/udp-proxy.js": "UDP-PROXY",
+}
+DISCRIMINATOR_DEFAULT_FIELDS = {"service", "type"}
+
+
+def normalize_document_path(document: str | None) -> str:
+    return str(document or "").replace("\\", "/")
+
+
+def default_presets_for_schema_document(schema: str, document: str | None) -> dict[str, Any]:
+    document_key = normalize_document_path(document)
+    service = PRE_RULE_DOCUMENT_SERVICE_DEFAULTS.get(document_key)
+    if service and schema.startswith("config.pre_rule"):
+        return {"service": PresetValue(service)}
+    return {}
+
+
+def default_presets_for_resolved_fields(fields: list[dict[str, Any]]) -> dict[str, Any]:
+    defaults: dict[str, Any] = {}
+    for field in fields:
+        path = field.get("path")
+        if path not in DISCRIMINATOR_DEFAULT_FIELDS:
+            continue
+        if field.get("readOnly") is True:
+            continue
+        enum = field.get("enum")
+        if not isinstance(enum, list) or len(enum) != 1:
+            continue
+        value = enum[0]
+        default = field.get("default")
+        if default not in (None, value):
+            continue
+        defaults[path] = PresetValue(str(value))
+    return defaults
+
+
+def merge_preset_maps(defaults: dict[str, Any], explicit: dict[str, Any] | None) -> dict[str, Any]:
+    merged = dict(defaults)
+    for key, value in (explicit or {}).items():
+        if isinstance(merged.get(key), dict) and isinstance(value, dict):
+            merged[key] = merge_preset_maps(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
 
 
 def clean_text(value: str) -> str:
@@ -426,6 +486,8 @@ def render_template(
 ) -> str:
     resolved = resolve_schema(index, schema, document)
     fields = [field for field in resolved["fields"] if field.get("readOnly") is not True]
+    values = merge_preset_maps(default_presets_for_resolved_fields(fields), values)
+    values = merge_preset_maps(default_presets_for_schema_document(schema, document), values)
     top_level_fields = [field for field in fields if "." not in field["path"] and "[]" not in field["path"]]
     lines: list[str] = [*HEADER_LINES, "empty_reserve: []", ""] if include_header else []
     for field in top_level_fields:
@@ -447,7 +509,7 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    output_path = args.out or tmp_file_path()
+    output_path = resolve_output_path(args.out or tmp_file_path(), args.workdir)
     if output_path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(output, encoding="utf-8")

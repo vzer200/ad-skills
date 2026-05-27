@@ -65,6 +65,74 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_profile_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all http-profile",
+						"description": "查看当前已有的HTTP优化策略配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/http-profile/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/http-profile/ 响应",
+						"description": "返回GET /api/ad/v3/slb/http-profile/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "cache_compress",
+									"description": "example_string",
+									"cache": {
+										"state": "DISABLE",
+										"capacity_mb": 64,
+										"time_range_minimum_min": 5,
+										"time_range_maximum_min": 1440,
+										"time_default": 60,
+										"file_size_limit_kb": 2048,
+										"allow_urls": [
+											"*.jpg"
+										],
+										"deny_urls": [
+											"*.jsp"
+										],
+										"force_cache_image": "ENABLE",
+										"cache_debug": "DISABLE",
+										"convert_image": "DISABLE",
+										"convert_to_jpeg": "DISABLE",
+										"convert_to_webp": "ENABLE",
+										"convert_minimum_orginal_size_kb": 32,
+										"convert_exclude_urls": [
+											"logo.*"
+										]
+									},
+									"compression": {
+										"state": "DISABLE",
+										"stream_compress": "ENABLE",
+										"node_compress_offload": "DISABLE",
+										"cache_compress": "DISABLE",
+										"minimum_original_size_kb": 1,
+										"maximum_original_size_kb": 2048,
+										"compress_mimes": [
+											"text/*"
+										],
+										"compress_mime_unknow": "ENABLE"
+									},
+									"source_address": {
+										"operation": "NONE",
+										"request_header": "X-Forwarded-For"
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +150,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new http-profile",
+						"description": "新建一个HTTP优化策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/http-profile/",
+							"body": {
+								"name": "AI_cache_compress_A"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/http-profile/ 响应",
+						"description": "返回POST /api/ad/v3/slb/http-profile/的响应数据",
+						"value": {
+							"name": "AI_cache_compress_A",
+							"description": "example_string",
+							"cache": {
+								"state": "DISABLE",
+								"capacity_mb": 64,
+								"time_range_minimum_min": 5,
+								"time_range_maximum_min": 1440,
+								"time_default": 60,
+								"file_size_limit_kb": 2048,
+								"allow_urls": [
+									"*.jpg"
+								],
+								"deny_urls": [
+									"*.jsp"
+								],
+								"force_cache_image": "ENABLE",
+								"cache_debug": "DISABLE",
+								"convert_image": "DISABLE",
+								"convert_to_jpeg": "DISABLE",
+								"convert_to_webp": "ENABLE",
+								"convert_minimum_orginal_size_kb": 32,
+								"convert_exclude_urls": [
+									"logo.*"
+								]
+							},
+							"compression": {
+								"state": "DISABLE",
+								"stream_compress": "ENABLE",
+								"node_compress_offload": "DISABLE",
+								"cache_compress": "DISABLE",
+								"minimum_original_size_kb": 1,
+								"maximum_original_size_kb": 2048,
+								"compress_mimes": [
+									"text/*"
+								],
+								"compress_mime_unknow": "ENABLE"
+							},
+							"source_address": {
+								"operation": "NONE",
+								"request_header": "X-Forwarded-For"
+							}
+						}
 					}
 				}
 			},
@@ -138,6 +266,63 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific http-profile",
+						"description": "查看指定的HTTP优化策略配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/http-profile/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/http-profile/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/http-profile/{name}的响应数据",
+						"value": {
+							"name": "cache_compress",
+							"description": "example_string",
+							"cache": {
+								"state": "DISABLE",
+								"capacity_mb": 64,
+								"time_range_minimum_min": 5,
+								"time_range_maximum_min": 1440,
+								"time_default": 60,
+								"file_size_limit_kb": 2048,
+								"allow_urls": [
+									"*.jpg"
+								],
+								"deny_urls": [
+									"*.jsp"
+								],
+								"force_cache_image": "ENABLE",
+								"cache_debug": "DISABLE",
+								"convert_image": "DISABLE",
+								"convert_to_jpeg": "DISABLE",
+								"convert_to_webp": "ENABLE",
+								"convert_minimum_orginal_size_kb": 32,
+								"convert_exclude_urls": [
+									"logo.*"
+								]
+							},
+							"compression": {
+								"state": "DISABLE",
+								"stream_compress": "ENABLE",
+								"node_compress_offload": "DISABLE",
+								"cache_compress": "DISABLE",
+								"minimum_original_size_kb": 1,
+								"maximum_original_size_kb": 2048,
+								"compress_mimes": [
+									"text/*"
+								],
+								"compress_mime_unknow": "ENABLE"
+							},
+							"source_address": {
+								"operation": "NONE",
+								"request_header": "X-Forwarded-For"
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -157,6 +342,66 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new http-profile",
+						"description": "新建指定的HTTP优化策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/http-profile/{name}",
+							"body": {
+								"name": "AI_cache_compress_B"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/http-profile/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/http-profile/{name}的响应数据",
+						"value": {
+							"name": "AI_cache_compress_B",
+							"description": "example_string",
+							"cache": {
+								"state": "DISABLE",
+								"capacity_mb": 64,
+								"time_range_minimum_min": 5,
+								"time_range_maximum_min": 1440,
+								"time_default": 60,
+								"file_size_limit_kb": 2048,
+								"allow_urls": [
+									"*.jpg"
+								],
+								"deny_urls": [
+									"*.jsp"
+								],
+								"force_cache_image": "ENABLE",
+								"cache_debug": "DISABLE",
+								"convert_image": "DISABLE",
+								"convert_to_jpeg": "DISABLE",
+								"convert_to_webp": "ENABLE",
+								"convert_minimum_orginal_size_kb": 32,
+								"convert_exclude_urls": [
+									"logo.*"
+								]
+							},
+							"compression": {
+								"state": "DISABLE",
+								"stream_compress": "ENABLE",
+								"node_compress_offload": "DISABLE",
+								"cache_compress": "DISABLE",
+								"minimum_original_size_kb": 1,
+								"maximum_original_size_kb": 2048,
+								"compress_mimes": [
+									"text/*"
+								],
+								"compress_mime_unknow": "ENABLE"
+							},
+							"source_address": {
+								"operation": "NONE",
+								"request_header": "X-Forwarded-For"
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -174,6 +419,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific http-profile",
+						"description": "修改指定的HTTP优化策略配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/http-profile/{name}",
+							"body": {
+								"name": "cache_compress"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/http-profile/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/http-profile/{name}的响应数据",
+						"value": {
+							"name": "cache_compress",
+							"description": "example_string",
+							"cache": {
+								"state": "DISABLE",
+								"capacity_mb": 64,
+								"time_range_minimum_min": 5,
+								"time_range_maximum_min": 1440,
+								"time_default": 60,
+								"file_size_limit_kb": 2048,
+								"allow_urls": [
+									"*.jpg"
+								],
+								"deny_urls": [
+									"*.jsp"
+								],
+								"force_cache_image": "ENABLE",
+								"cache_debug": "DISABLE",
+								"convert_image": "DISABLE",
+								"convert_to_jpeg": "DISABLE",
+								"convert_to_webp": "ENABLE",
+								"convert_minimum_orginal_size_kb": 32,
+								"convert_exclude_urls": [
+									"logo.*"
+								]
+							},
+							"compression": {
+								"state": "DISABLE",
+								"stream_compress": "ENABLE",
+								"node_compress_offload": "DISABLE",
+								"cache_compress": "DISABLE",
+								"minimum_original_size_kb": 1,
+								"maximum_original_size_kb": 2048,
+								"compress_mimes": [
+									"text/*"
+								],
+								"compress_mime_unknow": "ENABLE"
+							},
+							"source_address": {
+								"operation": "NONE",
+								"request_header": "X-Forwarded-For"
+							}
+						}
 					}
 				}
 			},
@@ -193,6 +498,66 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific http-profile",
+						"description": "修改指定的HTTP优化策略配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/http-profile/{name}",
+							"body": {
+								"name": "cache_compress"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/http-profile/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/http-profile/{name}的响应数据",
+						"value": {
+							"name": "cache_compress",
+							"description": "example_string",
+							"cache": {
+								"state": "DISABLE",
+								"capacity_mb": 64,
+								"time_range_minimum_min": 5,
+								"time_range_maximum_min": 1440,
+								"time_default": 60,
+								"file_size_limit_kb": 2048,
+								"allow_urls": [
+									"*.jpg"
+								],
+								"deny_urls": [
+									"*.jsp"
+								],
+								"force_cache_image": "ENABLE",
+								"cache_debug": "DISABLE",
+								"convert_image": "DISABLE",
+								"convert_to_jpeg": "DISABLE",
+								"convert_to_webp": "ENABLE",
+								"convert_minimum_orginal_size_kb": 32,
+								"convert_exclude_urls": [
+									"logo.*"
+								]
+							},
+							"compression": {
+								"state": "DISABLE",
+								"stream_compress": "ENABLE",
+								"node_compress_offload": "DISABLE",
+								"cache_compress": "DISABLE",
+								"minimum_original_size_kb": 1,
+								"maximum_original_size_kb": 2048,
+								"compress_mimes": [
+									"text/*"
+								],
+								"compress_mime_unknow": "ENABLE"
+							},
+							"source_address": {
+								"operation": "NONE",
+								"request_header": "X-Forwarded-For"
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -205,6 +570,63 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific http-profile",
+						"description": "删除指定的HTTP优化策略配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/http-profile/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/http-profile/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/http-profile/{name}的响应数据",
+						"value": {
+							"name": "cache_compress",
+							"description": "example_string",
+							"cache": {
+								"state": "DISABLE",
+								"capacity_mb": 64,
+								"time_range_minimum_min": 5,
+								"time_range_maximum_min": 1440,
+								"time_default": 60,
+								"file_size_limit_kb": 2048,
+								"allow_urls": [
+									"*.jpg"
+								],
+								"deny_urls": [
+									"*.jsp"
+								],
+								"force_cache_image": "ENABLE",
+								"cache_debug": "DISABLE",
+								"convert_image": "DISABLE",
+								"convert_to_jpeg": "DISABLE",
+								"convert_to_webp": "ENABLE",
+								"convert_minimum_orginal_size_kb": 32,
+								"convert_exclude_urls": [
+									"logo.*"
+								]
+							},
+							"compression": {
+								"state": "DISABLE",
+								"stream_compress": "ENABLE",
+								"node_compress_offload": "DISABLE",
+								"cache_compress": "DISABLE",
+								"minimum_original_size_kb": 1,
+								"maximum_original_size_kb": 2048,
+								"compress_mimes": [
+									"text/*"
+								],
+								"compress_mime_unknow": "ENABLE"
+							},
+							"source_address": {
+								"operation": "NONE",
+								"request_header": "X-Forwarded-For"
+							}
+						}
 					}
 				}
 			}

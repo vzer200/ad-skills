@@ -62,6 +62,40 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get last-event",
+						"description": "查询异步事件状态",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/last-event(?:/(\\d+))?"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/last-event(?:/(\\d+))? 响应",
+						"description": "返回GET /api/ad/v3/last-event(?:/(\\d+))?的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"event_id": 0,
+									"operation": "/debug/sys/maintenance/restart-service",
+									"state": "WAITING",
+									"start_time": "2018-04-02 08:30:21",
+									"finish_time": "2018-04-02 08:31:05",
+									"triggered_by": "admin",
+									"data": {}
+								}
+							]
+						}
+					}
 				}
 			}
 		}

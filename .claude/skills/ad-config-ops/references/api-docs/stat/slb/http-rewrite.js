@@ -65,6 +65,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_http_rewrite_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all http-rewrite",
+						"description": "获取HTTP改写策略统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/http-rewrite/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/http-rewrite/ 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/http-rewrite/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "url-sched",
+									"description": "example_string",
+									"type": "REWRITE-REQUEST",
+									"hit": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -97,6 +128,26 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_http_rewrite_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific http-rewrite",
+						"description": "获取指定HTTP改写策略统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/http-rewrite/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/http-rewrite/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/http-rewrite/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"type": "REWRITE-REQUEST",
+							"hit": null
+						}
 					}
 				}
 			}

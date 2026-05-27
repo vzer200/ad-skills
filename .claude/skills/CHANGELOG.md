@@ -1,5 +1,12 @@
 # Skills Changelog
 
+## v2.2.0 (2026-05-26)
+
+| Item | Change |
+| --- | --- |
+| `sangforad-cli` | Added the sixth AD skill for offline Sangfor AD CLI command script generation from validated AD-OPS plans or filled bundles. |
+| Packaging | Added `sangforad-cli` to skill validation and local smoke coverage. |
+
 ## v2.1.1 (2026-05-22)
 
 | Item | Change |

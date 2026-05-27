@@ -32,7 +32,17 @@ The automation runs tests, validates skills, runs a config-delivery smoke test, 
 
 Default WorkBot pacing waits 2 seconds after the stop button disappears before sending the next prompt.
 
-By default the one-click runner creates a temporary digital employee named `AD验收临时-*` and switches the conversation to that employee before upload/install. This keeps acceptance runs out of the polluted default employee history. The runner deletes older `AD验收临时-*` employees first and refuses to create a new one if the account would still exceed the 5-employee limit. Pass `-NoFreshAgent` only when intentionally debugging the current default employee conversation.
+For init-only runs, use the lightweight wrapper below. It packages `dist/ad-skills-workbot.zip`, creates a fresh temporary digital employee, sends the initialization prompt, uploads the zip, and runs only the install gate:
+
+```powershell
+$env:WORKBOT_USER = "<operator-provided username>"
+$env:WORKBOT_PASSWORD = "<operator-provided password>"
+.\tools\init_workbot_agent.ps1
+```
+
+Pass `-SkipPackage` when reusing an already-built zip, or `-Headless` when a visible browser is not needed.
+
+The one-click initialization runner always creates a fresh temporary digital employee and switches the conversation to that employee before upload/install. This keeps initialization runs out of polluted employee history. The runner deletes older employees that match the chosen prefix first, then creates a new one, and refuses to continue if the account would still exceed the 5-employee limit.
 
 Every temporary employee is created through the same WorkBot API used by the web UI (`/workbot/api/v1/agents`): `description` is the UI's 身份设定 field and `profile` is the UI's 行为准则 field. The runner reads the employee back after creation and verifies both fields before switching to it. After switching, it sends the required initialization prompt and verifies tool-call evidence before uploading AD skills:
 
@@ -83,13 +93,13 @@ The source `devices.json` stores direct `user` and `password` fields for each de
 After attaching the AD skills zip, use this short install prompt:
 
 ```text
-请安装我刚上传的 AD skills 包，并确认 5 个 skill 都可用。
+请安装我刚上传的 AD skills 包，并确认 6 个 skill 都可用。
 ```
 
 Pass criteria:
 
 - WorkBot uses tool calls to unzip/install the uploaded package and inspect the installed files.
-- The final answer confirms `ad-check-analysis`, `ad-config-ops`, `ad-connect`, `ad-ops`, and `ad-perception`.
+- The final answer confirms `ad-check-analysis`, `ad-config-ops`, `ad-connect`, `ad-ops`, `ad-perception`, and `sangforad-cli`.
 - Each installed skill is verified by a tool call that checks `SKILL.md`; scripts directories are verified where expected.
 
 ## Interactive Follow-Up Rule

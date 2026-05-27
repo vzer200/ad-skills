@@ -62,6 +62,57 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_local_zone_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all local-zone",
+						"description": "查看本地域配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/local-dns/local-zone/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/local-dns/local-zone/ 响应",
+						"description": "返回GET /api/ad/v4/dns/local-dns/local-zone/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "com",
+									"record": [
+										{
+											"record_child": "a.com 60 IN A 192.168.1.1",
+											"domain": "example_string",
+											"ttl": 60,
+											"class": "IN",
+											"record_type": "example_string",
+											"v4": "example_string",
+											"v6": "example_string",
+											"host": "example_string",
+											"soa_host": "example_string",
+											"serial": 0,
+											"refresh_interval": 0,
+											"retry_delay": 0,
+											"expire_time": 0,
+											"min_ttl": 0,
+											"port": 80,
+											"priority": 0,
+											"weight": 0,
+											"txt": "example_string"
+										}
+									],
+									"policy": "DENY"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +130,56 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_local_zone_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new local-zone",
+						"description": "创建一个本地域",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/local-dns/local-zone/",
+							"body": {
+								"name": "AI_com_A",
+								"record": [
+									{
+										"ttl": 60,
+										"class": "IN"
+									}
+								],
+								"policy": "DENY"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/local-dns/local-zone/ 响应",
+						"description": "返回POST /api/ad/v4/dns/local-dns/local-zone/的响应数据",
+						"value": {
+							"name": "AI_com_A",
+							"record": [
+								{
+									"record_child": "a.com 60 IN A 192.168.1.1",
+									"domain": "example_string",
+									"ttl": 60,
+									"class": "IN",
+									"record_type": "example_string",
+									"v4": "example_string",
+									"v6": "example_string",
+									"host": "example_string",
+									"soa_host": "example_string",
+									"serial": 0,
+									"refresh_interval": 0,
+									"retry_delay": 0,
+									"expire_time": 0,
+									"min_ttl": 0,
+									"port": 80,
+									"priority": 0,
+									"weight": 0,
+									"txt": "example_string"
+								}
+							],
+							"policy": "DENY"
+						}
 					}
 				}
 			}
@@ -110,6 +211,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_local_zone_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific local-zone",
+						"description": "查看指定已有的LDNS本地域",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/local-dns/local-zone/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/local-dns/local-zone/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/local-dns/local-zone/{name}的响应数据",
+						"value": {
+							"name": "com",
+							"record": [
+								{
+									"record_child": "a.com 60 IN A 192.168.1.1",
+									"domain": "example_string",
+									"ttl": 60,
+									"class": "IN",
+									"record_type": "example_string",
+									"v4": "example_string",
+									"v6": "example_string",
+									"host": "example_string",
+									"soa_host": "example_string",
+									"serial": 0,
+									"refresh_interval": 0,
+									"retry_delay": 0,
+									"expire_time": 0,
+									"min_ttl": 0,
+									"port": 80,
+									"priority": 0,
+									"weight": 0,
+									"txt": "example_string"
+								}
+							],
+							"policy": "DENY"
+						}
+					}
 				}
 			},
 			"post": {
@@ -129,6 +270,56 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_local_zone_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new local-zone",
+						"description": "创建一个LDNS本地域",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/local-dns/local-zone/{name}",
+							"body": {
+								"name": "AI_com_B",
+								"record": [
+									{
+										"ttl": 60,
+										"class": "IN"
+									}
+								],
+								"policy": "DENY"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/local-dns/local-zone/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/local-dns/local-zone/{name}的响应数据",
+						"value": {
+							"name": "AI_com_B",
+							"record": [
+								{
+									"record_child": "a.com 60 IN A 192.168.1.1",
+									"domain": "example_string",
+									"ttl": 60,
+									"class": "IN",
+									"record_type": "example_string",
+									"v4": "example_string",
+									"v6": "example_string",
+									"host": "example_string",
+									"soa_host": "example_string",
+									"serial": 0,
+									"refresh_interval": 0,
+									"retry_delay": 0,
+									"expire_time": 0,
+									"min_ttl": 0,
+									"port": 80,
+									"priority": 0,
+									"weight": 0,
+									"txt": "example_string"
+								}
+							],
+							"policy": "DENY"
+						}
+					}
 				}
 			},
 			"put": {
@@ -146,6 +337,56 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_local_zone_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific local-zone",
+						"description": "修改指定已有名称的LDNS本地域",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/local-dns/local-zone/{name}",
+							"body": {
+								"name": "com",
+								"record": [
+									{
+										"ttl": 60,
+										"class": "IN"
+									}
+								],
+								"policy": "DENY"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/local-dns/local-zone/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/local-dns/local-zone/{name}的响应数据",
+						"value": {
+							"name": "com",
+							"record": [
+								{
+									"record_child": "a.com 60 IN A 192.168.1.1",
+									"domain": "example_string",
+									"ttl": 60,
+									"class": "IN",
+									"record_type": "example_string",
+									"v4": "example_string",
+									"v6": "example_string",
+									"host": "example_string",
+									"soa_host": "example_string",
+									"serial": 0,
+									"refresh_interval": 0,
+									"retry_delay": 0,
+									"expire_time": 0,
+									"min_ttl": 0,
+									"port": 80,
+									"priority": 0,
+									"weight": 0,
+									"txt": "example_string"
+								}
+							],
+							"policy": "DENY"
+						}
 					}
 				}
 			},
@@ -165,6 +406,56 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_local_zone_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific local_zone",
+						"description": "增量修改指定已有的LDNS本地域",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/local-dns/local-zone/{name}",
+							"body": {
+								"name": "com",
+								"record": [
+									{
+										"ttl": 60,
+										"class": "IN"
+									}
+								],
+								"policy": "DENY"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/local-dns/local-zone/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/local-dns/local-zone/{name}的响应数据",
+						"value": {
+							"name": "com",
+							"record": [
+								{
+									"record_child": "a.com 60 IN A 192.168.1.1",
+									"domain": "example_string",
+									"ttl": 60,
+									"class": "IN",
+									"record_type": "example_string",
+									"v4": "example_string",
+									"v6": "example_string",
+									"host": "example_string",
+									"soa_host": "example_string",
+									"serial": 0,
+									"refresh_interval": 0,
+									"retry_delay": 0,
+									"expire_time": 0,
+									"min_ttl": 0,
+									"port": 80,
+									"priority": 0,
+									"weight": 0,
+									"txt": "example_string"
+								}
+							],
+							"policy": "DENY"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -177,6 +468,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_local_zone_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific local-zone",
+						"description": "删除指定已有的LDNS本地域",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/local-dns/local-zone/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/local-dns/local-zone/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/local-dns/local-zone/{name}的响应数据",
+						"value": {
+							"name": "com",
+							"record": [
+								{
+									"record_child": "a.com 60 IN A 192.168.1.1",
+									"domain": "example_string",
+									"ttl": 60,
+									"class": "IN",
+									"record_type": "example_string",
+									"v4": "example_string",
+									"v6": "example_string",
+									"host": "example_string",
+									"soa_host": "example_string",
+									"serial": 0,
+									"refresh_interval": 0,
+									"retry_delay": 0,
+									"expire_time": 0,
+									"min_ttl": 0,
+									"port": 80,
+									"priority": 0,
+									"weight": 0,
+									"txt": "example_string"
+								}
+							],
+							"policy": "DENY"
+						}
 					}
 				}
 			},

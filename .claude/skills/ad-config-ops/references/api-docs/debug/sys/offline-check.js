@@ -45,7 +45,27 @@ module.exports ={
 					{
 						"$ref": "#/parameters/START-OFFLINE-CHECK"
 					}
-				]
+				],
+				"x-examples": {
+					"request": {
+						"summary": "offline-check task",
+						"description": "开始巡检任务",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/offline-check",
+							"body": {
+								"scene": "标准场景"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/offline-check 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/offline-check的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

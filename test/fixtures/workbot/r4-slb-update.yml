@@ -36,7 +36,7 @@
       "id": "patch-virtual-service-description",
       "action": "patch",
       "schema": "config.virtual_service",
-      "document": "slb/virtual-service.js",
+      "document": "slb/virtual-service/http.js",
       "payload": {
         "name": "wb_vs_workbot_flow_01",
         "description": "WorkBot acceptance UPDATED virtual service."

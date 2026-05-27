@@ -51,6 +51,28 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_config_synchronization_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get config-synchronization",
+						"description": "查看全局负载配置同步信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/dns/config-synchronization"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/dns/config-synchronization 响应",
+						"description": "返回GET /api/ad/v3/dns/config-synchronization的响应数据",
+						"value": {
+							"module": [
+								"DNS-VIP-POOL"
+							],
+							"vs_name": [
+								"example_string"
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +91,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_config_synchronization_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace config-synchronization",
+						"description": "修改全局负载配置同步信息",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/dns/config-synchronization",
+							"body": {
+								"module": [
+									"DNS-VIP-POOL"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/dns/config-synchronization 响应",
+						"description": "返回PUT /api/ad/v3/dns/config-synchronization的响应数据",
+						"value": {
+							"module": [
+								"DNS-VIP-POOL"
+							],
+							"vs_name": [
+								"example_string"
+							]
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +135,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_config_synchronization_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify config-synchronization",
+						"description": "增量修改全局负载配置同步信息",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/dns/config-synchronization",
+							"body": {
+								"module": [
+									"DNS-VIP-POOL"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/dns/config-synchronization 响应",
+						"description": "返回PATCH /api/ad/v3/dns/config-synchronization的响应数据",
+						"value": {
+							"module": [
+								"DNS-VIP-POOL"
+							],
+							"vs_name": [
+								"example_string"
+							]
+						}
 					}
 				}
 			},

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sangfor AD CLI"
+  short_description: "Generate offline Sangfor AD CLI command scripts from AD configuration bundles."
+  default_prompt: "Use $sangforad-cli to generate an offline apply.sfcli command-line script from a filled AD configuration bundle."

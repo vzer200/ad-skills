@@ -58,7 +58,68 @@ module.exports ={
 			"kids": [
 				{
 					"text": "虚拟服务",
-					"path": "/slb/virtual-service.yaml"
+					"kids": [
+						{
+							"text": "HTTP虚拟服务",
+							"path": "/slb/virtual-service/http.yaml"
+						},
+						{
+							"text": "TCP-L7虚拟服务",
+							"path": "/slb/virtual-service/tcp-proxy.yaml"
+						},
+						{
+							"text": "TCP虚拟服务",
+							"path": "/slb/virtual-service/tcp-forward.yaml"
+						},
+						{
+							"text": "UDP虚拟服务",
+							"path": "/slb/virtual-service/udp-forward.yaml"
+						},
+						{
+							"text": "UDP-L7虚拟服务",
+							"path": "/slb/virtual-service/udp-proxy.yaml"
+						},
+						{
+							"text": "SSL虚拟服务",
+							"path": "/slb/virtual-service/ssl-offload.yaml"
+						},
+						{
+							"text": "HTTPS虚拟服务",
+							"path": "/slb/virtual-service/ssl-offload-https.yaml"
+						},
+						{
+							"text": "DNS虚拟服务",
+							"path": "/slb/virtual-service/dns.yaml"
+						},
+						{
+							"text": "FTP虚拟服务",
+							"path": "/slb/virtual-service/ftp.yaml"
+						},
+						{
+							"text": "RADIUS虚拟服务",
+							"path": "/slb/virtual-service/radius.yaml"
+						},
+						{
+							"text": "SIP-TCP虚拟服务",
+							"path": "/slb/virtual-service/sip-tcp.yaml"
+						},
+						{
+							"text": "SIP-UDP虚拟服务",
+							"path": "/slb/virtual-service/sip-udp.yaml"
+						},
+						{
+							"text": "8583虚拟服务",
+							"path": "/slb/virtual-service/8583.yaml"
+						},
+						{
+							"text": "L3虚拟服务",
+							"path": "/slb/virtual-service/ip.yaml"
+						},
+						{
+							"text": "Any虚拟服务",
+							"path": "/slb/virtual-service/any.yaml"
+						}
+					]
 				},
 				{
 					"text": "SNAT地址集",
@@ -896,6 +957,10 @@ module.exports ={
 							"path": "/sys/management.yaml"
 						},
 						{
+							"text": "管理口白名单配置",
+							"path": "/sys/whitelist.yaml"
+						},
+						{
 							"text": "登录提示语",
 							"path": "/sys/banner.yaml"
 						},
@@ -994,6 +1059,10 @@ module.exports ={
 				{
 					"text": "邮件告警",
 					"path": "/sys/alert-mail.yaml"
+				},
+				{
+					"text": "RAS告警",
+					"path": "/sys/alert-ras.yaml"
 				},
 				{
 					"text": "SNMP Traps告警",
@@ -1230,11 +1299,11 @@ module.exports ={
 				},
 				{
 					"text": "BGP邻接关系表",
-					"path": "/stat/net/vxnet.yaml"
+					"path": "/stat/net/bgp-neighbors.yaml"
 				},
 				{
 					"text": "VLAN子接口状态",
-					"path": "/stat/net/bgp-neighbors.yaml"
+					"path": "/stat/net/vxnet.yaml"
 				},
 				{
 					"text": "端口聚合状态",

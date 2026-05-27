@@ -64,6 +64,115 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor",
+						"description": "GET /api/ad/v3/slb/service-monitor/all/",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/all/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/all/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/all/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "CONNECT-TCP",
+									"timeout": 16,
+									"interval": 5,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"host": "*",
+									"port": 0,
+									"debug_mode": "DISABLE",
+									"gateway_detect": "DISABLE",
+									"send_content": "GET / HTTP/1.1",
+									"receive_cache_size": 2048,
+									"receive_content_match": "200",
+									"case_sensitive": "DISABLE",
+									"reverse_result": "DISABLE",
+									"send_content_before_disconnect": "example_string",
+									"hexadecimal_mode": "DISABLE",
+									"http_request_url": "/app/index.html",
+									"expect_status_code": "200;302",
+									"ssl_cipher": "DEFAULT:+SHA:+3DES:+kEDH",
+									"client_certificate": "NONE",
+									"username": "anonymous",
+									"password": "example_string",
+									"encrypted_password": "A1B2C3D4",
+									"access_path": "/doc/test.xls",
+									"ftp_mode": "PASV",
+									"radius_type": "ACCESS-REQUEST",
+									"encrypted_shared_secret": "A1B2C3D4",
+									"radius_authenticate_method": "PAP",
+									"radius_attributes": [
+										{
+											"id": 255,
+											"type": "TEXT",
+											"value": ""
+										}
+									],
+									"outbound_link": "lan_1",
+									"source_address": "192.168.1.1",
+									"dns_query_domain": "www.abc.com",
+									"expect_dns_answer": "abc.com",
+									"base_dn": "",
+									"search_filter": "",
+									"secure": "NONE",
+									"mandatory_attributes": "DISABLE",
+									"chase_referrals": "ENABLE",
+									"snmp_community": "public",
+									"statistical_time": 10,
+									"statistical_object": "RST-PACKET",
+									"rst_packet_threshold": 100000,
+									"zero_window_percent": 40,
+									"action": "BUSY-PROTECT",
+									"busy_protect": {
+										"protect_time": 30,
+										"retry_times": 4,
+										"set_offline_when_protect_fail": "DISABLE"
+									},
+									"http_url_samples": [
+										"/index.html"
+									],
+									"abnormal_status_codes": [
+										404
+									],
+									"http_response_timeout": 5,
+									"http_statistical_time": 1,
+									"abnormal_http_response_threshold": 10000,
+									"database": "",
+									"mysql_detect_method": "QUERY-RESULT",
+									"query_string": "select * from account_table;",
+									"query_result": {
+										"position_row": 2,
+										"position_column": 2,
+										"result_match": "success",
+										"case_sensitive": "DISABLE"
+									},
+									"sync_status": {
+										"check_replication_timeout": "DISABLE",
+										"replication_timeout": 0
+									},
+									"monitor_expression": "ping AND http_8080",
+									"cli_command": "/usr/bin/check_app_each_thread.py",
+									"netns": "default"
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -95,6 +204,104 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor",
+						"description": "GET /api/ad/v3/slb/service-monitor/all/{name}",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/all/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/all/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/all/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-TCP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 2048,
+							"receive_content_match": "200",
+							"case_sensitive": "DISABLE",
+							"reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE",
+							"http_request_url": "/app/index.html",
+							"expect_status_code": "200;302",
+							"ssl_cipher": "DEFAULT:+SHA:+3DES:+kEDH",
+							"client_certificate": "NONE",
+							"username": "anonymous",
+							"password": "example_string",
+							"encrypted_password": "A1B2C3D4",
+							"access_path": "/doc/test.xls",
+							"ftp_mode": "PASV",
+							"radius_type": "ACCESS-REQUEST",
+							"encrypted_shared_secret": "A1B2C3D4",
+							"radius_authenticate_method": "PAP",
+							"radius_attributes": [
+								{
+									"id": 255,
+									"type": "TEXT",
+									"value": ""
+								}
+							],
+							"outbound_link": "lan_1",
+							"source_address": "192.168.1.1",
+							"dns_query_domain": "www.abc.com",
+							"expect_dns_answer": "abc.com",
+							"base_dn": "",
+							"search_filter": "",
+							"secure": "NONE",
+							"mandatory_attributes": "DISABLE",
+							"chase_referrals": "ENABLE",
+							"snmp_community": "public",
+							"statistical_time": 10,
+							"statistical_object": "RST-PACKET",
+							"rst_packet_threshold": 100000,
+							"zero_window_percent": 40,
+							"action": "BUSY-PROTECT",
+							"busy_protect": {
+								"protect_time": 30,
+								"retry_times": 4,
+								"set_offline_when_protect_fail": "DISABLE"
+							},
+							"http_url_samples": [
+								"/index.html"
+							],
+							"abnormal_status_codes": [
+								404
+							],
+							"http_response_timeout": 5,
+							"http_statistical_time": 1,
+							"abnormal_http_response_threshold": 10000,
+							"database": "",
+							"mysql_detect_method": "QUERY-RESULT",
+							"query_string": "select * from account_table;",
+							"query_result": {
+								"position_row": 2,
+								"position_column": 2,
+								"result_match": "success",
+								"case_sensitive": "DISABLE"
+							},
+							"sync_status": {
+								"check_replication_timeout": "DISABLE",
+								"replication_timeout": 0
+							},
+							"monitor_expression": "ping AND http_8080",
+							"cli_command": "/usr/bin/check_app_each_thread.py",
+							"netns": "default"
+						}
 					}
 				}
 			}

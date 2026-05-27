@@ -62,6 +62,67 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dnat_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dnat",
+						"description": "获取目的地址转换配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/dnat/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/dnat/ 响应",
+						"description": "返回GET /api/ad/v3/net/dnat/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "dnat_wan",
+									"description": "example_string",
+									"position": 1,
+									"state": "ENABLE",
+									"type": "IPV4",
+									"inbound_links": [
+										"ALL"
+									],
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "example_string"
+									},
+									"destination_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "example_string"
+									},
+									"protocol": "ALL",
+									"protocol_number": 0,
+									"source_port": "ALL",
+									"destination_ports": [
+										"8080-8090"
+									],
+									"dnat_process": {
+										"translated_address": {
+											"type": "IP-ADDRESS",
+											"address": "192.168.100.10"
+										},
+										"translated_ports": [
+											"8080-8090"
+										]
+									},
+									"associated_application_group": "Default"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +140,71 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dnat_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dnat",
+						"description": "新增目的地址转换配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/dnat/",
+							"body": {
+								"name": "AI_dnat_wan_A",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"protocol": "ALL",
+								"protocol_number": 0,
+								"source_port": "ALL",
+								"dnat_process": {
+									"translated_address": {
+										"type": "IP-ADDRESS",
+										"address": "192.168.100.10"
+									}
+								},
+								"associated_application_group": "Default"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/dnat/ 响应",
+						"description": "返回POST /api/ad/v3/net/dnat/的响应数据",
+						"value": {
+							"name": "AI_dnat_wan_A",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"type": "IPV4",
+							"inbound_links": [
+								"ALL"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"protocol": "ALL",
+							"protocol_number": 0,
+							"source_port": "ALL",
+							"destination_ports": [
+								"8080-8090"
+							],
+							"dnat_process": {
+								"translated_address": {
+									"type": "IP-ADDRESS",
+									"address": "192.168.100.10"
+								},
+								"translated_ports": [
+									"8080-8090"
+								]
+							},
+							"associated_application_group": "Default"
+						}
 					}
 				}
 			},
@@ -98,6 +224,82 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dnat_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "修改目的地址转换配置",
+						"description": "The PATCH method updates specific properties of one config.",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/dnat/",
+							"body": {
+								"name": "dnat_wan",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"protocol": "ALL",
+								"protocol_number": 0,
+								"source_port": "ALL",
+								"dnat_process": {
+									"translated_address": {
+										"type": "IP-ADDRESS",
+										"address": "192.168.100.10"
+									}
+								},
+								"associated_application_group": "Default"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/dnat/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/dnat/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "dnat_wan",
+									"description": "example_string",
+									"position": 1,
+									"state": "ENABLE",
+									"type": "IPV4",
+									"inbound_links": [
+										"ALL"
+									],
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "example_string"
+									},
+									"destination_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "example_string"
+									},
+									"protocol": "ALL",
+									"protocol_number": 0,
+									"source_port": "ALL",
+									"destination_ports": [
+										"8080-8090"
+									],
+									"dnat_process": {
+										"translated_address": {
+											"type": "IP-ADDRESS",
+											"address": "192.168.100.10"
+										},
+										"translated_ports": [
+											"8080-8090"
+										]
+									},
+									"associated_application_group": "Default"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -151,6 +353,56 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dnat_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dnat",
+						"description": "获取目的地址转换配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/dnat/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/dnat/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/dnat/{name}的响应数据",
+						"value": {
+							"name": "dnat_wan",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"type": "IPV4",
+							"inbound_links": [
+								"ALL"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"protocol": "ALL",
+							"protocol_number": 0,
+							"source_port": "ALL",
+							"destination_ports": [
+								"8080-8090"
+							],
+							"dnat_process": {
+								"translated_address": {
+									"type": "IP-ADDRESS",
+									"address": "192.168.100.10"
+								},
+								"translated_ports": [
+									"8080-8090"
+								]
+							},
+							"associated_application_group": "Default"
+						}
+					}
 				}
 			},
 			"post": {
@@ -170,6 +422,71 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dnat_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dnat",
+						"description": "新增目的地址转换配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/dnat/{name}",
+							"body": {
+								"name": "AI_dnat_wan_B",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"protocol": "ALL",
+								"protocol_number": 0,
+								"source_port": "ALL",
+								"dnat_process": {
+									"translated_address": {
+										"type": "IP-ADDRESS",
+										"address": "192.168.100.10"
+									}
+								},
+								"associated_application_group": "Default"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/dnat/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/dnat/{name}的响应数据",
+						"value": {
+							"name": "AI_dnat_wan_B",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"type": "IPV4",
+							"inbound_links": [
+								"ALL"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"protocol": "ALL",
+							"protocol_number": 0,
+							"source_port": "ALL",
+							"destination_ports": [
+								"8080-8090"
+							],
+							"dnat_process": {
+								"translated_address": {
+									"type": "IP-ADDRESS",
+									"address": "192.168.100.10"
+								},
+								"translated_ports": [
+									"8080-8090"
+								]
+							},
+							"associated_application_group": "Default"
+						}
+					}
 				}
 			},
 			"put": {
@@ -187,6 +504,71 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dnat_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dnat",
+						"description": "修改目的地址转换配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/dnat/{name}",
+							"body": {
+								"name": "dnat_wan",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"protocol": "ALL",
+								"protocol_number": 0,
+								"source_port": "ALL",
+								"dnat_process": {
+									"translated_address": {
+										"type": "IP-ADDRESS",
+										"address": "192.168.100.10"
+									}
+								},
+								"associated_application_group": "Default"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/dnat/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/dnat/{name}的响应数据",
+						"value": {
+							"name": "dnat_wan",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"type": "IPV4",
+							"inbound_links": [
+								"ALL"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"protocol": "ALL",
+							"protocol_number": 0,
+							"source_port": "ALL",
+							"destination_ports": [
+								"8080-8090"
+							],
+							"dnat_process": {
+								"translated_address": {
+									"type": "IP-ADDRESS",
+									"address": "192.168.100.10"
+								},
+								"translated_ports": [
+									"8080-8090"
+								]
+							},
+							"associated_application_group": "Default"
+						}
 					}
 				}
 			},
@@ -206,6 +588,71 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dnat_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dnat",
+						"description": "修改目的地址转换配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/dnat/{name}",
+							"body": {
+								"name": "dnat_wan",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"protocol": "ALL",
+								"protocol_number": 0,
+								"source_port": "ALL",
+								"dnat_process": {
+									"translated_address": {
+										"type": "IP-ADDRESS",
+										"address": "192.168.100.10"
+									}
+								},
+								"associated_application_group": "Default"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/dnat/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/dnat/{name}的响应数据",
+						"value": {
+							"name": "dnat_wan",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"type": "IPV4",
+							"inbound_links": [
+								"ALL"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"protocol": "ALL",
+							"protocol_number": 0,
+							"source_port": "ALL",
+							"destination_ports": [
+								"8080-8090"
+							],
+							"dnat_process": {
+								"translated_address": {
+									"type": "IP-ADDRESS",
+									"address": "192.168.100.10"
+								},
+								"translated_ports": [
+									"8080-8090"
+								]
+							},
+							"associated_application_group": "Default"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -218,6 +665,56 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dnat_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dnat",
+						"description": "删除目的地址转换配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/dnat/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/dnat/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/dnat/{name}的响应数据",
+						"value": {
+							"name": "dnat_wan",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"type": "IPV4",
+							"inbound_links": [
+								"ALL"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"protocol": "ALL",
+							"protocol_number": 0,
+							"source_port": "ALL",
+							"destination_ports": [
+								"8080-8090"
+							],
+							"dnat_process": {
+								"translated_address": {
+									"type": "IP-ADDRESS",
+									"address": "192.168.100.10"
+								},
+								"translated_ports": [
+									"8080-8090"
+								]
+							},
+							"associated_application_group": "Default"
+						}
 					}
 				}
 			}

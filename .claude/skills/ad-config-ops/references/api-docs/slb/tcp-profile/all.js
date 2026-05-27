@@ -61,6 +61,74 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all tcp-profile",
+						"description": "GET /api/ad/v3/slb/tcp-profile/all/",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/tcp-profile/all/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/tcp-profile/all/ 响应",
+						"description": "返回GET /api/ad/v3/slb/tcp-profile/all/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "DEFAULT-L4",
+									"description": "example_string",
+									"default": "NON-DEFAULT",
+									"type": "L4-FORWARD",
+									"loose_initiation": "DISABLE",
+									"loose_close": "DISABLE",
+									"loose_close_timeout_ms": 5000,
+									"idle_timeout": 600,
+									"timewait_timeout_ms": 10000,
+									"time_stamp": "PRESERVE",
+									"seq_adjust": "DISABLE",
+									"syn_timeout": 75,
+									"maximum_segment_size": 1460,
+									"idle_timeout_reset_connection": "DISABLE",
+									"close_node_connection_with_rst": "ENABLE",
+									"close_client_connection_with_rst": "ENABLE",
+									"node_fault_close_connection": "DISABLE",
+									"timewait_recycle": "ENABLE",
+									"delay_ack": "ENABLE",
+									"sack_support": "ENABLE",
+									"dsack_support": "DISABLE",
+									"maximum_syn_retransmission_times": 15,
+									"maximum_seg_retransmission_times": 15,
+									"maximum_fin_retransmission_times": 15,
+									"receive_window_scale": 2,
+									"initial_receive_window_size": 65535,
+									"tcp_options": [
+										{
+											"kind": 2,
+											"policy": "FIRST-PACKET"
+										}
+									],
+									"fast_tcp": "DISABLE",
+									"connection_pool": {
+										"state": "DISABLE",
+										"size": 1024,
+										"age": 60,
+										"source_address_prefix": 0,
+										"ipv6_source_address_prefix": 0
+									},
+									"service_unavailable_refuse_connection": "NONE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -96,6 +164,63 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific tcp-profile",
+						"description": "GET /api/ad/v3/slb/tcp-profile/all/{name}",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/tcp-profile/all/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/tcp-profile/all/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/tcp-profile/all/{name}的响应数据",
+						"value": {
+							"name": "DEFAULT-L4",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L4-FORWARD",
+							"loose_initiation": "DISABLE",
+							"loose_close": "DISABLE",
+							"loose_close_timeout_ms": 5000,
+							"idle_timeout": 600,
+							"timewait_timeout_ms": 10000,
+							"time_stamp": "PRESERVE",
+							"seq_adjust": "DISABLE",
+							"syn_timeout": 75,
+							"maximum_segment_size": 1460,
+							"idle_timeout_reset_connection": "DISABLE",
+							"close_node_connection_with_rst": "ENABLE",
+							"close_client_connection_with_rst": "ENABLE",
+							"node_fault_close_connection": "DISABLE",
+							"timewait_recycle": "ENABLE",
+							"delay_ack": "ENABLE",
+							"sack_support": "ENABLE",
+							"dsack_support": "DISABLE",
+							"maximum_syn_retransmission_times": 15,
+							"maximum_seg_retransmission_times": 15,
+							"maximum_fin_retransmission_times": 15,
+							"receive_window_scale": 2,
+							"initial_receive_window_size": 65535,
+							"tcp_options": [
+								{
+									"kind": 2,
+									"policy": "FIRST-PACKET"
+								}
+							],
+							"fast_tcp": "DISABLE",
+							"connection_pool": {
+								"state": "DISABLE",
+								"size": 1024,
+								"age": 60,
+								"source_address_prefix": 0,
+								"ipv6_source_address_prefix": 0
+							},
+							"service_unavailable_refuse_connection": "NONE"
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -130,6 +255,63 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific tcp-profile of virtual service",
+						"description": "GET /api/ad/v3/slb/virtual-service/{virtual_service_name}/tcp-profile\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/virtual-service/{virtual_service_name}/tcp-profile"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/virtual-service/{virtual_service_name}/tcp-profile 响应",
+						"description": "返回GET /api/ad/v3/slb/virtual-service/{virtual_service_name}/tcp-profile的响应数据",
+						"value": {
+							"name": "DEFAULT-L4",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L4-FORWARD",
+							"loose_initiation": "DISABLE",
+							"loose_close": "DISABLE",
+							"loose_close_timeout_ms": 5000,
+							"idle_timeout": 600,
+							"timewait_timeout_ms": 10000,
+							"time_stamp": "PRESERVE",
+							"seq_adjust": "DISABLE",
+							"syn_timeout": 75,
+							"maximum_segment_size": 1460,
+							"idle_timeout_reset_connection": "DISABLE",
+							"close_node_connection_with_rst": "ENABLE",
+							"close_client_connection_with_rst": "ENABLE",
+							"node_fault_close_connection": "DISABLE",
+							"timewait_recycle": "ENABLE",
+							"delay_ack": "ENABLE",
+							"sack_support": "ENABLE",
+							"dsack_support": "DISABLE",
+							"maximum_syn_retransmission_times": 15,
+							"maximum_seg_retransmission_times": 15,
+							"maximum_fin_retransmission_times": 15,
+							"receive_window_scale": 2,
+							"initial_receive_window_size": 65535,
+							"tcp_options": [
+								{
+									"kind": 2,
+									"policy": "FIRST-PACKET"
+								}
+							],
+							"fast_tcp": "DISABLE",
+							"connection_pool": {
+								"state": "DISABLE",
+								"size": 1024,
+								"age": 60,
+								"source_address_prefix": 0,
+								"ipv6_source_address_prefix": 0
+							},
+							"service_unavailable_refuse_connection": "NONE"
+						}
 					}
 				}
 			}

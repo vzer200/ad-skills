@@ -68,6 +68,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_hinfo_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-record-hinfo",
+						"description": "查看HINFO记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/ 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"state": "ENABLE",
+									"domain": "example_string",
+									"zone": "com",
+									"ttl": 60,
+									"type": "HINFO",
+									"hinfo_records": [
+										{
+											"cpu": "",
+											"os": ""
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -85,6 +125,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_hinfo_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-hinfo",
+						"description": "创建HINFO记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"ttl": 60,
+								"type": "HINFO",
+								"hinfo_records": [
+									{
+										"cpu": "",
+										"os": ""
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/ 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/的响应数据",
+						"value": {
+							"name": "AI_example_string_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"ttl": 60,
+							"type": "HINFO",
+							"hinfo_records": [
+								{
+									"cpu": "",
+									"os": ""
+								}
+							]
+						}
 					}
 				}
 			},
@@ -141,6 +223,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_hinfo_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-record-hinfo",
+						"description": "修改指定的HINFO记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"ttl": 60,
+							"type": "HINFO",
+							"hinfo_records": [
+								{
+									"cpu": "",
+									"os": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -160,6 +271,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_hinfo_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-hinfo",
+						"description": "创建一个HINFO记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"ttl": 60,
+								"type": "HINFO",
+								"hinfo_records": [
+									{
+										"cpu": "",
+										"os": ""
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name}的响应数据",
+						"value": {
+							"name": "AI_example_string_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"ttl": 60,
+							"type": "HINFO",
+							"hinfo_records": [
+								{
+									"cpu": "",
+									"os": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -177,6 +330,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_hinfo_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-record-hinfo",
+						"description": "修改指定的HINFO记录",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"ttl": 60,
+								"type": "HINFO",
+								"hinfo_records": [
+									{
+										"cpu": "",
+										"os": ""
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"ttl": 60,
+							"type": "HINFO",
+							"hinfo_records": [
+								{
+									"cpu": "",
+									"os": ""
+								}
+							]
+						}
 					}
 				}
 			},
@@ -196,6 +391,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_hinfo_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-record-hinfo",
+						"description": "增量修改指定的HINFO记录",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"ttl": 60,
+								"type": "HINFO",
+								"hinfo_records": [
+									{
+										"cpu": "",
+										"os": ""
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"ttl": 60,
+							"type": "HINFO",
+							"hinfo_records": [
+								{
+									"cpu": "",
+									"os": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -208,6 +445,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_hinfo_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-record-hinfo",
+						"description": "删除指定的HINFO记录",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/hinfo/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"ttl": 60,
+							"type": "HINFO",
+							"hinfo_records": [
+								{
+									"cpu": "",
+									"os": ""
+								}
+							]
+						}
 					}
 				}
 			}

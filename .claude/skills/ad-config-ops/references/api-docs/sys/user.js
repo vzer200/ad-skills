@@ -62,6 +62,53 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_user_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all user",
+						"description": "查看已有的用户配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/user/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/user/ 响应",
+						"description": "返回GET /api/ad/v3/sys/user/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "admin",
+									"description": "Super Administrator",
+									"state": "ENABLE",
+									"role": "guest",
+									"permit_ctl": [
+										{
+											"role": "guest",
+											"project": "ALL"
+										}
+									],
+									"authentication": "LOCAL-PASSWORD",
+									"password": "example_string",
+									"encrypted_password": "example_string",
+									"pk_password": "example_string",
+									"default": "NON-DEFAULT",
+									"certificate_authentication": {
+										"state": "DISABLE",
+										"certificate_sign": "example_string"
+									},
+									"expiry_date": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +126,50 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_user_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new user",
+						"description": "新建用户配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/user/",
+							"body": {
+								"name": "AI_admin_A",
+								"state": "ENABLE",
+								"role": "guest",
+								"authentication": "LOCAL-PASSWORD",
+								"default": "NON-DEFAULT",
+								"expiry_date": ""
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/user/ 响应",
+						"description": "返回POST /api/ad/v3/sys/user/的响应数据",
+						"value": {
+							"name": "AI_admin_A",
+							"description": "Super Administrator",
+							"state": "ENABLE",
+							"role": "guest",
+							"permit_ctl": [
+								{
+									"role": "guest",
+									"project": "ALL"
+								}
+							],
+							"authentication": "LOCAL-PASSWORD",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"pk_password": "example_string",
+							"default": "NON-DEFAULT",
+							"certificate_authentication": {
+								"state": "DISABLE",
+								"certificate_sign": "example_string"
+							},
+							"expiry_date": ""
+						}
 					}
 				}
 			},
@@ -124,6 +215,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_user_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific user",
+						"description": "查看指定的用户配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/user/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/user/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/user/{name}的响应数据",
+						"value": {
+							"name": "admin",
+							"description": "Super Administrator",
+							"state": "ENABLE",
+							"role": "guest",
+							"permit_ctl": [
+								{
+									"role": "guest",
+									"project": "ALL"
+								}
+							],
+							"authentication": "LOCAL-PASSWORD",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"pk_password": "example_string",
+							"default": "NON-DEFAULT",
+							"certificate_authentication": {
+								"state": "DISABLE",
+								"certificate_sign": "example_string"
+							},
+							"expiry_date": ""
+						}
+					}
 				}
 			},
 			"post": {
@@ -143,6 +270,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_user_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new user",
+						"description": "新建指定的用户配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/user/{name}",
+							"body": {
+								"name": "AI_admin_B",
+								"state": "ENABLE",
+								"role": "guest",
+								"authentication": "LOCAL-PASSWORD",
+								"default": "NON-DEFAULT",
+								"expiry_date": ""
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/user/{name} 响应",
+						"description": "返回POST /api/ad/v3/sys/user/{name}的响应数据",
+						"value": {
+							"name": "AI_admin_B",
+							"description": "Super Administrator",
+							"state": "ENABLE",
+							"role": "guest",
+							"permit_ctl": [
+								{
+									"role": "guest",
+									"project": "ALL"
+								}
+							],
+							"authentication": "LOCAL-PASSWORD",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"pk_password": "example_string",
+							"default": "NON-DEFAULT",
+							"certificate_authentication": {
+								"state": "DISABLE",
+								"certificate_sign": "example_string"
+							},
+							"expiry_date": ""
+						}
+					}
 				}
 			},
 			"put": {
@@ -160,6 +331,50 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_user_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific user",
+						"description": "修改指定的用户配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/user/{name}",
+							"body": {
+								"name": "admin",
+								"state": "ENABLE",
+								"role": "guest",
+								"authentication": "LOCAL-PASSWORD",
+								"default": "NON-DEFAULT",
+								"expiry_date": ""
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/user/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/user/{name}的响应数据",
+						"value": {
+							"name": "admin",
+							"description": "Super Administrator",
+							"state": "ENABLE",
+							"role": "guest",
+							"permit_ctl": [
+								{
+									"role": "guest",
+									"project": "ALL"
+								}
+							],
+							"authentication": "LOCAL-PASSWORD",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"pk_password": "example_string",
+							"default": "NON-DEFAULT",
+							"certificate_authentication": {
+								"state": "DISABLE",
+								"certificate_sign": "example_string"
+							},
+							"expiry_date": ""
+						}
 					}
 				}
 			},
@@ -179,6 +394,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_user_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific user",
+						"description": "修改指定的用户配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/user/{name}",
+							"body": {
+								"name": "admin",
+								"state": "ENABLE",
+								"role": "guest",
+								"authentication": "LOCAL-PASSWORD",
+								"default": "NON-DEFAULT",
+								"expiry_date": ""
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/user/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/user/{name}的响应数据",
+						"value": {
+							"name": "admin",
+							"description": "Super Administrator",
+							"state": "ENABLE",
+							"role": "guest",
+							"permit_ctl": [
+								{
+									"role": "guest",
+									"project": "ALL"
+								}
+							],
+							"authentication": "LOCAL-PASSWORD",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"pk_password": "example_string",
+							"default": "NON-DEFAULT",
+							"certificate_authentication": {
+								"state": "DISABLE",
+								"certificate_sign": "example_string"
+							},
+							"expiry_date": ""
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +450,42 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_user_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific user",
+						"description": "删除指定的用户配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/user/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/user/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/user/{name}的响应数据",
+						"value": {
+							"name": "admin",
+							"description": "Super Administrator",
+							"state": "ENABLE",
+							"role": "guest",
+							"permit_ctl": [
+								{
+									"role": "guest",
+									"project": "ALL"
+								}
+							],
+							"authentication": "LOCAL-PASSWORD",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"pk_password": "example_string",
+							"default": "NON-DEFAULT",
+							"certificate_authentication": {
+								"state": "DISABLE",
+								"certificate_sign": "example_string"
+							},
+							"expiry_date": ""
+						}
 					}
 				}
 			}

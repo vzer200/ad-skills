@@ -62,6 +62,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_proxy"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-proxy statistics",
+						"description": "获取DNS代理统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/lc/dns-proxy"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/lc/dns-proxy 响应",
+						"description": "返回GET /api/ad/v3/stat/lc/dns-proxy的响应数据",
+						"value": {
+							"dns_servers": [
+								{
+									"link": "wan_1",
+									"server": "192.168.1.1",
+									"health": "NORMAL"
+								}
+							]
+						}
+					}
 				}
 			}
 		}

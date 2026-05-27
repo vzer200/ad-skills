@@ -62,6 +62,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_content_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all http-content",
+						"description": "获取自定义内容配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/http-content/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/http-content/ 响应",
+						"description": "返回GET /api/ad/v3/rc/http-content/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "200_OK",
+									"description": "example_string",
+									"http_header": "",
+									"http_body": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +110,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_content_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new http-content",
+						"description": "新建自定义内容配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/http-content/",
+							"body": {
+								"name": "AI_200_OK_A"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/http-content/ 响应",
+						"description": "返回POST /api/ad/v3/rc/http-content/的响应数据",
+						"value": {
+							"name": "AI_200_OK_A",
+							"description": "example_string",
+							"http_header": "",
+							"http_body": ""
+						}
 					}
 				}
 			},
@@ -98,6 +152,40 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_content_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify http-content",
+						"description": "修改自定义内容配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/http-content/",
+							"body": {
+								"name": "200_OK"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/http-content/ 响应",
+						"description": "返回PATCH /api/ad/v3/rc/http-content/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "200_OK",
+									"description": "example_string",
+									"http_header": "",
+									"http_body": ""
+								}
+							]
+						}
 					}
 				}
 			},
@@ -147,6 +235,26 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_content_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific http-content",
+						"description": "获取自定义内容配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/http-content/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/http-content/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/http-content/{name}的响应数据",
+						"value": {
+							"name": "200_OK",
+							"description": "example_string",
+							"http_header": "",
+							"http_body": ""
+						}
+					}
 				}
 			},
 			"post": {
@@ -166,6 +274,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_content_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new http-content",
+						"description": "新建自定义内容配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/http-content/{name}",
+							"body": {
+								"name": "AI_200_OK_B"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/http-content/{name} 响应",
+						"description": "返回POST /api/ad/v3/rc/http-content/{name}的响应数据",
+						"value": {
+							"name": "AI_200_OK_B",
+							"description": "example_string",
+							"http_header": "",
+							"http_body": ""
+						}
+					}
 				}
 			},
 			"put": {
@@ -183,6 +314,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_content_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific http-content",
+						"description": "修改自定义内容配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/rc/http-content/{name}",
+							"body": {
+								"name": "200_OK"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/rc/http-content/{name} 响应",
+						"description": "返回PUT /api/ad/v3/rc/http-content/{name}的响应数据",
+						"value": {
+							"name": "200_OK",
+							"description": "example_string",
+							"http_header": "",
+							"http_body": ""
+						}
 					}
 				}
 			},
@@ -202,6 +356,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_content_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific http-content",
+						"description": "修改自定义内容配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/http-content/{name}",
+							"body": {
+								"name": "200_OK"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/http-content/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/rc/http-content/{name}的响应数据",
+						"value": {
+							"name": "200_OK",
+							"description": "example_string",
+							"http_header": "",
+							"http_body": ""
+						}
+					}
 				}
 			},
 			"delete": {
@@ -214,6 +391,26 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_content_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific http-content",
+						"description": "删除自定义内容配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/rc/http-content/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/rc/http-content/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/rc/http-content/{name}的响应数据",
+						"value": {
+							"name": "200_OK",
+							"description": "example_string",
+							"http_header": "",
+							"http_body": ""
+						}
 					}
 				}
 			}

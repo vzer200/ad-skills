@@ -62,6 +62,44 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_mx_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-intranet-record-mx",
+						"description": "查看DNS mx记录信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/dns-intranet-record/mx/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/dns-intranet-record/mx/ 响应",
+						"description": "返回GET /api/ad/v3/lc/dns-intranet-record/mx/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "localhost",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "MX",
+									"mx_records": [
+										{
+											"host": "example_string",
+											"priority": 1,
+											"ttl": 0
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +117,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_mx_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-intranet-record-mx",
+						"description": "新建DNS mx记录信息",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/lc/dns-intranet-record/mx/",
+							"body": {
+								"name": "AI_localhost_A",
+								"state": "ENABLE",
+								"type": "MX",
+								"mx_records": [
+									{
+										"host": "example_string",
+										"priority": 1,
+										"ttl": 0
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/lc/dns-intranet-record/mx/ 响应",
+						"description": "返回POST /api/ad/v3/lc/dns-intranet-record/mx/的响应数据",
+						"value": {
+							"name": "AI_localhost_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "MX",
+							"mx_records": [
+								{
+									"host": "example_string",
+									"priority": 1,
+									"ttl": 0
+								}
+							]
+						}
 					}
 				}
 			},
@@ -113,6 +190,56 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_mx_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify dns-intranet-record-mx",
+						"description": "The PATCH method updates specific properties of one config.",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/lc/dns-intranet-record/mx/",
+							"body": {
+								"name": "localhost",
+								"state": "ENABLE",
+								"type": "MX",
+								"mx_records": [
+									{
+										"host": "example_string",
+										"priority": 1,
+										"ttl": 0
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/lc/dns-intranet-record/mx/ 响应",
+						"description": "返回PATCH /api/ad/v3/lc/dns-intranet-record/mx/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "localhost",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "MX",
+									"mx_records": [
+										{
+											"host": "example_string",
+											"priority": 1,
+											"ttl": 0
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -143,6 +270,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_mx_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-intranet-record-mx",
+						"description": "查看DNS mx记录信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/dns-intranet-record/mx/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/dns-intranet-record/mx/{name} 响应",
+						"description": "返回GET /api/ad/v3/lc/dns-intranet-record/mx/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "MX",
+							"mx_records": [
+								{
+									"host": "example_string",
+									"priority": 1,
+									"ttl": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -162,6 +316,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_mx_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-intranet-record-mx",
+						"description": "新建DNS mx记录信息",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/lc/dns-intranet-record/mx/{name}",
+							"body": {
+								"name": "AI_localhost_B",
+								"state": "ENABLE",
+								"type": "MX",
+								"mx_records": [
+									{
+										"host": "example_string",
+										"priority": 1,
+										"ttl": 0
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/lc/dns-intranet-record/mx/{name} 响应",
+						"description": "返回POST /api/ad/v3/lc/dns-intranet-record/mx/{name}的响应数据",
+						"value": {
+							"name": "AI_localhost_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "MX",
+							"mx_records": [
+								{
+									"host": "example_string",
+									"priority": 1,
+									"ttl": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -179,6 +372,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_mx_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-intranet-record-mx",
+						"description": "更新DNS mx记录信息",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/lc/dns-intranet-record/mx/{name}",
+							"body": {
+								"name": "localhost",
+								"state": "ENABLE",
+								"type": "MX",
+								"mx_records": [
+									{
+										"host": "example_string",
+										"priority": 1,
+										"ttl": 0
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/lc/dns-intranet-record/mx/{name} 响应",
+						"description": "返回PUT /api/ad/v3/lc/dns-intranet-record/mx/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "MX",
+							"mx_records": [
+								{
+									"host": "example_string",
+									"priority": 1,
+									"ttl": 0
+								}
+							]
+						}
 					}
 				}
 			},
@@ -198,6 +430,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_mx_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-intranet-record-mx",
+						"description": "更新DNS mx记录信息",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/lc/dns-intranet-record/mx/{name}",
+							"body": {
+								"name": "localhost",
+								"state": "ENABLE",
+								"type": "MX",
+								"mx_records": [
+									{
+										"host": "example_string",
+										"priority": 1,
+										"ttl": 0
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/lc/dns-intranet-record/mx/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/lc/dns-intranet-record/mx/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "MX",
+							"mx_records": [
+								{
+									"host": "example_string",
+									"priority": 1,
+									"ttl": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -210,6 +481,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_intranet_record_mx_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-intranet-record-mx",
+						"description": "DELETE /api/ad/v3/lc/dns-intranet-record/mx/{name}",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/lc/dns-intranet-record/mx/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/lc/dns-intranet-record/mx/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/lc/dns-intranet-record/mx/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "MX",
+							"mx_records": [
+								{
+									"host": "example_string",
+									"priority": 1,
+									"ttl": 0
+								}
+							]
+						}
 					}
 				}
 			}

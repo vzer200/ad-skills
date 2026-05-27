@@ -65,6 +65,32 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_http_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-passive-http",
+						"description": "查看当前已有的监视器（HTTP被动）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/passive-http/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/passive-http/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/passive-http/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								"example_item"
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +108,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_http_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-passive-http",
+						"description": "新建一个监视器（HTTP被动）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/passive-http/",
+							"body": {
+								"name": "AI_http_passive_http_A",
+								"type": "PASSIVE-HTTP",
+								"debug_mode": "DISABLE",
+								"http_url_samples": [
+									"www.test.com/index.html"
+								],
+								"http_response_timeout": 5,
+								"http_statistical_time": 1,
+								"abnormal_http_response_threshold": 10000
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/passive-http/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/passive-http/的响应数据",
+						"value": {
+							"name": "AI_http_passive_http_A",
+							"description": "example_string",
+							"type": "PASSIVE-HTTP",
+							"debug_mode": "DISABLE",
+							"http_url_samples": [
+								"www.test.com/index.html"
+							],
+							"abnormal_status_codes": [
+								404
+							],
+							"http_response_timeout": 5,
+							"http_statistical_time": 1,
+							"abnormal_http_response_threshold": 10000
+						}
 					}
 				}
 			},
@@ -130,6 +196,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_http_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-passive-http",
+						"description": "查看指定的监视器（HTTP被动）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/passive-http/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/passive-http/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/passive-http/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "PASSIVE-HTTP",
+							"debug_mode": "DISABLE",
+							"http_url_samples": [
+								"www.test.com/index.html"
+							],
+							"abnormal_status_codes": [
+								404
+							],
+							"http_response_timeout": 5,
+							"http_statistical_time": 1,
+							"abnormal_http_response_threshold": 10000
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +244,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_http_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-passive-http",
+						"description": "新建指定的监视器（HTTP被动）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/passive-http/{name}",
+							"body": {
+								"name": "AI_http_passive_http_B",
+								"type": "PASSIVE-HTTP",
+								"debug_mode": "DISABLE",
+								"http_url_samples": [
+									"www.test.com/index.html"
+								],
+								"http_response_timeout": 5,
+								"http_statistical_time": 1,
+								"abnormal_http_response_threshold": 10000
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/passive-http/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/passive-http/{name}的响应数据",
+						"value": {
+							"name": "AI_http_passive_http_B",
+							"description": "example_string",
+							"type": "PASSIVE-HTTP",
+							"debug_mode": "DISABLE",
+							"http_url_samples": [
+								"www.test.com/index.html"
+							],
+							"abnormal_status_codes": [
+								404
+							],
+							"http_response_timeout": 5,
+							"http_statistical_time": 1,
+							"abnormal_http_response_threshold": 10000
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +301,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_http_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-passive-http",
+						"description": "修改指定的监视器（HTTP被动）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/passive-http/{name}",
+							"body": {
+								"name": "http",
+								"type": "PASSIVE-HTTP",
+								"debug_mode": "DISABLE",
+								"http_url_samples": [
+									"www.test.com/index.html"
+								],
+								"http_response_timeout": 5,
+								"http_statistical_time": 1,
+								"abnormal_http_response_threshold": 10000
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/passive-http/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/passive-http/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "PASSIVE-HTTP",
+							"debug_mode": "DISABLE",
+							"http_url_samples": [
+								"www.test.com/index.html"
+							],
+							"abnormal_status_codes": [
+								404
+							],
+							"http_response_timeout": 5,
+							"http_statistical_time": 1,
+							"abnormal_http_response_threshold": 10000
+						}
 					}
 				}
 			},
@@ -185,6 +360,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_http_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-passive-http",
+						"description": "修改指定的监视器（HTTP被动）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/passive-http/{name}",
+							"body": {
+								"name": "http",
+								"type": "PASSIVE-HTTP",
+								"debug_mode": "DISABLE",
+								"http_url_samples": [
+									"www.test.com/index.html"
+								],
+								"http_response_timeout": 5,
+								"http_statistical_time": 1,
+								"abnormal_http_response_threshold": 10000
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/passive-http/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/passive-http/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "PASSIVE-HTTP",
+							"debug_mode": "DISABLE",
+							"http_url_samples": [
+								"www.test.com/index.html"
+							],
+							"abnormal_status_codes": [
+								404
+							],
+							"http_response_timeout": 5,
+							"http_statistical_time": 1,
+							"abnormal_http_response_threshold": 10000
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +412,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_http_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-passive-http",
+						"description": "删除指定的监视器（HTTP被动）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/passive-http/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/passive-http/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/passive-http/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "PASSIVE-HTTP",
+							"debug_mode": "DISABLE",
+							"http_url_samples": [
+								"www.test.com/index.html"
+							],
+							"abnormal_status_codes": [
+								404
+							],
+							"http_response_timeout": 5,
+							"http_statistical_time": 1,
+							"abnormal_http_response_threshold": 10000
+						}
 					}
 				}
 			}

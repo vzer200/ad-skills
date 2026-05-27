@@ -51,6 +51,23 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_mode_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get mode",
+						"description": "获取当前设备高可用模式",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/ha/mode"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/ha/mode 响应",
+						"description": "返回GET /api/ad/v3/ha/mode的响应数据",
+						"value": {
+							"mode": "ACTIVE-STANDBY"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +86,26 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_mode_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace mode",
+						"description": "修改当前设备高可用模式",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/ha/mode",
+							"body": {
+								"mode": "ACTIVE-STANDBY"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/ha/mode 响应",
+						"description": "返回PUT /api/ad/v3/ha/mode的响应数据",
+						"value": {
+							"mode": "ACTIVE-STANDBY"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +123,26 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_mode_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify mode",
+						"description": "修改当前设备高可用模式",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/ha/mode",
+							"body": {
+								"mode": "ACTIVE-STANDBY"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/ha/mode 响应",
+						"description": "返回PATCH /api/ad/v3/ha/mode的响应数据",
+						"value": {
+							"mode": "ACTIVE-STANDBY"
+						}
 					}
 				}
 			},

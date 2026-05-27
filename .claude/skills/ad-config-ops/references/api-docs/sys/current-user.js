@@ -54,6 +54,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_current_user_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get current-user",
+						"description": "获取当前登录用户信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/current-user"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/current-user 响应",
+						"description": "返回GET /api/ad/v3/sys/current-user的响应数据",
+						"value": {
+							"name": "admin",
+							"description": "Super Administrator",
+							"role": "admin",
+							"permissions": [
+								"network-manager"
+							],
+							"permit_ctl": [
+								{
+									"role": "guest",
+									"project": "all",
+									"permissions": [
+										"network-manager"
+									]
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -70,7 +101,27 @@ module.exports ={
 					{
 						"$ref": "#/parameters/CURRENT-USER-CONFIG-RESET-PASSWORD"
 					}
-				]
+				],
+				"x-examples": {
+					"request": {
+						"summary": "reset current-user password",
+						"description": "重置当前登录用户密码",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/current-user/reset-password",
+							"body": {
+								"username": "admin"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/current-user/reset-password 响应",
+						"description": "返回POST /api/ad/v3/sys/current-user/reset-password的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

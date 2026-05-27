@@ -62,6 +62,59 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_member_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all member statistics",
+						"description": "获取集群成员状态与统计数据",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/ha/member/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/ha/member/ 响应",
+						"description": "返回GET /api/ad/v3/stat/ha/member/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "",
+									"location": "REMOTE",
+									"state": "ENABLE",
+									"health": "NORMAL",
+									"failure_reason": "",
+									"master_controller": "ACTIVE",
+									"configure_synchronize": "COMPLETED",
+									"application_group": {
+										"total": 0,
+										"state": {
+											"active": [
+												"example_string"
+											],
+											"standby": [
+												"example_string"
+											]
+										},
+										"health": {
+											"normal": [
+												"example_string"
+											],
+											"failure": [
+												"example_string"
+											]
+										}
+									}
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -91,6 +144,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_member_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific member statistics",
+						"description": "获取指定集群成员状态与统计数据",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/ha/member/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/ha/member/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/ha/member/{name}的响应数据",
+						"value": {
+							"name": "",
+							"location": "REMOTE",
+							"state": "ENABLE",
+							"health": "NORMAL",
+							"failure_reason": "",
+							"master_controller": "ACTIVE",
+							"configure_synchronize": "COMPLETED",
+							"application_group": {
+								"total": 0,
+								"state": {
+									"active": [
+										"example_string"
+									],
+									"standby": [
+										"example_string"
+									]
+								},
+								"health": {
+									"normal": [
+										"example_string"
+									],
+									"failure": [
+										"example_string"
+									]
+								}
+							}
+						}
 					}
 				}
 			}

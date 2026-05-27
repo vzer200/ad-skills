@@ -51,6 +51,72 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_application_identification_library"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all application-identification",
+						"description": "查看应用规则库配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/application-identification/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/application-identification/ 响应",
+						"description": "返回GET /api/ad/v3/rc/application-identification/的响应数据",
+						"value": {
+							"version": "1.0.12",
+							"rule_count": 65535,
+							"ebank": [
+								{
+									"name": "Youtube",
+									"description": "Youtube Web site.",
+									"icon": "jiansheyinhang",
+									"official_website": "http://www.youtube.com/"
+								}
+							],
+							"web_streaming_media": [
+								{
+									"name": "Youtube",
+									"description": "Youtube Web site.",
+									"icon": "jiansheyinhang",
+									"official_website": "http://www.youtube.com/"
+								}
+							],
+							"mobile_streaming_media": [
+								{
+									"name": "Youtube",
+									"description": "Youtube Web site.",
+									"icon": "jiansheyinhang",
+									"official_website": "http://www.youtube.com/"
+								}
+							],
+							"mobile_game": [
+								{
+									"name": "Youtube",
+									"description": "Youtube Web site.",
+									"icon": "jiansheyinhang",
+									"official_website": "http://www.youtube.com/"
+								}
+							],
+							"client_game": [
+								{
+									"name": "Youtube",
+									"description": "Youtube Web site.",
+									"icon": "jiansheyinhang",
+									"official_website": "http://www.youtube.com/"
+								}
+							],
+							"webpage_game": [
+								{
+									"name": "Youtube",
+									"description": "Youtube Web site.",
+									"icon": "jiansheyinhang",
+									"official_website": "http://www.youtube.com/"
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

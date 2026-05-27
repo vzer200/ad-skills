@@ -65,6 +65,95 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all link",
+						"description": "查看链路IP配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link/all/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link/all/ 响应",
+						"description": "返回GET /api/ad/v3/net/link/all/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "link_lan_1",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "LAN",
+									"interface": {
+										"type": "VLAN",
+										"interface": "bond-134"
+									},
+									"session_isolation": "DISABLE",
+									"username": "123456789@ct.com",
+									"password": "abcd1234",
+									"encrypted_password": "A1B2C3D4",
+									"echo_retransmission_interval": 80,
+									"echo_retransmission_count": 3,
+									"auto_dial": "ENABLE",
+									"auto_dial_interval": 1,
+									"mtu": 1492,
+									"mac_address": "指定MAC地址",
+									"addresses": [
+										"192.168.1.100/24"
+									],
+									"cluster_addresses": [
+										{
+											"address": "192.168.1.100/24",
+											"associated_member": "{member}"
+										}
+									],
+									"cluster_gateways": [
+										{
+											"gateway": "200.200.0.254",
+											"associated_member": "{member}"
+										}
+									],
+									"auto_snat": "DISABLE",
+									"upstream_bandwidth_mbps": 100,
+									"upstream_busy_percent": 80,
+									"downstream_bandwidth_mbps": 100,
+									"downstream_busy_percent": 80,
+									"gateway_arp_detect": {
+										"state": "DISABLE",
+										"timeout": 15,
+										"interval": 5
+									},
+									"arp_detect": {
+										"state": "DISABLE",
+										"target_host": "192.168.1.1",
+										"timeout": 15,
+										"interval": 5
+									},
+									"monitors": [
+										{
+											"monitor": "ping",
+											"target_host": "10.10.10.254"
+										}
+									],
+									"cable_plugin_detect": "DISABLE",
+									"failsafe": {
+										"state": "DISABLE",
+										"timeout": 120,
+										"action": "FAILOVER"
+									},
+									"netns": "default"
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -119,6 +208,84 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific link",
+						"description": "查看指定链路IP配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link/all/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link/all/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/link/all/{name}的响应数据",
+						"value": {
+							"name": "link_lan_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "LAN",
+							"interface": {
+								"type": "VLAN",
+								"interface": "bond-134"
+							},
+							"session_isolation": "DISABLE",
+							"username": "123456789@ct.com",
+							"password": "abcd1234",
+							"encrypted_password": "A1B2C3D4",
+							"echo_retransmission_interval": 80,
+							"echo_retransmission_count": 3,
+							"auto_dial": "ENABLE",
+							"auto_dial_interval": 1,
+							"mtu": 1492,
+							"mac_address": "指定MAC地址",
+							"addresses": [
+								"192.168.1.100/24"
+							],
+							"cluster_addresses": [
+								{
+									"address": "192.168.1.100/24",
+									"associated_member": "{member}"
+								}
+							],
+							"cluster_gateways": [
+								{
+									"gateway": "200.200.0.254",
+									"associated_member": "{member}"
+								}
+							],
+							"auto_snat": "DISABLE",
+							"upstream_bandwidth_mbps": 100,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 100,
+							"downstream_busy_percent": 80,
+							"gateway_arp_detect": {
+								"state": "DISABLE",
+								"timeout": 15,
+								"interval": 5
+							},
+							"arp_detect": {
+								"state": "DISABLE",
+								"target_host": "192.168.1.1",
+								"timeout": 15,
+								"interval": 5
+							},
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "DISABLE",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"netns": "default"
+						}
 					}
 				}
 			}

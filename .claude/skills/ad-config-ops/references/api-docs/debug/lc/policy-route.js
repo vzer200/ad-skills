@@ -45,6 +45,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_policy_route_simulator"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "simulator policy-route result",
+						"description": "获取上一次智能路由规则测试结果",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/lc/policy-route/simulator"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/lc/policy-route/simulator 响应",
+						"description": "返回GET /api/ad/v3/debug/lc/policy-route/simulator的响应数据",
+						"value": {
+							"source_address": "192.168.1.12",
+							"source_port": 8080,
+							"destination_address": "200.1.5.102",
+							"destination_port": 8080,
+							"inbound_link": "china_telenet_1",
+							"protocol": "TCP",
+							"protocol_number": 0,
+							"tos": 0,
+							"simulate_trace": [
+								{
+									"operation": "example_string",
+									"object": "DEFAULT",
+									"result": "SUEECSS",
+									"description": "example_string"
+								}
+							],
+							"record_time": "2021-08-18 02:29:28"
+						}
+					}
 				}
 			},
 			"post": {
@@ -62,6 +95,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_debug_policy_route_simulator"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "simulator policy-route",
+						"description": "测试智能路由规则",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/lc/policy-route/simulator",
+							"body": {
+								"source_address": "192.168.1.12",
+								"destination_address": "200.1.5.102",
+								"protocol": "TCP",
+								"protocol_number": 0,
+								"tos": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/lc/policy-route/simulator 响应",
+						"description": "返回POST /api/ad/v3/debug/lc/policy-route/simulator的响应数据",
+						"value": {
+							"source_address": "192.168.1.12",
+							"source_port": 8080,
+							"destination_address": "200.1.5.102",
+							"destination_port": 8080,
+							"inbound_link": "china_telenet_1",
+							"protocol": "TCP",
+							"protocol_number": 0,
+							"tos": 0,
+							"simulate_trace": [
+								{
+									"operation": "example_string",
+									"object": "DEFAULT",
+									"result": "SUEECSS",
+									"description": "example_string"
+								}
+							],
+							"record_time": "2021-08-18 02:29:28"
+						}
 					}
 				}
 			},
@@ -89,7 +162,24 @@ module.exports ={
 					"policy-route"
 				],
 				"summary": "clear policy-route hit",
-				"operationId": "clear_policy_route_hit"
+				"operationId": "clear_policy_route_hit",
+				"x-examples": {
+					"request": {
+						"summary": "clear policy-route hit",
+						"description": "重置智能路由匹配次数",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/lc/policy-route/reset"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/lc/policy-route/reset 响应",
+						"description": "返回POST /api/ad/v3/debug/lc/policy-route/reset的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

@@ -65,6 +65,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_external_monitor_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-external-monitor",
+						"description": "查看当前已有的监视器（外部监视器）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/external-monitor/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/external-monitor/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/external-monitor/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "EXTERNAL-MONITOR",
+									"timeout": 16,
+									"interval": 5,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"debug_mode": "DISABLE",
+									"cli_command": "/usr/bin/check_app_each_thread.py"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +118,41 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_external_monitor_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-external-monitor",
+						"description": "新建一个监视器（外部监视器）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/external-monitor/",
+							"body": {
+								"name": "AI_http_external_monitor_A",
+								"type": "EXTERNAL-MONITOR",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"debug_mode": "DISABLE",
+								"cli_command": "/usr/bin/check_app_each_thread.py"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/external-monitor/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/external-monitor/的响应数据",
+						"value": {
+							"name": "AI_http_external_monitor_A",
+							"description": "example_string",
+							"type": "EXTERNAL-MONITOR",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"debug_mode": "DISABLE",
+							"cli_command": "/usr/bin/check_app_each_thread.py"
+						}
 					}
 				}
 			},
@@ -130,6 +201,31 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_external_monitor_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-external-monitor",
+						"description": "查看指定的监视器（外部监视器）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/external-monitor/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/external-monitor/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/external-monitor/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "EXTERNAL-MONITOR",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"debug_mode": "DISABLE",
+							"cli_command": "/usr/bin/check_app_each_thread.py"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +245,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_external_monitor_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-external-monitor",
+						"description": "新建指定的监视器（外部监视器）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/external-monitor/{name}",
+							"body": {
+								"name": "AI_http_external_monitor_B",
+								"type": "EXTERNAL-MONITOR",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"debug_mode": "DISABLE",
+								"cli_command": "/usr/bin/check_app_each_thread.py"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/external-monitor/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/external-monitor/{name}的响应数据",
+						"value": {
+							"name": "AI_http_external_monitor_B",
+							"description": "example_string",
+							"type": "EXTERNAL-MONITOR",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"debug_mode": "DISABLE",
+							"cli_command": "/usr/bin/check_app_each_thread.py"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +297,41 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_external_monitor_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-external-monitor",
+						"description": "修改指定的监视器（外部监视器）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/external-monitor/{name}",
+							"body": {
+								"name": "http",
+								"type": "EXTERNAL-MONITOR",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"debug_mode": "DISABLE",
+								"cli_command": "/usr/bin/check_app_each_thread.py"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/external-monitor/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/external-monitor/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "EXTERNAL-MONITOR",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"debug_mode": "DISABLE",
+							"cli_command": "/usr/bin/check_app_each_thread.py"
+						}
 					}
 				}
 			},
@@ -185,6 +351,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_external_monitor_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-external-monitor",
+						"description": "修改指定的监视器（外部监视器）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/external-monitor/{name}",
+							"body": {
+								"name": "http",
+								"type": "EXTERNAL-MONITOR",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"debug_mode": "DISABLE",
+								"cli_command": "/usr/bin/check_app_each_thread.py"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/external-monitor/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/external-monitor/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "EXTERNAL-MONITOR",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"debug_mode": "DISABLE",
+							"cli_command": "/usr/bin/check_app_each_thread.py"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +398,31 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_external_monitor_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-external-monitor",
+						"description": "删除指定的监视器（外部监视器）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/external-monitor/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/external-monitor/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/external-monitor/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "EXTERNAL-MONITOR",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"debug_mode": "DISABLE",
+							"cli_command": "/usr/bin/check_app_each_thread.py"
+						}
 					}
 				}
 			}

@@ -56,6 +56,31 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_upgrade_package_info"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get package-info",
+						"description": "提取升级包版本信息",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/upgrade/extract-package-info",
+							"body": {
+								"file_token": "1A2B3C4D5E6F"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/upgrade/extract-package-info 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/upgrade/extract-package-info的响应数据",
+						"value": {
+							"version": "AD7.0.6",
+							"file_size": 51200000,
+							"build": "2018-07-30",
+							"description": "",
+							"final_reboot": "ENABLE",
+							"check_licence": "ENABLE"
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -112,6 +137,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_upgrade_history"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get upgrade history",
+						"description": "查询系统升级历史记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/sys/upgrade/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/sys/upgrade/ 响应",
+						"description": "返回GET /api/ad/v3/debug/sys/upgrade/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"id": 12,
+									"version": "AD7.0.3",
+									"ssu_name": "M5100-AD-7.0.3(2017-12-18)_sign.ssu",
+									"upgrade_time": "2017-12-28 20:58:11",
+									"result": "SUCCESS",
+									"method": "WEB-CONSOLE",
+									"rollback": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -132,6 +191,28 @@ module.exports ={
 					},
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "perform upgrade",
+						"description": "执行系统升级任务",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/upgrade/",
+							"body": {
+								"file_token": "1A2B3C4D5E6F"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/upgrade/ 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/upgrade/的响应数据",
+						"value": {
+							"progress_percent": 10,
+							"stage": "backup config",
+							"description": "Software Update SN Invalid"
+						}
 					}
 				}
 			}

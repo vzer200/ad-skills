@@ -54,6 +54,24 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_cluster_master_controller_switch_result"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "switch cluster master-controller",
+						"description": "切换集群的主控设备",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/ha/cluster/master-controller"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/ha/cluster/master-controller 响应",
+						"description": "返回POST /api/ad/v3/debug/ha/cluster/master-controller的响应数据",
+						"value": {
+							"original": null,
+							"current": null
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

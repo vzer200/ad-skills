@@ -51,6 +51,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_policy_route_advanced_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get policy-route-advanced",
+						"description": "查看智能路由-出入站高级配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/policy-route-advanced"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/policy-route-advanced 响应",
+						"description": "返回GET /api/ad/v3/lc/policy-route-advanced的响应数据",
+						"value": {
+							"persist": {
+								"subnet_mask": "255.255.255.0",
+								"v6_prefix_length": 64,
+								"timeout": 1800
+							},
+							"detect_rtt": {
+								"method": "ICMP",
+								"result_cache_subnet_mask": "255.255.255.0",
+								"ipv6_result_cache_prefix_length": 64,
+								"result_cache_timeout": 3600
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +96,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_policy_route_advanced_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace policy-route-advanced",
+						"description": "更新智能路由-出入站高级配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/lc/policy-route-advanced",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/lc/policy-route-advanced 响应",
+						"description": "返回PUT /api/ad/v3/lc/policy-route-advanced的响应数据",
+						"value": {
+							"persist": {
+								"subnet_mask": "255.255.255.0",
+								"v6_prefix_length": 64,
+								"timeout": 1800
+							},
+							"detect_rtt": {
+								"method": "ICMP",
+								"result_cache_subnet_mask": "255.255.255.0",
+								"ipv6_result_cache_prefix_length": 64,
+								"result_cache_timeout": 3600
+							}
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +141,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_policy_route_advanced_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify policy-route-advanced",
+						"description": "更新智能路由-出入站高级配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/lc/policy-route-advanced",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/lc/policy-route-advanced 响应",
+						"description": "返回PATCH /api/ad/v3/lc/policy-route-advanced的响应数据",
+						"value": {
+							"persist": {
+								"subnet_mask": "255.255.255.0",
+								"v6_prefix_length": 64,
+								"timeout": 1800
+							},
+							"detect_rtt": {
+								"method": "ICMP",
+								"result_cache_subnet_mask": "255.255.255.0",
+								"ipv6_result_cache_prefix_length": 64,
+								"result_cache_timeout": 3600
+							}
+						}
 					}
 				}
 			}

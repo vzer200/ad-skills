@@ -62,6 +62,59 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_defence_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all http-defence",
+						"description": "查看当前已有的HTTP防护策略配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/http-defence/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/http-defence/ 响应",
+						"description": "返回GET /api/ad/v3/slb/http-defence/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http_slow_ddos",
+									"description": "example_string",
+									"slow_attack_defence": {
+										"state": "ENABLE",
+										"connection_timeout": 1800,
+										"request_timeout": 300,
+										"minimum_receive_rate_byte": 100
+									},
+									"http_flood_defence": {
+										"state": "ENABLE",
+										"policy": "HEADER-INSERT",
+										"vs_common_rule": {
+											"request_rate_threshold": 500,
+											"request_increase_percent_threshold": 1000
+										},
+										"url_rules": [
+											{
+												"url_pattern_wildcard": "image*",
+												"url_pattern_case_sensitive": "DISABLE",
+												"request_rate_threshold": 500,
+												"request_increase_percent_threshold": 1000
+											}
+										]
+									},
+									"action_alert": "ENABLE",
+									"action_block": "DISABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +132,53 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_defence_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new http-defence",
+						"description": "新建一个HTTP防护策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/http-defence/",
+							"body": {
+								"name": "AI_http_slow_ddos_A",
+								"action_alert": "ENABLE",
+								"action_block": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/http-defence/ 响应",
+						"description": "返回POST /api/ad/v3/slb/http-defence/的响应数据",
+						"value": {
+							"name": "AI_http_slow_ddos_A",
+							"description": "example_string",
+							"slow_attack_defence": {
+								"state": "ENABLE",
+								"connection_timeout": 1800,
+								"request_timeout": 300,
+								"minimum_receive_rate_byte": 100
+							},
+							"http_flood_defence": {
+								"state": "ENABLE",
+								"policy": "HEADER-INSERT",
+								"vs_common_rule": {
+									"request_rate_threshold": 500,
+									"request_increase_percent_threshold": 1000
+								},
+								"url_rules": [
+									{
+										"url_pattern_wildcard": "image*",
+										"url_pattern_case_sensitive": "DISABLE",
+										"request_rate_threshold": 500,
+										"request_increase_percent_threshold": 1000
+									}
+								]
+							},
+							"action_alert": "ENABLE",
+							"action_block": "DISABLE"
+						}
 					}
 				}
 			},
@@ -128,6 +228,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_defence_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific http-defence",
+						"description": "查看指定的HTTP防护策略配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/http-defence/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/http-defence/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/http-defence/{name}的响应数据",
+						"value": {
+							"name": "http_slow_ddos",
+							"description": "example_string",
+							"slow_attack_defence": {
+								"state": "ENABLE",
+								"connection_timeout": 1800,
+								"request_timeout": 300,
+								"minimum_receive_rate_byte": 100
+							},
+							"http_flood_defence": {
+								"state": "ENABLE",
+								"policy": "HEADER-INSERT",
+								"vs_common_rule": {
+									"request_rate_threshold": 500,
+									"request_increase_percent_threshold": 1000
+								},
+								"url_rules": [
+									{
+										"url_pattern_wildcard": "image*",
+										"url_pattern_case_sensitive": "DISABLE",
+										"request_rate_threshold": 500,
+										"request_increase_percent_threshold": 1000
+									}
+								]
+							},
+							"action_alert": "ENABLE",
+							"action_block": "DISABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -147,6 +289,53 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_defence_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new http-defence",
+						"description": "新建指定的HTTP防护策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/http-defence/{name}",
+							"body": {
+								"name": "AI_http_slow_ddos_B",
+								"action_alert": "ENABLE",
+								"action_block": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/http-defence/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/http-defence/{name}的响应数据",
+						"value": {
+							"name": "AI_http_slow_ddos_B",
+							"description": "example_string",
+							"slow_attack_defence": {
+								"state": "ENABLE",
+								"connection_timeout": 1800,
+								"request_timeout": 300,
+								"minimum_receive_rate_byte": 100
+							},
+							"http_flood_defence": {
+								"state": "ENABLE",
+								"policy": "HEADER-INSERT",
+								"vs_common_rule": {
+									"request_rate_threshold": 500,
+									"request_increase_percent_threshold": 1000
+								},
+								"url_rules": [
+									{
+										"url_pattern_wildcard": "image*",
+										"url_pattern_case_sensitive": "DISABLE",
+										"request_rate_threshold": 500,
+										"request_increase_percent_threshold": 1000
+									}
+								]
+							},
+							"action_alert": "ENABLE",
+							"action_block": "DISABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -164,6 +353,53 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_defence_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific http-defence",
+						"description": "修改指定的HTTP防护策略配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/http-defence/{name}",
+							"body": {
+								"name": "http_slow_ddos",
+								"action_alert": "ENABLE",
+								"action_block": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/http-defence/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/http-defence/{name}的响应数据",
+						"value": {
+							"name": "http_slow_ddos",
+							"description": "example_string",
+							"slow_attack_defence": {
+								"state": "ENABLE",
+								"connection_timeout": 1800,
+								"request_timeout": 300,
+								"minimum_receive_rate_byte": 100
+							},
+							"http_flood_defence": {
+								"state": "ENABLE",
+								"policy": "HEADER-INSERT",
+								"vs_common_rule": {
+									"request_rate_threshold": 500,
+									"request_increase_percent_threshold": 1000
+								},
+								"url_rules": [
+									{
+										"url_pattern_wildcard": "image*",
+										"url_pattern_case_sensitive": "DISABLE",
+										"request_rate_threshold": 500,
+										"request_increase_percent_threshold": 1000
+									}
+								]
+							},
+							"action_alert": "ENABLE",
+							"action_block": "DISABLE"
+						}
 					}
 				}
 			},
@@ -183,6 +419,53 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_defence_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific http-defence",
+						"description": "修改指定的HTTP防护策略配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/http-defence/{name}",
+							"body": {
+								"name": "http_slow_ddos",
+								"action_alert": "ENABLE",
+								"action_block": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/http-defence/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/http-defence/{name}的响应数据",
+						"value": {
+							"name": "http_slow_ddos",
+							"description": "example_string",
+							"slow_attack_defence": {
+								"state": "ENABLE",
+								"connection_timeout": 1800,
+								"request_timeout": 300,
+								"minimum_receive_rate_byte": 100
+							},
+							"http_flood_defence": {
+								"state": "ENABLE",
+								"policy": "HEADER-INSERT",
+								"vs_common_rule": {
+									"request_rate_threshold": 500,
+									"request_increase_percent_threshold": 1000
+								},
+								"url_rules": [
+									{
+										"url_pattern_wildcard": "image*",
+										"url_pattern_case_sensitive": "DISABLE",
+										"request_rate_threshold": 500,
+										"request_increase_percent_threshold": 1000
+									}
+								]
+							},
+							"action_alert": "ENABLE",
+							"action_block": "DISABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -195,6 +478,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_defence_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific http-defence",
+						"description": "删除指定的HTTP防护策略配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/http-defence/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/http-defence/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/http-defence/{name}的响应数据",
+						"value": {
+							"name": "http_slow_ddos",
+							"description": "example_string",
+							"slow_attack_defence": {
+								"state": "ENABLE",
+								"connection_timeout": 1800,
+								"request_timeout": 300,
+								"minimum_receive_rate_byte": 100
+							},
+							"http_flood_defence": {
+								"state": "ENABLE",
+								"policy": "HEADER-INSERT",
+								"vs_common_rule": {
+									"request_rate_threshold": 500,
+									"request_increase_percent_threshold": 1000
+								},
+								"url_rules": [
+									{
+										"url_pattern_wildcard": "image*",
+										"url_pattern_case_sensitive": "DISABLE",
+										"request_rate_threshold": 500,
+										"request_increase_percent_threshold": 1000
+									}
+								]
+							},
+							"action_alert": "ENABLE",
+							"action_block": "DISABLE"
+						}
 					}
 				}
 			}

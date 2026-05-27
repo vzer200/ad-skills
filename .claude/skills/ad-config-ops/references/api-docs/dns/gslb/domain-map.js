@@ -65,6 +65,58 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_domain_map_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all domain_map",
+						"description": "查看域名映射",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/domain-map/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/ 响应",
+						"description": "返回GET /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "abc.com",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "IPV4",
+									"domains": [
+										"www.abc.com"
+									],
+									"method": "TOPOLOGY",
+									"edns_client_subnet": "DISABLE",
+									"persist": 0,
+									"ttl": 60,
+									"vip_pools": [
+										{
+											"vip_pool": "web_vpool",
+											"weight": 10,
+											"priority": 10
+										}
+									],
+									"topologys": [
+										{
+											"vip_pool": "web_vpool",
+											"ldns_address_group": "web_vgroup",
+											"state": "ENABLE"
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +134,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_domain_map_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new domain_map",
+						"description": "创建域名映射",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/domain-map/",
+							"body": {
+								"name": "AI_abc.com_A",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"domains": [
+									"www.abc.com"
+								],
+								"method": "TOPOLOGY",
+								"edns_client_subnet": "DISABLE",
+								"persist": 0,
+								"ttl": 60,
+								"vip_pools": [
+									{
+										"vip_pool": "web_vpool",
+										"weight": 10,
+										"priority": 10
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/ 响应",
+						"description": "返回POST /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/的响应数据",
+						"value": {
+							"name": "AI_abc.com_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "IPV4",
+							"domains": [
+								"www.abc.com"
+							],
+							"method": "TOPOLOGY",
+							"edns_client_subnet": "DISABLE",
+							"persist": 0,
+							"ttl": 60,
+							"vip_pools": [
+								{
+									"vip_pool": "web_vpool",
+									"weight": 10,
+									"priority": 10
+								}
+							],
+							"topologys": [
+								{
+									"vip_pool": "web_vpool",
+									"ldns_address_group": "web_vgroup",
+									"state": "ENABLE"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -101,6 +213,77 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_domain_map_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify domain_map",
+						"description": "修改域名映射",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/domain-map/",
+							"body": {
+								"name": "abc.com",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"domains": [
+									"www.abc.com"
+								],
+								"method": "TOPOLOGY",
+								"edns_client_subnet": "DISABLE",
+								"persist": 0,
+								"ttl": 60,
+								"vip_pools": [
+									{
+										"vip_pool": "web_vpool",
+										"weight": 10,
+										"priority": 10
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/ 响应",
+						"description": "返回PATCH /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "abc.com",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "IPV4",
+									"domains": [
+										"www.abc.com"
+									],
+									"method": "TOPOLOGY",
+									"edns_client_subnet": "DISABLE",
+									"persist": 0,
+									"ttl": 60,
+									"vip_pools": [
+										{
+											"vip_pool": "web_vpool",
+											"weight": 10,
+											"priority": 10
+										}
+									],
+									"topologys": [
+										{
+											"vip_pool": "web_vpool",
+											"ldns_address_group": "web_vgroup",
+											"state": "ENABLE"
+										}
+									]
+								}
+							]
+						}
 					}
 				}
 			}
@@ -135,6 +318,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_domain_map_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific domain_map",
+						"description": "查看指定已有的域名映射",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name}的响应数据",
+						"value": {
+							"name": "abc.com",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "IPV4",
+							"domains": [
+								"www.abc.com"
+							],
+							"method": "TOPOLOGY",
+							"edns_client_subnet": "DISABLE",
+							"persist": 0,
+							"ttl": 60,
+							"vip_pools": [
+								{
+									"vip_pool": "web_vpool",
+									"weight": 10,
+									"priority": 10
+								}
+							],
+							"topologys": [
+								{
+									"vip_pool": "web_vpool",
+									"ldns_address_group": "web_vgroup",
+									"state": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -154,6 +378,66 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_domain_map_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new domain_map",
+						"description": "创建域名映射",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name}",
+							"body": {
+								"name": "AI_abc.com_B",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"domains": [
+									"www.abc.com"
+								],
+								"method": "TOPOLOGY",
+								"edns_client_subnet": "DISABLE",
+								"persist": 0,
+								"ttl": 60,
+								"vip_pools": [
+									{
+										"vip_pool": "web_vpool",
+										"weight": 10,
+										"priority": 10
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name}的响应数据",
+						"value": {
+							"name": "AI_abc.com_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "IPV4",
+							"domains": [
+								"www.abc.com"
+							],
+							"method": "TOPOLOGY",
+							"edns_client_subnet": "DISABLE",
+							"persist": 0,
+							"ttl": 60,
+							"vip_pools": [
+								{
+									"vip_pool": "web_vpool",
+									"weight": 10,
+									"priority": 10
+								}
+							],
+							"topologys": [
+								{
+									"vip_pool": "web_vpool",
+									"ldns_address_group": "web_vgroup",
+									"state": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -171,6 +455,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_domain_map_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific domain_map",
+						"description": "修改指定已有的域名映射",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name}",
+							"body": {
+								"name": "abc.com",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"domains": [
+									"www.abc.com"
+								],
+								"method": "TOPOLOGY",
+								"edns_client_subnet": "DISABLE",
+								"persist": 0,
+								"ttl": 60,
+								"vip_pools": [
+									{
+										"vip_pool": "web_vpool",
+										"weight": 10,
+										"priority": 10
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name}的响应数据",
+						"value": {
+							"name": "abc.com",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "IPV4",
+							"domains": [
+								"www.abc.com"
+							],
+							"method": "TOPOLOGY",
+							"edns_client_subnet": "DISABLE",
+							"persist": 0,
+							"ttl": 60,
+							"vip_pools": [
+								{
+									"vip_pool": "web_vpool",
+									"weight": 10,
+									"priority": 10
+								}
+							],
+							"topologys": [
+								{
+									"vip_pool": "web_vpool",
+									"ldns_address_group": "web_vgroup",
+									"state": "ENABLE"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -190,6 +534,66 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_domain_map_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific domain_map",
+						"description": "增量指定已有的修改域名映射",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name}",
+							"body": {
+								"name": "abc.com",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"domains": [
+									"www.abc.com"
+								],
+								"method": "TOPOLOGY",
+								"edns_client_subnet": "DISABLE",
+								"persist": 0,
+								"ttl": 60,
+								"vip_pools": [
+									{
+										"vip_pool": "web_vpool",
+										"weight": 10,
+										"priority": 10
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name}的响应数据",
+						"value": {
+							"name": "abc.com",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "IPV4",
+							"domains": [
+								"www.abc.com"
+							],
+							"method": "TOPOLOGY",
+							"edns_client_subnet": "DISABLE",
+							"persist": 0,
+							"ttl": 60,
+							"vip_pools": [
+								{
+									"vip_pool": "web_vpool",
+									"weight": 10,
+									"priority": 10
+								}
+							],
+							"topologys": [
+								{
+									"vip_pool": "web_vpool",
+									"ldns_address_group": "web_vgroup",
+									"state": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -202,6 +606,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_domain_map_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific domain_map",
+						"description": "删除指定已有的域名映射",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/gslb/{dns_config_area}/domain-map/{name}的响应数据",
+						"value": {
+							"name": "abc.com",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "IPV4",
+							"domains": [
+								"www.abc.com"
+							],
+							"method": "TOPOLOGY",
+							"edns_client_subnet": "DISABLE",
+							"persist": 0,
+							"ttl": 60,
+							"vip_pools": [
+								{
+									"vip_pool": "web_vpool",
+									"weight": 10,
+									"priority": 10
+								}
+							],
+							"topologys": [
+								{
+									"vip_pool": "web_vpool",
+									"ldns_address_group": "web_vgroup",
+									"state": "ENABLE"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -413,7 +858,7 @@ module.exports ={
 				"persist": {
 					"description": "会话保持时间，默认300",
 					"type": "integer",
-					"default": 300,
+					"default": 0,
 					"example": 300,
 					"minimum": 0,
 					"maximum": 86400

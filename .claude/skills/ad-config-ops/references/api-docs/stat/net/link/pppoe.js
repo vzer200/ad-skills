@@ -62,6 +62,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_link_pppoe_status_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get status of all link-pppoe",
+						"description": "获取所有pppoe链路详细统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/link/pppoe/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/link/pppoe/ 响应",
+						"description": "返回GET /api/ad/v3/stat/net/link/pppoe/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "Unicom_100M",
+									"state": "CONNECTED",
+									"connected_time": 31012,
+									"ip_address": "192.168.1.102",
+									"netmask": "255.255.254.0",
+									"gateway": "192.168.1.254",
+									"dns_server_1": "8.8.8.8",
+									"dns_server_2": "114.114.114.114"
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -91,6 +126,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_link_pppoe_status"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get status of link-pppoe",
+						"description": "获取指定pppoe链路链路详细统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/link/pppoe/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/link/pppoe/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/net/link/pppoe/{name}的响应数据",
+						"value": {
+							"name": "Unicom_100M",
+							"state": "CONNECTED",
+							"connected_time": 31012,
+							"ip_address": "192.168.1.102",
+							"netmask": "255.255.254.0",
+							"gateway": "192.168.1.254",
+							"dns_server_1": "8.8.8.8",
+							"dns_server_2": "114.114.114.114"
+						}
 					}
 				}
 			}

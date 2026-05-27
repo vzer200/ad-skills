@@ -62,6 +62,57 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_policy_route_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all policy-route statistics",
+						"description": "获取智能路由统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/lc/policy-route/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/lc/policy-route/ 响应",
+						"description": "返回GET /api/ad/v3/stat/lc/policy-route/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "policy_route_game_to_china_telecom",
+									"link": {
+										"total": 0,
+										"health": {
+											"normal": [
+												"example_string"
+											],
+											"busy": [
+												"example_string"
+											],
+											"failure": [
+												"example_string"
+											]
+										}
+									},
+									"hit": null,
+									"upstream_data": null,
+									"downstream_data": null,
+									"upstream_data_rate": null,
+									"downstream_data_rate": null,
+									"upstream_packet": null,
+									"downstream_packet": null,
+									"upstream_packet_rate": null,
+									"downstream_packet_rate": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -91,6 +142,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_policy_route_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific policy-route statistics",
+						"description": "获取指定智能路由统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/lc/policy-route/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/lc/policy-route/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/lc/policy-route/{name}的响应数据",
+						"value": {
+							"name": "policy_route_game_to_china_telecom",
+							"link": {
+								"total": 0,
+								"health": {
+									"normal": [
+										"example_string"
+									],
+									"busy": [
+										"example_string"
+									],
+									"failure": [
+										"example_string"
+									]
+								}
+							},
+							"hit": null,
+							"upstream_data": null,
+							"downstream_data": null,
+							"upstream_data_rate": null,
+							"downstream_data_rate": null,
+							"upstream_packet": null,
+							"downstream_packet": null,
+							"upstream_packet_rate": null,
+							"downstream_packet_rate": null
+						}
 					}
 				}
 			}

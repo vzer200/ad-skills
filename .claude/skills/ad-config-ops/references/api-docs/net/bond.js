@@ -62,6 +62,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_bond_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all bond",
+						"description": "查看聚合接口配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/bond/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/bond/ 响应",
+						"description": "返回GET /api/ad/v3/net/bond/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "mybond0",
+									"description": "example_string",
+									"interfaces": [
+										{
+											"type": "PHYSICAL",
+											"interface": "NET1",
+											"slot": ""
+										}
+									],
+									"aggregate_policy": "HASH",
+									"hash_policy": "SRC-DST-IP-MAC",
+									"8023ad_mode": "ACTIVE",
+									"lacp_timeout": "LACP-FAST",
+									"mtu": 1500,
+									"device_name": "bond0"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +121,44 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_bond_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new bond",
+						"description": "新建聚合接口配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/bond/",
+							"body": {
+								"name": "AI_mybond0_A",
+								"hash_policy": "SRC-DST-IP-MAC",
+								"8023ad_mode": "ACTIVE",
+								"lacp_timeout": "LACP-FAST",
+								"mtu": 1500
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/bond/ 响应",
+						"description": "返回POST /api/ad/v3/net/bond/的响应数据",
+						"value": {
+							"name": "AI_mybond0_A",
+							"description": "example_string",
+							"interfaces": [
+								{
+									"type": "PHYSICAL",
+									"interface": "NET1",
+									"slot": ""
+								}
+							],
+							"aggregate_policy": "HASH",
+							"hash_policy": "SRC-DST-IP-MAC",
+							"8023ad_mode": "ACTIVE",
+							"lacp_timeout": "LACP-FAST",
+							"mtu": 1500,
+							"device_name": "bond0"
+						}
 					}
 				}
 			},
@@ -98,6 +178,55 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_bond_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify bond",
+						"description": "修改聚合接口配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/bond/",
+							"body": {
+								"name": "mybond0",
+								"hash_policy": "SRC-DST-IP-MAC",
+								"8023ad_mode": "ACTIVE",
+								"lacp_timeout": "LACP-FAST",
+								"mtu": 1500
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/bond/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/bond/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "mybond0",
+									"description": "example_string",
+									"interfaces": [
+										{
+											"type": "PHYSICAL",
+											"interface": "NET1",
+											"slot": ""
+										}
+									],
+									"aggregate_policy": "HASH",
+									"hash_policy": "SRC-DST-IP-MAC",
+									"8023ad_mode": "ACTIVE",
+									"lacp_timeout": "LACP-FAST",
+									"mtu": 1500,
+									"device_name": "bond0"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -147,6 +276,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_bond_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific bond",
+						"description": "查看指定聚合接口配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/bond/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/bond/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/bond/{name}的响应数据",
+						"value": {
+							"name": "mybond0",
+							"description": "example_string",
+							"interfaces": [
+								{
+									"type": "PHYSICAL",
+									"interface": "NET1",
+									"slot": ""
+								}
+							],
+							"aggregate_policy": "HASH",
+							"hash_policy": "SRC-DST-IP-MAC",
+							"8023ad_mode": "ACTIVE",
+							"lacp_timeout": "LACP-FAST",
+							"mtu": 1500,
+							"device_name": "bond0"
+						}
+					}
 				}
 			},
 			"post": {
@@ -166,6 +326,44 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_bond_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new bond",
+						"description": "新建聚合接口配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/bond/{name}",
+							"body": {
+								"name": "AI_mybond0_B",
+								"hash_policy": "SRC-DST-IP-MAC",
+								"8023ad_mode": "ACTIVE",
+								"lacp_timeout": "LACP-FAST",
+								"mtu": 1500
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/bond/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/bond/{name}的响应数据",
+						"value": {
+							"name": "AI_mybond0_B",
+							"description": "example_string",
+							"interfaces": [
+								{
+									"type": "PHYSICAL",
+									"interface": "NET1",
+									"slot": ""
+								}
+							],
+							"aggregate_policy": "HASH",
+							"hash_policy": "SRC-DST-IP-MAC",
+							"8023ad_mode": "ACTIVE",
+							"lacp_timeout": "LACP-FAST",
+							"mtu": 1500,
+							"device_name": "bond0"
+						}
+					}
 				}
 			},
 			"put": {
@@ -183,6 +381,44 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_bond_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific bond",
+						"description": "替换指定聚合接口配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/bond/{name}",
+							"body": {
+								"name": "mybond0",
+								"hash_policy": "SRC-DST-IP-MAC",
+								"8023ad_mode": "ACTIVE",
+								"lacp_timeout": "LACP-FAST",
+								"mtu": 1500
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/bond/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/bond/{name}的响应数据",
+						"value": {
+							"name": "mybond0",
+							"description": "example_string",
+							"interfaces": [
+								{
+									"type": "PHYSICAL",
+									"interface": "NET1",
+									"slot": ""
+								}
+							],
+							"aggregate_policy": "HASH",
+							"hash_policy": "SRC-DST-IP-MAC",
+							"8023ad_mode": "ACTIVE",
+							"lacp_timeout": "LACP-FAST",
+							"mtu": 1500,
+							"device_name": "bond0"
+						}
 					}
 				}
 			},
@@ -202,6 +438,44 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_bond_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific bond",
+						"description": "修改指定聚合接口配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/bond/{name}",
+							"body": {
+								"name": "mybond0",
+								"hash_policy": "SRC-DST-IP-MAC",
+								"8023ad_mode": "ACTIVE",
+								"lacp_timeout": "LACP-FAST",
+								"mtu": 1500
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/bond/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/bond/{name}的响应数据",
+						"value": {
+							"name": "mybond0",
+							"description": "example_string",
+							"interfaces": [
+								{
+									"type": "PHYSICAL",
+									"interface": "NET1",
+									"slot": ""
+								}
+							],
+							"aggregate_policy": "HASH",
+							"hash_policy": "SRC-DST-IP-MAC",
+							"8023ad_mode": "ACTIVE",
+							"lacp_timeout": "LACP-FAST",
+							"mtu": 1500,
+							"device_name": "bond0"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -214,6 +488,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_bond_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific bond",
+						"description": "删除指定聚合接口配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/bond/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/bond/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/bond/{name}的响应数据",
+						"value": {
+							"name": "mybond0",
+							"description": "example_string",
+							"interfaces": [
+								{
+									"type": "PHYSICAL",
+									"interface": "NET1",
+									"slot": ""
+								}
+							],
+							"aggregate_policy": "HASH",
+							"hash_policy": "SRC-DST-IP-MAC",
+							"8023ad_mode": "ACTIVE",
+							"lacp_timeout": "LACP-FAST",
+							"mtu": 1500,
+							"device_name": "bond0"
+						}
 					}
 				}
 			}
@@ -397,8 +702,8 @@ module.exports ={
 					"example": "ACTIVE"
 				},
 				"lacp_timeout": {
-					"description": "bond口的lacp超时模式",
 					"type": "string",
+					"description": "bond口的lacp超时模式",
 					"enum": [
 						"LACP-SLOW",
 						"LACP-FAST"

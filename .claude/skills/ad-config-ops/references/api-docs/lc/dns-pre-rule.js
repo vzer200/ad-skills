@@ -62,6 +62,55 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_pre_rule_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-pre-rule",
+						"description": "查看优先代理策略信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/dns-pre-rule/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/dns-pre-rule/ 响应",
+						"description": "返回GET /api/ad/v3/lc/dns-pre-rule/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "internal_domain_prerule",
+									"description": "example_string",
+									"position": 65535,
+									"state": "ENABLE",
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"query_domain": {
+										"type": "ALL",
+										"domain": "www.example.com",
+										"ref_domain_group": "foreign_domain_group"
+									},
+									"sched_servers": [
+										{
+											"link": "WAN_1",
+											"server": "192.168.1.254"
+										}
+									],
+									"link_busy_protect": "DISABLE",
+									"sched_failure": "NEXT-RULE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +128,60 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_pre_rule_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-pre-rule",
+						"description": "新建优先代理策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/lc/dns-pre-rule/",
+							"body": {
+								"name": "AI_internal_domain_prerule_A",
+								"position": 65535,
+								"state": "ENABLE",
+								"source_address": {
+									"type": "ALL"
+								},
+								"sched_servers": [
+									{
+										"link": "WAN_1",
+										"server": "192.168.1.254"
+									}
+								],
+								"link_busy_protect": "DISABLE",
+								"sched_failure": "NEXT-RULE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/lc/dns-pre-rule/ 响应",
+						"description": "返回POST /api/ad/v3/lc/dns-pre-rule/的响应数据",
+						"value": {
+							"name": "AI_internal_domain_prerule_A",
+							"description": "example_string",
+							"position": 65535,
+							"state": "ENABLE",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"query_domain": {
+								"type": "ALL",
+								"domain": "www.example.com",
+								"ref_domain_group": "foreign_domain_group"
+							},
+							"sched_servers": [
+								{
+									"link": "WAN_1",
+									"server": "192.168.1.254"
+								}
+							],
+							"link_busy_protect": "DISABLE",
+							"sched_failure": "NEXT-RULE"
+						}
 					}
 				}
 			},
@@ -124,6 +227,44 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_pre_rule_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-pre-rule",
+						"description": "查看优先代理策略信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/dns-pre-rule/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/dns-pre-rule/{name} 响应",
+						"description": "返回GET /api/ad/v3/lc/dns-pre-rule/{name}的响应数据",
+						"value": {
+							"name": "internal_domain_prerule",
+							"description": "example_string",
+							"position": 65535,
+							"state": "ENABLE",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"query_domain": {
+								"type": "ALL",
+								"domain": "www.example.com",
+								"ref_domain_group": "foreign_domain_group"
+							},
+							"sched_servers": [
+								{
+									"link": "WAN_1",
+									"server": "192.168.1.254"
+								}
+							],
+							"link_busy_protect": "DISABLE",
+							"sched_failure": "NEXT-RULE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -143,6 +284,60 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_pre_rule_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-pre-rule",
+						"description": "新建优先代理策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/lc/dns-pre-rule/{name}",
+							"body": {
+								"name": "AI_internal_domain_prerule_B",
+								"position": 65535,
+								"state": "ENABLE",
+								"source_address": {
+									"type": "ALL"
+								},
+								"sched_servers": [
+									{
+										"link": "WAN_1",
+										"server": "192.168.1.254"
+									}
+								],
+								"link_busy_protect": "DISABLE",
+								"sched_failure": "NEXT-RULE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/lc/dns-pre-rule/{name} 响应",
+						"description": "返回POST /api/ad/v3/lc/dns-pre-rule/{name}的响应数据",
+						"value": {
+							"name": "AI_internal_domain_prerule_B",
+							"description": "example_string",
+							"position": 65535,
+							"state": "ENABLE",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"query_domain": {
+								"type": "ALL",
+								"domain": "www.example.com",
+								"ref_domain_group": "foreign_domain_group"
+							},
+							"sched_servers": [
+								{
+									"link": "WAN_1",
+									"server": "192.168.1.254"
+								}
+							],
+							"link_busy_protect": "DISABLE",
+							"sched_failure": "NEXT-RULE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -160,6 +355,60 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_pre_rule_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-pre-rule",
+						"description": "更新优先代理策略配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/lc/dns-pre-rule/{name}",
+							"body": {
+								"name": "internal_domain_prerule",
+								"position": 65535,
+								"state": "ENABLE",
+								"source_address": {
+									"type": "ALL"
+								},
+								"sched_servers": [
+									{
+										"link": "WAN_1",
+										"server": "192.168.1.254"
+									}
+								],
+								"link_busy_protect": "DISABLE",
+								"sched_failure": "NEXT-RULE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/lc/dns-pre-rule/{name} 响应",
+						"description": "返回PUT /api/ad/v3/lc/dns-pre-rule/{name}的响应数据",
+						"value": {
+							"name": "internal_domain_prerule",
+							"description": "example_string",
+							"position": 65535,
+							"state": "ENABLE",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"query_domain": {
+								"type": "ALL",
+								"domain": "www.example.com",
+								"ref_domain_group": "foreign_domain_group"
+							},
+							"sched_servers": [
+								{
+									"link": "WAN_1",
+									"server": "192.168.1.254"
+								}
+							],
+							"link_busy_protect": "DISABLE",
+							"sched_failure": "NEXT-RULE"
+						}
 					}
 				}
 			},
@@ -179,6 +428,60 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_pre_rule_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-pre-rule",
+						"description": "更新优先代理策略配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/lc/dns-pre-rule/{name}",
+							"body": {
+								"name": "internal_domain_prerule",
+								"position": 65535,
+								"state": "ENABLE",
+								"source_address": {
+									"type": "ALL"
+								},
+								"sched_servers": [
+									{
+										"link": "WAN_1",
+										"server": "192.168.1.254"
+									}
+								],
+								"link_busy_protect": "DISABLE",
+								"sched_failure": "NEXT-RULE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/lc/dns-pre-rule/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/lc/dns-pre-rule/{name}的响应数据",
+						"value": {
+							"name": "internal_domain_prerule",
+							"description": "example_string",
+							"position": 65535,
+							"state": "ENABLE",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"query_domain": {
+								"type": "ALL",
+								"domain": "www.example.com",
+								"ref_domain_group": "foreign_domain_group"
+							},
+							"sched_servers": [
+								{
+									"link": "WAN_1",
+									"server": "192.168.1.254"
+								}
+							],
+							"link_busy_protect": "DISABLE",
+							"sched_failure": "NEXT-RULE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +494,44 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_pre_rule_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-pre-rule",
+						"description": "删除优先代理策略配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/lc/dns-pre-rule/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/lc/dns-pre-rule/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/lc/dns-pre-rule/{name}的响应数据",
+						"value": {
+							"name": "internal_domain_prerule",
+							"description": "example_string",
+							"position": 65535,
+							"state": "ENABLE",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"query_domain": {
+								"type": "ALL",
+								"domain": "www.example.com",
+								"ref_domain_group": "foreign_domain_group"
+							},
+							"sched_servers": [
+								{
+									"link": "WAN_1",
+									"server": "192.168.1.254"
+								}
+							],
+							"link_busy_protect": "DISABLE",
+							"sched_failure": "NEXT-RULE"
+						}
 					}
 				}
 			}

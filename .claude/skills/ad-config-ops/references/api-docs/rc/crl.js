@@ -62,6 +62,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_crl_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all crl",
+						"description": "获取crl证书配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/crl/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/crl/ 响应",
+						"description": "返回GET /api/ad/v3/rc/crl/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.abc.com_crl",
+									"description": "example_string",
+									"method": "FILE",
+									"file_token": "example_string",
+									"url": "http://",
+									"username": "example_string",
+									"password": "example_string",
+									"pk_password": "A1B2C3D4",
+									"encrypted_password": "A1B2C3D4",
+									"timeout": 10,
+									"interval": 21600,
+									"retry_times": 3,
+									"network": "AUTO"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +119,44 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_crl_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new crl",
+						"description": "新建crl证书配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/crl/",
+							"body": {
+								"name": "AI_www.abc.com_crl_A",
+								"method": "FILE",
+								"url": "http://",
+								"timeout": 10,
+								"interval": 21600,
+								"retry_times": 3,
+								"network": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/crl/ 响应",
+						"description": "返回POST /api/ad/v3/rc/crl/的响应数据",
+						"value": {
+							"name": "AI_www.abc.com_crl_A",
+							"description": "example_string",
+							"method": "FILE",
+							"file_token": "example_string",
+							"url": "http://",
+							"username": "example_string",
+							"password": "example_string",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"timeout": 10,
+							"interval": 21600,
+							"retry_times": 3,
+							"network": "AUTO"
+						}
 					}
 				}
 			},
@@ -98,6 +176,55 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_crl_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify crl",
+						"description": "修改crl证书配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/crl/",
+							"body": {
+								"name": "www.abc.com_crl",
+								"method": "FILE",
+								"url": "http://",
+								"timeout": 10,
+								"interval": 21600,
+								"retry_times": 3,
+								"network": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/crl/ 响应",
+						"description": "返回PATCH /api/ad/v3/rc/crl/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.abc.com_crl",
+									"description": "example_string",
+									"method": "FILE",
+									"file_token": "example_string",
+									"url": "http://",
+									"username": "example_string",
+									"password": "example_string",
+									"pk_password": "A1B2C3D4",
+									"encrypted_password": "A1B2C3D4",
+									"timeout": 10,
+									"interval": 21600,
+									"retry_times": 3,
+									"network": "AUTO"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -147,6 +274,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_crl_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific crl",
+						"description": "获取crl证书配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/crl/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/crl/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/crl/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_crl",
+							"description": "example_string",
+							"method": "FILE",
+							"file_token": "example_string",
+							"url": "http://",
+							"username": "example_string",
+							"password": "example_string",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"timeout": 10,
+							"interval": 21600,
+							"retry_times": 3,
+							"network": "AUTO"
+						}
+					}
 				}
 			},
 			"post": {
@@ -166,6 +322,44 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_crl_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new crl",
+						"description": "新建crl证书配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/crl/{name}",
+							"body": {
+								"name": "AI_www.abc.com_crl_B",
+								"method": "FILE",
+								"url": "http://",
+								"timeout": 10,
+								"interval": 21600,
+								"retry_times": 3,
+								"network": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/crl/{name} 响应",
+						"description": "返回POST /api/ad/v3/rc/crl/{name}的响应数据",
+						"value": {
+							"name": "AI_www.abc.com_crl_B",
+							"description": "example_string",
+							"method": "FILE",
+							"file_token": "example_string",
+							"url": "http://",
+							"username": "example_string",
+							"password": "example_string",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"timeout": 10,
+							"interval": 21600,
+							"retry_times": 3,
+							"network": "AUTO"
+						}
+					}
 				}
 			},
 			"put": {
@@ -183,6 +377,44 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_crl_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific crl",
+						"description": "修改crl证书配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/rc/crl/{name}",
+							"body": {
+								"name": "www.abc.com_crl",
+								"method": "FILE",
+								"url": "http://",
+								"timeout": 10,
+								"interval": 21600,
+								"retry_times": 3,
+								"network": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/rc/crl/{name} 响应",
+						"description": "返回PUT /api/ad/v3/rc/crl/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_crl",
+							"description": "example_string",
+							"method": "FILE",
+							"file_token": "example_string",
+							"url": "http://",
+							"username": "example_string",
+							"password": "example_string",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"timeout": 10,
+							"interval": 21600,
+							"retry_times": 3,
+							"network": "AUTO"
+						}
 					}
 				}
 			},
@@ -202,6 +434,44 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_crl_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific crl",
+						"description": "修改crl证书配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/crl/{name}",
+							"body": {
+								"name": "www.abc.com_crl",
+								"method": "FILE",
+								"url": "http://",
+								"timeout": 10,
+								"interval": 21600,
+								"retry_times": 3,
+								"network": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/crl/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/rc/crl/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_crl",
+							"description": "example_string",
+							"method": "FILE",
+							"file_token": "example_string",
+							"url": "http://",
+							"username": "example_string",
+							"password": "example_string",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"timeout": 10,
+							"interval": 21600,
+							"retry_times": 3,
+							"network": "AUTO"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -214,6 +484,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_crl_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific crl",
+						"description": "删除crl证书配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/rc/crl/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/rc/crl/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/rc/crl/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_crl",
+							"description": "example_string",
+							"method": "FILE",
+							"file_token": "example_string",
+							"url": "http://",
+							"username": "example_string",
+							"password": "example_string",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"timeout": 10,
+							"interval": 21600,
+							"retry_times": 3,
+							"network": "AUTO"
+						}
 					}
 				}
 			}

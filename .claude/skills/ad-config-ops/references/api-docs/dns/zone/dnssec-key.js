@@ -65,6 +65,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dnssec_key_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dnssec-key",
+						"description": "查看DNSSEC密钥配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/ 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "dnssec_key_1",
+									"description": "example_string",
+									"key_type": "ZONE-SIGNING-KEY",
+									"algorithm": "RSA/SHA1",
+									"bit_width": 1024,
+									"ttl": 86400
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -88,6 +121,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dnssec_key_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dnssec-key",
+						"description": "创建一个DNSSEC密钥配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/",
+							"body": {
+								"name": "AI_dnssec_key_1_A",
+								"key_type": "ZONE-SIGNING-KEY",
+								"algorithm": "RSA/SHA1",
+								"bit_width": 1024,
+								"ttl": 86400
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/ 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/的响应数据",
+						"value": {
+							"name": "AI_dnssec_key_1_A",
+							"description": "example_string",
+							"key_type": "ZONE-SIGNING-KEY",
+							"algorithm": "RSA/SHA1",
+							"bit_width": 1024,
+							"ttl": 86400
+						}
 					}
 				}
 			}
@@ -122,6 +184,28 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dnssec_key_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dnssec-key",
+						"description": "查看指定的DNSSEC密钥配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name}的响应数据",
+						"value": {
+							"name": "dnssec_key_1",
+							"description": "example_string",
+							"key_type": "ZONE-SIGNING-KEY",
+							"algorithm": "RSA/SHA1",
+							"bit_width": 1024,
+							"ttl": 86400
+						}
+					}
 				}
 			},
 			"post": {
@@ -141,6 +225,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dnssec_key_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dnssec-key",
+						"description": "创建一个DNSSEC密钥",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name}",
+							"body": {
+								"name": "AI_dnssec_key_1_B",
+								"key_type": "ZONE-SIGNING-KEY",
+								"algorithm": "RSA/SHA1",
+								"bit_width": 1024,
+								"ttl": 86400
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name}的响应数据",
+						"value": {
+							"name": "AI_dnssec_key_1_B",
+							"description": "example_string",
+							"key_type": "ZONE-SIGNING-KEY",
+							"algorithm": "RSA/SHA1",
+							"bit_width": 1024,
+							"ttl": 86400
+						}
+					}
 				}
 			},
 			"put": {
@@ -158,6 +271,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dnssec_key_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dnssec-key",
+						"description": "修改指定的DNSSEC密钥",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name}",
+							"body": {
+								"name": "dnssec_key_1",
+								"key_type": "ZONE-SIGNING-KEY",
+								"algorithm": "RSA/SHA1",
+								"bit_width": 1024,
+								"ttl": 86400
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name}的响应数据",
+						"value": {
+							"name": "dnssec_key_1",
+							"description": "example_string",
+							"key_type": "ZONE-SIGNING-KEY",
+							"algorithm": "RSA/SHA1",
+							"bit_width": 1024,
+							"ttl": 86400
+						}
 					}
 				}
 			},
@@ -177,6 +319,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dnssec_key_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dnssec-key",
+						"description": "增量修改指定的DNSSEC密钥",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name}",
+							"body": {
+								"name": "dnssec_key_1",
+								"key_type": "ZONE-SIGNING-KEY",
+								"algorithm": "RSA/SHA1",
+								"bit_width": 1024,
+								"ttl": 86400
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name}的响应数据",
+						"value": {
+							"name": "dnssec_key_1",
+							"description": "example_string",
+							"key_type": "ZONE-SIGNING-KEY",
+							"algorithm": "RSA/SHA1",
+							"bit_width": 1024,
+							"ttl": 86400
+						}
+					}
 				}
 			},
 			"delete": {
@@ -189,6 +360,28 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dnssec_key_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dnssec-key",
+						"description": "删除指定的DNSSEC密钥",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/zone/{dns_config_area}/dnssec-key/{name}的响应数据",
+						"value": {
+							"name": "dnssec_key_1",
+							"description": "example_string",
+							"key_type": "ZONE-SIGNING-KEY",
+							"algorithm": "RSA/SHA1",
+							"bit_width": 1024,
+							"ttl": 86400
+						}
 					}
 				}
 			}

@@ -310,6 +310,8 @@ const FRESH_AGENT_PROFILE =
   "6. 用户可见正文只能回答任务结果或必要问题，不要解释你遵守了哪个技能规则、工具规则或系统规则。";
 const FRESH_AGENT_INIT_PROMPT =
   "你是一个通用智能体，现在需要你进行初始化。你需要阅读技能 “Self-Improving + Proactive Agent” 与技能 “Proactivity (Proactive Agent)”，并执行初始化流程。";
+const FRESH_AGENT_INIT_CONFIRM_PROMPT =
+  "同意以上 SOUL.md、AGENTS.md、HEARTBEAT.md 等初始化配置变更，请继续写入并完成初始化。完成后请简要确认初始化已完成。";
 
 const R4_ACCEPTANCE_TARGET = {
   vsName: "wb_vs_workbot_flow_01",
@@ -359,13 +361,13 @@ const R1_OLD_PROGRESS_TEXT_RE = /目前巡检\s+\d+\s*\/\s*\d+/;
 
 const cases = {
   cleanup: {
-    prompt: "清理旧 AD skills 和记忆。必须先出现真实工具调用：shell 查删 skills/ad-*，cron_list 查任务，memory_export/memory_purge 清记忆，再用 shell 和 memory_export 验证；最终正文只回答清理完成，不要列工具、命令、退出码或 stdout/stderr。",
+    prompt: "清理旧 AD skills 和记忆。必须先出现真实工具调用：shell 查删 skills/ad-* 和 skills/sangforad-cli，cron_list 查任务，memory_export/memory_purge 清记忆，再用 shell 和 memory_export 验证；最终正文只回答清理完成，不要列工具、命令、退出码或 stdout/stderr。",
     expected: ["skill", "记忆"],
     requireTools: true,
   },
   install: {
-    prompt: "请安装我刚上传的 AD skills 包，并确认 5 个 skill 都可用。",
-    expected: ["ad-check-analysis", "ad-config-ops", "ad-connect", "ad-ops", "ad-perception", "SKILL.md"],
+    prompt: "请安装我刚上传的 AD skills 包，并确认 6 个 skill 都可用。",
+    expected: ["ad-check-analysis", "ad-config-ops", "ad-connect", "ad-ops", "ad-perception", "sangforad-cli", "SKILL.md"],
     requireTools: true,
   },
   r1: {
@@ -663,6 +665,29 @@ const cases = {
     expected: ["AD1", "init_env.py", "adops-bundle.yml", "plan-and-render", "summarize-plan", "preflight-slb-plan", "apply.py", "rollback_apply.py"],
     commandExpected: ["init_env.py", "ad_ops_flow.py", "plan-and-render", "summarize-plan", "preflight-slb-plan"],
     commandForbidden: ["apply-slb-plan", "rollback-and-verify"],
+    requireTools: true,
+  },
+  "cli-script": {
+    steps: [
+      { upload: R4_YAML_PATH, name: "cli-yaml" },
+      "请使用 sangforad-cli，根据刚上传的 YAML 生成 Sangfor AD CLI 命令脚本 apply.sfcli。只生成离线产物，不要连接设备或下发。最终说明产出物和下一步。",
+    ],
+    expected: ["sangforad-cli", "render_cli.py", "apply.sfcli"],
+    commandExpected: ["render_cli.py"],
+    commandForbidden: ["apply-slb-plan", "rollback-and-verify", "--execute"],
+    visibleForbidden: ["已下发", "执行成功"],
+    requireTools: true,
+  },
+  "cli-r4-full": {
+    steps: [
+      "在 AD1 上帮我创建一个 HTTP 虚拟服务，引用节点池、HTTP 前置策略和 http 优化策略。必须先用工具清理 /opt/agent/data/outputs 目录里的上一轮输出产物，然后只生成需要我填写的 adops-bundle.yml YAML 产物，并放到 outputs/adops-bundle.yml；不要生成脚本、不要下发。",
+      { upload: R4_YAML_PATH, name: "filled-r4-yaml" },
+      "我已经下载并填写了 YAML，刚刚上传的是填好的 R4 YAML。请使用 sangforad-cli，根据刚上传的 YAML 生成 Sangfor AD CLI 命令脚本 apply.sfcli。只生成离线产物，不要连接设备或下发。最终说明产出物和下一步。",
+    ],
+    expected: ["AD1", "init_env.py", "adops-bundle.yml", "sangforad-cli", "render_cli.py", "apply.sfcli"],
+    commandExpected: ["init_env.py", "render_cli.py"],
+    commandForbidden: ["apply-slb-plan", "rollback-and-verify", "--execute"],
+    visibleForbidden: ["已下发", "执行成功"],
     requireTools: true,
   },
   "r4-pool-profile-script": {
@@ -1175,11 +1200,28 @@ async function initializeFreshAgent(page) {
   if (!response.toolEvidence.hasEvidence) {
     throw new Error("fresh agent initialization did not show tool-call evidence");
   }
+  const responseText = `${response.visibleText || ""}\n${response.visibleAgentText || ""}\n${response.text || ""}\n${response.agentText || ""}`;
+  const needsConfigConfirmation =
+    responseText.includes("SOUL.md") &&
+    responseText.includes("HEARTBEAT.md") &&
+    /确认|同意|AGENTS\.md/.test(responseText);
+  let confirmation = null;
+  if (needsConfigConfirmation) {
+    confirmation = await sendPrompt(page, "fresh-agent-init-confirm", FRESH_AGENT_INIT_CONFIRM_PROMPT);
+  }
   return {
     prompt: FRESH_AGENT_INIT_PROMPT,
     visibleText: response.visibleText,
     artifacts: response.artifacts,
     toolCandidateCount: response.toolEvidence.candidates.length,
+    confirmation: confirmation
+      ? {
+          prompt: FRESH_AGENT_INIT_CONFIRM_PROMPT,
+          visibleText: confirmation.visibleText,
+          artifacts: confirmation.artifacts,
+          toolCandidateCount: confirmation.toolEvidence.candidates.length,
+        }
+      : null,
   };
 }
 

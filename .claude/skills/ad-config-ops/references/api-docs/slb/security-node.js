@@ -65,6 +65,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_security_node_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all security-nodes",
+						"description": "查看当前安全资源池已有的安全设备配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/security-node"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/security-node 响应",
+						"description": "返回GET /api/ad/v3/slb/security-node的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "waf_1",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "L2",
+									"security_pool": "WAF_POOL",
+									"weight": 10,
+									"priority_level": 1,
+									"inbound_interface": "inbound_interface1",
+									"outbound_interface": "outbound_interface1",
+									"ip_address": "192.168.1.101",
+									"mac_address": "FE-FC-FA-11-57-50",
+									"inherit_pool_monitor": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +125,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_security_node_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new security-node",
+						"description": "在当前安全资源池新建一个安全设备",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/security-node",
+							"body": {
+								"state": "ENABLE",
+								"type": "L2",
+								"security_pool": "WAF_POOL",
+								"weight": 10,
+								"priority_level": 1,
+								"outbound_interface": "outbound_interface1",
+								"ip_address": "192.168.1.101",
+								"inherit_pool_monitor": "ENABLE",
+								"available_requirement": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/security-node 响应",
+						"description": "返回POST /api/ad/v3/slb/security-node的响应数据",
+						"value": {
+							"name": "AI_waf_1_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "L2",
+							"security_pool": "WAF_POOL",
+							"weight": 10,
+							"priority_level": 1,
+							"inbound_interface": "inbound_interface1",
+							"outbound_interface": "outbound_interface1",
+							"ip_address": "192.168.1.101",
+							"mac_address": "FE-FC-FA-11-57-50",
+							"inherit_pool_monitor": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0
+						}
 					}
 				}
 			}
@@ -113,6 +199,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_security_node_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific security-node",
+						"description": "查看当前安全资源池的指定安全设备配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/security-node/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/security-node/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/security-node/{name}的响应数据",
+						"value": {
+							"name": "waf_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "L2",
+							"security_pool": "WAF_POOL",
+							"weight": 10,
+							"priority_level": 1,
+							"inbound_interface": "inbound_interface1",
+							"outbound_interface": "outbound_interface1",
+							"ip_address": "192.168.1.101",
+							"mac_address": "FE-FC-FA-11-57-50",
+							"inherit_pool_monitor": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0
+						}
+					}
 				}
 			},
 			"put": {
@@ -130,6 +248,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_security_node_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific security-node",
+						"description": "修改当前安全资源池的指定安全设备配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/security-node/{name}",
+							"body": {
+								"state": "ENABLE",
+								"type": "L2",
+								"security_pool": "WAF_POOL",
+								"weight": 10,
+								"priority_level": 1,
+								"outbound_interface": "outbound_interface1",
+								"ip_address": "192.168.1.101",
+								"inherit_pool_monitor": "ENABLE",
+								"available_requirement": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/security-node/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/security-node/{name}的响应数据",
+						"value": {
+							"name": "waf_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "L2",
+							"security_pool": "WAF_POOL",
+							"weight": 10,
+							"priority_level": 1,
+							"inbound_interface": "inbound_interface1",
+							"outbound_interface": "outbound_interface1",
+							"ip_address": "192.168.1.101",
+							"mac_address": "FE-FC-FA-11-57-50",
+							"inherit_pool_monitor": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0
+						}
 					}
 				}
 			},
@@ -149,6 +310,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_security_node_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific security-node",
+						"description": "修改当前安全资源池的指定安全设备配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/security-node/{name}",
+							"body": {
+								"state": "ENABLE",
+								"type": "L2",
+								"security_pool": "WAF_POOL",
+								"weight": 10,
+								"priority_level": 1,
+								"outbound_interface": "outbound_interface1",
+								"ip_address": "192.168.1.101",
+								"inherit_pool_monitor": "ENABLE",
+								"available_requirement": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/security-node/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/security-node/{name}的响应数据",
+						"value": {
+							"name": "waf_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "L2",
+							"security_pool": "WAF_POOL",
+							"weight": 10,
+							"priority_level": 1,
+							"inbound_interface": "inbound_interface1",
+							"outbound_interface": "outbound_interface1",
+							"ip_address": "192.168.1.101",
+							"mac_address": "FE-FC-FA-11-57-50",
+							"inherit_pool_monitor": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0
+						}
+					}
 				}
 			},
 			"delete": {
@@ -161,6 +365,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_security_node_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific security-node",
+						"description": "删除修改当前安全资源池的指定安全设备",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/security-node/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/security-node/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/security-node/{name}的响应数据",
+						"value": {
+							"name": "waf_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "L2",
+							"security_pool": "WAF_POOL",
+							"weight": 10,
+							"priority_level": 1,
+							"inbound_interface": "inbound_interface1",
+							"outbound_interface": "outbound_interface1",
+							"ip_address": "192.168.1.101",
+							"mac_address": "FE-FC-FA-11-57-50",
+							"inherit_pool_monitor": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0
+						}
 					}
 				}
 			}
@@ -298,11 +534,11 @@ module.exports ={
 					"example": "WAF_POOL"
 				},
 				"weight": {
-					"description": "指定安全设备的权重，取值范围为[1,100],默认为10",
+					"description": "指定安全设备的权重，取值范围为[1,1000],默认为10",
 					"type": "integer",
 					"default": 10,
 					"example": 10,
-					"maximum": 100,
+					"maximum": 1000,
 					"minimum": 1
 				},
 				"priority_level": {

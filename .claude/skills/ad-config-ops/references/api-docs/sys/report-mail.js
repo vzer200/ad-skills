@@ -51,6 +51,26 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_report_mail_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get report-mail",
+						"description": "查看当前已有的报表自动生成配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/report-mail"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/report-mail 响应",
+						"description": "返回GET /api/ad/v3/sys/report-mail的响应数据",
+						"value": {
+							"smtp": "NONE",
+							"title": "DC_operate_report",
+							"receipt_to": "abc@company.com",
+							"mail_from": "abc@company.com"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +89,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_report_mail_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace report-mail",
+						"description": "修改报表自动生成配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/report-mail",
+							"body": {
+								"smtp": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/report-mail 响应",
+						"description": "返回PUT /api/ad/v3/sys/report-mail的响应数据",
+						"value": {
+							"smtp": "NONE",
+							"title": "DC_operate_report",
+							"receipt_to": "abc@company.com",
+							"mail_from": "abc@company.com"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +129,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_report_mail_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify report-mail",
+						"description": "修改报表自动生成配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/report-mail",
+							"body": {
+								"smtp": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/report-mail 响应",
+						"description": "返回PATCH /api/ad/v3/sys/report-mail的响应数据",
+						"value": {
+							"smtp": "NONE",
+							"title": "DC_operate_report",
+							"receipt_to": "abc@company.com",
+							"mail_from": "abc@company.com"
+						}
 					}
 				}
 			},

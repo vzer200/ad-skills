@@ -56,6 +56,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_batch_job_result"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create a batch job",
+						"description": "创建批量请求",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/batch",
+							"body": [
+								{
+									"method": "PATCH",
+									"uri": "/api/sys/host/?filter=host%20eq%20www.test.com&select=name,state"
+								}
+							]
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/batch 响应",
+						"description": "返回POST /api/ad/v3/batch的响应数据",
+						"value": [
+							{
+								"status_code": 200,
+								"status_description": "OK",
+								"payload": {}
+							}
+						]
+					}
 				}
 			}
 		}

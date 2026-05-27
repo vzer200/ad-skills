@@ -65,6 +65,69 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_pool_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all pool statistics",
+						"description": "获取节点池状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/pool/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/pool/ 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/pool/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "",
+									"description": "example_string",
+									"health": "NORMAL",
+									"node": {
+										"total": 0,
+										"state": {
+											"enable": [
+												"example_string"
+											],
+											"disable": [
+												"example_string"
+											],
+											"offline": [
+												"example_string"
+											]
+										},
+										"health": {
+											"normal": [
+												"example_string"
+											],
+											"failure": [
+												"example_string"
+											],
+											"busy": [
+												"example_string"
+											]
+										}
+									},
+									"connection": null,
+									"connection_established": null,
+									"connection_rate": null,
+									"http_request_rate": null,
+									"upstream_throughput": null,
+									"downstream_throughput": null,
+									"general_throughput": null,
+									"netns": "default"
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -97,6 +160,58 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_pool_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pool statistics",
+						"description": "获取指定节点池状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/pool/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/pool/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/pool/{name}的响应数据",
+						"value": {
+							"name": "",
+							"description": "example_string",
+							"health": "NORMAL",
+							"node": {
+								"total": 0,
+								"state": {
+									"enable": [
+										"example_string"
+									],
+									"disable": [
+										"example_string"
+									],
+									"offline": [
+										"example_string"
+									]
+								},
+								"health": {
+									"normal": [
+										"example_string"
+									],
+									"failure": [
+										"example_string"
+									],
+									"busy": [
+										"example_string"
+									]
+								}
+							},
+							"connection": null,
+							"connection_established": null,
+							"connection_rate": null,
+							"http_request_rate": null,
+							"upstream_throughput": null,
+							"downstream_throughput": null,
+							"general_throughput": null,
+							"netns": "default"
+						}
 					}
 				}
 			}
@@ -134,6 +249,33 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pool statistics",
+						"description": "获取指定节点池状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/pool/{name}/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/pool/{name}/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/pool/{name}/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -160,6 +302,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_pool_summary"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pool statistics",
+						"description": "获取节点池概览信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/pool-summary/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/pool-summary/ 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/pool-summary/的响应数据",
+						"value": {
+							"pool_count": {
+								"total": 0,
+								"health": {
+									"normal": 0,
+									"failure": 0,
+									"busy": 0,
+									"alert": 0
+								}
+							},
+							"node_count": {
+								"total": 0,
+								"state": {
+									"enable": 0,
+									"disable": 0,
+									"offline": 0
+								},
+								"health": {
+									"normal": 0,
+									"failure": 0,
+									"busy": 0
+								}
+							},
+							"connection": null,
+							"connection_established": null,
+							"connection_rate": null,
+							"http_request_rate": null,
+							"upstream_throughput": null,
+							"downstream_throughput": null,
+							"general_throughput": null
+						}
 					}
 				}
 			}
@@ -194,6 +381,33 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pool statistics",
+						"description": "获取节点池某个条目的状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/pool-summary/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/pool-summary/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/pool-summary/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -226,6 +440,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend_multiple_items"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pool statistics combine-items",
+						"description": "获取节点池多个条目的状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/pool-summary/combine-items"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/pool-summary/combine-items 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/pool-summary/combine-items的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"timestamp": 0,
+							"items": [
+								{
+									"item": "example_string",
+									"feature": "DISABLE",
+									"unit": "BIT-PER-SECOND",
+									"values": [
+										0
+									],
+									"additional_data": [
+										null
+									]
+								}
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
 					}
 				}
 			}

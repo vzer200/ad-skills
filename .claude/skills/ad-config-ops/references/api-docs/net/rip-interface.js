@@ -62,6 +62,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_rip_interface_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all rip-interface",
+						"description": "获取rip动态路由接口配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/rip-interface/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/rip-interface/ 响应",
+						"description": "返回GET /api/ad/v3/net/rip-interface/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "Lan_1",
+									"description": "example_string",
+									"link": "Lan_1",
+									"version": 2,
+									"Authentication": {
+										"mode": "NONE",
+										"key-id": 0,
+										"key-string": "example_string"
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +115,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_rip_interface_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new rip-interface",
+						"description": "POST /api/ad/v3/net/rip-interface/",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/rip-interface/",
+							"body": {
+								"name": "AI_Lan_1_A",
+								"link": "Lan_1",
+								"version": 2
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/rip-interface/ 响应",
+						"description": "返回POST /api/ad/v3/net/rip-interface/的响应数据",
+						"value": {
+							"name": "AI_Lan_1_A",
+							"description": "example_string",
+							"link": "Lan_1",
+							"version": 2,
+							"Authentication": {
+								"mode": "NONE",
+								"key-id": 0,
+								"key-string": "example_string"
+							}
+						}
 					}
 				}
 			},
@@ -98,6 +164,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_rip_interface_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify rip-interface",
+						"description": "The PATCH method updates specific properties of one config.",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/rip-interface/",
+							"body": {
+								"name": "Lan_1",
+								"link": "Lan_1",
+								"version": 2
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/rip-interface/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/rip-interface/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "Lan_1",
+									"description": "example_string",
+									"link": "Lan_1",
+									"version": 2,
+									"Authentication": {
+										"mode": "NONE",
+										"key-id": 0,
+										"key-string": "example_string"
+									}
+								}
+							]
+						}
 					}
 				}
 			},
@@ -151,6 +258,31 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_rip_interface_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific rip-interface",
+						"description": "GET /api/ad/v3/net/rip-interface/{name}",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/rip-interface/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/rip-interface/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/rip-interface/{name}的响应数据",
+						"value": {
+							"name": "Lan_1",
+							"description": "example_string",
+							"link": "Lan_1",
+							"version": 2,
+							"Authentication": {
+								"mode": "NONE",
+								"key-id": 0,
+								"key-string": "example_string"
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -170,6 +302,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_rip_interface_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new rip-interface",
+						"description": "POST /api/ad/v3/net/rip-interface/{name}",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/rip-interface/{name}",
+							"body": {
+								"name": "AI_Lan_1_B",
+								"link": "Lan_1",
+								"version": 2
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/rip-interface/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/rip-interface/{name}的响应数据",
+						"value": {
+							"name": "AI_Lan_1_B",
+							"description": "example_string",
+							"link": "Lan_1",
+							"version": 2,
+							"Authentication": {
+								"mode": "NONE",
+								"key-id": 0,
+								"key-string": "example_string"
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -187,6 +349,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_rip_interface_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific rip-interface",
+						"description": "PUT /api/ad/v3/net/rip-interface/{name}",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/rip-interface/{name}",
+							"body": {
+								"name": "Lan_1",
+								"link": "Lan_1",
+								"version": 2
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/rip-interface/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/rip-interface/{name}的响应数据",
+						"value": {
+							"name": "Lan_1",
+							"description": "example_string",
+							"link": "Lan_1",
+							"version": 2,
+							"Authentication": {
+								"mode": "NONE",
+								"key-id": 0,
+								"key-string": "example_string"
+							}
+						}
 					}
 				}
 			},
@@ -206,6 +398,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_rip_interface_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific rip-interface",
+						"description": "The PATCH method updates specific properties of one config.",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/rip-interface/{name}",
+							"body": {
+								"name": "Lan_1",
+								"link": "Lan_1",
+								"version": 2
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/rip-interface/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/rip-interface/{name}的响应数据",
+						"value": {
+							"name": "Lan_1",
+							"description": "example_string",
+							"link": "Lan_1",
+							"version": 2,
+							"Authentication": {
+								"mode": "NONE",
+								"key-id": 0,
+								"key-string": "example_string"
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -218,6 +440,31 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_rip_interface_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific rip-interface",
+						"description": "DELETE /api/ad/v3/net/rip-interface/{name}",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/rip-interface/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/rip-interface/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/rip-interface/{name}的响应数据",
+						"value": {
+							"name": "Lan_1",
+							"description": "example_string",
+							"link": "Lan_1",
+							"version": 2,
+							"Authentication": {
+								"mode": "NONE",
+								"key-id": 0,
+								"key-string": "example_string"
+							}
+						}
 					}
 				}
 			}

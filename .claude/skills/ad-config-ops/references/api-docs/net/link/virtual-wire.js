@@ -65,6 +65,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_virtual_wire_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all link-virtual_wire",
+						"description": "查看链路虚拟网线类别配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link/virtual-wire/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link/virtual-wire/ 响应",
+						"description": "返回GET /api/ad/v3/net/link/virtual-wire/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "link_virtual_wire_1",
+									"description": "example_string",
+									"type": "VIRTUAL-WIRE",
+									"state": "ENABLE",
+									"interface": {
+										"type": "VLAN",
+										"interface": "net1_net2_vlan_0_1"
+									},
+									"cable_plugin_detect_vwire": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +118,41 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_virtual_wire_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new link-virtual_wire",
+						"description": "新建链路虚拟网线类别配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/link/virtual-wire/",
+							"body": {
+								"name": "AI_link_virtual_wire_1_A",
+								"type": "VIRTUAL-WIRE",
+								"state": "ENABLE",
+								"interface": {
+									"type": "VLAN",
+									"interface": "net1_net2_vlan_0_1"
+								},
+								"cable_plugin_detect_vwire": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/link/virtual-wire/ 响应",
+						"description": "返回POST /api/ad/v3/net/link/virtual-wire/的响应数据",
+						"value": {
+							"name": "AI_link_virtual_wire_1_A",
+							"description": "example_string",
+							"type": "VIRTUAL-WIRE",
+							"state": "ENABLE",
+							"interface": {
+								"type": "VLAN",
+								"interface": "net1_net2_vlan_0_1"
+							},
+							"cable_plugin_detect_vwire": "ENABLE"
+						}
 					}
 				}
 			},
@@ -101,6 +172,31 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_virtual-wire_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify link-virtual_wire",
+						"description": "修改链路虚拟网线类别配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/link/virtual-wire/",
+							"body": {
+								"name": "link_virtual_wire_1",
+								"type": "VIRTUAL-WIRE",
+								"state": "ENABLE",
+								"interface": {
+									"type": "VLAN",
+									"interface": "net1_net2_vlan_0_1"
+								},
+								"cable_plugin_detect_vwire": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/link/virtual-wire/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/link/virtual-wire/的响应数据",
+						"value": {}
 					}
 				}
 			},
@@ -157,6 +253,31 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_virtual_wire_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific link-virtual_wire",
+						"description": "查看指定虚拟网线类别链路配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link/virtual-wire/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link/virtual-wire/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/link/virtual-wire/{name}的响应数据",
+						"value": {
+							"name": "link_virtual_wire_1",
+							"description": "example_string",
+							"type": "VIRTUAL-WIRE",
+							"state": "ENABLE",
+							"interface": {
+								"type": "VLAN",
+								"interface": "net1_net2_vlan_0_1"
+							},
+							"cable_plugin_detect_vwire": "ENABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -176,6 +297,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_virtual_wire_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new link-virtual_wire",
+						"description": "新建指定虚拟网线类别链路配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/link/virtual-wire/{name}",
+							"body": {
+								"name": "AI_link_virtual_wire_1_B",
+								"type": "VIRTUAL-WIRE",
+								"state": "ENABLE",
+								"interface": {
+									"type": "VLAN",
+									"interface": "net1_net2_vlan_0_1"
+								},
+								"cable_plugin_detect_vwire": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/link/virtual-wire/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/link/virtual-wire/{name}的响应数据",
+						"value": {
+							"name": "AI_link_virtual_wire_1_B",
+							"description": "example_string",
+							"type": "VIRTUAL-WIRE",
+							"state": "ENABLE",
+							"interface": {
+								"type": "VLAN",
+								"interface": "net1_net2_vlan_0_1"
+							},
+							"cable_plugin_detect_vwire": "ENABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -193,6 +349,41 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_virtual_wire_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific link-virtual_wire",
+						"description": "替换指定链路虚拟网线类别配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/link/virtual-wire/{name}",
+							"body": {
+								"name": "link_virtual_wire_1",
+								"type": "VIRTUAL-WIRE",
+								"state": "ENABLE",
+								"interface": {
+									"type": "VLAN",
+									"interface": "net1_net2_vlan_0_1"
+								},
+								"cable_plugin_detect_vwire": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/link/virtual-wire/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/link/virtual-wire/{name}的响应数据",
+						"value": {
+							"name": "link_virtual_wire_1",
+							"description": "example_string",
+							"type": "VIRTUAL-WIRE",
+							"state": "ENABLE",
+							"interface": {
+								"type": "VLAN",
+								"interface": "net1_net2_vlan_0_1"
+							},
+							"cable_plugin_detect_vwire": "ENABLE"
+						}
 					}
 				}
 			},
@@ -212,6 +403,31 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_virtual_wire_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific link-virtual_wire",
+						"description": "修改指定链路虚拟网线类别配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/link/virtual-wire/{name}"
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/link/virtual-wire/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/link/virtual-wire/{name}的响应数据",
+						"value": {
+							"name": "link_virtual_wire_1",
+							"description": "example_string",
+							"type": "VIRTUAL-WIRE",
+							"state": "ENABLE",
+							"interface": {
+								"type": "VLAN",
+								"interface": "net1_net2_vlan_0_1"
+							},
+							"cable_plugin_detect_vwire": "ENABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -224,6 +440,31 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_virtual_wire_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific link-virtual_wire",
+						"description": "删除指定链路虚拟网线类别配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/link/virtual-wire/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/link/virtual-wire/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/link/virtual-wire/{name}的响应数据",
+						"value": {
+							"name": "link_virtual_wire_1",
+							"description": "example_string",
+							"type": "VIRTUAL-WIRE",
+							"state": "ENABLE",
+							"interface": {
+								"type": "VLAN",
+								"interface": "net1_net2_vlan_0_1"
+							},
+							"cable_plugin_detect_vwire": "ENABLE"
+						}
 					}
 				}
 			}
@@ -375,7 +616,7 @@ module.exports ={
 					"maxItems": 1,
 					"minItems": 1
 				},
-				"cable_plugin_detect": {
+				"cable_plugin_detect_vwire": {
 					"description": "可选参数；插拔网线检测（enable-启用/disable-禁用），默认值disable",
 					"type": "string",
 					"enum": [

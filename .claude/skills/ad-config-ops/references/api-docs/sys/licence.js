@@ -51,6 +51,56 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_licence_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get licence",
+						"description": "查看已有的licence信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/licence"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/licence 响应",
+						"description": "返回GET /api/ad/v3/sys/licence的响应数据",
+						"value": {
+							"client": "client name",
+							"gwid": "B6A26EE4",
+							"support_expire": "20191231",
+							"hardware_warranty_expire": "20191231",
+							"basic_sn": "8RM2ZGCEDWD5EFTA",
+							"basic_state": "ACTIVE",
+							"linknum": 32,
+							"ssl_sn": "8ZLLACAFEWFM7CF3",
+							"ssl_state": "ACTIVE",
+							"fast_tcp_sn": "ABJEXRSGFHD73SRG",
+							"fast_tcp_state": "ACTIVE",
+							"http_cache_sn": "ZBEDGTDEFBTFWSKE",
+							"http_cache_state": "ACTIVE",
+							"gslb_sn": "8ZLLACAFEWFM7CF3",
+							"gslb_state": "ACTIVE",
+							"service_chain_sn": "8ZLLACAFEWFM7CF3",
+							"service_chain_state": "INACTIVE",
+							"container_flow_management_sn": "example_string",
+							"container_flow_management_state": "INACTIVE",
+							"software_update_sn": "H6CBFBEEBDARGWLC",
+							"software_update_state": "INACTIVE",
+							"software_update_expire": "20181231",
+							"mad_sn": "8RM2ZGCEDWD5EFBB",
+							"mad_state": "ACTIVE",
+							"vad_num": 20,
+							"openad_sn": "8RM2ZGCEDWD5EFEA",
+							"openad_state": "ACTIVE",
+							"netns_num": 50,
+							"netns_platform_limit": 500,
+							"sn": "8RM2ZGCEDWD5EFTA",
+							"aid": "5657924321",
+							"opr": "SUBMIT",
+							"do": "CHANGETOVLS",
+							"product": "AD"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +119,57 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_licence_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace licence",
+						"description": "修改已有的licence信息",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/licence",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/licence 响应",
+						"description": "返回PUT /api/ad/v3/sys/licence的响应数据",
+						"value": {
+							"client": "client name",
+							"gwid": "B6A26EE4",
+							"support_expire": "20191231",
+							"hardware_warranty_expire": "20191231",
+							"basic_sn": "8RM2ZGCEDWD5EFTA",
+							"basic_state": "ACTIVE",
+							"linknum": 32,
+							"ssl_sn": "8ZLLACAFEWFM7CF3",
+							"ssl_state": "ACTIVE",
+							"fast_tcp_sn": "ABJEXRSGFHD73SRG",
+							"fast_tcp_state": "ACTIVE",
+							"http_cache_sn": "ZBEDGTDEFBTFWSKE",
+							"http_cache_state": "ACTIVE",
+							"gslb_sn": "8ZLLACAFEWFM7CF3",
+							"gslb_state": "ACTIVE",
+							"service_chain_sn": "8ZLLACAFEWFM7CF3",
+							"service_chain_state": "INACTIVE",
+							"container_flow_management_sn": "example_string",
+							"container_flow_management_state": "INACTIVE",
+							"software_update_sn": "H6CBFBEEBDARGWLC",
+							"software_update_state": "INACTIVE",
+							"software_update_expire": "20181231",
+							"mad_sn": "8RM2ZGCEDWD5EFBB",
+							"mad_state": "ACTIVE",
+							"vad_num": 20,
+							"openad_sn": "8RM2ZGCEDWD5EFEA",
+							"openad_state": "ACTIVE",
+							"netns_num": 50,
+							"netns_platform_limit": 500,
+							"sn": "8RM2ZGCEDWD5EFTA",
+							"aid": "5657924321",
+							"opr": "SUBMIT",
+							"do": "CHANGETOVLS",
+							"product": "AD"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +187,57 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_licence_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify licence",
+						"description": "修改已有的licence信息",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/licence",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/licence 响应",
+						"description": "返回PATCH /api/ad/v3/sys/licence的响应数据",
+						"value": {
+							"client": "client name",
+							"gwid": "B6A26EE4",
+							"support_expire": "20191231",
+							"hardware_warranty_expire": "20191231",
+							"basic_sn": "8RM2ZGCEDWD5EFTA",
+							"basic_state": "ACTIVE",
+							"linknum": 32,
+							"ssl_sn": "8ZLLACAFEWFM7CF3",
+							"ssl_state": "ACTIVE",
+							"fast_tcp_sn": "ABJEXRSGFHD73SRG",
+							"fast_tcp_state": "ACTIVE",
+							"http_cache_sn": "ZBEDGTDEFBTFWSKE",
+							"http_cache_state": "ACTIVE",
+							"gslb_sn": "8ZLLACAFEWFM7CF3",
+							"gslb_state": "ACTIVE",
+							"service_chain_sn": "8ZLLACAFEWFM7CF3",
+							"service_chain_state": "INACTIVE",
+							"container_flow_management_sn": "example_string",
+							"container_flow_management_state": "INACTIVE",
+							"software_update_sn": "H6CBFBEEBDARGWLC",
+							"software_update_state": "INACTIVE",
+							"software_update_expire": "20181231",
+							"mad_sn": "8RM2ZGCEDWD5EFBB",
+							"mad_state": "ACTIVE",
+							"vad_num": 20,
+							"openad_sn": "8RM2ZGCEDWD5EFEA",
+							"openad_state": "ACTIVE",
+							"netns_num": 50,
+							"netns_platform_limit": 500,
+							"sn": "8RM2ZGCEDWD5EFTA",
+							"aid": "5657924321",
+							"opr": "SUBMIT",
+							"do": "CHANGETOVLS",
+							"product": "AD"
+						}
 					}
 				}
 			},
@@ -128,6 +280,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_licence_verify"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "verify licence",
+						"description": "物理机导入许可证信息",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/licence/verify",
+							"body": {
+								"function": "UNKNOWN",
+								"sn": "8RM2ZGCEDWD5EFTA"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/licence/verify 响应",
+						"description": "返回POST /api/ad/v3/sys/licence/verify的响应数据",
+						"value": {
+							"function": "UNKNOWN",
+							"sn": "8RM2ZGCEDWD5EFTA",
+							"result": "ACTIVE"
+						}
 					}
 				}
 			}
@@ -305,6 +480,22 @@ module.exports ={
 				"service_chain_state": {
 					"type": "string",
 					"description": "安全服务链状态信息",
+					"readOnly": true,
+					"enum": [
+						"ACTIVE",
+						"INACTIVE"
+					],
+					"example": "INACTIVE"
+				},
+				"container_flow_management_sn": {
+					"description": "passad_cis授权信息, 必须为16位大写字母和数字组成",
+					"type": "string",
+					"minLength": 16,
+					"maxLength": 16
+				},
+				"container_flow_management_state": {
+					"description": "容器流量管理控制器授权, 此字段为只读字段",
+					"type": "string",
 					"readOnly": true,
 					"enum": [
 						"ACTIVE",

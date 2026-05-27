@@ -66,6 +66,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_pre_rule_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all pre-rule",
+						"description": "获取前置策略状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/pre-rule/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/pre-rule/ 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/pre-rule/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "url-sched",
+									"description": "example_string",
+									"service": null,
+									"hit": null,
+									"netns": "default"
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -99,6 +131,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_pre_rule_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pre-rule",
+						"description": "获取指定前置策略状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/pre-rule/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/pre-rule/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/pre-rule/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": null,
+							"hit": null,
+							"netns": "default"
+						}
 					}
 				}
 			}
@@ -194,7 +247,7 @@ module.exports ={
 				},
 				"service": {
 					"description": "虚拟服务类型",
-					"$ref": "/api/slb/virtual-service.yaml#/definitions/config.service_type"
+					"$ref": "/api/{common}.yaml#/definitions/config.service_type"
 				},
 				"hit": {
 					"description": "前置策略匹配次数",

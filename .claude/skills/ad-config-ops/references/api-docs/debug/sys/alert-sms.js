@@ -41,7 +41,24 @@ module.exports ={
 				],
 				"summary": "alert-sms verify",
 				"description": "测试短信告警",
-				"operationId": "alert_sms_verify"
+				"operationId": "alert_sms_verify",
+				"x-examples": {
+					"request": {
+						"summary": "alert-sms verify",
+						"description": "测试短信告警",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/alert-sms/verify"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/alert-sms/verify 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/alert-sms/verify的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			}
 		}
 	}

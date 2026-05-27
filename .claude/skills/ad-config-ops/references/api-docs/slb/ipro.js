@@ -62,6 +62,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ipro_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all ipro",
+						"description": "查看当前已有的IPRO脚本配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/ipro/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/ipro/ 响应",
+						"description": "返回GET /api/ad/v3/slb/ipro/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "mblb",
+									"description": "",
+									"language": "SCRIPT_LUA",
+									"script": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +110,31 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ipro_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ipro",
+						"description": "新建一个IPRO脚本配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/ipro/",
+							"body": {
+								"name": "AI_mblb_A",
+								"language": "SCRIPT_LUA",
+								"script": ""
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/ipro/ 响应",
+						"description": "返回POST /api/ad/v3/slb/ipro/的响应数据",
+						"value": {
+							"name": "AI_mblb_A",
+							"description": "",
+							"language": "SCRIPT_LUA",
+							"script": ""
+						}
 					}
 				}
 			},
@@ -124,6 +180,26 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ipro_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific ipro",
+						"description": "查看指定的IPRO脚本配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/ipro/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/ipro/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/ipro/{name}的响应数据",
+						"value": {
+							"name": "mblb",
+							"description": "",
+							"language": "SCRIPT_LUA",
+							"script": ""
+						}
+					}
 				}
 			},
 			"post": {
@@ -143,6 +219,31 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ipro_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ipro",
+						"description": "新建指定的IPRO脚本配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/ipro/{name}",
+							"body": {
+								"name": "AI_mblb_B",
+								"language": "SCRIPT_LUA",
+								"script": ""
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/ipro/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/ipro/{name}的响应数据",
+						"value": {
+							"name": "AI_mblb_B",
+							"description": "",
+							"language": "SCRIPT_LUA",
+							"script": ""
+						}
+					}
 				}
 			},
 			"put": {
@@ -160,6 +261,31 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ipro_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific ipro",
+						"description": "修改指定的IPRO脚本配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/ipro/{name}",
+							"body": {
+								"name": "mblb",
+								"language": "SCRIPT_LUA",
+								"script": ""
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/ipro/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/ipro/{name}的响应数据",
+						"value": {
+							"name": "mblb",
+							"description": "",
+							"language": "SCRIPT_LUA",
+							"script": ""
+						}
 					}
 				}
 			},
@@ -179,6 +305,31 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ipro_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific ipro",
+						"description": "修改指定的IPRO脚本配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/ipro/{name}",
+							"body": {
+								"name": "mblb",
+								"language": "SCRIPT_LUA",
+								"script": ""
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/ipro/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/ipro/{name}的响应数据",
+						"value": {
+							"name": "mblb",
+							"description": "",
+							"language": "SCRIPT_LUA",
+							"script": ""
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +342,26 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ipro_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific ipro",
+						"description": "删除指定的IPRO脚本配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/ipro/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/ipro/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/ipro/{name}的响应数据",
+						"value": {
+							"name": "mblb",
+							"description": "",
+							"language": "SCRIPT_LUA",
+							"script": ""
+						}
 					}
 				}
 			}
@@ -296,13 +467,13 @@ module.exports ={
 				},
 				"language": {
 					"type": "string",
-					"description": "脚本类型",
+					"description": "脚本类型，合法输入为SCRIPT_LUA、SCRIPT_TCL",
 					"enum": [
 						"SCRIPT_LUA",
 						"SCRIPT_TCL"
 					],
-					"example": "SCRIPT_LUA",
-					"default": "SCRIPT_LUA"
+					"default": "SCRIPT_LUA",
+					"example": "SCRIPT_LUA"
 				},
 				"script": {
 					"description": "脚本内容,最长限制1M",

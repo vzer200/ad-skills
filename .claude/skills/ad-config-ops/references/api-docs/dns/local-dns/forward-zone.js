@@ -62,6 +62,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_forward_zone_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all forward-zone",
+						"description": "查看转发域配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/local-dns/forward-zone/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/local-dns/forward-zone/ 响应",
+						"description": "返回GET /api/ad/v4/dns/local-dns/forward-zone/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "com",
+									"forward_zone_server": [
+										{
+											"address": "example_string",
+											"port": 1
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +113,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_forward_zone_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new forward-zone",
+						"description": "创建一个转发域",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/local-dns/forward-zone/",
+							"body": {
+								"name": "AI_com_A",
+								"forward_zone_server": [
+									{}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/local-dns/forward-zone/ 响应",
+						"description": "返回POST /api/ad/v4/dns/local-dns/forward-zone/的响应数据",
+						"value": {
+							"name": "AI_com_A",
+							"forward_zone_server": [
+								{
+									"address": "example_string",
+									"port": 1
+								}
+							]
+						}
 					}
 				}
 			}
@@ -110,6 +173,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_forward_zone_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific forward-zone",
+						"description": "查看指定已有的LDNS转发域",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/local-dns/forward-zone/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/local-dns/forward-zone/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/local-dns/forward-zone/{name}的响应数据",
+						"value": {
+							"name": "com",
+							"forward_zone_server": [
+								{
+									"address": "example_string",
+									"port": 1
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -129,6 +215,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_forward_zone_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new forward-zone",
+						"description": "创建一个LDNS转发域",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/local-dns/forward-zone/{name}",
+							"body": {
+								"name": "AI_com_B",
+								"forward_zone_server": [
+									{}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/local-dns/forward-zone/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/local-dns/forward-zone/{name}的响应数据",
+						"value": {
+							"name": "AI_com_B",
+							"forward_zone_server": [
+								{
+									"address": "example_string",
+									"port": 1
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -146,6 +261,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_forward_zone_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific forward-zone",
+						"description": "修改指定已有名称的LDNS转发域",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/local-dns/forward-zone/{name}",
+							"body": {
+								"name": "com",
+								"forward_zone_server": [
+									{}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/local-dns/forward-zone/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/local-dns/forward-zone/{name}的响应数据",
+						"value": {
+							"name": "com",
+							"forward_zone_server": [
+								{
+									"address": "example_string",
+									"port": 1
+								}
+							]
+						}
 					}
 				}
 			},
@@ -165,6 +309,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_forward_zone_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific forward-zone",
+						"description": "增量修改指定已有的LDNS转发域",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/local-dns/forward-zone/{name}",
+							"body": {
+								"name": "com",
+								"forward_zone_server": [
+									{}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/local-dns/forward-zone/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/local-dns/forward-zone/{name}的响应数据",
+						"value": {
+							"name": "com",
+							"forward_zone_server": [
+								{
+									"address": "example_string",
+									"port": 1
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -177,6 +350,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_forward_zone_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific forward-zone",
+						"description": "删除指定已有的LDNS转发域",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/local-dns/forward-zone/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/local-dns/forward-zone/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/local-dns/forward-zone/{name}的响应数据",
+						"value": {
+							"name": "com",
+							"forward_zone_server": [
+								{
+									"address": "example_string",
+									"port": 1
+								}
+							]
+						}
 					}
 				}
 			},

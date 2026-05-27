@@ -65,6 +65,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_sip_profile_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all sip-profile",
+						"description": "查看当前已有的SIP策略配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/sip-profile/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/sip-profile/ 响应",
+						"description": "返回GET /api/ad/v3/slb/sip-profile/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "sip_srcip_10m",
+									"description": "example_string",
+									"insert_record_route_header": "DISABLE",
+									"insert_via_header": "to be filled"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +113,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_sip_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new sip-profile",
+						"description": "新建一个SIP策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/sip-profile/",
+							"body": {
+								"name": "AI_sip_srcip_10m_A",
+								"insert_record_route_header": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/sip-profile/ 响应",
+						"description": "返回POST /api/ad/v3/slb/sip-profile/的响应数据",
+						"value": {
+							"name": "AI_sip_srcip_10m_A",
+							"description": "example_string",
+							"insert_record_route_header": "DISABLE",
+							"insert_via_header": "to be filled"
+						}
 					}
 				}
 			},
@@ -127,6 +182,26 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_sip_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific sip-profile",
+						"description": "查看指定的SIP策略配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/sip-profile/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/sip-profile/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/sip-profile/{name}的响应数据",
+						"value": {
+							"name": "sip_srcip_10m",
+							"description": "example_string",
+							"insert_record_route_header": "DISABLE",
+							"insert_via_header": "to be filled"
+						}
+					}
 				}
 			},
 			"post": {
@@ -146,6 +221,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_sip_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new sip-profile",
+						"description": "新建指定的SIP策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/sip-profile/{name}",
+							"body": {
+								"name": "AI_sip_srcip_10m_B",
+								"insert_record_route_header": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/sip-profile/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/sip-profile/{name}的响应数据",
+						"value": {
+							"name": "AI_sip_srcip_10m_B",
+							"description": "example_string",
+							"insert_record_route_header": "DISABLE",
+							"insert_via_header": "to be filled"
+						}
+					}
 				}
 			},
 			"put": {
@@ -163,6 +262,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_sip_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific sip-profile",
+						"description": "修改指定的SIP策略配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/sip-profile/{name}",
+							"body": {
+								"name": "sip_srcip_10m",
+								"insert_record_route_header": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/sip-profile/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/sip-profile/{name}的响应数据",
+						"value": {
+							"name": "sip_srcip_10m",
+							"description": "example_string",
+							"insert_record_route_header": "DISABLE",
+							"insert_via_header": "to be filled"
+						}
 					}
 				}
 			},
@@ -182,6 +305,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_sip_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific sip-profile",
+						"description": "修改指定的SIP策略配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/sip-profile/{name}",
+							"body": {
+								"name": "sip_srcip_10m",
+								"insert_record_route_header": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/sip-profile/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/sip-profile/{name}的响应数据",
+						"value": {
+							"name": "sip_srcip_10m",
+							"description": "example_string",
+							"insert_record_route_header": "DISABLE",
+							"insert_via_header": "to be filled"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -194,6 +341,26 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_sip_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific sip-profile",
+						"description": "删除指定的SIP策略配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/sip-profile/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/sip-profile/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/sip-profile/{name}的响应数据",
+						"value": {
+							"name": "sip_srcip_10m",
+							"description": "example_string",
+							"insert_record_route_header": "DISABLE",
+							"insert_via_header": "to be filled"
+						}
 					}
 				}
 			}

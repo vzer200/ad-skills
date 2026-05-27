@@ -51,6 +51,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_rip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get rip",
+						"description": "获取rip动态路由全局配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/rip"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/rip 响应",
+						"description": "返回GET /api/ad/v3/net/rip的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"redistribute_default_route": "DISABLE",
+							"redistribute_static_route": "DISABLE",
+							"redistribute_ospf": "DISABLE",
+							"networks": [
+								"1.1.1.0/24"
+							],
+							"log_level": "INFO"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +93,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_rip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace rip",
+						"description": "修改rip动态路由全局配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/rip",
+							"body": {
+								"state": "ENABLE",
+								"redistribute_default_route": "DISABLE",
+								"redistribute_static_route": "DISABLE",
+								"redistribute_ospf": "DISABLE",
+								"log_level": "INFO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/rip 响应",
+						"description": "返回PUT /api/ad/v3/net/rip的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"redistribute_default_route": "DISABLE",
+							"redistribute_static_route": "DISABLE",
+							"redistribute_ospf": "DISABLE",
+							"networks": [
+								"1.1.1.0/24"
+							],
+							"log_level": "INFO"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +141,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_rip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify rip",
+						"description": "修改rip动态路由全局配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/rip",
+							"body": {
+								"state": "ENABLE",
+								"redistribute_default_route": "DISABLE",
+								"redistribute_static_route": "DISABLE",
+								"redistribute_ospf": "DISABLE",
+								"log_level": "INFO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/rip 响应",
+						"description": "返回PATCH /api/ad/v3/net/rip的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"redistribute_default_route": "DISABLE",
+							"redistribute_static_route": "DISABLE",
+							"redistribute_ospf": "DISABLE",
+							"networks": [
+								"1.1.1.0/24"
+							],
+							"log_level": "INFO"
+						}
 					}
 				}
 			},

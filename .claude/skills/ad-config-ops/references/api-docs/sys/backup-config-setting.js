@@ -51,6 +51,54 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_backup_config_setting_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific backup-config-setting",
+						"description": "查看当前已有的定时备份配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/backup-config-setting"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/backup-config-setting 响应",
+						"description": "返回GET /api/ad/v3/sys/backup-config-setting的响应数据",
+						"value": {
+							"filename_prefix": "AD7.0.5",
+							"local_storage": {
+								"frequency": "DAILY",
+								"capacity": 7
+							},
+							"external_storage": {
+								"state": "DISABLE",
+								"frequency": "DAILY",
+								"task_time": "00:00",
+								"day_of_month": 1,
+								"day_of_week": 1,
+								"server": {
+									"transport_protocol": "FTP",
+									"upload_url": "ftp://192.168.1.100/conf_bak/",
+									"username": "user_1",
+									"password": "example_string",
+									"pk_password": "example_string",
+									"encrypted_password": "A1B2C3D4",
+									"ftp_encoding": "UTF8",
+									"ftp_mode": "PASSIVE"
+								},
+								"network": "AUTO",
+								"upload_package": [
+									"BACKUP-CONFIG-PACKAGE"
+								],
+								"file_encryption": {
+									"state": "DISABLE",
+									"password": "example_string",
+									"pk_password": "example_string",
+									"encrypted_password": "A1B2C3D4"
+								}
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +117,55 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_backup_config_setting_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace backup-config-setting",
+						"description": "修改定时备份配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/backup-config-setting",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/backup-config-setting 响应",
+						"description": "返回PUT /api/ad/v3/sys/backup-config-setting的响应数据",
+						"value": {
+							"filename_prefix": "AD7.0.5",
+							"local_storage": {
+								"frequency": "DAILY",
+								"capacity": 7
+							},
+							"external_storage": {
+								"state": "DISABLE",
+								"frequency": "DAILY",
+								"task_time": "00:00",
+								"day_of_month": 1,
+								"day_of_week": 1,
+								"server": {
+									"transport_protocol": "FTP",
+									"upload_url": "ftp://192.168.1.100/conf_bak/",
+									"username": "user_1",
+									"password": "example_string",
+									"pk_password": "example_string",
+									"encrypted_password": "A1B2C3D4",
+									"ftp_encoding": "UTF8",
+									"ftp_mode": "PASSIVE"
+								},
+								"network": "AUTO",
+								"upload_package": [
+									"BACKUP-CONFIG-PACKAGE"
+								],
+								"file_encryption": {
+									"state": "DISABLE",
+									"password": "example_string",
+									"pk_password": "example_string",
+									"encrypted_password": "A1B2C3D4"
+								}
+							}
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +183,55 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_backup_config_setting_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify backup-config-setting",
+						"description": "修改定时备份配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/backup-config-setting",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/backup-config-setting 响应",
+						"description": "返回PATCH /api/ad/v3/sys/backup-config-setting的响应数据",
+						"value": {
+							"filename_prefix": "AD7.0.5",
+							"local_storage": {
+								"frequency": "DAILY",
+								"capacity": 7
+							},
+							"external_storage": {
+								"state": "DISABLE",
+								"frequency": "DAILY",
+								"task_time": "00:00",
+								"day_of_month": 1,
+								"day_of_week": 1,
+								"server": {
+									"transport_protocol": "FTP",
+									"upload_url": "ftp://192.168.1.100/conf_bak/",
+									"username": "user_1",
+									"password": "example_string",
+									"pk_password": "example_string",
+									"encrypted_password": "A1B2C3D4",
+									"ftp_encoding": "UTF8",
+									"ftp_mode": "PASSIVE"
+								},
+								"network": "AUTO",
+								"upload_package": [
+									"BACKUP-CONFIG-PACKAGE"
+								],
+								"file_encryption": {
+									"state": "DISABLE",
+									"password": "example_string",
+									"pk_password": "example_string",
+									"encrypted_password": "A1B2C3D4"
+								}
+							}
+						}
 					}
 				}
 			},
@@ -216,6 +362,16 @@ module.exports ={
 								"upload_url"
 							],
 							"properties": {
+								"transport_protocol": {
+									"type": "string",
+									"description": "文件传输协议",
+									"enum": [
+										"SFTP",
+										"FTP"
+									],
+									"default": "FTP",
+									"example": "FTP"
+								},
 								"upload_url": {
 									"type": "string",
 									"description": "外部备份服务器url",

@@ -62,6 +62,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_connect_tcp_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all link-monitor-connect-tcp",
+						"description": "查看CONNECT-TCP链路健康检查配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link-monitor/connect-tcp/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link-monitor/connect-tcp/ 响应",
+						"description": "返回GET /api/ad/v3/net/link-monitor/connect-tcp/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "CONNECT-TCP",
+									"timeout": 16,
+									"interval": 5,
+									"host": "*",
+									"debug_mode": "DISABLE",
+									"port": 80,
+									"send_content": "",
+									"receive_cache_size": 2048,
+									"receive_content_match": "",
+									"send_content_before_disconnect": "",
+									"hexadecimal_mode": "DISABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +119,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_connect_tcp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new link-monitor-connect-tcp",
+						"description": "新建CONNECT-TCP链路健康检查",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/link-monitor/connect-tcp/",
+							"body": {
+								"name": "AI_http_A",
+								"type": "CONNECT-TCP",
+								"timeout": 16,
+								"interval": 5,
+								"host": "*",
+								"debug_mode": "DISABLE",
+								"port": 80,
+								"send_content": "",
+								"receive_cache_size": 2048,
+								"receive_content_match": "",
+								"send_content_before_disconnect": "",
+								"hexadecimal_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/link-monitor/connect-tcp/ 响应",
+						"description": "返回POST /api/ad/v3/net/link-monitor/connect-tcp/的响应数据",
+						"value": {
+							"name": "AI_http_A",
+							"description": "example_string",
+							"type": "CONNECT-TCP",
+							"timeout": 16,
+							"interval": 5,
+							"host": "*",
+							"debug_mode": "DISABLE",
+							"port": 80,
+							"send_content": "",
+							"receive_cache_size": 2048,
+							"receive_content_match": "",
+							"send_content_before_disconnect": "",
+							"hexadecimal_mode": "DISABLE"
+						}
 					}
 				}
 			},
@@ -98,6 +181,60 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_connect_tcp_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify link-monitor-connect-tcp",
+						"description": "修改CONNECT-TCP链路健康检查配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/link-monitor/connect-tcp/",
+							"body": {
+								"name": "http",
+								"type": "CONNECT-TCP",
+								"timeout": 16,
+								"interval": 5,
+								"host": "*",
+								"debug_mode": "DISABLE",
+								"port": 80,
+								"send_content": "",
+								"receive_cache_size": 2048,
+								"receive_content_match": "",
+								"send_content_before_disconnect": "",
+								"hexadecimal_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/link-monitor/connect-tcp/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/link-monitor/connect-tcp/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "CONNECT-TCP",
+									"timeout": 16,
+									"interval": 5,
+									"host": "*",
+									"debug_mode": "DISABLE",
+									"port": 80,
+									"send_content": "",
+									"receive_cache_size": 2048,
+									"receive_content_match": "",
+									"send_content_before_disconnect": "",
+									"hexadecimal_mode": "DISABLE"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -151,6 +288,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_connect_tcp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific link-monitor-connect-tcp",
+						"description": "查看指定CONNECT-TCP链路健康检查配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link-monitor/connect-tcp/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link-monitor/connect-tcp/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/link-monitor/connect-tcp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-TCP",
+							"timeout": 16,
+							"interval": 5,
+							"host": "*",
+							"debug_mode": "DISABLE",
+							"port": 80,
+							"send_content": "",
+							"receive_cache_size": 2048,
+							"receive_content_match": "",
+							"send_content_before_disconnect": "",
+							"hexadecimal_mode": "DISABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -170,6 +336,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_connect_tcp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new link-monitor-connect-tcp",
+						"description": "新建CONNECT-TCP链路健康检查配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/link-monitor/connect-tcp/{name}",
+							"body": {
+								"name": "AI_http_B",
+								"type": "CONNECT-TCP",
+								"timeout": 16,
+								"interval": 5,
+								"host": "*",
+								"debug_mode": "DISABLE",
+								"port": 80,
+								"send_content": "",
+								"receive_cache_size": 2048,
+								"receive_content_match": "",
+								"send_content_before_disconnect": "",
+								"hexadecimal_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/link-monitor/connect-tcp/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/link-monitor/connect-tcp/{name}的响应数据",
+						"value": {
+							"name": "AI_http_B",
+							"description": "example_string",
+							"type": "CONNECT-TCP",
+							"timeout": 16,
+							"interval": 5,
+							"host": "*",
+							"debug_mode": "DISABLE",
+							"port": 80,
+							"send_content": "",
+							"receive_cache_size": 2048,
+							"receive_content_match": "",
+							"send_content_before_disconnect": "",
+							"hexadecimal_mode": "DISABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -187,6 +396,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_connect_tcp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific link-monitor-connect-tcp",
+						"description": "替换指定CONNECT-TCP链路健康检查配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/link-monitor/connect-tcp/{name}",
+							"body": {
+								"name": "http",
+								"type": "CONNECT-TCP",
+								"timeout": 16,
+								"interval": 5,
+								"host": "*",
+								"debug_mode": "DISABLE",
+								"port": 80,
+								"send_content": "",
+								"receive_cache_size": 2048,
+								"receive_content_match": "",
+								"send_content_before_disconnect": "",
+								"hexadecimal_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/link-monitor/connect-tcp/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/link-monitor/connect-tcp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-TCP",
+							"timeout": 16,
+							"interval": 5,
+							"host": "*",
+							"debug_mode": "DISABLE",
+							"port": 80,
+							"send_content": "",
+							"receive_cache_size": 2048,
+							"receive_content_match": "",
+							"send_content_before_disconnect": "",
+							"hexadecimal_mode": "DISABLE"
+						}
 					}
 				}
 			},
@@ -206,6 +458,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_connect_tcp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific link-monitor-connect-tcp",
+						"description": "修改指定CONNECT-TCP链路健康检查配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/link-monitor/connect-tcp/{name}",
+							"body": {
+								"name": "http",
+								"type": "CONNECT-TCP",
+								"timeout": 16,
+								"interval": 5,
+								"host": "*",
+								"debug_mode": "DISABLE",
+								"port": 80,
+								"send_content": "",
+								"receive_cache_size": 2048,
+								"receive_content_match": "",
+								"send_content_before_disconnect": "",
+								"hexadecimal_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/link-monitor/connect-tcp/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/link-monitor/connect-tcp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-TCP",
+							"timeout": 16,
+							"interval": 5,
+							"host": "*",
+							"debug_mode": "DISABLE",
+							"port": 80,
+							"send_content": "",
+							"receive_cache_size": 2048,
+							"receive_content_match": "",
+							"send_content_before_disconnect": "",
+							"hexadecimal_mode": "DISABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -218,6 +513,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_connect_tcp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific link-monitor-connect-tcp",
+						"description": "删除指定CONNECT-TCP链路健康检查配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/link-monitor/connect-tcp/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/link-monitor/connect-tcp/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/link-monitor/connect-tcp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-TCP",
+							"timeout": 16,
+							"interval": 5,
+							"host": "*",
+							"debug_mode": "DISABLE",
+							"port": 80,
+							"send_content": "",
+							"receive_cache_size": 2048,
+							"receive_content_match": "",
+							"send_content_before_disconnect": "",
+							"hexadecimal_mode": "DISABLE"
+						}
 					}
 				}
 			}

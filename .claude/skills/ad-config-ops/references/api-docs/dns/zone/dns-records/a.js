@@ -68,6 +68,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_a_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-record-a",
+						"description": "查看A记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/ 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"state": "ENABLE",
+									"domain": "example_string",
+									"zone": "com",
+									"type": "A",
+									"generate_ptr_record": "ENABLE",
+									"a_records": [
+										{
+											"address": "192.168.1.7",
+											"ttl": 60
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -85,6 +125,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_a_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-a",
+						"description": "创建一个A记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "A",
+								"generate_ptr_record": "ENABLE",
+								"a_records": [
+									{
+										"address": "192.168.1.7",
+										"ttl": 60
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/ 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/的响应数据",
+						"value": {
+							"name": "AI_example_string_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "A",
+							"generate_ptr_record": "ENABLE",
+							"a_records": [
+								{
+									"address": "192.168.1.7",
+									"ttl": 60
+								}
+							]
+						}
 					}
 				}
 			},
@@ -141,6 +223,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_a_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-record-a",
+						"description": "查看指定的A记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "A",
+							"generate_ptr_record": "ENABLE",
+							"a_records": [
+								{
+									"address": "192.168.1.7",
+									"ttl": 60
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -160,6 +271,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_a_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-a",
+						"description": "创建一个A记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "A",
+								"generate_ptr_record": "ENABLE",
+								"a_records": [
+									{
+										"address": "192.168.1.7",
+										"ttl": 60
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name}的响应数据",
+						"value": {
+							"name": "AI_example_string_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "A",
+							"generate_ptr_record": "ENABLE",
+							"a_records": [
+								{
+									"address": "192.168.1.7",
+									"ttl": 60
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -177,6 +330,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_a_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-record-a",
+						"description": "修改指定A记录配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "A",
+								"generate_ptr_record": "ENABLE",
+								"a_records": [
+									{
+										"address": "192.168.1.7",
+										"ttl": 60
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "A",
+							"generate_ptr_record": "ENABLE",
+							"a_records": [
+								{
+									"address": "192.168.1.7",
+									"ttl": 60
+								}
+							]
+						}
 					}
 				}
 			},
@@ -196,6 +391,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_a_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-record-a",
+						"description": "增量修改指定A记录配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "A",
+								"generate_ptr_record": "ENABLE",
+								"a_records": [
+									{
+										"address": "192.168.1.7",
+										"ttl": 60
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "A",
+							"generate_ptr_record": "ENABLE",
+							"a_records": [
+								{
+									"address": "192.168.1.7",
+									"ttl": 60
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -208,6 +445,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_a_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-record-a",
+						"description": "删除指定的A记录",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/a/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "A",
+							"generate_ptr_record": "ENABLE",
+							"a_records": [
+								{
+									"address": "192.168.1.7",
+									"ttl": 60
+								}
+							]
+						}
 					}
 				}
 			}

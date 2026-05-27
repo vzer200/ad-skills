@@ -68,6 +68,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_caa_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-record-caa",
+						"description": "查看CAA记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/ 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"state": "ENABLE",
+									"domain": "example_string",
+									"zone": "com",
+									"ttl": 60,
+									"type": "CAA",
+									"caa_records": [
+										{
+											"flags": 0,
+											"tag": "issue",
+											"value": ""
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -85,6 +126,50 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_caa_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-caa",
+						"description": "创建CAA记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"ttl": 60,
+								"type": "CAA",
+								"caa_records": [
+									{
+										"flags": 0,
+										"tag": "issue",
+										"value": ""
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/ 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/的响应数据",
+						"value": {
+							"name": "AI_example_string_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"ttl": 60,
+							"type": "CAA",
+							"caa_records": [
+								{
+									"flags": 0,
+									"tag": "issue",
+									"value": ""
+								}
+							]
+						}
 					}
 				}
 			},
@@ -141,6 +226,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_caa_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-record-caa",
+						"description": "查看指定的CAA记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"ttl": 60,
+							"type": "CAA",
+							"caa_records": [
+								{
+									"flags": 0,
+									"tag": "issue",
+									"value": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -160,6 +275,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_caa_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-caa",
+						"description": "创建一个CAA记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"ttl": 60,
+								"type": "CAA",
+								"caa_records": [
+									{
+										"flags": 0,
+										"tag": "issue",
+										"value": ""
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name}的响应数据",
+						"value": {
+							"name": "AI_example_string_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"ttl": 60,
+							"type": "CAA",
+							"caa_records": [
+								{
+									"flags": 0,
+									"tag": "issue",
+									"value": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -177,6 +336,50 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_caa_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-record-caa",
+						"description": "修改指定的CAA记录",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"ttl": 60,
+								"type": "CAA",
+								"caa_records": [
+									{
+										"flags": 0,
+										"tag": "issue",
+										"value": ""
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"ttl": 60,
+							"type": "CAA",
+							"caa_records": [
+								{
+									"flags": 0,
+									"tag": "issue",
+									"value": ""
+								}
+							]
+						}
 					}
 				}
 			},
@@ -196,6 +399,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_caa_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-record-caa",
+						"description": "增量修改指定的CAA记录",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"ttl": 60,
+								"type": "CAA",
+								"caa_records": [
+									{
+										"flags": 0,
+										"tag": "issue",
+										"value": ""
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"ttl": 60,
+							"type": "CAA",
+							"caa_records": [
+								{
+									"flags": 0,
+									"tag": "issue",
+									"value": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -208,6 +455,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_caa_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-record-caa",
+						"description": "删除指定的CAA记录",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/caa/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"ttl": 60,
+							"type": "CAA",
+							"caa_records": [
+								{
+									"flags": 0,
+									"tag": "issue",
+									"value": ""
+								}
+							]
+						}
 					}
 				}
 			}

@@ -68,6 +68,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_aaaa_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-record-aaaa",
+						"description": "查看AAAA记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/ 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"state": "ENABLE",
+									"domain": "example_string",
+									"zone": "com",
+									"type": "AAAA",
+									"generate_ptr_record": "ENABLE",
+									"aaaa_records": [
+										{
+											"address": "2001:503:ba3e::2:30",
+											"ttl": 60
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -85,6 +125,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_aaaa_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-aaaa",
+						"description": "创建AAAA记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "AAAA",
+								"generate_ptr_record": "ENABLE",
+								"aaaa_records": [
+									{
+										"address": "2001:503:ba3e::2:30",
+										"ttl": 60
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/ 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/的响应数据",
+						"value": {
+							"name": "AI_example_string_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "AAAA",
+							"generate_ptr_record": "ENABLE",
+							"aaaa_records": [
+								{
+									"address": "2001:503:ba3e::2:30",
+									"ttl": 60
+								}
+							]
+						}
 					}
 				}
 			},
@@ -141,6 +223,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_aaaa_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-record-aaaa",
+						"description": "查看指定的AAAA记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "AAAA",
+							"generate_ptr_record": "ENABLE",
+							"aaaa_records": [
+								{
+									"address": "2001:503:ba3e::2:30",
+									"ttl": 60
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -160,6 +271,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_aaaa_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-aaaa",
+						"description": "创建一个AAAA记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "AAAA",
+								"generate_ptr_record": "ENABLE",
+								"aaaa_records": [
+									{
+										"address": "2001:503:ba3e::2:30",
+										"ttl": 60
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name}的响应数据",
+						"value": {
+							"name": "AI_example_string_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "AAAA",
+							"generate_ptr_record": "ENABLE",
+							"aaaa_records": [
+								{
+									"address": "2001:503:ba3e::2:30",
+									"ttl": 60
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -177,6 +330,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_aaaa_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-record-aaaa",
+						"description": "修改指定的AAAA记录",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "AAAA",
+								"generate_ptr_record": "ENABLE",
+								"aaaa_records": [
+									{
+										"address": "2001:503:ba3e::2:30",
+										"ttl": 60
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "AAAA",
+							"generate_ptr_record": "ENABLE",
+							"aaaa_records": [
+								{
+									"address": "2001:503:ba3e::2:30",
+									"ttl": 60
+								}
+							]
+						}
 					}
 				}
 			},
@@ -196,6 +391,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_aaaa_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-record-aaaa",
+						"description": "增量修改指定的AAAA记录",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "AAAA",
+								"generate_ptr_record": "ENABLE",
+								"aaaa_records": [
+									{
+										"address": "2001:503:ba3e::2:30",
+										"ttl": 60
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "AAAA",
+							"generate_ptr_record": "ENABLE",
+							"aaaa_records": [
+								{
+									"address": "2001:503:ba3e::2:30",
+									"ttl": 60
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -208,6 +445,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_aaaa_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-record-aaaa",
+						"description": "删除指定的AAAA记录",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/aaaa/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "AAAA",
+							"generate_ptr_record": "ENABLE",
+							"aaaa_records": [
+								{
+									"address": "2001:503:ba3e::2:30",
+									"ttl": 60
+								}
+							]
+						}
 					}
 				}
 			}

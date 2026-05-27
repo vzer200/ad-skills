@@ -65,6 +65,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_icmp_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-icmp",
+						"description": "查看当前已有的监视器（ICMP）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/icmp/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/icmp/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/icmp/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "ICMP",
+									"timeout": 16,
+									"interval": 5,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"host": "*",
+									"debug_mode": "DISABLE",
+									"gateway_detect": "DISABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +119,43 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_icmp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-icmp",
+						"description": "新建一个监视器（ICMP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/icmp/",
+							"body": {
+								"name": "AI_http_icmp_A",
+								"type": "ICMP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/icmp/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/icmp/的响应数据",
+						"value": {
+							"name": "AI_http_icmp_A",
+							"description": "example_string",
+							"type": "ICMP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE"
+						}
 					}
 				}
 			},
@@ -130,6 +204,32 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_icmp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-icmp",
+						"description": "查看指定的监视器（ICMP）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/icmp/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/icmp/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/icmp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "ICMP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +249,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_icmp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-icmp",
+						"description": "新建指定的监视器（ICMP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/icmp/{name}",
+							"body": {
+								"name": "AI_http_icmp_B",
+								"type": "ICMP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/icmp/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/icmp/{name}的响应数据",
+						"value": {
+							"name": "AI_http_icmp_B",
+							"description": "example_string",
+							"type": "ICMP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +303,43 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_icmp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-icmp",
+						"description": "修改指定的监视器（ICMP）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/icmp/{name}",
+							"body": {
+								"name": "http",
+								"type": "ICMP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/icmp/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/icmp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "ICMP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE"
+						}
 					}
 				}
 			},
@@ -185,6 +359,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_icmp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-icmp",
+						"description": "修改指定的监视器（ICMP）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/icmp/{name}",
+							"body": {
+								"name": "http",
+								"type": "ICMP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/icmp/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/icmp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "ICMP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +408,32 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_icmp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-icmp",
+						"description": "删除指定的监视器（ICMP）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/icmp/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/icmp/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/icmp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "ICMP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE"
+						}
 					}
 				}
 			}

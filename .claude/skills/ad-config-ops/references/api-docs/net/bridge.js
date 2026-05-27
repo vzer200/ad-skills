@@ -62,6 +62,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_bridge_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all bridge",
+						"description": "查看端口桥接配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/bridge/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/bridge/ 响应",
+						"description": "返回GET /api/ad/v3/net/bridge/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "bridge1",
+									"description": "example_string",
+									"state": "ENABLE",
+									"interfaces": [
+										{
+											"type": "VLAN",
+											"interface": "vlan_eth1_2"
+										}
+									],
+									"use_vmac": "DISABLE",
+									"stp": {
+										"state": "DISABLE",
+										"priority": 32768,
+										"hello_time": 2,
+										"maximum_age": 20,
+										"forward_delay": 15
+									},
+									"device_name": "bridge0"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +124,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_bridge_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new bridge",
+						"description": "新建桥接口配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/bridge/",
+							"body": {
+								"name": "AI_bridge1_A",
+								"state": "ENABLE",
+								"interfaces": [
+									{
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									}
+								],
+								"use_vmac": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/bridge/ 响应",
+						"description": "返回POST /api/ad/v3/net/bridge/的响应数据",
+						"value": {
+							"name": "AI_bridge1_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"interfaces": [
+								{
+									"type": "VLAN",
+									"interface": "vlan_eth1_2"
+								}
+							],
+							"use_vmac": "DISABLE",
+							"stp": {
+								"state": "DISABLE",
+								"priority": 32768,
+								"hello_time": 2,
+								"maximum_age": 20,
+								"forward_delay": 15
+							},
+							"device_name": "bridge0"
+						}
 					}
 				}
 			},
@@ -98,6 +188,62 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_bridge_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify bridge",
+						"description": "修改桥接口配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/bridge/",
+							"body": {
+								"name": "bridge1",
+								"state": "ENABLE",
+								"interfaces": [
+									{
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									}
+								],
+								"use_vmac": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/bridge/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/bridge/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "bridge1",
+									"description": "example_string",
+									"state": "ENABLE",
+									"interfaces": [
+										{
+											"type": "VLAN",
+											"interface": "vlan_eth1_2"
+										}
+									],
+									"use_vmac": "DISABLE",
+									"stp": {
+										"state": "DISABLE",
+										"priority": 32768,
+										"hello_time": 2,
+										"maximum_age": 20,
+										"forward_delay": 15
+									},
+									"device_name": "bridge0"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -151,6 +297,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_bridge_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific bridge",
+						"description": "查看指定桥接口配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/bridge/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/bridge/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/bridge/{name}的响应数据",
+						"value": {
+							"name": "bridge1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"interfaces": [
+								{
+									"type": "VLAN",
+									"interface": "vlan_eth1_2"
+								}
+							],
+							"use_vmac": "DISABLE",
+							"stp": {
+								"state": "DISABLE",
+								"priority": 32768,
+								"hello_time": 2,
+								"maximum_age": 20,
+								"forward_delay": 15
+							},
+							"device_name": "bridge0"
+						}
+					}
 				}
 			},
 			"post": {
@@ -170,6 +350,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_bridge_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new bridge",
+						"description": "新建桥接口配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/bridge/{name}",
+							"body": {
+								"name": "AI_bridge1_B",
+								"state": "ENABLE",
+								"interfaces": [
+									{
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									}
+								],
+								"use_vmac": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/bridge/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/bridge/{name}的响应数据",
+						"value": {
+							"name": "AI_bridge1_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"interfaces": [
+								{
+									"type": "VLAN",
+									"interface": "vlan_eth1_2"
+								}
+							],
+							"use_vmac": "DISABLE",
+							"stp": {
+								"state": "DISABLE",
+								"priority": 32768,
+								"hello_time": 2,
+								"maximum_age": 20,
+								"forward_delay": 15
+							},
+							"device_name": "bridge0"
+						}
+					}
 				}
 			},
 			"put": {
@@ -187,6 +412,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_bridge_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific bridge",
+						"description": "替换指定桥接口配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/bridge/{name}",
+							"body": {
+								"name": "bridge1",
+								"state": "ENABLE",
+								"interfaces": [
+									{
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									}
+								],
+								"use_vmac": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/bridge/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/bridge/{name}的响应数据",
+						"value": {
+							"name": "bridge1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"interfaces": [
+								{
+									"type": "VLAN",
+									"interface": "vlan_eth1_2"
+								}
+							],
+							"use_vmac": "DISABLE",
+							"stp": {
+								"state": "DISABLE",
+								"priority": 32768,
+								"hello_time": 2,
+								"maximum_age": 20,
+								"forward_delay": 15
+							},
+							"device_name": "bridge0"
+						}
 					}
 				}
 			},
@@ -206,6 +476,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_bridge_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific bridge",
+						"description": "修改指定桥接口配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/bridge/{name}",
+							"body": {
+								"name": "bridge1",
+								"state": "ENABLE",
+								"interfaces": [
+									{
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									}
+								],
+								"use_vmac": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/bridge/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/bridge/{name}的响应数据",
+						"value": {
+							"name": "bridge1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"interfaces": [
+								{
+									"type": "VLAN",
+									"interface": "vlan_eth1_2"
+								}
+							],
+							"use_vmac": "DISABLE",
+							"stp": {
+								"state": "DISABLE",
+								"priority": 32768,
+								"hello_time": 2,
+								"maximum_age": 20,
+								"forward_delay": 15
+							},
+							"device_name": "bridge0"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -218,6 +533,40 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_bridge_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific bridge",
+						"description": "删除指定桥接口配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/bridge/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/bridge/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/bridge/{name}的响应数据",
+						"value": {
+							"name": "bridge1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"interfaces": [
+								{
+									"type": "VLAN",
+									"interface": "vlan_eth1_2"
+								}
+							],
+							"use_vmac": "DISABLE",
+							"stp": {
+								"state": "DISABLE",
+								"priority": 32768,
+								"hello_time": 2,
+								"maximum_age": 20,
+								"forward_delay": 15
+							},
+							"device_name": "bridge0"
+						}
 					}
 				}
 			}
@@ -372,6 +721,16 @@ module.exports ={
 					],
 					"minItems": 1,
 					"maxItems": 4
+				},
+				"use_vmac": {
+					"type": "string",
+					"description": "启/禁用独立MAC",
+					"title": "switch独立MAC",
+					"enum": [
+						"ENABLE",
+						"DISABLE"
+					],
+					"default": "DISABLE"
 				},
 				"stp": {
 					"description": "可选参数；STP协议",

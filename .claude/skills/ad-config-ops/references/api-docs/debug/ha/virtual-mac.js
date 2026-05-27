@@ -51,6 +51,23 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_generate_virtual_mac"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "generate a virtual-mac",
+						"description": "生成虚拟mac地址",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/ha/virtual-mac/generator"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/ha/virtual-mac/generator 响应",
+						"description": "返回GET /api/ad/v3/debug/ha/virtual-mac/generator的响应数据",
+						"value": {
+							"virtual_mac": "example_string"
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

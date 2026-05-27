@@ -56,6 +56,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_import_json"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "新建配置导入任务",
+						"description": "POST /api/ad/v3/import",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/import",
+							"body": {
+								"resource": "/net/link/wan/",
+								"file_token": "1A2B3C4D5E6F"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/import 响应",
+						"description": "返回POST /api/ad/v3/import的响应数据",
+						"value": [
+							{
+								"resource": "/net/link/wan/",
+								"config": {}
+							}
+						]
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -110,6 +134,20 @@ module.exports ={
 					"type": "string",
 					"description": "资源令牌",
 					"example": "1A2B3C4D5E6F"
+				},
+				"use_origin_project": {
+					"type": "string",
+					"description": "表示是否保持证书所属项目",
+					"enum": [
+						"ENABLE",
+						"DISABLE"
+					],
+					"example": "ENABLE"
+				},
+				"project": {
+					"type": "string",
+					"description": "选择指定多租户项目覆盖原有的所属项目",
+					"example": "common"
 				}
 			}
 		},

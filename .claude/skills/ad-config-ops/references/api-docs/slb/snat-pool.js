@@ -62,6 +62,54 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snat_rule_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all snat-pool",
+						"description": "查看当前已有的SNAT地址集配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/snat-pool/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/snat-pool/ 响应",
+						"description": "返回GET /api/ad/v3/slb/snat-pool/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "snat-pool-1",
+									"description": "example_string",
+									"address": [
+										"192.168.1.1/24"
+									],
+									"hash_policy": "SRC-IP",
+									"associated_application_group": "Default",
+									"arp_nd_reply": "ENABLE",
+									"distribute_policy": "DISABLE",
+									"distribute_delay": "AUTO",
+									"active_device": {
+										"enable": "DISABLE",
+										"address_list": [
+											{
+												"associated_member": "example_string",
+												"address": [
+													"192.168.1.1/24"
+												]
+											}
+										]
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +127,54 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snat_rule_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new snat-pool",
+						"description": "新建一个SNAT地址集配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/snat-pool/",
+							"body": {
+								"name": "AI_snat-pool-1_A",
+								"address": [
+									"192.168.1.1/24"
+								],
+								"hash_policy": "SRC-IP",
+								"associated_application_group": "Default",
+								"arp_nd_reply": "ENABLE",
+								"distribute_policy": "DISABLE",
+								"distribute_delay": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/snat-pool/ 响应",
+						"description": "返回POST /api/ad/v3/slb/snat-pool/的响应数据",
+						"value": {
+							"name": "AI_snat-pool-1_A",
+							"description": "example_string",
+							"address": [
+								"192.168.1.1/24"
+							],
+							"hash_policy": "SRC-IP",
+							"associated_application_group": "Default",
+							"arp_nd_reply": "ENABLE",
+							"distribute_policy": "DISABLE",
+							"distribute_delay": "AUTO",
+							"active_device": {
+								"enable": "DISABLE",
+								"address_list": [
+									{
+										"associated_member": "example_string",
+										"address": [
+											"192.168.1.1/24"
+										]
+									}
+								]
+							}
+						}
 					}
 				}
 			},
@@ -124,6 +220,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snat_rule_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific snat-pool",
+						"description": "查看指定的SNAT地址集配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/snat-pool/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/snat-pool/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/snat-pool/{name}的响应数据",
+						"value": {
+							"name": "snat-pool-1",
+							"description": "example_string",
+							"address": [
+								"192.168.1.1/24"
+							],
+							"hash_policy": "SRC-IP",
+							"associated_application_group": "Default",
+							"arp_nd_reply": "ENABLE",
+							"distribute_policy": "DISABLE",
+							"distribute_delay": "AUTO",
+							"active_device": {
+								"enable": "DISABLE",
+								"address_list": [
+									{
+										"associated_member": "example_string",
+										"address": [
+											"192.168.1.1/24"
+										]
+									}
+								]
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -143,6 +276,54 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snat_rule_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new snat-pool",
+						"description": "新建指定的SNAT地址集配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/snat-pool/{name}",
+							"body": {
+								"name": "AI_snat-pool-1_B",
+								"address": [
+									"192.168.1.1/24"
+								],
+								"hash_policy": "SRC-IP",
+								"associated_application_group": "Default",
+								"arp_nd_reply": "ENABLE",
+								"distribute_policy": "DISABLE",
+								"distribute_delay": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/snat-pool/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/snat-pool/{name}的响应数据",
+						"value": {
+							"name": "AI_snat-pool-1_B",
+							"description": "example_string",
+							"address": [
+								"192.168.1.1/24"
+							],
+							"hash_policy": "SRC-IP",
+							"associated_application_group": "Default",
+							"arp_nd_reply": "ENABLE",
+							"distribute_policy": "DISABLE",
+							"distribute_delay": "AUTO",
+							"active_device": {
+								"enable": "DISABLE",
+								"address_list": [
+									{
+										"associated_member": "example_string",
+										"address": [
+											"192.168.1.1/24"
+										]
+									}
+								]
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -160,6 +341,54 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snat_rule_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific snat-pool",
+						"description": "修改指定的SNAT地址集配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/snat-pool/{name}",
+							"body": {
+								"name": "snat-pool-1",
+								"address": [
+									"192.168.1.1/24"
+								],
+								"hash_policy": "SRC-IP",
+								"associated_application_group": "Default",
+								"arp_nd_reply": "ENABLE",
+								"distribute_policy": "DISABLE",
+								"distribute_delay": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/snat-pool/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/snat-pool/{name}的响应数据",
+						"value": {
+							"name": "snat-pool-1",
+							"description": "example_string",
+							"address": [
+								"192.168.1.1/24"
+							],
+							"hash_policy": "SRC-IP",
+							"associated_application_group": "Default",
+							"arp_nd_reply": "ENABLE",
+							"distribute_policy": "DISABLE",
+							"distribute_delay": "AUTO",
+							"active_device": {
+								"enable": "DISABLE",
+								"address_list": [
+									{
+										"associated_member": "example_string",
+										"address": [
+											"192.168.1.1/24"
+										]
+									}
+								]
+							}
+						}
 					}
 				}
 			},
@@ -179,6 +408,54 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snat_rule_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific snat-pool",
+						"description": "修改指定的SNAT地址集配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/snat-pool/{name}",
+							"body": {
+								"name": "snat-pool-1",
+								"address": [
+									"192.168.1.1/24"
+								],
+								"hash_policy": "SRC-IP",
+								"associated_application_group": "Default",
+								"arp_nd_reply": "ENABLE",
+								"distribute_policy": "DISABLE",
+								"distribute_delay": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/snat-pool/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/snat-pool/{name}的响应数据",
+						"value": {
+							"name": "snat-pool-1",
+							"description": "example_string",
+							"address": [
+								"192.168.1.1/24"
+							],
+							"hash_policy": "SRC-IP",
+							"associated_application_group": "Default",
+							"arp_nd_reply": "ENABLE",
+							"distribute_policy": "DISABLE",
+							"distribute_delay": "AUTO",
+							"active_device": {
+								"enable": "DISABLE",
+								"address_list": [
+									{
+										"associated_member": "example_string",
+										"address": [
+											"192.168.1.1/24"
+										]
+									}
+								]
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +468,43 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snat_rule_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific snat-pool",
+						"description": "删除指定的SNAT地址集配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/snat-pool/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/snat-pool/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/snat-pool/{name}的响应数据",
+						"value": {
+							"name": "snat-pool-1",
+							"description": "example_string",
+							"address": [
+								"192.168.1.1/24"
+							],
+							"hash_policy": "SRC-IP",
+							"associated_application_group": "Default",
+							"arp_nd_reply": "ENABLE",
+							"distribute_policy": "DISABLE",
+							"distribute_delay": "AUTO",
+							"active_device": {
+								"enable": "DISABLE",
+								"address_list": [
+									{
+										"associated_member": "example_string",
+										"address": [
+											"192.168.1.1/24"
+										]
+									}
+								]
+							}
+						}
 					}
 				}
 			}
@@ -338,6 +652,62 @@ module.exports ={
 					],
 					"default": "DISABLE",
 					"example": "ENABLE"
+				},
+				"distribute_delay": {
+					"type": "string",
+					"description": "SNAT地址集路由注入延迟",
+					"enum": [
+						"AUTO",
+						"ENABLE",
+						"DISABLE"
+					],
+					"default": "AUTO",
+					"example": "AUTO"
+				},
+				"active_device": {
+					"type": "object",
+					"description": "指定生效设备",
+					"properties": {
+						"enable": {
+							"type": "string",
+							"description": "指定生效设备启用或禁用",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
+						},
+						"address_list": {
+							"type": "array",
+							"description": "生效设备SNAT地址列表,最多支持16个设备",
+							"items": {
+								"type": "object",
+								"description": "生效设备的SNAT地址",
+								"properties": {
+									"associated_member": {
+										"type": "string",
+										"description": "生效成员设备名字,必须为集群中已存在的设备名称",
+										"format": "name",
+										"maxLength": 511,
+										"minLength": 1
+									},
+									"address": {
+										"type": "array",
+										"description": "IP地址",
+										"minItems": 1,
+										"maxItems": 16,
+										"items": {
+											"type": "string",
+											"description": "必须为单个IP地址、IP地址范围或者IP子网(支持IPv4和IPv6)",
+											"example": "192.168.1.1/24"
+										}
+									}
+								},
+								"maxItems": 16
+							}
+						}
+					}
 				}
 			}
 		}

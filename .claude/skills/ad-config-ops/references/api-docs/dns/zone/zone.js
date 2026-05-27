@@ -71,6 +71,67 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_zone_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all zone",
+						"description": "查看域",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/zone/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/zone/ 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/zone/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.jd.com",
+									"state": "ENABLE",
+									"role": "MASTER",
+									"peer_address": [
+										{
+											"address": "192.168.1.17",
+											"port": 53,
+											"tsig_key": "tsig_key_1",
+											"policy": "RECEIVE"
+										}
+									],
+									"dnssec": {
+										"state": "DISABLE",
+										"ds_record_hash_algorithm": "SHA1",
+										"nsec3_lterations": 1,
+										"zone_signing_key": [
+											"example_string"
+										],
+										"key_signing_key": [
+											"example_string"
+										],
+										"signature_refresh_perios_day": 14,
+										"signature_valid_period_day": 21
+									},
+									"soa_record": {
+										"master_server": "ns1.domain.com",
+										"email": "example_string",
+										"serial_number": 0,
+										"refresh_interval": 10800,
+										"retry_interval": 3600,
+										"expire_time": 604800,
+										"ttl": 60,
+										"negative_ttl": 86400
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -88,6 +149,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_zone_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new zone",
+						"description": "创建一个权威域配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/zone/",
+							"body": {
+								"name": "AI_www.jd.com_A",
+								"state": "ENABLE",
+								"role": "MASTER",
+								"soa_record": {
+									"master_server": "ns1.domain.com",
+									"email": "admin.example.com",
+									"serial_number": 1
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/zone/ 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/zone/的响应数据",
+						"value": {
+							"name": "AI_www.jd.com_A",
+							"state": "ENABLE",
+							"role": "MASTER",
+							"peer_address": [
+								{
+									"address": "192.168.1.17",
+									"port": 53,
+									"tsig_key": "tsig_key_1",
+									"policy": "RECEIVE"
+								}
+							],
+							"dnssec": {
+								"state": "DISABLE",
+								"ds_record_hash_algorithm": "SHA1",
+								"nsec3_lterations": 1,
+								"zone_signing_key": [
+									"example_string"
+								],
+								"key_signing_key": [
+									"example_string"
+								],
+								"signature_refresh_perios_day": 14,
+								"signature_valid_period_day": 21
+							},
+							"soa_record": {
+								"master_server": "ns1.domain.com",
+								"email": "example_string",
+								"serial_number": 0,
+								"refresh_interval": 10800,
+								"retry_interval": 3600,
+								"expire_time": 604800,
+								"ttl": 60,
+								"negative_ttl": 86400
+							}
+						}
 					}
 				}
 			},
@@ -147,6 +268,56 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_zone_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific zone",
+						"description": "查看指定的权威域配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/zone/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/zone/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/zone/{name}的响应数据",
+						"value": {
+							"name": "www.jd.com",
+							"state": "ENABLE",
+							"role": "MASTER",
+							"peer_address": [
+								{
+									"address": "192.168.1.17",
+									"port": 53,
+									"tsig_key": "tsig_key_1",
+									"policy": "RECEIVE"
+								}
+							],
+							"dnssec": {
+								"state": "DISABLE",
+								"ds_record_hash_algorithm": "SHA1",
+								"nsec3_lterations": 1,
+								"zone_signing_key": [
+									"example_string"
+								],
+								"key_signing_key": [
+									"example_string"
+								],
+								"signature_refresh_perios_day": 14,
+								"signature_valid_period_day": 21
+							},
+							"soa_record": {
+								"master_server": "ns1.domain.com",
+								"email": "example_string",
+								"serial_number": 0,
+								"refresh_interval": 10800,
+								"retry_interval": 3600,
+								"expire_time": 604800,
+								"ttl": 60,
+								"negative_ttl": 86400
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -166,6 +337,66 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_zone_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new zone",
+						"description": "创建一个权威域",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/zone/{name}",
+							"body": {
+								"name": "AI_www.jd.com_B",
+								"state": "ENABLE",
+								"role": "MASTER",
+								"soa_record": {
+									"master_server": "ns1.domain.com",
+									"email": "admin.example.com",
+									"serial_number": 1
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/zone/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/zone/{name}的响应数据",
+						"value": {
+							"name": "AI_www.jd.com_B",
+							"state": "ENABLE",
+							"role": "MASTER",
+							"peer_address": [
+								{
+									"address": "192.168.1.17",
+									"port": 53,
+									"tsig_key": "tsig_key_1",
+									"policy": "RECEIVE"
+								}
+							],
+							"dnssec": {
+								"state": "DISABLE",
+								"ds_record_hash_algorithm": "SHA1",
+								"nsec3_lterations": 1,
+								"zone_signing_key": [
+									"example_string"
+								],
+								"key_signing_key": [
+									"example_string"
+								],
+								"signature_refresh_perios_day": 14,
+								"signature_valid_period_day": 21
+							},
+							"soa_record": {
+								"master_server": "ns1.domain.com",
+								"email": "example_string",
+								"serial_number": 0,
+								"refresh_interval": 10800,
+								"retry_interval": 3600,
+								"expire_time": 604800,
+								"ttl": 60,
+								"negative_ttl": 86400
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -183,6 +414,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_zone_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific zone",
+						"description": "修改指定的权威域",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/zone/{name}",
+							"body": {
+								"name": "www.jd.com",
+								"state": "ENABLE",
+								"role": "MASTER",
+								"soa_record": {
+									"master_server": "ns1.domain.com",
+									"email": "admin.example.com",
+									"serial_number": 1
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/zone/{dns_config_area}/zone/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/zone/{dns_config_area}/zone/{name}的响应数据",
+						"value": {
+							"name": "www.jd.com",
+							"state": "ENABLE",
+							"role": "MASTER",
+							"peer_address": [
+								{
+									"address": "192.168.1.17",
+									"port": 53,
+									"tsig_key": "tsig_key_1",
+									"policy": "RECEIVE"
+								}
+							],
+							"dnssec": {
+								"state": "DISABLE",
+								"ds_record_hash_algorithm": "SHA1",
+								"nsec3_lterations": 1,
+								"zone_signing_key": [
+									"example_string"
+								],
+								"key_signing_key": [
+									"example_string"
+								],
+								"signature_refresh_perios_day": 14,
+								"signature_valid_period_day": 21
+							},
+							"soa_record": {
+								"master_server": "ns1.domain.com",
+								"email": "example_string",
+								"serial_number": 0,
+								"refresh_interval": 10800,
+								"retry_interval": 3600,
+								"expire_time": 604800,
+								"ttl": 60,
+								"negative_ttl": 86400
+							}
+						}
 					}
 				}
 			},
@@ -202,6 +493,66 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_zone_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific zone",
+						"description": "增量修改指定的权威域配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/zone/{name}",
+							"body": {
+								"name": "www.jd.com",
+								"state": "ENABLE",
+								"role": "MASTER",
+								"soa_record": {
+									"master_server": "ns1.domain.com",
+									"email": "admin.example.com",
+									"serial_number": 1
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/zone/{dns_config_area}/zone/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/zone/{dns_config_area}/zone/{name}的响应数据",
+						"value": {
+							"name": "www.jd.com",
+							"state": "ENABLE",
+							"role": "MASTER",
+							"peer_address": [
+								{
+									"address": "192.168.1.17",
+									"port": 53,
+									"tsig_key": "tsig_key_1",
+									"policy": "RECEIVE"
+								}
+							],
+							"dnssec": {
+								"state": "DISABLE",
+								"ds_record_hash_algorithm": "SHA1",
+								"nsec3_lterations": 1,
+								"zone_signing_key": [
+									"example_string"
+								],
+								"key_signing_key": [
+									"example_string"
+								],
+								"signature_refresh_perios_day": 14,
+								"signature_valid_period_day": 21
+							},
+							"soa_record": {
+								"master_server": "ns1.domain.com",
+								"email": "example_string",
+								"serial_number": 0,
+								"refresh_interval": 10800,
+								"retry_interval": 3600,
+								"expire_time": 604800,
+								"ttl": 60,
+								"negative_ttl": 86400
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -214,6 +565,56 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_zone_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific zone",
+						"description": "删除指定的权威域",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/zone/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/zone/{dns_config_area}/zone/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/zone/{dns_config_area}/zone/{name}的响应数据",
+						"value": {
+							"name": "www.jd.com",
+							"state": "ENABLE",
+							"role": "MASTER",
+							"peer_address": [
+								{
+									"address": "192.168.1.17",
+									"port": 53,
+									"tsig_key": "tsig_key_1",
+									"policy": "RECEIVE"
+								}
+							],
+							"dnssec": {
+								"state": "DISABLE",
+								"ds_record_hash_algorithm": "SHA1",
+								"nsec3_lterations": 1,
+								"zone_signing_key": [
+									"example_string"
+								],
+								"key_signing_key": [
+									"example_string"
+								],
+								"signature_refresh_perios_day": 14,
+								"signature_valid_period_day": 21
+							},
+							"soa_record": {
+								"master_server": "ns1.domain.com",
+								"email": "example_string",
+								"serial_number": 0,
+								"refresh_interval": 10800,
+								"retry_interval": 3600,
+								"expire_time": 604800,
+								"ttl": 60,
+								"negative_ttl": 86400
+							}
+						}
 					}
 				}
 			}
@@ -249,6 +650,61 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_zone_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "synchronize records from master server to slave servers",
+						"description": "同步主服务器的记录到辅服务器",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/debug/dns/zone/{dns_config_area}/synchronize",
+							"body": {
+								"name": "AI_www.jd.com_A",
+								"state": "ENABLE",
+								"role": "MASTER"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/debug/dns/zone/{dns_config_area}/synchronize 响应",
+						"description": "返回POST /api/ad/v4/debug/dns/zone/{dns_config_area}/synchronize的响应数据",
+						"value": {
+							"name": "AI_www.jd.com_A",
+							"state": "ENABLE",
+							"role": "MASTER",
+							"peer_address": [
+								{
+									"address": "192.168.1.17",
+									"port": 53,
+									"tsig_key": "tsig_key_1",
+									"policy": "RECEIVE"
+								}
+							],
+							"dnssec": {
+								"state": "DISABLE",
+								"ds_record_hash_algorithm": "SHA1",
+								"nsec3_lterations": 1,
+								"zone_signing_key": [
+									"example_string"
+								],
+								"key_signing_key": [
+									"example_string"
+								],
+								"signature_refresh_perios_day": 14,
+								"signature_valid_period_day": 21
+							},
+							"soa_record": {
+								"master_server": "ns1.domain.com",
+								"email": "example_string",
+								"serial_number": 0,
+								"refresh_interval": 10800,
+								"retry_interval": 3600,
+								"expire_time": 604800,
+								"ttl": 60,
+								"negative_ttl": 86400
+							}
+						}
 					}
 				}
 			}
@@ -391,7 +847,7 @@ module.exports ={
 				},
 				"peer_address": {
 					"type": "array",
-					"description": "通知/接收。可以不定义，最多定义5条。",
+					"description": "通知/接收。可以不定义，最多定义100条。",
 					"items": {
 						"type": "object",
 						"description": "通知/接收列表",
@@ -430,7 +886,7 @@ module.exports ={
 						}
 					},
 					"minItems": 0,
-					"maxItems": 5
+					"maxItems": 100
 				},
 				"dnssec": {
 					"type": "object",
@@ -516,11 +972,15 @@ module.exports ={
 						"master_server": {
 							"type": "string",
 							"description": "源主机，格式校验时为域名（最大长度250）或IPv4地址",
-							"example": "ns1.domain.com"
+							"example": "ns1.domain.com",
+							"maxLength": 250,
+							"minLength": 1
 						},
 						"email": {
 							"type": "string",
-							"description": "电子邮件,为电子邮件标准格式,并且将邮件中的“@”替换为“.”"
+							"description": "电子邮件,为电子邮件标准格式,并且将邮件中的“@”替换为“.”",
+							"maxLength": 250,
+							"minLength": 1
 						},
 						"serial_number": {
 							"type": "integer",

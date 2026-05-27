@@ -40,7 +40,24 @@ module.exports ={
 				],
 				"summary": "alert-trap verify",
 				"description": "测试snmp traps告警",
-				"operationId": "alert_trap_verify"
+				"operationId": "alert_trap_verify",
+				"x-examples": {
+					"request": {
+						"summary": "alert-trap verify",
+						"description": "测试snmp traps告警",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/alert-trap/verify"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/alert-trap/verify 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/alert-trap/verify的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

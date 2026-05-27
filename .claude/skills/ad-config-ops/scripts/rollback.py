@@ -23,6 +23,7 @@ from ad_ops_common import (
     write_json,
 )
 from compare_state import compare_expected
+from device_config import DeviceConfigError, normalize_base_url, resolve_device_connection
 
 
 MUTATING_METHODS = {"POST", "PATCH", "PUT", "DELETE"}
@@ -33,10 +34,12 @@ ALL_PROPERTIES_PARAMS = {"all_properties": "true"}
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Rollback AD API operations from a manifest.")
     parser.add_argument("--manifest", type=Path, help="Rollback manifest JSON path. Defaults to TMP_FILE when set.")
-    parser.add_argument("--host", default=os.environ.get("AD_HOST"), help="AD device host or address.")
-    parser.add_argument("--username", default=os.environ.get("AD_USERNAME"), help="AD API username.")
-    parser.add_argument("--password", default=os.environ.get("AD_PASSWORD"), help="AD API password.")
-    parser.add_argument("--token", default=os.environ.get("AD_TOKEN"), help="Existing AD API token.")
+    parser.add_argument("--devices", type=Path, help="devices.json path for selecting a named device.")
+    parser.add_argument("--device", help="Device name or host selector in devices.json.")
+    parser.add_argument("--host", help="AD device host, host:port, or URL. Defaults to AD_HOST when no device is selected.")
+    parser.add_argument("--username", help="AD API username. Defaults to AD_USERNAME when no device is selected.")
+    parser.add_argument("--password", help="AD API password. Defaults to AD_PASSWORD when no device is selected.")
+    parser.add_argument("--token", help="Existing AD API token. Defaults to AD_TOKEN when no device is selected.")
     parser.add_argument("--execute", action="store_true", help="Execute rollback. Without this flag, preview only.")
     parser.add_argument("--result-out", type=Path, help="Full rollback result JSON output path.")
     parser.add_argument("--workdir", type=Path, help="Artifact work directory. Defaults to AD_OPS_WORKDIR, then ./ad_ops_workdir.")
@@ -183,10 +186,12 @@ def rollback_manifest(
 
 
 def cli_auth(args: argparse.Namespace) -> dict[str, Any]:
-    password = args.password
-    if args.execute and not args.token and password is None:
+    auth = resolve_device_connection(args)
+    password = auth.get("password")
+    if args.execute and not auth.get("token") and password is None:
         password = getpass.getpass("AD password: ")
-    return {"host": args.host, "username": args.username, "password": password, "token": args.token}
+    auth["password"] = password
+    return auth
 
 
 def summarize_rollback(result: dict[str, Any], manifest: dict[str, Any], result_out: Path | None = None) -> dict[str, Any]:
@@ -208,10 +213,14 @@ def summarize_rollback(result: dict[str, Any], manifest: dict[str, Any], result_
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
-    auth = cli_auth(args)
+    try:
+        auth = cli_auth(args)
+    except DeviceConfigError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
     if args.execute:
         if not auth.get("host"):
-            print("--host or AD_HOST is required", file=sys.stderr)
+            print("--device/--devices or --host/AD_HOST is required", file=sys.stderr)
             return 2
         if not auth.get("token") and not auth.get("username"):
             print("--username/AD_USERNAME or --token/AD_TOKEN is required", file=sys.stderr)
@@ -228,7 +237,7 @@ def main(argv: list[str] | None = None) -> int:
     result = rollback_manifest(
         manifest=manifest,
         session=session,
-        base_url=f"https://{auth.get('host')}" if auth.get("host") else "https://preview.invalid",
+        base_url=normalize_base_url(auth["host"]) if auth.get("host") else "https://preview.invalid",
         auth=auth,
         execute=args.execute,
         timeout=(args.connect_timeout, args.read_timeout),

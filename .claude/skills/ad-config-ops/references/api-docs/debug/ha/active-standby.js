@@ -51,6 +51,24 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_active_standby_switch"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "switch active-standby",
+						"description": "切换双机主备",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/ha/active-standby/switch"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/ha/active-standby/switch 响应",
+						"description": "返回POST /api/ad/v3/debug/ha/active-standby/switch的响应数据",
+						"value": {
+							"original": null,
+							"current": null
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -83,6 +101,24 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_debug_active_standby_reset_failure_status"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "reset failure status of device",
+						"description": "重置备机故障状态",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/ha/active-standby/reset_failure_status"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/ha/active-standby/reset_failure_status 响应",
+						"description": "返回POST /api/ad/v3/debug/ha/active-standby/reset_failure_status的响应数据",
+						"value": {
+							"original": null,
+							"current": null
+						}
 					}
 				}
 			},
@@ -119,6 +155,24 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_debug_active_standby_reset_failure_status"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "reset failsafe status of device",
+						"description": "重置零流量检测故障状态",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/ha/active-standby/reset_failsafe_status/{device}"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/ha/active-standby/reset_failsafe_status/{device} 响应",
+						"description": "返回POST /api/ad/v3/debug/ha/active-standby/reset_failsafe_status/{device}的响应数据",
+						"value": {
+							"original": null,
+							"current": null
+						}
 					}
 				}
 			},

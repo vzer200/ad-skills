@@ -59,6 +59,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_local_dns_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all ldns statistics",
+						"description": "查询local-dns的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/local-dns/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/local-dns/ 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/local-dns/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"address": "3.1.2.4",
+									"query": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -89,6 +118,24 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_local_dns_detail"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific local-dns statistics",
+						"description": "查询local-dns的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/local-dns/{local_dns}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/local-dns/{local_dns} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/local-dns/{local_dns}的响应数据",
+						"value": {
+							"address": "3.1.2.4",
+							"query": null
+						}
+					}
 				}
 			}
 		},
@@ -115,6 +162,23 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_local_dns_summary"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get summary local-dns tcp statistics",
+						"description": "查询local-dns的全部统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/local-dns-summary"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/local-dns-summary 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/local-dns-summary的响应数据",
+						"value": {
+							"total": null
+						}
 					}
 				}
 			}

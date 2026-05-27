@@ -51,6 +51,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_server_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get dns-server",
+						"description": "查看DNS服务器",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/dns/dns-server"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/dns/dns-server 响应",
+						"description": "返回GET /api/ad/v3/dns/dns-server的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"addresses": [
+								"6.200.11.1"
+							],
+							"port": 53,
+							"unknown_domain_policy": "REFUSE",
+							"dns_detect": {
+								"method": "PTR-QUERY",
+								"timeout": 2,
+								"result_age": 10800
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +96,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_server_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace dns-server",
+						"description": "修改DNS服务器",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/dns/dns-server",
+							"body": {
+								"state": "ENABLE",
+								"port": 53,
+								"unknown_domain_policy": "REFUSE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/dns/dns-server 响应",
+						"description": "返回PUT /api/ad/v3/dns/dns-server的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"addresses": [
+								"6.200.11.1"
+							],
+							"port": 53,
+							"unknown_domain_policy": "REFUSE",
+							"dns_detect": {
+								"method": "PTR-QUERY",
+								"timeout": 2,
+								"result_age": 10800
+							}
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +145,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_server_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify dns-server",
+						"description": "增量修改DNS服务器",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/dns/dns-server",
+							"body": {
+								"state": "ENABLE",
+								"port": 53,
+								"unknown_domain_policy": "REFUSE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/dns/dns-server 响应",
+						"description": "返回PATCH /api/ad/v3/dns/dns-server的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"addresses": [
+								"6.200.11.1"
+							],
+							"port": 53,
+							"unknown_domain_policy": "REFUSE",
+							"dns_detect": {
+								"method": "PTR-QUERY",
+								"timeout": 2,
+								"result_age": 10800
+							}
+						}
 					}
 				}
 			},

@@ -51,6 +51,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_update_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get update",
+						"description": "查看当前已有的自动更新配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/update"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/update 响应",
+						"description": "返回GET /api/ad/v3/sys/update的响应数据",
+						"value": {
+							"system_patch_update": "ENABLE",
+							"isp_address_group_update": "ENABLE",
+							"isp_address_group_frequency": "WEEKLY",
+							"foreign_domain_group_update": "ENABLE",
+							"foreign_domain_group_frequency": "WEEKLY",
+							"application_identification_update": "ENABLE",
+							"application_identification_frequency": "WEEKLY"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +92,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_update_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace update",
+						"description": "修改自动更新配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/update",
+							"body": {
+								"system_patch_update": "ENABLE",
+								"isp_address_group_update": "ENABLE",
+								"isp_address_group_frequency": "WEEKLY",
+								"foreign_domain_group_update": "ENABLE",
+								"foreign_domain_group_frequency": "WEEKLY",
+								"application_identification_update": "ENABLE",
+								"application_identification_frequency": "WEEKLY"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/update 响应",
+						"description": "返回PUT /api/ad/v3/sys/update的响应数据",
+						"value": {
+							"system_patch_update": "ENABLE",
+							"isp_address_group_update": "ENABLE",
+							"isp_address_group_frequency": "WEEKLY",
+							"foreign_domain_group_update": "ENABLE",
+							"foreign_domain_group_frequency": "WEEKLY",
+							"application_identification_update": "ENABLE",
+							"application_identification_frequency": "WEEKLY"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +141,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_update_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify update",
+						"description": "修改自动更新配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/update",
+							"body": {
+								"system_patch_update": "ENABLE",
+								"isp_address_group_update": "ENABLE",
+								"isp_address_group_frequency": "WEEKLY",
+								"foreign_domain_group_update": "ENABLE",
+								"foreign_domain_group_frequency": "WEEKLY",
+								"application_identification_update": "ENABLE",
+								"application_identification_frequency": "WEEKLY"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/update 响应",
+						"description": "返回PATCH /api/ad/v3/sys/update的响应数据",
+						"value": {
+							"system_patch_update": "ENABLE",
+							"isp_address_group_update": "ENABLE",
+							"isp_address_group_frequency": "WEEKLY",
+							"foreign_domain_group_update": "ENABLE",
+							"foreign_domain_group_frequency": "WEEKLY",
+							"application_identification_update": "ENABLE",
+							"application_identification_frequency": "WEEKLY"
+						}
 					}
 				}
 			},

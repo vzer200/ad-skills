@@ -943,6 +943,16 @@ module.exports ={
 					"default": "DISABLE",
 					"example": "DISABLE"
 				},
+				"snat_sport_exhaustion": {
+					"type": "string",
+					"description": "SNAT源端口枯竭告警",
+					"enum": [
+						"ENABLE",
+						"DISABLE"
+					],
+					"default": "DISABLE",
+					"example": "DISABLE"
+				},
 				"pcie_failure": {
 					"type": "string",
 					"description": "PCIE设备故障",
@@ -1204,6 +1214,110 @@ module.exports ={
 						"persist": {
 							"type": "integer",
 							"description": "持续时间",
+							"default": 60,
+							"example": 60,
+							"minimum": 1,
+							"maximum": 300
+						}
+					}
+				},
+				"ssl_new_conns": {
+					"description": "SSL新建连接数告警",
+					"type": "object",
+					"properties": {
+						"state": {
+							"type": "string",
+							"description": "SSL新建连接数告警启/禁用状态",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
+						},
+						"threshold": {
+							"type": "integer",
+							"description": "SSL新建连接数阈值",
+							"default": 100000,
+							"example": 100000,
+							"minimum": 1,
+							"maximum": 1000000000
+						},
+						"persist": {
+							"type": "integer",
+							"description": "SSL新建连接数持续时间",
+							"default": 60,
+							"example": 60,
+							"minimum": 1,
+							"maximum": 300
+						}
+					}
+				},
+				"cpu_temperature": {
+					"description": "CPU温度告警",
+					"type": "object",
+					"properties": {
+						"state": {
+							"type": "string",
+							"description": "CPU温度告警启/禁用状态",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
+						},
+						"threshold": {
+							"type": "integer",
+							"description": "CPU温度阈值",
+							"default": 75,
+							"example": 75,
+							"minimum": 1,
+							"maximum": 120
+						},
+						"persist": {
+							"type": "integer",
+							"description": "CPU温度持续时间",
+							"default": 60,
+							"example": 60,
+							"minimum": 1,
+							"maximum": 300
+						}
+					}
+				},
+				"fan_speed": {
+					"description": "风扇转速告警",
+					"type": "object",
+					"properties": {
+						"state": {
+							"type": "string",
+							"description": "风扇转速告警启/禁用状态",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
+						},
+						"threshold_min": {
+							"type": "integer",
+							"description": "风扇转速最小阈值",
+							"default": 1500,
+							"example": 1500,
+							"minimum": 1,
+							"maximum": 20000
+						},
+						"threshold_max": {
+							"type": "integer",
+							"description": "风扇转速最大阈值",
+							"default": 9000,
+							"example": 9000,
+							"minimum": 1,
+							"maximum": 20000
+						},
+						"persist": {
+							"type": "integer",
+							"description": "风扇转速持续时间",
 							"default": 60,
 							"example": 60,
 							"minimum": 1,
@@ -1727,6 +1841,29 @@ module.exports ={
 					"example": "admin"
 				}
 			}
+		},
+		"config.service_type": {
+			"type": "string",
+			"enum": [
+				"IP",
+				"ANY",
+				"TCP-FORWARD",
+				"TCP-PROXY",
+				"UDP-FORWARD",
+				"UDP-PROXY",
+				"HTTP",
+				"SSL-OFFLOAD",
+				"SSL-OFFLOAD-HTTPS",
+				"RADIUS",
+				"DNS",
+				"FTP",
+				"SIP-TCP",
+				"SIP-UDP",
+				"8583"
+			],
+			"description": "指定虚拟服务的类型。",
+			"example": "HTTP",
+			"default": "HTTP"
 		}
 	},
 	"securityDefinitions": {

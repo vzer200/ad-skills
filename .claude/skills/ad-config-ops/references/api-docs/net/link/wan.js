@@ -65,6 +65,123 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_wan_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all link-wan",
+						"description": "查看链路WAN类别配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link/wan/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link/wan/ 响应",
+						"description": "返回GET /api/ad/v3/net/link/wan/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "wan_1",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "WAN",
+									"interface": {
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									},
+									"session_isolation": "DISABLE",
+									"addresses": [
+										"192.168.1.100/24"
+									],
+									"gateway": "200.200.0.254",
+									"gateway_ipv6": "2001::4432",
+									"dns_servers": [
+										"192.168.1.1"
+									],
+									"cluster_addresses": [
+										{
+											"address": "192.168.1.100/24",
+											"associated_member": "{member}"
+										}
+									],
+									"cluster_gateways": [
+										{
+											"gateway": "200.200.0.254",
+											"associated_member": "{member}"
+										}
+									],
+									"auto_snat": "DISABLE",
+									"autolasthop": "GLOBAL",
+									"upstream_bandwidth_mbps": 1000,
+									"upstream_busy_percent": 80,
+									"downstream_bandwidth_mbps": 1000,
+									"downstream_busy_percent": 80,
+									"gateway_arp_detect": {
+										"state": "DISABLE",
+										"timeout": 15,
+										"interval": 5
+									},
+									"monitors": [
+										{
+											"monitor": "ping",
+											"target_host": "10.10.10.254"
+										}
+									],
+									"cable_plugin_detect": "ENABLE",
+									"appgroup_failover": "DISABLE",
+									"failsafe": {
+										"state": "DISABLE",
+										"timeout": 120,
+										"action": "FAILOVER"
+									},
+									"dev_mgt": {
+										"report_console": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"snmp_svc": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"ssh_console": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"troubleshooting_port": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"web_console": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										}
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +199,130 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_wan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new link-wan",
+						"description": "新建链路WAN类别配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/link/wan/",
+							"body": {
+								"name": "AI_wan_1_A",
+								"state": "ENABLE",
+								"type": "WAN",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"session_isolation": "DISABLE",
+								"auto_snat": "DISABLE",
+								"autolasthop": "GLOBAL",
+								"upstream_bandwidth_mbps": 1000,
+								"upstream_busy_percent": 80,
+								"downstream_bandwidth_mbps": 1000,
+								"downstream_busy_percent": 80,
+								"cable_plugin_detect": "ENABLE",
+								"appgroup_failover": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/link/wan/ 响应",
+						"description": "返回POST /api/ad/v3/net/link/wan/的响应数据",
+						"value": {
+							"name": "AI_wan_1_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "WAN",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"session_isolation": "DISABLE",
+							"addresses": [
+								"192.168.1.100/24"
+							],
+							"gateway": "200.200.0.254",
+							"gateway_ipv6": "2001::4432",
+							"dns_servers": [
+								"192.168.1.1"
+							],
+							"cluster_addresses": [
+								{
+									"address": "192.168.1.100/24",
+									"associated_member": "{member}"
+								}
+							],
+							"cluster_gateways": [
+								{
+									"gateway": "200.200.0.254",
+									"associated_member": "{member}"
+								}
+							],
+							"auto_snat": "DISABLE",
+							"autolasthop": "GLOBAL",
+							"upstream_bandwidth_mbps": 1000,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 1000,
+							"downstream_busy_percent": 80,
+							"gateway_arp_detect": {
+								"state": "DISABLE",
+								"timeout": 15,
+								"interval": 5
+							},
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "ENABLE",
+							"appgroup_failover": "DISABLE",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"dev_mgt": {
+								"report_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"snmp_svc": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"ssh_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"troubleshooting_port": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"web_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								}
+							}
+						}
 					}
 				}
 			},
@@ -101,6 +342,141 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_wan_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify link-wan",
+						"description": "修改链路WAN类别配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/link/wan/",
+							"body": {
+								"name": "wan_1",
+								"state": "ENABLE",
+								"type": "WAN",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"session_isolation": "DISABLE",
+								"auto_snat": "DISABLE",
+								"autolasthop": "GLOBAL",
+								"upstream_bandwidth_mbps": 1000,
+								"upstream_busy_percent": 80,
+								"downstream_bandwidth_mbps": 1000,
+								"downstream_busy_percent": 80,
+								"cable_plugin_detect": "ENABLE",
+								"appgroup_failover": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/link/wan/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/link/wan/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "wan_1",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "WAN",
+									"interface": {
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									},
+									"session_isolation": "DISABLE",
+									"addresses": [
+										"192.168.1.100/24"
+									],
+									"gateway": "200.200.0.254",
+									"gateway_ipv6": "2001::4432",
+									"dns_servers": [
+										"192.168.1.1"
+									],
+									"cluster_addresses": [
+										{
+											"address": "192.168.1.100/24",
+											"associated_member": "{member}"
+										}
+									],
+									"cluster_gateways": [
+										{
+											"gateway": "200.200.0.254",
+											"associated_member": "{member}"
+										}
+									],
+									"auto_snat": "DISABLE",
+									"autolasthop": "GLOBAL",
+									"upstream_bandwidth_mbps": 1000,
+									"upstream_busy_percent": 80,
+									"downstream_bandwidth_mbps": 1000,
+									"downstream_busy_percent": 80,
+									"gateway_arp_detect": {
+										"state": "DISABLE",
+										"timeout": 15,
+										"interval": 5
+									},
+									"monitors": [
+										{
+											"monitor": "ping",
+											"target_host": "10.10.10.254"
+										}
+									],
+									"cable_plugin_detect": "ENABLE",
+									"appgroup_failover": "DISABLE",
+									"failsafe": {
+										"state": "DISABLE",
+										"timeout": 120,
+										"action": "FAILOVER"
+									},
+									"dev_mgt": {
+										"report_console": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"snmp_svc": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"ssh_console": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"troubleshooting_port": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"web_console": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										}
+									}
+								}
+							]
+						}
 					}
 				}
 			},
@@ -157,6 +533,112 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_wan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific link-wan",
+						"description": "查看指定链路WAN类别配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link/wan/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link/wan/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/link/wan/{name}的响应数据",
+						"value": {
+							"name": "wan_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "WAN",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"session_isolation": "DISABLE",
+							"addresses": [
+								"192.168.1.100/24"
+							],
+							"gateway": "200.200.0.254",
+							"gateway_ipv6": "2001::4432",
+							"dns_servers": [
+								"192.168.1.1"
+							],
+							"cluster_addresses": [
+								{
+									"address": "192.168.1.100/24",
+									"associated_member": "{member}"
+								}
+							],
+							"cluster_gateways": [
+								{
+									"gateway": "200.200.0.254",
+									"associated_member": "{member}"
+								}
+							],
+							"auto_snat": "DISABLE",
+							"autolasthop": "GLOBAL",
+							"upstream_bandwidth_mbps": 1000,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 1000,
+							"downstream_busy_percent": 80,
+							"gateway_arp_detect": {
+								"state": "DISABLE",
+								"timeout": 15,
+								"interval": 5
+							},
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "ENABLE",
+							"appgroup_failover": "DISABLE",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"dev_mgt": {
+								"report_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"snmp_svc": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"ssh_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"troubleshooting_port": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"web_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								}
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -176,6 +658,130 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_wan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new link-wan",
+						"description": "新建链路WAN类别配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/link/wan/{name}",
+							"body": {
+								"name": "AI_wan_1_B",
+								"state": "ENABLE",
+								"type": "WAN",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"session_isolation": "DISABLE",
+								"auto_snat": "DISABLE",
+								"autolasthop": "GLOBAL",
+								"upstream_bandwidth_mbps": 1000,
+								"upstream_busy_percent": 80,
+								"downstream_bandwidth_mbps": 1000,
+								"downstream_busy_percent": 80,
+								"cable_plugin_detect": "ENABLE",
+								"appgroup_failover": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/link/wan/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/link/wan/{name}的响应数据",
+						"value": {
+							"name": "AI_wan_1_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "WAN",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"session_isolation": "DISABLE",
+							"addresses": [
+								"192.168.1.100/24"
+							],
+							"gateway": "200.200.0.254",
+							"gateway_ipv6": "2001::4432",
+							"dns_servers": [
+								"192.168.1.1"
+							],
+							"cluster_addresses": [
+								{
+									"address": "192.168.1.100/24",
+									"associated_member": "{member}"
+								}
+							],
+							"cluster_gateways": [
+								{
+									"gateway": "200.200.0.254",
+									"associated_member": "{member}"
+								}
+							],
+							"auto_snat": "DISABLE",
+							"autolasthop": "GLOBAL",
+							"upstream_bandwidth_mbps": 1000,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 1000,
+							"downstream_busy_percent": 80,
+							"gateway_arp_detect": {
+								"state": "DISABLE",
+								"timeout": 15,
+								"interval": 5
+							},
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "ENABLE",
+							"appgroup_failover": "DISABLE",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"dev_mgt": {
+								"report_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"snmp_svc": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"ssh_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"troubleshooting_port": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"web_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								}
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -193,6 +799,130 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_wan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific link-wan",
+						"description": "替换指定链路WAN类别配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/link/wan/{name}",
+							"body": {
+								"name": "wan_1",
+								"state": "ENABLE",
+								"type": "WAN",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"session_isolation": "DISABLE",
+								"auto_snat": "DISABLE",
+								"autolasthop": "GLOBAL",
+								"upstream_bandwidth_mbps": 1000,
+								"upstream_busy_percent": 80,
+								"downstream_bandwidth_mbps": 1000,
+								"downstream_busy_percent": 80,
+								"cable_plugin_detect": "ENABLE",
+								"appgroup_failover": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/link/wan/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/link/wan/{name}的响应数据",
+						"value": {
+							"name": "wan_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "WAN",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"session_isolation": "DISABLE",
+							"addresses": [
+								"192.168.1.100/24"
+							],
+							"gateway": "200.200.0.254",
+							"gateway_ipv6": "2001::4432",
+							"dns_servers": [
+								"192.168.1.1"
+							],
+							"cluster_addresses": [
+								{
+									"address": "192.168.1.100/24",
+									"associated_member": "{member}"
+								}
+							],
+							"cluster_gateways": [
+								{
+									"gateway": "200.200.0.254",
+									"associated_member": "{member}"
+								}
+							],
+							"auto_snat": "DISABLE",
+							"autolasthop": "GLOBAL",
+							"upstream_bandwidth_mbps": 1000,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 1000,
+							"downstream_busy_percent": 80,
+							"gateway_arp_detect": {
+								"state": "DISABLE",
+								"timeout": 15,
+								"interval": 5
+							},
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "ENABLE",
+							"appgroup_failover": "DISABLE",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"dev_mgt": {
+								"report_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"snmp_svc": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"ssh_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"troubleshooting_port": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"web_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								}
+							}
+						}
 					}
 				}
 			},
@@ -212,6 +942,130 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_wan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific link-wan",
+						"description": "修改指定链路WAN类别配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/link/wan/{name}",
+							"body": {
+								"name": "wan_1",
+								"state": "ENABLE",
+								"type": "WAN",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"session_isolation": "DISABLE",
+								"auto_snat": "DISABLE",
+								"autolasthop": "GLOBAL",
+								"upstream_bandwidth_mbps": 1000,
+								"upstream_busy_percent": 80,
+								"downstream_bandwidth_mbps": 1000,
+								"downstream_busy_percent": 80,
+								"cable_plugin_detect": "ENABLE",
+								"appgroup_failover": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/link/wan/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/link/wan/{name}的响应数据",
+						"value": {
+							"name": "wan_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "WAN",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"session_isolation": "DISABLE",
+							"addresses": [
+								"192.168.1.100/24"
+							],
+							"gateway": "200.200.0.254",
+							"gateway_ipv6": "2001::4432",
+							"dns_servers": [
+								"192.168.1.1"
+							],
+							"cluster_addresses": [
+								{
+									"address": "192.168.1.100/24",
+									"associated_member": "{member}"
+								}
+							],
+							"cluster_gateways": [
+								{
+									"gateway": "200.200.0.254",
+									"associated_member": "{member}"
+								}
+							],
+							"auto_snat": "DISABLE",
+							"autolasthop": "GLOBAL",
+							"upstream_bandwidth_mbps": 1000,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 1000,
+							"downstream_busy_percent": 80,
+							"gateway_arp_detect": {
+								"state": "DISABLE",
+								"timeout": 15,
+								"interval": 5
+							},
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "ENABLE",
+							"appgroup_failover": "DISABLE",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"dev_mgt": {
+								"report_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"snmp_svc": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"ssh_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"troubleshooting_port": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"web_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								}
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -224,6 +1078,112 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_wan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific link-wan",
+						"description": "删除指定链路WAN类别配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/link/wan/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/link/wan/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/link/wan/{name}的响应数据",
+						"value": {
+							"name": "wan_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "WAN",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"session_isolation": "DISABLE",
+							"addresses": [
+								"192.168.1.100/24"
+							],
+							"gateway": "200.200.0.254",
+							"gateway_ipv6": "2001::4432",
+							"dns_servers": [
+								"192.168.1.1"
+							],
+							"cluster_addresses": [
+								{
+									"address": "192.168.1.100/24",
+									"associated_member": "{member}"
+								}
+							],
+							"cluster_gateways": [
+								{
+									"gateway": "200.200.0.254",
+									"associated_member": "{member}"
+								}
+							],
+							"auto_snat": "DISABLE",
+							"autolasthop": "GLOBAL",
+							"upstream_bandwidth_mbps": 1000,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 1000,
+							"downstream_busy_percent": 80,
+							"gateway_arp_detect": {
+								"state": "DISABLE",
+								"timeout": 15,
+								"interval": 5
+							},
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "ENABLE",
+							"appgroup_failover": "DISABLE",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"dev_mgt": {
+								"report_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"snmp_svc": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"ssh_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"troubleshooting_port": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"web_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								}
+							}
+						}
 					}
 				}
 			}
@@ -482,6 +1442,16 @@ module.exports ={
 					"default": "DISABLE",
 					"example": "ENABLE"
 				},
+				"autolasthop": {
+					"type": "string",
+					"description": "可选参数；对称路由（global-全局/enable-启用/disable-禁用），默认值global",
+					"enum": [
+						"GLOBAL",
+						"ENABLE",
+						"DISABLE"
+					],
+					"default": "GLOBAL"
+				},
 				"upstream_bandwidth_mbps": {
 					"description": "必选参数；WAN链路上行带宽（单位Mbps）",
 					"type": "integer",
@@ -627,6 +1597,222 @@ module.exports ={
 							],
 							"default": "FAILOVER",
 							"example": "FAILOVER"
+						}
+					}
+				},
+				"dev_mgt": {
+					"type": "object",
+					"description": "wan口的设备管理",
+					"properties": {
+						"report_console": {
+							"type": "object",
+							"description": "报表中心",
+							"properties": {
+								"whitelist_address": {
+									"description": "白名单地址",
+									"properties": {
+										"ref_custom_address_group": {
+											"description": "用户地址集",
+											"example": "{custom_address_group}",
+											"type": "string",
+											"default": ""
+										},
+										"type": {
+											"default": "ALL",
+											"description": "地址类型",
+											"enum": [
+												"ALL",
+												"GLOBAL-WHITELIST",
+												"CUSTOM-ADDRESS-GROUP"
+											],
+											"example": "ALL",
+											"type": "string"
+										}
+									},
+									"required": [
+										"type"
+									],
+									"type": "object"
+								},
+								"whitelist_switch": {
+									"default": "GLOBAL",
+									"description": "白名单的开关",
+									"enum": [
+										"ENABLE",
+										"DISABLE",
+										"GLOBAL"
+									],
+									"type": "string"
+								}
+							}
+						},
+						"snmp_svc": {
+							"description": "SNMP服务",
+							"type": "object",
+							"properties": {
+								"whitelist_address": {
+									"description": "白名单地址",
+									"properties": {
+										"ref_custom_address_group": {
+											"description": "用户地址集",
+											"example": "{custom_address_group}",
+											"type": "string",
+											"default": ""
+										},
+										"type": {
+											"default": "ALL",
+											"description": "地址类型",
+											"enum": [
+												"ALL",
+												"GLOBAL-WHITELIST",
+												"CUSTOM-ADDRESS-GROUP"
+											],
+											"example": "ALL",
+											"type": "string"
+										}
+									},
+									"required": [
+										"type"
+									],
+									"type": "object"
+								},
+								"whitelist_switch": {
+									"default": "GLOBAL",
+									"description": "白名单的开关",
+									"enum": [
+										"ENABLE",
+										"DISABLE",
+										"GLOBAL"
+									],
+									"type": "string"
+								}
+							}
+						},
+						"ssh_console": {
+							"description": "SSH维护",
+							"type": "object",
+							"properties": {
+								"whitelist_address": {
+									"description": "白名单地址",
+									"properties": {
+										"ref_custom_address_group": {
+											"description": "用户地址集",
+											"example": "{custom_address_group}",
+											"type": "string",
+											"default": ""
+										},
+										"type": {
+											"default": "ALL",
+											"description": "地址类型",
+											"enum": [
+												"ALL",
+												"GLOBAL-WHITELIST",
+												"CUSTOM-ADDRESS-GROUP"
+											],
+											"example": "ALL",
+											"type": "string"
+										}
+									},
+									"required": [
+										"type"
+									],
+									"type": "object"
+								},
+								"whitelist_switch": {
+									"default": "GLOBAL",
+									"description": "白名单的开关",
+									"enum": [
+										"ENABLE",
+										"DISABLE",
+										"GLOBAL"
+									],
+									"type": "string"
+								}
+							}
+						},
+						"troubleshooting_port": {
+							"description": "SSH命令行",
+							"type": "object",
+							"properties": {
+								"whitelist_address": {
+									"description": "白名单地址",
+									"properties": {
+										"ref_custom_address_group": {
+											"description": "用户地址集",
+											"example": "{custom_address_group}",
+											"type": "string",
+											"default": ""
+										},
+										"type": {
+											"default": "ALL",
+											"description": "地址类型",
+											"enum": [
+												"ALL",
+												"GLOBAL-WHITELIST",
+												"CUSTOM-ADDRESS-GROUP"
+											],
+											"example": "ALL",
+											"type": "string"
+										}
+									},
+									"required": [
+										"type"
+									],
+									"type": "object"
+								},
+								"whitelist_switch": {
+									"default": "GLOBAL",
+									"description": "白名单的开关",
+									"enum": [
+										"ENABLE",
+										"DISABLE",
+										"GLOBAL"
+									],
+									"type": "string"
+								}
+							}
+						},
+						"web_console": {
+							"description": "web控制台白名单",
+							"type": "object",
+							"properties": {
+								"whitelist_address": {
+									"description": "白名单地址",
+									"properties": {
+										"ref_custom_address_group": {
+											"description": "用户地址集",
+											"example": "{custom_address_group}",
+											"type": "string",
+											"default": ""
+										},
+										"type": {
+											"default": "ALL",
+											"description": "地址类型",
+											"enum": [
+												"ALL",
+												"GLOBAL-WHITELIST",
+												"CUSTOM-ADDRESS-GROUP"
+											],
+											"example": "ALL",
+											"type": "string"
+										}
+									},
+									"required": [
+										"type"
+									],
+									"type": "object"
+								},
+								"whitelist_switch": {
+									"default": "GLOBAL",
+									"description": "白名单的开关",
+									"enum": [
+										"ENABLE",
+										"DISABLE",
+										"GLOBAL"
+									],
+									"type": "string"
+								}
+							}
 						}
 					}
 				}

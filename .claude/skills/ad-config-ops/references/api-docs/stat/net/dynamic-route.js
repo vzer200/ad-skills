@@ -62,6 +62,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_dynamic_route_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get dynamic-route table",
+						"description": "获取动态路由统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/dynamic-route"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/dynamic-route 响应",
+						"description": "返回GET /api/ad/v3/stat/net/dynamic-route的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"destination": "200.200.200.0/24",
+									"next_hop": "200.200.100.254",
+									"outbound_link": "wan_china_unicom_1",
+									"protocol": "BGP",
+									"cost": 100
+								}
+							]
+						}
+					}
 				}
 			}
 		}

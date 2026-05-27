@@ -65,6 +65,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_chain_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-chains",
+						"description": "查看服务链配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-chain/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-chain/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-chain/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "service_chain_1",
+									"description": "example_string",
+									"security_pool": [
+										"WAF_POOL"
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +114,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_chain_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-chain",
+						"description": "新建服务链",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-chain/",
+							"body": {
+								"name": "AI_service_chain_1_A"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-chain/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-chain/的响应数据",
+						"value": {
+							"name": "AI_service_chain_1_A",
+							"description": "example_string",
+							"security_pool": [
+								"WAF_POOL"
+							]
+						}
 					}
 				}
 			}
@@ -113,6 +169,27 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_chain_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-chain",
+						"description": "查看指定的服务链配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-chain/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-chain/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-chain/{name}的响应数据",
+						"value": {
+							"name": "service_chain_1",
+							"description": "example_string",
+							"security_pool": [
+								"WAF_POOL"
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -130,6 +207,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_chain_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-chain",
+						"description": "修改指定的服务链配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-chain/{name}",
+							"body": {
+								"name": "service_chain_1"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-chain/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-chain/{name}的响应数据",
+						"value": {
+							"name": "service_chain_1",
+							"description": "example_string",
+							"security_pool": [
+								"WAF_POOL"
+							]
+						}
 					}
 				}
 			},
@@ -149,6 +250,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_chain_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-chain",
+						"description": "修改指定的服务链配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-chain/{name}",
+							"body": {
+								"name": "service_chain_1"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-chain/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-chain/{name}的响应数据",
+						"value": {
+							"name": "service_chain_1",
+							"description": "example_string",
+							"security_pool": [
+								"WAF_POOL"
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -161,6 +286,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_chain_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-chain",
+						"description": "删除指定的服务链",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-chain/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-chain/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-chain/{name}的响应数据",
+						"value": {
+							"name": "service_chain_1",
+							"description": "example_string",
+							"security_pool": [
+								"WAF_POOL"
+							]
+						}
 					}
 				}
 			}
@@ -192,6 +338,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_chain_associate_vs_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get virtual services with this service-chain",
+						"description": "查看关联指定的服务链的虚拟服务信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-chain/{name}/associated-vs"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-chain/{name}/associated-vs 响应",
+						"description": "返回GET /api/ad/v3/slb/service-chain/{name}/associated-vs的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vs_1",
+									"service": null,
+									"vips": [
+										"10.0.1.83"
+									],
+									"vports": [
+										"80-88"
+									],
+									"pre_rules": [
+										{
+											"name": "pre-rule-1",
+											"inherit_vs_service_chain": "ENABLE",
+											"service_chain": "service_chain1_for_pre_rule"
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -221,6 +409,42 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_chain_associate_pre_rule_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get pre-rules associated with this service-chain",
+						"description": "查看关联指定的服务链的前置策略信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-chain/{name}/associated-pre-rule"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-chain/{name}/associated-pre-rule 响应",
+						"description": "返回GET /api/ad/v3/slb/service-chain/{name}/associated-pre-rule的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "pre-rule-1",
+									"service": "FTP",
+									"inherit_vs_service_chain": "ENABLE",
+									"associated_vs": [
+										{
+											"name": "vs_1",
+											"service_chain": "service_chain1"
+										}
+									]
+								}
+							]
+						}
 					}
 				}
 			}
@@ -252,6 +476,53 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_all_service_chain_associate_vs_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get virtual services with all service-chain",
+						"description": "查看所有服务链关联的虚拟服务信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-chain/all/associated-vs"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-chain/all/associated-vs 响应",
+						"description": "返回GET /api/ad/v3/slb/service-chain/all/associated-vs的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"service_chain_name": "service_chain_1",
+									"associated_vs": [
+										{
+											"name": "vs_1",
+											"service": null,
+											"vips": [
+												"10.0.1.83"
+											],
+											"vports": [
+												"80-88"
+											],
+											"pre_rules": [
+												{
+													"name": "pre-rule-1",
+													"inherit_vs_service_chain": "ENABLE",
+													"service_chain": "service_chain1_for_pre_rule"
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -281,6 +552,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_all_service_chain_associate_pre_rule_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get pre-rules associated with all service-chain",
+						"description": "查看所有服务链关联的前置策略信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-chain/all/associated-pre-rule"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-chain/all/associated-pre-rule 响应",
+						"description": "返回GET /api/ad/v3/slb/service-chain/all/associated-pre-rule的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"service_chain_name": "service_chain_1",
+									"associated_pre_rule": [
+										{
+											"name": "pre-rule-1",
+											"service": "FTP",
+											"inherit_vs_service_chain": "ENABLE",
+											"associated_vs": [
+												{
+													"name": "vs_1",
+													"service_chain": "service_chain1"
+												}
+											]
+										}
+									]
+								}
+							]
+						}
 					}
 				}
 			}
@@ -468,7 +780,7 @@ module.exports ={
 							},
 							"service": {
 								"description": "虚拟服务类型",
-								"$ref": "/api/slb/virtual-service.yaml#/definitions/config.service_type",
+								"$ref": "/api/{common}.yaml#/definitions/config.service_type",
 								"default": "HTTP"
 							},
 							"vips": {
@@ -523,7 +835,7 @@ module.exports ={
 										},
 										"service_chain": {
 											"type": "string",
-											"description": "指定当前前置策略的服务链，仅当inherit_vs_service_chain为DISBALE时生效",
+											"description": "指定当前前置策略的服务链，仅当inherit_vs_service_chain为DISABLE时生效",
 											"example": "service_chain1_for_pre_rule"
 										}
 									}
@@ -702,7 +1014,7 @@ module.exports ={
 										},
 										"service": {
 											"description": "虚拟服务类型",
-											"$ref": "/api/slb/virtual-service.yaml#/definitions/config.service_type",
+											"$ref": "/api/{common}.yaml#/definitions/config.service_type",
 											"default": "HTTP"
 										},
 										"vips": {
@@ -757,7 +1069,7 @@ module.exports ={
 													},
 													"service_chain": {
 														"type": "string",
-														"description": "指定当前前置策略的服务链，仅当inherit_vs_service_chain为DISBALE时生效",
+														"description": "指定当前前置策略的服务链，仅当inherit_vs_service_chain为DISABLE时生效",
 														"example": "service_chain1_for_pre_rule"
 													}
 												}

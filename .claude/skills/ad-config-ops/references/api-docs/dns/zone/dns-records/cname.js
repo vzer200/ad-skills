@@ -65,6 +65,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_cname_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-record-cname",
+						"description": "查看CNAME记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/ 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "example_string",
+									"type": "CNAME",
+									"description": "example_string",
+									"state": "ENABLE",
+									"domain": "example_string",
+									"zone": "com",
+									"cname_records": "example_string",
+									"ttl": 60
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +117,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_cname_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-cname",
+						"description": "创建一个CNAME记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/",
+							"body": {
+								"type": "CNAME",
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"cname_records": "example_string",
+								"ttl": 60
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/ 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/的响应数据",
+						"value": {
+							"name": "AI_example_string_A",
+							"type": "CNAME",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"cname_records": "example_string",
+							"ttl": 60
+						}
 					}
 				}
 			},
@@ -138,6 +205,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_cname_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-record-cname",
+						"description": "查看指定的CNAME记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"type": "CNAME",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"cname_records": "example_string",
+							"ttl": 60
+						}
+					}
 				}
 			},
 			"post": {
@@ -157,6 +248,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_cname_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-cname",
+						"description": "创建一个CNAME记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name}",
+							"body": {
+								"type": "CNAME",
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"cname_records": "example_string",
+								"ttl": 60
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name}的响应数据",
+						"value": {
+							"name": "AI_example_string_B",
+							"type": "CNAME",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"cname_records": "example_string",
+							"ttl": 60
+						}
+					}
 				}
 			},
 			"put": {
@@ -174,6 +297,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_cname_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-record-cname",
+						"description": "修改指定的CNAME记录",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name}",
+							"body": {
+								"type": "CNAME",
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"cname_records": "example_string",
+								"ttl": 60
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"type": "CNAME",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"cname_records": "example_string",
+							"ttl": 60
+						}
 					}
 				}
 			},
@@ -193,6 +348,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_cname_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-record-cname",
+						"description": "增量修改指定的CNAME记录",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name}",
+							"body": {
+								"type": "CNAME",
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"cname_records": "example_string",
+								"ttl": 60
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"type": "CNAME",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"cname_records": "example_string",
+							"ttl": 60
+						}
+					}
 				}
 			},
 			"delete": {
@@ -205,6 +392,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_cname_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-record-cname",
+						"description": "删除指定的CNAME记录",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/cname/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"type": "CNAME",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"cname_records": "example_string",
+							"ttl": 60
+						}
 					}
 				}
 			},

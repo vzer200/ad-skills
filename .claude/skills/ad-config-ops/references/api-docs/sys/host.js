@@ -62,6 +62,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_host_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all host",
+						"description": "查看已有的HOSTS配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/host/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/host/ 响应",
+						"description": "返回GET /api/ad/v3/sys/host/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "localhost",
+									"default": "NON-DEFAULT",
+									"addresses": [
+										"127.0.0.1"
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +111,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_host_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new host",
+						"description": "新建HOSTS配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/host/",
+							"body": {
+								"name": "AI_localhost_A",
+								"default": "NON-DEFAULT",
+								"addresses": [
+									"127.0.0.1"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/host/ 响应",
+						"description": "返回POST /api/ad/v3/sys/host/的响应数据",
+						"value": {
+							"name": "AI_localhost_A",
+							"default": "NON-DEFAULT",
+							"addresses": [
+								"127.0.0.1"
+							]
+						}
 					}
 				}
 			},
@@ -124,6 +184,27 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_host_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific host",
+						"description": "查看指定的HOSTS配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/host/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/host/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/host/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"default": "NON-DEFAULT",
+							"addresses": [
+								"127.0.0.1"
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -143,6 +224,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_host_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new host",
+						"description": "新建指定的HOSTS配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/host/{name}",
+							"body": {
+								"name": "AI_localhost_B",
+								"default": "NON-DEFAULT",
+								"addresses": [
+									"127.0.0.1"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/host/{name} 响应",
+						"description": "返回POST /api/ad/v3/sys/host/{name}的响应数据",
+						"value": {
+							"name": "AI_localhost_B",
+							"default": "NON-DEFAULT",
+							"addresses": [
+								"127.0.0.1"
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -160,6 +269,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_host_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific host",
+						"description": "修改指定的HOSTS配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/host/{name}",
+							"body": {
+								"name": "localhost",
+								"default": "NON-DEFAULT",
+								"addresses": [
+									"127.0.0.1"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/host/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/host/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"default": "NON-DEFAULT",
+							"addresses": [
+								"127.0.0.1"
+							]
+						}
 					}
 				}
 			},
@@ -179,6 +316,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_host_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific host",
+						"description": "修改指定的HOSTS配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/host/{name}",
+							"body": {
+								"name": "localhost",
+								"default": "NON-DEFAULT",
+								"addresses": [
+									"127.0.0.1"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/host/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/host/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"default": "NON-DEFAULT",
+							"addresses": [
+								"127.0.0.1"
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +356,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_host_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific host",
+						"description": "删除指定的HOSTS配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/host/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/host/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/host/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"default": "NON-DEFAULT",
+							"addresses": [
+								"127.0.0.1"
+							]
+						}
 					}
 				}
 			}

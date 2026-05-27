@@ -40,7 +40,24 @@ module.exports ={
 				],
 				"summary": "sync-at-once config-synchronization",
 				"description": "立即同步数据中心配置",
-				"operationId": "sync_at_once_config_synchronization"
+				"operationId": "sync_at_once_config_synchronization",
+				"x-examples": {
+					"request": {
+						"summary": "sync-at-once config-synchronization",
+						"description": "立即同步数据中心配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/dns/config-synchronization/sync-at-once"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/dns/config-synchronization/sync-at-once 响应",
+						"description": "返回POST /api/ad/v3/debug/dns/config-synchronization/sync-at-once的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

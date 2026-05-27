@@ -68,6 +68,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_sip_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-sip",
+						"description": "查看当前已有的监视器（SIP）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/sip/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/sip/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/sip/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "SIP",
+									"timeout": 16,
+									"interval": 5,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"host": "*",
+									"port": 0,
+									"debug_mode": "DISABLE",
+									"proto_method": "UDP",
+									"send_request": "OPTIONS sip:1.1.1.1:5060 SIP/2.0",
+									"send_header": [
+										"test_sip_header:XXXXXX"
+									],
+									"expect_status_code": "200"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -85,6 +128,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_sip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-sip",
+						"description": "新建一个监视器（SIP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/sip/",
+							"body": {
+								"name": "AI_http_sip_A",
+								"type": "SIP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"proto_method": "UDP",
+								"expect_status_code": "200"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/sip/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/sip/的响应数据",
+						"value": {
+							"name": "AI_http_sip_A",
+							"description": "example_string",
+							"type": "SIP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"proto_method": "UDP",
+							"send_request": "OPTIONS sip:1.1.1.1:5060 SIP/2.0",
+							"send_header": [
+								"test_sip_header:XXXXXX"
+							],
+							"expect_status_code": "200"
+						}
 					}
 				}
 			},
@@ -133,6 +221,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_sip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-sip",
+						"description": "查看指定的监视器（SIP）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/sip/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/sip/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/sip/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "SIP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"proto_method": "UDP",
+							"send_request": "OPTIONS sip:1.1.1.1:5060 SIP/2.0",
+							"send_header": [
+								"test_sip_header:XXXXXX"
+							],
+							"expect_status_code": "200"
+						}
+					}
 				}
 			},
 			"post": {
@@ -152,6 +272,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_sip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-sip",
+						"description": "新建指定的监视器（SIP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/sip/{name}",
+							"body": {
+								"name": "AI_http_sip_B",
+								"type": "SIP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"proto_method": "UDP",
+								"expect_status_code": "200"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/sip/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/sip/{name}的响应数据",
+						"value": {
+							"name": "AI_http_sip_B",
+							"description": "example_string",
+							"type": "SIP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"proto_method": "UDP",
+							"send_request": "OPTIONS sip:1.1.1.1:5060 SIP/2.0",
+							"send_header": [
+								"test_sip_header:XXXXXX"
+							],
+							"expect_status_code": "200"
+						}
+					}
 				}
 			},
 			"put": {
@@ -169,6 +334,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_sip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-sip",
+						"description": "修改指定的监视器（SIP）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/sip/{name}",
+							"body": {
+								"name": "http",
+								"type": "SIP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"proto_method": "UDP",
+								"expect_status_code": "200"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/sip/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/sip/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "SIP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"proto_method": "UDP",
+							"send_request": "OPTIONS sip:1.1.1.1:5060 SIP/2.0",
+							"send_header": [
+								"test_sip_header:XXXXXX"
+							],
+							"expect_status_code": "200"
+						}
 					}
 				}
 			},
@@ -188,6 +398,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_sip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-sip",
+						"description": "修改指定的监视器（SIP）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/sip/{name}",
+							"body": {
+								"name": "http",
+								"type": "SIP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"proto_method": "UDP",
+								"expect_status_code": "200"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/sip/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/sip/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "SIP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"proto_method": "UDP",
+							"send_request": "OPTIONS sip:1.1.1.1:5060 SIP/2.0",
+							"send_header": [
+								"test_sip_header:XXXXXX"
+							],
+							"expect_status_code": "200"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -200,6 +455,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_sip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-sip",
+						"description": "删除指定的监视器（SIP）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/sip/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/sip/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/sip/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "SIP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"proto_method": "UDP",
+							"send_request": "OPTIONS sip:1.1.1.1:5060 SIP/2.0",
+							"send_header": [
+								"test_sip_header:XXXXXX"
+							],
+							"expect_status_code": "200"
+						}
 					}
 				}
 			}
@@ -401,7 +688,7 @@ module.exports ={
 					"description": "回复状态码",
 					"type": "string",
 					"default": "200",
-					"minLength": 3,
+					"minLength": 0,
 					"maxLength": 255,
 					"example": "200"
 				}

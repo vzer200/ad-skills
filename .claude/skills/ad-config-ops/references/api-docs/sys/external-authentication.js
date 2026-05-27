@@ -51,6 +51,78 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_external_authentication_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get external-authentication",
+						"description": "查看外部认证当前配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/external-authentication"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/external-authentication 响应",
+						"description": "返回GET /api/ad/v3/sys/external-authentication的响应数据",
+						"value": {
+							"state": "DISABLE",
+							"method": "RADIUS",
+							"radius": {
+								"auth_policy": "LOCAL-FIRST",
+								"nas_ip_address": "192.168.1.1",
+								"host": "192.168.1.1",
+								"port": 1812,
+								"shared_secret": "",
+								"pk_shared_secret": "",
+								"encrypted_shared_secret": "A1B2C3D4",
+								"authorization_id": 0,
+								"network": "AUTO",
+								"alternate_server_host": "192.168.1.1",
+								"alternate_server_port": 1812,
+								"alternate_server_shared_secret": "",
+								"pk_alternate_server_shared_secret": "",
+								"encrypted_alternate_server_shared_secret": "A1B2C3D4"
+							},
+							"ldap": {
+								"host": "192.168.1.1",
+								"port": 389,
+								"ssl": {
+									"state": "DISABLE",
+									"ca": "NONE",
+									"certificate": "NONE"
+								},
+								"directory_tree": "/user",
+								"search_mode": "SEARCH-ANONYMOUS",
+								"verify_login_template": "${user}",
+								"specific_dn": "example_string",
+								"specific_dn_password": "example_string",
+								"pk_specific_dn_password": "example_string",
+								"encrypted_specific_dn_password": "A1B2C3D4",
+								"network": "AUTO"
+							},
+							"tacacs": {
+								"auth_policy": "LOCAL-FIRST",
+								"network": "AUTO",
+								"role_name": "guest",
+								"host": "192.168.1.1",
+								"port": 49,
+								"shared_secret": "",
+								"pk_shared_secret": "A1B2C3D4",
+								"encrypted_shared_secret": "A1B2C3D4",
+								"tacacs_agreement": "TACACS_PAP",
+								"author_service": "",
+								"author_protocol": "",
+								"alternate_server_host": "192.168.1.1",
+								"alternate_server_port": 49,
+								"alternate_server_shared_secret": "",
+								"pk_alternate_server_shared_secret": "A1B2C3D4",
+								"encrypted_alternate_server_shared_secret": "A1B2C3D4",
+								"alternate_tacacs_agreement": "TACACS_PAP",
+								"alternate_author_service": "",
+								"alternate_author_protocol": ""
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +141,81 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_external_authentication_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace external-authentication",
+						"description": "修改外部认证配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/external-authentication",
+							"body": {
+								"state": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/external-authentication 响应",
+						"description": "返回PUT /api/ad/v3/sys/external-authentication的响应数据",
+						"value": {
+							"state": "DISABLE",
+							"method": "RADIUS",
+							"radius": {
+								"auth_policy": "LOCAL-FIRST",
+								"nas_ip_address": "192.168.1.1",
+								"host": "192.168.1.1",
+								"port": 1812,
+								"shared_secret": "",
+								"pk_shared_secret": "",
+								"encrypted_shared_secret": "A1B2C3D4",
+								"authorization_id": 0,
+								"network": "AUTO",
+								"alternate_server_host": "192.168.1.1",
+								"alternate_server_port": 1812,
+								"alternate_server_shared_secret": "",
+								"pk_alternate_server_shared_secret": "",
+								"encrypted_alternate_server_shared_secret": "A1B2C3D4"
+							},
+							"ldap": {
+								"host": "192.168.1.1",
+								"port": 389,
+								"ssl": {
+									"state": "DISABLE",
+									"ca": "NONE",
+									"certificate": "NONE"
+								},
+								"directory_tree": "/user",
+								"search_mode": "SEARCH-ANONYMOUS",
+								"verify_login_template": "${user}",
+								"specific_dn": "example_string",
+								"specific_dn_password": "example_string",
+								"pk_specific_dn_password": "example_string",
+								"encrypted_specific_dn_password": "A1B2C3D4",
+								"network": "AUTO"
+							},
+							"tacacs": {
+								"auth_policy": "LOCAL-FIRST",
+								"network": "AUTO",
+								"role_name": "guest",
+								"host": "192.168.1.1",
+								"port": 49,
+								"shared_secret": "",
+								"pk_shared_secret": "A1B2C3D4",
+								"encrypted_shared_secret": "A1B2C3D4",
+								"tacacs_agreement": "TACACS_PAP",
+								"author_service": "",
+								"author_protocol": "",
+								"alternate_server_host": "192.168.1.1",
+								"alternate_server_port": 49,
+								"alternate_server_shared_secret": "",
+								"pk_alternate_server_shared_secret": "A1B2C3D4",
+								"encrypted_alternate_server_shared_secret": "A1B2C3D4",
+								"alternate_tacacs_agreement": "TACACS_PAP",
+								"alternate_author_service": "",
+								"alternate_author_protocol": ""
+							}
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +233,81 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_external_authentication_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify external-authentication",
+						"description": "修改外部认证配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/external-authentication",
+							"body": {
+								"state": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/external-authentication 响应",
+						"description": "返回PATCH /api/ad/v3/sys/external-authentication的响应数据",
+						"value": {
+							"state": "DISABLE",
+							"method": "RADIUS",
+							"radius": {
+								"auth_policy": "LOCAL-FIRST",
+								"nas_ip_address": "192.168.1.1",
+								"host": "192.168.1.1",
+								"port": 1812,
+								"shared_secret": "",
+								"pk_shared_secret": "",
+								"encrypted_shared_secret": "A1B2C3D4",
+								"authorization_id": 0,
+								"network": "AUTO",
+								"alternate_server_host": "192.168.1.1",
+								"alternate_server_port": 1812,
+								"alternate_server_shared_secret": "",
+								"pk_alternate_server_shared_secret": "",
+								"encrypted_alternate_server_shared_secret": "A1B2C3D4"
+							},
+							"ldap": {
+								"host": "192.168.1.1",
+								"port": 389,
+								"ssl": {
+									"state": "DISABLE",
+									"ca": "NONE",
+									"certificate": "NONE"
+								},
+								"directory_tree": "/user",
+								"search_mode": "SEARCH-ANONYMOUS",
+								"verify_login_template": "${user}",
+								"specific_dn": "example_string",
+								"specific_dn_password": "example_string",
+								"pk_specific_dn_password": "example_string",
+								"encrypted_specific_dn_password": "A1B2C3D4",
+								"network": "AUTO"
+							},
+							"tacacs": {
+								"auth_policy": "LOCAL-FIRST",
+								"network": "AUTO",
+								"role_name": "guest",
+								"host": "192.168.1.1",
+								"port": 49,
+								"shared_secret": "",
+								"pk_shared_secret": "A1B2C3D4",
+								"encrypted_shared_secret": "A1B2C3D4",
+								"tacacs_agreement": "TACACS_PAP",
+								"author_service": "",
+								"author_protocol": "",
+								"alternate_server_host": "192.168.1.1",
+								"alternate_server_port": 49,
+								"alternate_server_shared_secret": "",
+								"pk_alternate_server_shared_secret": "A1B2C3D4",
+								"encrypted_alternate_server_shared_secret": "A1B2C3D4",
+								"alternate_tacacs_agreement": "TACACS_PAP",
+								"alternate_author_service": "",
+								"alternate_author_protocol": ""
+							}
+						}
 					}
 				}
 			},

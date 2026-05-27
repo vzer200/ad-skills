@@ -62,6 +62,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_permission_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all permission",
+						"description": "查看已有的用户角色权限配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/permission/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/permission/ 响应",
+						"description": "返回GET /api/ad/v3/sys/permission/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "network manage permission",
+									"description": "",
+									"permissions": [
+										{
+											"api_path": "/api/slb/pool",
+											"get": "ENABLE",
+											"post": "ENABLE",
+											"put": "ENABLE",
+											"patch": "ENABLE",
+											"delete": "ENABLE"
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +118,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_permission_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new permission",
+						"description": "新建用户角色权限配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/permission/",
+							"body": {
+								"name": "AI_network manage permission_A",
+								"permissions": [
+									{
+										"api_path": "/api/slb/pool",
+										"get": "ENABLE",
+										"post": "ENABLE",
+										"put": "ENABLE",
+										"patch": "ENABLE",
+										"delete": "ENABLE"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/permission/ 响应",
+						"description": "返回POST /api/ad/v3/sys/permission/的响应数据",
+						"value": {
+							"name": "AI_network manage permission_A",
+							"description": "",
+							"permissions": [
+								{
+									"api_path": "/api/slb/pool",
+									"get": "ENABLE",
+									"post": "ENABLE",
+									"put": "ENABLE",
+									"patch": "ENABLE",
+									"delete": "ENABLE"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -124,6 +204,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_permission_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific permission",
+						"description": "查看指定的用户角色权限配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/permission/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/permission/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/permission/{name}的响应数据",
+						"value": {
+							"name": "network manage permission",
+							"description": "",
+							"permissions": [
+								{
+									"api_path": "/api/slb/pool",
+									"get": "ENABLE",
+									"post": "ENABLE",
+									"put": "ENABLE",
+									"patch": "ENABLE",
+									"delete": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -143,6 +251,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_permission_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new permission",
+						"description": "新建指定的用户角色权限配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/permission/{name}",
+							"body": {
+								"name": "AI_network manage permission_B",
+								"permissions": [
+									{
+										"api_path": "/api/slb/pool",
+										"get": "ENABLE",
+										"post": "ENABLE",
+										"put": "ENABLE",
+										"patch": "ENABLE",
+										"delete": "ENABLE"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/permission/{name} 响应",
+						"description": "返回POST /api/ad/v3/sys/permission/{name}的响应数据",
+						"value": {
+							"name": "AI_network manage permission_B",
+							"description": "",
+							"permissions": [
+								{
+									"api_path": "/api/slb/pool",
+									"get": "ENABLE",
+									"post": "ENABLE",
+									"put": "ENABLE",
+									"patch": "ENABLE",
+									"delete": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -160,6 +309,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_permission_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific permission",
+						"description": "修改指定的用户角色权限配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/permission/{name}",
+							"body": {
+								"name": "network manage permission",
+								"permissions": [
+									{
+										"api_path": "/api/slb/pool",
+										"get": "ENABLE",
+										"post": "ENABLE",
+										"put": "ENABLE",
+										"patch": "ENABLE",
+										"delete": "ENABLE"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/permission/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/permission/{name}的响应数据",
+						"value": {
+							"name": "network manage permission",
+							"description": "",
+							"permissions": [
+								{
+									"api_path": "/api/slb/pool",
+									"get": "ENABLE",
+									"post": "ENABLE",
+									"put": "ENABLE",
+									"patch": "ENABLE",
+									"delete": "ENABLE"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -179,6 +369,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_permission_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific permission",
+						"description": "修改指定的用户角色权限配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/permission/{name}",
+							"body": {
+								"name": "network manage permission",
+								"permissions": [
+									{
+										"api_path": "/api/slb/pool",
+										"get": "ENABLE",
+										"post": "ENABLE",
+										"put": "ENABLE",
+										"patch": "ENABLE",
+										"delete": "ENABLE"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/permission/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/permission/{name}的响应数据",
+						"value": {
+							"name": "network manage permission",
+							"description": "",
+							"permissions": [
+								{
+									"api_path": "/api/slb/pool",
+									"get": "ENABLE",
+									"post": "ENABLE",
+									"put": "ENABLE",
+									"patch": "ENABLE",
+									"delete": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +422,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_permission_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific permission",
+						"description": "删除指定的用户角色权限配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/permission/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/permission/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/permission/{name}的响应数据",
+						"value": {
+							"name": "network manage permission",
+							"description": "",
+							"permissions": [
+								{
+									"api_path": "/api/slb/pool",
+									"get": "ENABLE",
+									"post": "ENABLE",
+									"put": "ENABLE",
+									"patch": "ENABLE",
+									"delete": "ENABLE"
+								}
+							]
+						}
 					}
 				}
 			}

@@ -51,6 +51,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_bgp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get bgp",
+						"description": "获取bgp动态路由配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/bgp"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/bgp 响应",
+						"description": "返回GET /api/ad/v3/net/bgp的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"route_id": "6.6.6.6",
+							"as_number": 174,
+							"redistribute_direct_route": "DISABLE",
+							"redistribute_static_route": "DISABLE",
+							"redistribute_ospf": "DISABLE",
+							"neighbors": [
+								{
+									"ip": "1.1.1.1",
+									"as_number": 101
+								}
+							],
+							"networks": [
+								"1.1.1.0/24"
+							],
+							"log_level": "INFO"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +101,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_bgp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace bgp",
+						"description": "修改bgp动态路由配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/bgp",
+							"body": {
+								"state": "ENABLE",
+								"redistribute_direct_route": "DISABLE",
+								"redistribute_static_route": "DISABLE",
+								"redistribute_ospf": "DISABLE",
+								"log_level": "INFO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/bgp 响应",
+						"description": "返回PUT /api/ad/v3/net/bgp的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"route_id": "6.6.6.6",
+							"as_number": 174,
+							"redistribute_direct_route": "DISABLE",
+							"redistribute_static_route": "DISABLE",
+							"redistribute_ospf": "DISABLE",
+							"neighbors": [
+								{
+									"ip": "1.1.1.1",
+									"as_number": 101
+								}
+							],
+							"networks": [
+								"1.1.1.0/24"
+							],
+							"log_level": "INFO"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +157,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_bgp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify bgp",
+						"description": "修改bgp动态路由配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/bgp",
+							"body": {
+								"state": "ENABLE",
+								"redistribute_direct_route": "DISABLE",
+								"redistribute_static_route": "DISABLE",
+								"redistribute_ospf": "DISABLE",
+								"log_level": "INFO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/bgp 响应",
+						"description": "返回PATCH /api/ad/v3/net/bgp的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"route_id": "6.6.6.6",
+							"as_number": 174,
+							"redistribute_direct_route": "DISABLE",
+							"redistribute_static_route": "DISABLE",
+							"redistribute_ospf": "DISABLE",
+							"neighbors": [
+								{
+									"ip": "1.1.1.1",
+									"as_number": 101
+								}
+							],
+							"networks": [
+								"1.1.1.0/24"
+							],
+							"log_level": "INFO"
+						}
 					}
 				}
 			},

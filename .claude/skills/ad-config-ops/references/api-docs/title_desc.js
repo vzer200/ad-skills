@@ -1169,6 +1169,10 @@ module.exports ={
 							"path": "/sys/management"
 						},
 						{
+							"text": "管理口白名单配置",
+							"path": "/sys/whitelist"
+						},
+						{
 							"text": "系统维护配置",
 							"path": "/sys/maintenance-mode"
 						},
@@ -1440,6 +1444,10 @@ module.exports ={
 						{
 							"text": "系统隐私政策开关",
 							"path": "/sys/privacy"
+						},
+						{
+							"text": "离线巡检场景设置",
+							"path": "/sys/offline-check"
 						}
 					]
 				},
@@ -2165,6 +2173,10 @@ module.exports ={
 				{
 					"text": "虚拟服务url分析",
 					"path": "/debug/slb/url-analysis"
+				},
+				{
+					"text": "离线巡检",
+					"path": "/debug/sys/offline-check"
 				}
 			]
 		}

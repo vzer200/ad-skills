@@ -43,7 +43,24 @@ module.exports ={
 				],
 				"summary": "clear http-rewrite hit",
 				"description": "重置HTTP改写策略命中计数",
-				"operationId": "clear_http_rewrite_hit"
+				"operationId": "clear_http_rewrite_hit",
+				"x-examples": {
+					"request": {
+						"summary": "clear http-rewrite hit",
+						"description": "重置HTTP改写策略命中计数",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/slb/http-rewrite/reset"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/slb/http-rewrite/reset 响应",
+						"description": "返回POST /api/ad/v3/debug/slb/http-rewrite/reset的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

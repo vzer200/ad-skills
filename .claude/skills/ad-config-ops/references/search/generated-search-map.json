@@ -115,223 +115,36 @@
         "slb.tcp_profile.l4_forward",
         "slb.tcp_profile.l7_proxy"
       ]
-    }
-  },
-  "variant_families": {
-    "slb.virtual_service.service": {
-      "id": "slb.virtual_service.service",
-      "resource": "slb.virtual_service",
-      "document": "slb/virtual-service.js",
-      "schema": "config.virtual_service",
-      "field": "service",
-      "ambiguous_terms": [
+    },
+    "slb.virtual_service": {
+      "id": "slb.virtual_service",
+      "ambiguous": true,
+      "terms": [
         "虚拟服务",
         "VIP服务",
         "负载均衡服务"
       ],
-      "ambiguous_groups": [
-        {
-          "id": "tcp_virtual_service",
-          "terms": [
-            "TCP虚拟服务"
-          ],
-          "options": [
-            "TCP-FORWARD",
-            "TCP-PROXY"
-          ],
-          "question": "你要创建哪种 TCP 虚拟服务？"
-        }
-      ],
       "question": "你要创建哪种虚拟服务？",
-      "options": [
-        {
-          "value": "IP",
-          "label": "IP虚拟服务",
-          "terms": [
-            "IP虚拟服务"
-          ],
-          "generated_exact_term": "IP虚拟服务",
-          "exact_terms": [
-            "IP虚拟服务"
-          ]
-        },
-        {
-          "value": "ANY",
-          "label": "ANY虚拟服务",
-          "terms": [
-            "ANY虚拟服务",
-            "任意协议虚拟服务"
-          ],
-          "generated_exact_term": "ANY虚拟服务",
-          "exact_terms": [
-            "ANY虚拟服务",
-            "任意协议虚拟服务"
-          ]
-        },
-        {
-          "value": "TCP-FORWARD",
-          "label": "TCP-FORWARD（TCP转发虚拟服务、四层虚拟服务）",
-          "terms": [
-            "TCP转发虚拟服务",
-            "四层虚拟服务",
-            "四层TCP虚拟服务"
-          ],
-          "generated_exact_term": "TCP转发虚拟服务",
-          "exact_terms": [
-            "TCP转发虚拟服务",
-            "四层虚拟服务",
-            "四层TCP虚拟服务"
-          ]
-        },
-        {
-          "value": "TCP-PROXY",
-          "label": "TCP-PROXY（七层TCP虚拟服务、TCP代理虚拟服务）",
-          "terms": [
-            "七层TCP虚拟服务",
-            "TCP代理虚拟服务",
-            "TCP代理"
-          ],
-          "generated_exact_term": "七层TCP虚拟服务",
-          "exact_terms": [
-            "七层TCP虚拟服务",
-            "TCP代理虚拟服务",
-            "TCP代理"
-          ]
-        },
-        {
-          "value": "UDP-FORWARD",
-          "label": "UDP转发虚拟服务",
-          "terms": [
-            "UDP转发虚拟服务",
-            "四层UDP虚拟服务"
-          ],
-          "generated_exact_term": "UDP转发虚拟服务",
-          "exact_terms": [
-            "UDP转发虚拟服务",
-            "四层UDP虚拟服务"
-          ]
-        },
-        {
-          "value": "UDP-PROXY",
-          "label": "UDP代理虚拟服务",
-          "terms": [
-            "UDP代理虚拟服务",
-            "七层UDP虚拟服务"
-          ],
-          "generated_exact_term": "UDP代理虚拟服务",
-          "exact_terms": [
-            "UDP代理虚拟服务",
-            "七层UDP虚拟服务"
-          ]
-        },
-        {
-          "value": "HTTP",
-          "label": "HTTP虚拟服务",
-          "terms": [
-            "HTTP虚拟服务"
-          ],
-          "generated_exact_term": "HTTP虚拟服务",
-          "exact_terms": [
-            "HTTP虚拟服务"
-          ]
-        },
-        {
-          "value": "SSL-OFFLOAD",
-          "label": "SSL卸载虚拟服务",
-          "terms": [
-            "SSL卸载虚拟服务"
-          ],
-          "generated_exact_term": "SSL卸载虚拟服务",
-          "exact_terms": [
-            "SSL卸载虚拟服务"
-          ]
-        },
-        {
-          "value": "SSL-OFFLOAD-HTTPS",
-          "label": "HTTPS虚拟服务",
-          "terms": [
-            "HTTPS虚拟服务",
-            "SSL卸载HTTPS虚拟服务"
-          ],
-          "generated_exact_term": "HTTPS虚拟服务",
-          "exact_terms": [
-            "HTTPS虚拟服务",
-            "SSL卸载HTTPS虚拟服务"
-          ]
-        },
-        {
-          "value": "RADIUS",
-          "label": "RADIUS虚拟服务",
-          "terms": [
-            "RADIUS虚拟服务"
-          ],
-          "generated_exact_term": "RADIUS虚拟服务",
-          "exact_terms": [
-            "RADIUS虚拟服务"
-          ]
-        },
-        {
-          "value": "DNS",
-          "label": "DNS虚拟服务",
-          "terms": [
-            "DNS虚拟服务"
-          ],
-          "generated_exact_term": "DNS虚拟服务",
-          "exact_terms": [
-            "DNS虚拟服务"
-          ]
-        },
-        {
-          "value": "FTP",
-          "label": "FTP虚拟服务",
-          "terms": [
-            "FTP虚拟服务"
-          ],
-          "generated_exact_term": "FTP虚拟服务",
-          "exact_terms": [
-            "FTP虚拟服务"
-          ]
-        },
-        {
-          "value": "SIP-TCP",
-          "label": "SIP-TCP虚拟服务",
-          "terms": [
-            "SIP-TCP虚拟服务",
-            "SIP TCP虚拟服务"
-          ],
-          "generated_exact_term": "SIP-TCP虚拟服务",
-          "exact_terms": [
-            "SIP-TCP虚拟服务",
-            "SIP TCP虚拟服务"
-          ]
-        },
-        {
-          "value": "SIP-UDP",
-          "label": "SIP-UDP虚拟服务",
-          "terms": [
-            "SIP-UDP虚拟服务",
-            "SIP UDP虚拟服务"
-          ],
-          "generated_exact_term": "SIP-UDP虚拟服务",
-          "exact_terms": [
-            "SIP-UDP虚拟服务",
-            "SIP UDP虚拟服务"
-          ]
-        },
-        {
-          "value": "8583",
-          "label": "8583虚拟服务",
-          "terms": [
-            "8583虚拟服务"
-          ],
-          "generated_exact_term": "8583虚拟服务",
-          "exact_terms": [
-            "8583虚拟服务"
-          ]
-        }
+      "children": [
+        "slb.virtual_service.8583",
+        "slb.virtual_service.any",
+        "slb.virtual_service.dns",
+        "slb.virtual_service.ftp",
+        "slb.virtual_service.http",
+        "slb.virtual_service.ip",
+        "slb.virtual_service.radius",
+        "slb.virtual_service.sip_tcp",
+        "slb.virtual_service.sip_udp",
+        "slb.virtual_service.ssl_offload_https",
+        "slb.virtual_service.ssl_offload",
+        "slb.virtual_service.tcp_forward",
+        "slb.virtual_service.tcp_proxy",
+        "slb.virtual_service.udp_forward",
+        "slb.virtual_service.udp_proxy"
       ]
     }
   },
+  "variant_families": {},
   "resources": {
     "batch": {
       "id": "batch",
@@ -7278,21 +7091,19 @@
         "虚拟IP"
       ]
     },
-    "slb.virtual_service": {
-      "id": "slb.virtual_service",
-      "document": "slb/virtual-service.js",
-      "label": "slb/virtual-service",
+    "slb.virtual_service.8583": {
+      "id": "slb.virtual_service.8583",
+      "document": "slb/virtual-service/8583.js",
+      "label": "8583虚拟服务",
       "terms": [
-        "slb/virtual-service",
-        "virtual-service",
-        "VIRTUAL-SERVICE",
-        "virtual service",
+        "slb/virtual-service/8583",
+        "8583",
         "slb",
         "virtual",
-        "service"
+        "service",
+        "8583虚拟服务"
       ],
       "schemas": [
-        "config.service_type",
         "config.virtual_service",
         "config.virtual_service_list"
       ],
@@ -7305,8 +7116,497 @@
         "post /api/ad/v3/slb/virtual-service/{name}",
         "put /api/ad/v3/slb/virtual-service/{name}"
       ],
-      "generated_exact_term": null,
-      "exact_terms": []
+      "family": "slb.virtual_service",
+      "generated_exact_term": "8583虚拟服务",
+      "exact_terms": [
+        "8583虚拟服务"
+      ]
+    },
+    "slb.virtual_service.any": {
+      "id": "slb.virtual_service.any",
+      "document": "slb/virtual-service/any.js",
+      "label": "ANY虚拟服务",
+      "terms": [
+        "slb/virtual-service/any",
+        "any",
+        "ANY",
+        "slb",
+        "virtual",
+        "service",
+        "ANY虚拟服务",
+        "任意协议虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "ANY虚拟服务",
+      "exact_terms": [
+        "ANY虚拟服务"
+      ]
+    },
+    "slb.virtual_service.dns": {
+      "id": "slb.virtual_service.dns",
+      "document": "slb/virtual-service/dns.js",
+      "label": "DNS虚拟服务",
+      "terms": [
+        "slb/virtual-service/dns",
+        "dns",
+        "DNS",
+        "slb",
+        "virtual",
+        "service",
+        "DNS虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "DNS虚拟服务",
+      "exact_terms": [
+        "DNS虚拟服务"
+      ]
+    },
+    "slb.virtual_service.ftp": {
+      "id": "slb.virtual_service.ftp",
+      "document": "slb/virtual-service/ftp.js",
+      "label": "FTP虚拟服务",
+      "terms": [
+        "slb/virtual-service/ftp",
+        "ftp",
+        "FTP",
+        "slb",
+        "virtual",
+        "service",
+        "FTP虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "FTP虚拟服务",
+      "exact_terms": [
+        "FTP虚拟服务"
+      ]
+    },
+    "slb.virtual_service.http": {
+      "id": "slb.virtual_service.http",
+      "document": "slb/virtual-service/http.js",
+      "label": "HTTP虚拟服务",
+      "terms": [
+        "slb/virtual-service/http",
+        "http",
+        "HTTP",
+        "slb",
+        "virtual",
+        "service",
+        "HTTP虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "HTTP虚拟服务",
+      "exact_terms": [
+        "HTTP虚拟服务"
+      ]
+    },
+    "slb.virtual_service.ip": {
+      "id": "slb.virtual_service.ip",
+      "document": "slb/virtual-service/ip.js",
+      "label": "IP虚拟服务",
+      "terms": [
+        "slb/virtual-service/ip",
+        "ip",
+        "IP",
+        "slb",
+        "virtual",
+        "service",
+        "IP虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "IP虚拟服务",
+      "exact_terms": [
+        "IP虚拟服务"
+      ]
+    },
+    "slb.virtual_service.radius": {
+      "id": "slb.virtual_service.radius",
+      "document": "slb/virtual-service/radius.js",
+      "label": "RADIUS虚拟服务",
+      "terms": [
+        "slb/virtual-service/radius",
+        "radius",
+        "RADIUS",
+        "slb",
+        "virtual",
+        "service",
+        "RADIUS虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "RADIUS虚拟服务",
+      "exact_terms": [
+        "RADIUS虚拟服务"
+      ]
+    },
+    "slb.virtual_service.sip_tcp": {
+      "id": "slb.virtual_service.sip_tcp",
+      "document": "slb/virtual-service/sip-tcp.js",
+      "label": "SIP-TCP虚拟服务",
+      "terms": [
+        "slb/virtual-service/sip-tcp",
+        "sip-tcp",
+        "SIP-TCP",
+        "sip tcp",
+        "slb",
+        "virtual",
+        "service",
+        "sip",
+        "tcp",
+        "SIP-TCP虚拟服务",
+        "SIP TCP虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "SIP-TCP虚拟服务",
+      "exact_terms": [
+        "SIP-TCP虚拟服务"
+      ]
+    },
+    "slb.virtual_service.sip_udp": {
+      "id": "slb.virtual_service.sip_udp",
+      "document": "slb/virtual-service/sip-udp.js",
+      "label": "SIP-UDP虚拟服务",
+      "terms": [
+        "slb/virtual-service/sip-udp",
+        "sip-udp",
+        "SIP-UDP",
+        "sip udp",
+        "slb",
+        "virtual",
+        "service",
+        "sip",
+        "udp",
+        "SIP-UDP虚拟服务",
+        "SIP UDP虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "SIP-UDP虚拟服务",
+      "exact_terms": [
+        "SIP-UDP虚拟服务"
+      ]
+    },
+    "slb.virtual_service.ssl_offload_https": {
+      "id": "slb.virtual_service.ssl_offload_https",
+      "document": "slb/virtual-service/ssl-offload-https.js",
+      "label": "SSL-OFFLOAD-HTTPS虚拟服务",
+      "terms": [
+        "slb/virtual-service/ssl-offload-https",
+        "ssl-offload-https",
+        "SSL-OFFLOAD-HTTPS",
+        "ssl offload https",
+        "slb",
+        "virtual",
+        "service",
+        "ssl",
+        "offload",
+        "https",
+        "SSL-OFFLOAD-HTTPS虚拟服务",
+        "HTTPS虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "SSL-OFFLOAD-HTTPS虚拟服务",
+      "exact_terms": [
+        "SSL-OFFLOAD-HTTPS虚拟服务"
+      ]
+    },
+    "slb.virtual_service.ssl_offload": {
+      "id": "slb.virtual_service.ssl_offload",
+      "document": "slb/virtual-service/ssl-offload.js",
+      "label": "SSL-OFFLOAD虚拟服务",
+      "terms": [
+        "slb/virtual-service/ssl-offload",
+        "ssl-offload",
+        "SSL-OFFLOAD",
+        "ssl offload",
+        "slb",
+        "virtual",
+        "service",
+        "ssl",
+        "offload",
+        "SSL-OFFLOAD虚拟服务",
+        "SSL卸载虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "SSL-OFFLOAD虚拟服务",
+      "exact_terms": [
+        "SSL-OFFLOAD虚拟服务"
+      ]
+    },
+    "slb.virtual_service.tcp_forward": {
+      "id": "slb.virtual_service.tcp_forward",
+      "document": "slb/virtual-service/tcp-forward.js",
+      "label": "TCP-FORWARD虚拟服务",
+      "terms": [
+        "slb/virtual-service/tcp-forward",
+        "tcp-forward",
+        "TCP-FORWARD",
+        "tcp forward",
+        "slb",
+        "virtual",
+        "service",
+        "tcp",
+        "forward",
+        "TCP-FORWARD虚拟服务",
+        "TCP转发虚拟服务",
+        "四层TCP虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "TCP-FORWARD虚拟服务",
+      "exact_terms": [
+        "TCP-FORWARD虚拟服务"
+      ]
+    },
+    "slb.virtual_service.tcp_proxy": {
+      "id": "slb.virtual_service.tcp_proxy",
+      "document": "slb/virtual-service/tcp-proxy.js",
+      "label": "TCP-PROXY虚拟服务",
+      "terms": [
+        "slb/virtual-service/tcp-proxy",
+        "tcp-proxy",
+        "TCP-PROXY",
+        "tcp proxy",
+        "slb",
+        "virtual",
+        "service",
+        "tcp",
+        "proxy",
+        "TCP-PROXY虚拟服务",
+        "TCP代理虚拟服务",
+        "七层TCP虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "TCP-PROXY虚拟服务",
+      "exact_terms": [
+        "TCP-PROXY虚拟服务"
+      ]
+    },
+    "slb.virtual_service.udp_forward": {
+      "id": "slb.virtual_service.udp_forward",
+      "document": "slb/virtual-service/udp-forward.js",
+      "label": "UDP-FORWARD虚拟服务",
+      "terms": [
+        "slb/virtual-service/udp-forward",
+        "udp-forward",
+        "UDP-FORWARD",
+        "udp forward",
+        "slb",
+        "virtual",
+        "service",
+        "udp",
+        "forward",
+        "UDP-FORWARD虚拟服务",
+        "UDP转发虚拟服务",
+        "四层UDP虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "UDP-FORWARD虚拟服务",
+      "exact_terms": [
+        "UDP-FORWARD虚拟服务"
+      ]
+    },
+    "slb.virtual_service.udp_proxy": {
+      "id": "slb.virtual_service.udp_proxy",
+      "document": "slb/virtual-service/udp-proxy.js",
+      "label": "UDP-PROXY虚拟服务",
+      "terms": [
+        "slb/virtual-service/udp-proxy",
+        "udp-proxy",
+        "UDP-PROXY",
+        "udp proxy",
+        "slb",
+        "virtual",
+        "service",
+        "udp",
+        "proxy",
+        "UDP-PROXY虚拟服务",
+        "UDP代理虚拟服务",
+        "七层UDP虚拟服务"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ],
+      "family": "slb.virtual_service",
+      "generated_exact_term": "UDP-PROXY虚拟服务",
+      "exact_terms": [
+        "UDP-PROXY虚拟服务"
+      ]
     },
     "stat.dns.data_center": {
       "id": "stat.dns.data_center",
@@ -9507,6 +9807,29 @@
         "web-service"
       ]
     },
+    "sys.whitelist": {
+      "id": "sys.whitelist",
+      "document": "sys/whitelist.js",
+      "label": "sys/whitelist",
+      "terms": [
+        "sys/whitelist",
+        "whitelist",
+        "WHITELIST",
+        "sys"
+      ],
+      "schemas": [
+        "config.ssh_whitelist"
+      ],
+      "operations": [
+        "get /api/ad/v3/sys/whitelist",
+        "patch /api/ad/v3/sys/whitelist",
+        "put /api/ad/v3/sys/whitelist"
+      ],
+      "generated_exact_term": "whitelist",
+      "exact_terms": [
+        "whitelist"
+      ]
+    },
     "title_desc": {
       "id": "title_desc",
       "document": "title_desc.js",
@@ -9607,6 +9930,7 @@
         "config.ras_alert_event",
         "config.reference_relation",
         "config.san_extensions",
+        "config.service_type",
         "config.sm2_certificate_private_key_with_token",
         "config.ssl_match_component",
         "config.ssl_match_component1",
@@ -15224,20 +15548,392 @@
         "put /api/ad/v3/slb/virtual-ip/{name}"
       ]
     },
-    "slb/virtual-service.js": {
-      "document": "slb/virtual-service.js",
-      "resource": "slb.virtual_service",
+    "slb/virtual-service/8583.js": {
+      "document": "slb/virtual-service/8583.js",
+      "resource": "slb.virtual_service.8583",
       "terms": [
-        "slb/virtual-service",
-        "virtual-service",
-        "VIRTUAL-SERVICE",
-        "virtual service",
+        "slb/virtual-service/8583",
+        "8583",
         "slb",
         "virtual",
         "service"
       ],
       "schemas": [
-        "config.service_type",
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/any.js": {
+      "document": "slb/virtual-service/any.js",
+      "resource": "slb.virtual_service.any",
+      "terms": [
+        "slb/virtual-service/any",
+        "any",
+        "ANY",
+        "slb",
+        "virtual",
+        "service"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/dns.js": {
+      "document": "slb/virtual-service/dns.js",
+      "resource": "slb.virtual_service.dns",
+      "terms": [
+        "slb/virtual-service/dns",
+        "dns",
+        "DNS",
+        "slb",
+        "virtual",
+        "service"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/ftp.js": {
+      "document": "slb/virtual-service/ftp.js",
+      "resource": "slb.virtual_service.ftp",
+      "terms": [
+        "slb/virtual-service/ftp",
+        "ftp",
+        "FTP",
+        "slb",
+        "virtual",
+        "service"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/http.js": {
+      "document": "slb/virtual-service/http.js",
+      "resource": "slb.virtual_service.http",
+      "terms": [
+        "slb/virtual-service/http",
+        "http",
+        "HTTP",
+        "slb",
+        "virtual",
+        "service"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/ip.js": {
+      "document": "slb/virtual-service/ip.js",
+      "resource": "slb.virtual_service.ip",
+      "terms": [
+        "slb/virtual-service/ip",
+        "ip",
+        "IP",
+        "slb",
+        "virtual",
+        "service"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/radius.js": {
+      "document": "slb/virtual-service/radius.js",
+      "resource": "slb.virtual_service.radius",
+      "terms": [
+        "slb/virtual-service/radius",
+        "radius",
+        "RADIUS",
+        "slb",
+        "virtual",
+        "service"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/sip-tcp.js": {
+      "document": "slb/virtual-service/sip-tcp.js",
+      "resource": "slb.virtual_service.sip_tcp",
+      "terms": [
+        "slb/virtual-service/sip-tcp",
+        "sip-tcp",
+        "SIP-TCP",
+        "sip tcp",
+        "slb",
+        "virtual",
+        "service",
+        "sip",
+        "tcp"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/sip-udp.js": {
+      "document": "slb/virtual-service/sip-udp.js",
+      "resource": "slb.virtual_service.sip_udp",
+      "terms": [
+        "slb/virtual-service/sip-udp",
+        "sip-udp",
+        "SIP-UDP",
+        "sip udp",
+        "slb",
+        "virtual",
+        "service",
+        "sip",
+        "udp"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/ssl-offload-https.js": {
+      "document": "slb/virtual-service/ssl-offload-https.js",
+      "resource": "slb.virtual_service.ssl_offload_https",
+      "terms": [
+        "slb/virtual-service/ssl-offload-https",
+        "ssl-offload-https",
+        "SSL-OFFLOAD-HTTPS",
+        "ssl offload https",
+        "slb",
+        "virtual",
+        "service",
+        "ssl",
+        "offload",
+        "https"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/ssl-offload.js": {
+      "document": "slb/virtual-service/ssl-offload.js",
+      "resource": "slb.virtual_service.ssl_offload",
+      "terms": [
+        "slb/virtual-service/ssl-offload",
+        "ssl-offload",
+        "SSL-OFFLOAD",
+        "ssl offload",
+        "slb",
+        "virtual",
+        "service",
+        "ssl",
+        "offload"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/tcp-forward.js": {
+      "document": "slb/virtual-service/tcp-forward.js",
+      "resource": "slb.virtual_service.tcp_forward",
+      "terms": [
+        "slb/virtual-service/tcp-forward",
+        "tcp-forward",
+        "TCP-FORWARD",
+        "tcp forward",
+        "slb",
+        "virtual",
+        "service",
+        "tcp",
+        "forward"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/tcp-proxy.js": {
+      "document": "slb/virtual-service/tcp-proxy.js",
+      "resource": "slb.virtual_service.tcp_proxy",
+      "terms": [
+        "slb/virtual-service/tcp-proxy",
+        "tcp-proxy",
+        "TCP-PROXY",
+        "tcp proxy",
+        "slb",
+        "virtual",
+        "service",
+        "tcp",
+        "proxy"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/udp-forward.js": {
+      "document": "slb/virtual-service/udp-forward.js",
+      "resource": "slb.virtual_service.udp_forward",
+      "terms": [
+        "slb/virtual-service/udp-forward",
+        "udp-forward",
+        "UDP-FORWARD",
+        "udp forward",
+        "slb",
+        "virtual",
+        "service",
+        "udp",
+        "forward"
+      ],
+      "schemas": [
+        "config.virtual_service",
+        "config.virtual_service_list"
+      ],
+      "operations": [
+        "get /api/ad/v3/slb/virtual-service/",
+        "post /api/ad/v3/slb/virtual-service/",
+        "delete /api/ad/v3/slb/virtual-service/{name}",
+        "get /api/ad/v3/slb/virtual-service/{name}",
+        "patch /api/ad/v3/slb/virtual-service/{name}",
+        "post /api/ad/v3/slb/virtual-service/{name}",
+        "put /api/ad/v3/slb/virtual-service/{name}"
+      ]
+    },
+    "slb/virtual-service/udp-proxy.js": {
+      "document": "slb/virtual-service/udp-proxy.js",
+      "resource": "slb.virtual_service.udp_proxy",
+      "terms": [
+        "slb/virtual-service/udp-proxy",
+        "udp-proxy",
+        "UDP-PROXY",
+        "udp proxy",
+        "slb",
+        "virtual",
+        "service",
+        "udp",
+        "proxy"
+      ],
+      "schemas": [
         "config.virtual_service",
         "config.virtual_service_list"
       ],
@@ -17040,6 +17736,24 @@
         "put /api/ad/v3/sys/web-service"
       ]
     },
+    "sys/whitelist.js": {
+      "document": "sys/whitelist.js",
+      "resource": "sys.whitelist",
+      "terms": [
+        "sys/whitelist",
+        "whitelist",
+        "WHITELIST",
+        "sys"
+      ],
+      "schemas": [
+        "config.ssh_whitelist"
+      ],
+      "operations": [
+        "get /api/ad/v3/sys/whitelist",
+        "patch /api/ad/v3/sys/whitelist",
+        "put /api/ad/v3/sys/whitelist"
+      ]
+    },
     "title_desc.js": {
       "document": "title_desc.js",
       "resource": "title_desc",
@@ -17119,6 +17833,7 @@
         "config.ras_alert_event",
         "config.reference_relation",
         "config.san_extensions",
+        "config.service_type",
         "config.sm2_certificate_private_key_with_token",
         "config.ssl_match_component",
         "config.ssl_match_component1",
@@ -28815,8 +29530,8 @@
       "key": "get /api/ad/v3/slb/virtual-service/",
       "method": "get",
       "path": "/api/ad/v3/slb/virtual-service/",
-      "document": "slb/virtual-service.js",
-      "resource": "slb.virtual_service",
+      "document": "slb/virtual-service/udp-proxy.js",
+      "resource": "slb.virtual_service.udp_proxy",
       "request_schemas": [],
       "summary": "get all virtual service",
       "description": "查看当前已有的虚拟服务配置信息"
@@ -28825,20 +29540,20 @@
       "key": "post /api/ad/v3/slb/virtual-service/",
       "method": "post",
       "path": "/api/ad/v3/slb/virtual-service/",
-      "document": "slb/virtual-service.js",
-      "resource": "slb.virtual_service",
+      "document": "slb/virtual-service/udp-proxy.js",
+      "resource": "slb.virtual_service.udp_proxy",
       "request_schemas": [
         "config.virtual_service"
       ],
-      "summary": "create new virtual service",
-      "description": "新建一个虚拟服务配置"
+      "summary": "create new UDP-PROXY virtual service",
+      "description": "新建一个UDP-PROXY虚拟服务配置"
     },
     "delete /api/ad/v3/slb/virtual-service/{name}": {
       "key": "delete /api/ad/v3/slb/virtual-service/{name}",
       "method": "delete",
       "path": "/api/ad/v3/slb/virtual-service/{name}",
-      "document": "slb/virtual-service.js",
-      "resource": "slb.virtual_service",
+      "document": "slb/virtual-service/udp-proxy.js",
+      "resource": "slb.virtual_service.udp_proxy",
       "request_schemas": [],
       "summary": "delete specific virtual service",
       "description": "删除指定的虚拟服务配置"
@@ -28847,8 +29562,8 @@
       "key": "get /api/ad/v3/slb/virtual-service/{name}",
       "method": "get",
       "path": "/api/ad/v3/slb/virtual-service/{name}",
-      "document": "slb/virtual-service.js",
-      "resource": "slb.virtual_service",
+      "document": "slb/virtual-service/udp-proxy.js",
+      "resource": "slb.virtual_service.udp_proxy",
       "request_schemas": [],
       "summary": "get specific virtual service",
       "description": "查看指定的虚拟服务配置"
@@ -28857,8 +29572,8 @@
       "key": "patch /api/ad/v3/slb/virtual-service/{name}",
       "method": "patch",
       "path": "/api/ad/v3/slb/virtual-service/{name}",
-      "document": "slb/virtual-service.js",
-      "resource": "slb.virtual_service",
+      "document": "slb/virtual-service/udp-proxy.js",
+      "resource": "slb.virtual_service.udp_proxy",
       "request_schemas": [
         "config.virtual_service"
       ],
@@ -28869,20 +29584,20 @@
       "key": "post /api/ad/v3/slb/virtual-service/{name}",
       "method": "post",
       "path": "/api/ad/v3/slb/virtual-service/{name}",
-      "document": "slb/virtual-service.js",
-      "resource": "slb.virtual_service",
+      "document": "slb/virtual-service/udp-proxy.js",
+      "resource": "slb.virtual_service.udp_proxy",
       "request_schemas": [
         "config.virtual_service"
       ],
-      "summary": "create new virtual service",
-      "description": "新建指定的虚拟服务配置"
+      "summary": "create new UDP-PROXY virtual service",
+      "description": "新建指定的UDP-PROXY虚拟服务配置"
     },
     "put /api/ad/v3/slb/virtual-service/{name}": {
       "key": "put /api/ad/v3/slb/virtual-service/{name}",
       "method": "put",
       "path": "/api/ad/v3/slb/virtual-service/{name}",
-      "document": "slb/virtual-service.js",
-      "resource": "slb.virtual_service",
+      "document": "slb/virtual-service/udp-proxy.js",
+      "resource": "slb.virtual_service.udp_proxy",
       "request_schemas": [
         "config.virtual_service"
       ],
@@ -31988,6 +32703,38 @@
       ],
       "summary": "replace web-service",
       "description": "修改登录配置"
+    },
+    "get /api/ad/v3/sys/whitelist": {
+      "key": "get /api/ad/v3/sys/whitelist",
+      "method": "get",
+      "path": "/api/ad/v3/sys/whitelist",
+      "document": "sys/whitelist.js",
+      "resource": "sys.whitelist",
+      "request_schemas": [],
+      "summary": "get whitelist",
+      "description": "查看当前已有的管理口白名单配置信息"
+    },
+    "patch /api/ad/v3/sys/whitelist": {
+      "key": "patch /api/ad/v3/sys/whitelist",
+      "method": "patch",
+      "path": "/api/ad/v3/sys/whitelist",
+      "document": "sys/whitelist.js",
+      "resource": "sys.whitelist",
+      "request_schemas": [],
+      "summary": "modify whitelist",
+      "description": "修改管理口白名单配置"
+    },
+    "put /api/ad/v3/sys/whitelist": {
+      "key": "put /api/ad/v3/sys/whitelist",
+      "method": "put",
+      "path": "/api/ad/v3/sys/whitelist",
+      "document": "sys/whitelist.js",
+      "resource": "sys.whitelist",
+      "request_schemas": [
+        "config.ssh_whitelist"
+      ],
+      "summary": "replace whitelist",
+      "description": "修改管理口白名单配置"
     },
     "get /api/ad/v3/token/": {
       "key": "get /api/ad/v3/token/",
@@ -36845,10 +37592,10 @@
       "schema": "config.service_type",
       "type": "string"
     },
-    "slb/virtual-service.js#config.service_type": {
-      "key": "slb/virtual-service.js#config.service_type",
-      "document": "slb/virtual-service.js",
-      "resource": "slb.virtual_service",
+    "{common}.js#config.service_type": {
+      "key": "{common}.js#config.service_type",
+      "document": "{common}.js",
+      "resource": "common",
       "schema": "config.service_type",
       "type": "string"
     },
@@ -36983,6 +37730,13 @@
       "document": "sys/ssh-setting.js",
       "resource": "sys.ssh_setting",
       "schema": "config.ssh_setting",
+      "type": "object"
+    },
+    "sys/whitelist.js#config.ssh_whitelist": {
+      "key": "sys/whitelist.js#config.ssh_whitelist",
+      "document": "sys/whitelist.js",
+      "resource": "sys.whitelist",
+      "schema": "config.ssh_whitelist",
       "type": "object"
     },
     "rc/ssl-certificate/all.js#config.ssl_certificate_all": {
@@ -37419,10 +38173,108 @@
       "schema": "config.virtual_service",
       "type": "object"
     },
-    "slb/virtual-service.js#config.virtual_service": {
-      "key": "slb/virtual-service.js#config.virtual_service",
-      "document": "slb/virtual-service.js",
-      "resource": "slb.virtual_service",
+    "slb/virtual-service/8583.js#config.virtual_service": {
+      "key": "slb/virtual-service/8583.js#config.virtual_service",
+      "document": "slb/virtual-service/8583.js",
+      "resource": "slb.virtual_service.8583",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/any.js#config.virtual_service": {
+      "key": "slb/virtual-service/any.js#config.virtual_service",
+      "document": "slb/virtual-service/any.js",
+      "resource": "slb.virtual_service.any",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/dns.js#config.virtual_service": {
+      "key": "slb/virtual-service/dns.js#config.virtual_service",
+      "document": "slb/virtual-service/dns.js",
+      "resource": "slb.virtual_service.dns",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/ftp.js#config.virtual_service": {
+      "key": "slb/virtual-service/ftp.js#config.virtual_service",
+      "document": "slb/virtual-service/ftp.js",
+      "resource": "slb.virtual_service.ftp",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/http.js#config.virtual_service": {
+      "key": "slb/virtual-service/http.js#config.virtual_service",
+      "document": "slb/virtual-service/http.js",
+      "resource": "slb.virtual_service.http",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/ip.js#config.virtual_service": {
+      "key": "slb/virtual-service/ip.js#config.virtual_service",
+      "document": "slb/virtual-service/ip.js",
+      "resource": "slb.virtual_service.ip",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/radius.js#config.virtual_service": {
+      "key": "slb/virtual-service/radius.js#config.virtual_service",
+      "document": "slb/virtual-service/radius.js",
+      "resource": "slb.virtual_service.radius",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/sip-tcp.js#config.virtual_service": {
+      "key": "slb/virtual-service/sip-tcp.js#config.virtual_service",
+      "document": "slb/virtual-service/sip-tcp.js",
+      "resource": "slb.virtual_service.sip_tcp",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/sip-udp.js#config.virtual_service": {
+      "key": "slb/virtual-service/sip-udp.js#config.virtual_service",
+      "document": "slb/virtual-service/sip-udp.js",
+      "resource": "slb.virtual_service.sip_udp",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/ssl-offload-https.js#config.virtual_service": {
+      "key": "slb/virtual-service/ssl-offload-https.js#config.virtual_service",
+      "document": "slb/virtual-service/ssl-offload-https.js",
+      "resource": "slb.virtual_service.ssl_offload_https",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/ssl-offload.js#config.virtual_service": {
+      "key": "slb/virtual-service/ssl-offload.js#config.virtual_service",
+      "document": "slb/virtual-service/ssl-offload.js",
+      "resource": "slb.virtual_service.ssl_offload",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/tcp-forward.js#config.virtual_service": {
+      "key": "slb/virtual-service/tcp-forward.js#config.virtual_service",
+      "document": "slb/virtual-service/tcp-forward.js",
+      "resource": "slb.virtual_service.tcp_forward",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/tcp-proxy.js#config.virtual_service": {
+      "key": "slb/virtual-service/tcp-proxy.js#config.virtual_service",
+      "document": "slb/virtual-service/tcp-proxy.js",
+      "resource": "slb.virtual_service.tcp_proxy",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/udp-forward.js#config.virtual_service": {
+      "key": "slb/virtual-service/udp-forward.js#config.virtual_service",
+      "document": "slb/virtual-service/udp-forward.js",
+      "resource": "slb.virtual_service.udp_forward",
+      "schema": "config.virtual_service",
+      "type": "object"
+    },
+    "slb/virtual-service/udp-proxy.js#config.virtual_service": {
+      "key": "slb/virtual-service/udp-proxy.js#config.virtual_service",
+      "document": "slb/virtual-service/udp-proxy.js",
+      "resource": "slb.virtual_service.udp_proxy",
       "schema": "config.virtual_service",
       "type": "object"
     },
@@ -37447,10 +38299,108 @@
       "schema": "config.virtual_service_list",
       "type": "object"
     },
-    "slb/virtual-service.js#config.virtual_service_list": {
-      "key": "slb/virtual-service.js#config.virtual_service_list",
-      "document": "slb/virtual-service.js",
-      "resource": "slb.virtual_service",
+    "slb/virtual-service/8583.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/8583.js#config.virtual_service_list",
+      "document": "slb/virtual-service/8583.js",
+      "resource": "slb.virtual_service.8583",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/any.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/any.js#config.virtual_service_list",
+      "document": "slb/virtual-service/any.js",
+      "resource": "slb.virtual_service.any",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/dns.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/dns.js#config.virtual_service_list",
+      "document": "slb/virtual-service/dns.js",
+      "resource": "slb.virtual_service.dns",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/ftp.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/ftp.js#config.virtual_service_list",
+      "document": "slb/virtual-service/ftp.js",
+      "resource": "slb.virtual_service.ftp",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/http.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/http.js#config.virtual_service_list",
+      "document": "slb/virtual-service/http.js",
+      "resource": "slb.virtual_service.http",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/ip.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/ip.js#config.virtual_service_list",
+      "document": "slb/virtual-service/ip.js",
+      "resource": "slb.virtual_service.ip",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/radius.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/radius.js#config.virtual_service_list",
+      "document": "slb/virtual-service/radius.js",
+      "resource": "slb.virtual_service.radius",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/sip-tcp.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/sip-tcp.js#config.virtual_service_list",
+      "document": "slb/virtual-service/sip-tcp.js",
+      "resource": "slb.virtual_service.sip_tcp",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/sip-udp.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/sip-udp.js#config.virtual_service_list",
+      "document": "slb/virtual-service/sip-udp.js",
+      "resource": "slb.virtual_service.sip_udp",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/ssl-offload-https.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/ssl-offload-https.js#config.virtual_service_list",
+      "document": "slb/virtual-service/ssl-offload-https.js",
+      "resource": "slb.virtual_service.ssl_offload_https",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/ssl-offload.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/ssl-offload.js#config.virtual_service_list",
+      "document": "slb/virtual-service/ssl-offload.js",
+      "resource": "slb.virtual_service.ssl_offload",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/tcp-forward.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/tcp-forward.js#config.virtual_service_list",
+      "document": "slb/virtual-service/tcp-forward.js",
+      "resource": "slb.virtual_service.tcp_forward",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/tcp-proxy.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/tcp-proxy.js#config.virtual_service_list",
+      "document": "slb/virtual-service/tcp-proxy.js",
+      "resource": "slb.virtual_service.tcp_proxy",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/udp-forward.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/udp-forward.js#config.virtual_service_list",
+      "document": "slb/virtual-service/udp-forward.js",
+      "resource": "slb.virtual_service.udp_forward",
+      "schema": "config.virtual_service_list",
+      "type": "object"
+    },
+    "slb/virtual-service/udp-proxy.js#config.virtual_service_list": {
+      "key": "slb/virtual-service/udp-proxy.js#config.virtual_service_list",
+      "document": "slb/virtual-service/udp-proxy.js",
+      "resource": "slb.virtual_service.udp_proxy",
       "schema": "config.virtual_service_list",
       "type": "object"
     },
@@ -38844,6 +39794,11 @@
       },
       {
         "id": "slb.tcp_profile",
+        "kind": "family",
+        "reason": "generated_terms_need_product_review"
+      },
+      {
+        "id": "slb.virtual_service",
         "kind": "family",
         "reason": "generated_terms_need_product_review"
       }

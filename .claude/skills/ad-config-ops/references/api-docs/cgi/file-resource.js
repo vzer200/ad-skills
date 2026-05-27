@@ -60,6 +60,27 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_cgi_file_resource_response"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "upload new file-resource",
+						"description": "上传文件，获取token",
+						"value": {
+							"method": "POST",
+							"path": "/cgi/file-resource/"
+						}
+					},
+					"response": {
+						"summary": "POST /cgi/file-resource/ 响应",
+						"description": "返回POST /cgi/file-resource/的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
+					}
 				}
 			},
 			"get": {
@@ -89,6 +110,21 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/parameters/responses/file_download"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific file-resource information",
+						"description": "下载文件",
+						"value": {
+							"method": "GET",
+							"path": "/cgi/file-resource/"
+						}
+					},
+					"response": {
+						"summary": "GET /cgi/file-resource/ 响应",
+						"description": "返回GET /cgi/file-resource/的响应数据",
+						"value": {}
 					}
 				}
 			}

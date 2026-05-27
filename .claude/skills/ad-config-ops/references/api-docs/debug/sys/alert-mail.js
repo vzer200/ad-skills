@@ -40,7 +40,24 @@ module.exports ={
 				],
 				"summary": "alert-mail verify",
 				"description": "测试邮件告警",
-				"operationId": "alert_mail_verify"
+				"operationId": "alert_mail_verify",
+				"x-examples": {
+					"request": {
+						"summary": "alert-mail verify",
+						"description": "测试邮件告警",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/alert-mail/verify"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/alert-mail/verify 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/alert-mail/verify的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

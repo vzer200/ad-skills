@@ -62,6 +62,81 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_report_task_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all report-task",
+						"description": "查看当前已有的报表定制信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/report-task/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/report-task/ 响应",
+						"description": "返回GET /api/ad/v3/sys/report-task/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "slb_week_report",
+									"description": "example_string",
+									"policy": "MANUAL",
+									"link_analysis": {
+										"dimensions": [
+											"GENERAL-THROUGHPUT"
+										],
+										"objects": [
+											"example_string"
+										]
+									},
+									"pool_analysis": {
+										"dimensions": [
+											"GENERAL-THROUGHPUT"
+										],
+										"objects": [
+											"example_string"
+										]
+									},
+									"virtual_service_analysis": {
+										"dimensions": [
+											"GENERAL-THROUGHPUT"
+										],
+										"objects": [
+											"example_string"
+										]
+									},
+									"policy_route_analysis": {
+										"dimensions": [
+											"GENERAL-THROUGHPUT"
+										]
+									},
+									"dns_analysis": {
+										"dimensions": [
+											"DATA-CENTER-QUERY-RATE"
+										],
+										"local_objects": [
+											"example_string"
+										],
+										"global_objects": [
+											"example_string"
+										]
+									},
+									"ha_analysis": {
+										"dimensions": [
+											"CLUSTER"
+										]
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +154,74 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_report_task_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new report-task",
+						"description": "新建报表定制配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/report-task/",
+							"body": {
+								"name": "AI_slb_week_report_A",
+								"policy": "MANUAL"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/report-task/ 响应",
+						"description": "返回POST /api/ad/v3/sys/report-task/的响应数据",
+						"value": {
+							"name": "AI_slb_week_report_A",
+							"description": "example_string",
+							"policy": "MANUAL",
+							"link_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"pool_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"virtual_service_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"policy_route_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								]
+							},
+							"dns_analysis": {
+								"dimensions": [
+									"DATA-CENTER-QUERY-RATE"
+								],
+								"local_objects": [
+									"example_string"
+								],
+								"global_objects": [
+									"example_string"
+								]
+							},
+							"ha_analysis": {
+								"dimensions": [
+									"CLUSTER"
+								]
+							}
+						}
 					}
 				}
 			},
@@ -132,6 +275,70 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_report_task_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific report-task",
+						"description": "查看指定的报表定制配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/report-task/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/report-task/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/report-task/{name}的响应数据",
+						"value": {
+							"name": "slb_week_report",
+							"description": "example_string",
+							"policy": "MANUAL",
+							"link_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"pool_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"virtual_service_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"policy_route_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								]
+							},
+							"dns_analysis": {
+								"dimensions": [
+									"DATA-CENTER-QUERY-RATE"
+								],
+								"local_objects": [
+									"example_string"
+								],
+								"global_objects": [
+									"example_string"
+								]
+							},
+							"ha_analysis": {
+								"dimensions": [
+									"CLUSTER"
+								]
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -151,6 +358,74 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_report_task_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new report-task",
+						"description": "新建指定的报表定制配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/report-task/{name}",
+							"body": {
+								"name": "AI_slb_week_report_B",
+								"policy": "MANUAL"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/report-task/{name} 响应",
+						"description": "返回POST /api/ad/v3/sys/report-task/{name}的响应数据",
+						"value": {
+							"name": "AI_slb_week_report_B",
+							"description": "example_string",
+							"policy": "MANUAL",
+							"link_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"pool_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"virtual_service_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"policy_route_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								]
+							},
+							"dns_analysis": {
+								"dimensions": [
+									"DATA-CENTER-QUERY-RATE"
+								],
+								"local_objects": [
+									"example_string"
+								],
+								"global_objects": [
+									"example_string"
+								]
+							},
+							"ha_analysis": {
+								"dimensions": [
+									"CLUSTER"
+								]
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -168,6 +443,74 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_report_task_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific report-task",
+						"description": "修改指定的报表定制配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/report-task/{name}",
+							"body": {
+								"name": "slb_week_report",
+								"policy": "MANUAL"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/report-task/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/report-task/{name}的响应数据",
+						"value": {
+							"name": "slb_week_report",
+							"description": "example_string",
+							"policy": "MANUAL",
+							"link_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"pool_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"virtual_service_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"policy_route_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								]
+							},
+							"dns_analysis": {
+								"dimensions": [
+									"DATA-CENTER-QUERY-RATE"
+								],
+								"local_objects": [
+									"example_string"
+								],
+								"global_objects": [
+									"example_string"
+								]
+							},
+							"ha_analysis": {
+								"dimensions": [
+									"CLUSTER"
+								]
+							}
+						}
 					}
 				}
 			},
@@ -187,6 +530,74 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_report_task_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific report-task",
+						"description": "修改指定的报表定制配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/report-task/{name}",
+							"body": {
+								"name": "slb_week_report",
+								"policy": "MANUAL"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/report-task/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/report-task/{name}的响应数据",
+						"value": {
+							"name": "slb_week_report",
+							"description": "example_string",
+							"policy": "MANUAL",
+							"link_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"pool_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"virtual_service_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"policy_route_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								]
+							},
+							"dns_analysis": {
+								"dimensions": [
+									"DATA-CENTER-QUERY-RATE"
+								],
+								"local_objects": [
+									"example_string"
+								],
+								"global_objects": [
+									"example_string"
+								]
+							},
+							"ha_analysis": {
+								"dimensions": [
+									"CLUSTER"
+								]
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -199,6 +610,70 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_report_task_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific report-task",
+						"description": "删除指定的报表定制配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/report-task/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/report-task/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/report-task/{name}的响应数据",
+						"value": {
+							"name": "slb_week_report",
+							"description": "example_string",
+							"policy": "MANUAL",
+							"link_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"pool_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"virtual_service_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								],
+								"objects": [
+									"example_string"
+								]
+							},
+							"policy_route_analysis": {
+								"dimensions": [
+									"GENERAL-THROUGHPUT"
+								]
+							},
+							"dns_analysis": {
+								"dimensions": [
+									"DATA-CENTER-QUERY-RATE"
+								],
+								"local_objects": [
+									"example_string"
+								],
+								"global_objects": [
+									"example_string"
+								]
+							},
+							"ha_analysis": {
+								"dimensions": [
+									"CLUSTER"
+								]
+							}
+						}
 					}
 				}
 			}

@@ -64,6 +64,72 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all persist",
+						"description": "GET /api/ad/v3/slb/persist/all/",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/persist/all/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/persist/all/ 响应",
+						"description": "返回GET /api/ad/v3/slb/persist/all/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "cookie_passive",
+									"description": "",
+									"type": "COOKIE-STUDY",
+									"source_ipv4_netmask_length": 32,
+									"source_ipv6_prefix_length": 128,
+									"cookie": "sangfor_ad",
+									"domain": "",
+									"path": "/",
+									"http_only": "DISABLE",
+									"secure": "DISABLE",
+									"component": "URI",
+									"header": "cookie",
+									"keyword": "JSESSION",
+									"offset": 9,
+									"terminator": ";",
+									"request_seek_rules": [
+										{
+											"component": "URI",
+											"header": "cookie",
+											"keyword": "JSESSION",
+											"offset": 9,
+											"terminator": ";"
+										}
+									],
+									"response_study_rules": [
+										{
+											"component": "HEADER",
+											"header": "cookie",
+											"keyword": "JSESSION",
+											"offset": 9,
+											"terminator": ";"
+										}
+									],
+									"radius_attribute_id": 1,
+									"timeout": 86400,
+									"busy_protect": "DISABLE",
+									"record_scope": "POOL",
+									"session_persist_synchronize": "ENABLE",
+									"netns": "default"
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -95,6 +161,61 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific persist",
+						"description": "GET /api/ad/v3/slb/persist/all/{name}",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/persist/all/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/persist/all/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/persist/all/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "COOKIE-STUDY",
+							"source_ipv4_netmask_length": 32,
+							"source_ipv6_prefix_length": 128,
+							"cookie": "sangfor_ad",
+							"domain": "",
+							"path": "/",
+							"http_only": "DISABLE",
+							"secure": "DISABLE",
+							"component": "URI",
+							"header": "cookie",
+							"keyword": "JSESSION",
+							"offset": 9,
+							"terminator": ";",
+							"request_seek_rules": [
+								{
+									"component": "URI",
+									"header": "cookie",
+									"keyword": "JSESSION",
+									"offset": 9,
+									"terminator": ";"
+								}
+							],
+							"response_study_rules": [
+								{
+									"component": "HEADER",
+									"header": "cookie",
+									"keyword": "JSESSION",
+									"offset": 9,
+									"terminator": ";"
+								}
+							],
+							"radius_attribute_id": 1,
+							"timeout": 86400,
+							"busy_protect": "DISABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE",
+							"netns": "default"
+						}
 					}
 				}
 			}

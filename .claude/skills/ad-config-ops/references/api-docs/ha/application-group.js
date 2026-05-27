@@ -65,6 +65,99 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_application_group_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all application-group",
+						"description": "获取应用组管理配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/ha/application-group/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/ha/application-group/ 响应",
+						"description": "返回GET /api/ad/v3/ha/application-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "default",
+									"project": "myproject",
+									"description": "example_string",
+									"all_active_mode": "DISABLE",
+									"session_synchronize": "ENABLE",
+									"connection_state_synchronize": "DISABLE",
+									"associated": {
+										"virtual_services": [
+											"virtual_service_1"
+										],
+										"arp_combinations": [
+											"arp_application_group_1"
+										],
+										"snat_combinations": [
+											"nat_group_1"
+										],
+										"dnats": [
+											"dnat_1"
+										],
+										"float_ips": [
+											"200.200.1.149"
+										],
+										"snat_pools": [
+											"snat_pool_1"
+										]
+									},
+									"member": {
+										"member_structure": "MEMBER-SEQUENCE",
+										"member_sequence": [
+											"ad_2"
+										],
+										"member_group": [
+											{
+												"name": "dc_bj_member_group",
+												"member_sequence": [
+													"ad_1",
+													"ad_3",
+													"ad_2"
+												]
+											}
+										]
+									},
+									"select_method": "BY-PRIORITY",
+									"preempt_mode": "DISABLE",
+									"fault_detect": {
+										"state": "DISABLE",
+										"method": "FAULT-REQUIREMENT",
+										"fault_requirement": {
+											"objects": [
+												"POOL:pool_mail"
+											],
+											"fault_object_count": 0
+										},
+										"fault_rules": [
+											[
+												"LINK:lan_1"
+											]
+										]
+									},
+									"virtual_macs": [
+										{
+											"link": "LAN_1",
+											"mac": "00:22:22:22:22:22"
+										}
+									],
+									"default": "NON-DEFAULT"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +175,97 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_application_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new application-group",
+						"description": "新建应用组管理配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/ha/application-group/",
+							"body": {
+								"name": "AI_default_A",
+								"all_active_mode": "DISABLE",
+								"session_synchronize": "ENABLE",
+								"connection_state_synchronize": "DISABLE",
+								"select_method": "BY-PRIORITY",
+								"preempt_mode": "DISABLE",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/ha/application-group/ 响应",
+						"description": "返回POST /api/ad/v3/ha/application-group/的响应数据",
+						"value": {
+							"name": "AI_default_A",
+							"project": "myproject",
+							"description": "example_string",
+							"all_active_mode": "DISABLE",
+							"session_synchronize": "ENABLE",
+							"connection_state_synchronize": "DISABLE",
+							"associated": {
+								"virtual_services": [
+									"virtual_service_1"
+								],
+								"arp_combinations": [
+									"arp_application_group_1"
+								],
+								"snat_combinations": [
+									"nat_group_1"
+								],
+								"dnats": [
+									"dnat_1"
+								],
+								"float_ips": [
+									"200.200.1.149"
+								],
+								"snat_pools": [
+									"snat_pool_1"
+								]
+							},
+							"member": {
+								"member_structure": "MEMBER-SEQUENCE",
+								"member_sequence": [
+									"ad_2"
+								],
+								"member_group": [
+									{
+										"name": "dc_bj_member_group",
+										"member_sequence": [
+											"ad_1",
+											"ad_3",
+											"ad_2"
+										]
+									}
+								]
+							},
+							"select_method": "BY-PRIORITY",
+							"preempt_mode": "DISABLE",
+							"fault_detect": {
+								"state": "DISABLE",
+								"method": "FAULT-REQUIREMENT",
+								"fault_requirement": {
+									"objects": [
+										"POOL:pool_mail"
+									],
+									"fault_object_count": 0
+								},
+								"fault_rules": [
+									[
+										"LINK:lan_1"
+									]
+								]
+							},
+							"virtual_macs": [
+								{
+									"link": "LAN_1",
+									"mac": "00:22:22:22:22:22"
+								}
+							],
+							"default": "NON-DEFAULT"
+						}
 					}
 				}
 			},
@@ -101,6 +285,108 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_application_group_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify application-group",
+						"description": "修改应用组管理配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/ha/application-group/",
+							"body": {
+								"name": "default",
+								"all_active_mode": "DISABLE",
+								"session_synchronize": "ENABLE",
+								"connection_state_synchronize": "DISABLE",
+								"select_method": "BY-PRIORITY",
+								"preempt_mode": "DISABLE",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/ha/application-group/ 响应",
+						"description": "返回PATCH /api/ad/v3/ha/application-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "default",
+									"project": "myproject",
+									"description": "example_string",
+									"all_active_mode": "DISABLE",
+									"session_synchronize": "ENABLE",
+									"connection_state_synchronize": "DISABLE",
+									"associated": {
+										"virtual_services": [
+											"virtual_service_1"
+										],
+										"arp_combinations": [
+											"arp_application_group_1"
+										],
+										"snat_combinations": [
+											"nat_group_1"
+										],
+										"dnats": [
+											"dnat_1"
+										],
+										"float_ips": [
+											"200.200.1.149"
+										],
+										"snat_pools": [
+											"snat_pool_1"
+										]
+									},
+									"member": {
+										"member_structure": "MEMBER-SEQUENCE",
+										"member_sequence": [
+											"ad_2"
+										],
+										"member_group": [
+											{
+												"name": "dc_bj_member_group",
+												"member_sequence": [
+													"ad_1",
+													"ad_3",
+													"ad_2"
+												]
+											}
+										]
+									},
+									"select_method": "BY-PRIORITY",
+									"preempt_mode": "DISABLE",
+									"fault_detect": {
+										"state": "DISABLE",
+										"method": "FAULT-REQUIREMENT",
+										"fault_requirement": {
+											"objects": [
+												"POOL:pool_mail"
+											],
+											"fault_object_count": 0
+										},
+										"fault_rules": [
+											[
+												"LINK:lan_1"
+											]
+										]
+									},
+									"virtual_macs": [
+										{
+											"link": "LAN_1",
+											"mac": "00:22:22:22:22:22"
+										}
+									],
+									"default": "NON-DEFAULT"
+								}
+							]
+						}
 					}
 				}
 			}
@@ -137,6 +423,88 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_application_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific application-group",
+						"description": "获取应用组管理配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/ha/application-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/ha/application-group/{name} 响应",
+						"description": "返回GET /api/ad/v3/ha/application-group/{name}的响应数据",
+						"value": {
+							"name": "default",
+							"project": "myproject",
+							"description": "example_string",
+							"all_active_mode": "DISABLE",
+							"session_synchronize": "ENABLE",
+							"connection_state_synchronize": "DISABLE",
+							"associated": {
+								"virtual_services": [
+									"virtual_service_1"
+								],
+								"arp_combinations": [
+									"arp_application_group_1"
+								],
+								"snat_combinations": [
+									"nat_group_1"
+								],
+								"dnats": [
+									"dnat_1"
+								],
+								"float_ips": [
+									"200.200.1.149"
+								],
+								"snat_pools": [
+									"snat_pool_1"
+								]
+							},
+							"member": {
+								"member_structure": "MEMBER-SEQUENCE",
+								"member_sequence": [
+									"ad_2"
+								],
+								"member_group": [
+									{
+										"name": "dc_bj_member_group",
+										"member_sequence": [
+											"ad_1",
+											"ad_3",
+											"ad_2"
+										]
+									}
+								]
+							},
+							"select_method": "BY-PRIORITY",
+							"preempt_mode": "DISABLE",
+							"fault_detect": {
+								"state": "DISABLE",
+								"method": "FAULT-REQUIREMENT",
+								"fault_requirement": {
+									"objects": [
+										"POOL:pool_mail"
+									],
+									"fault_object_count": 0
+								},
+								"fault_rules": [
+									[
+										"LINK:lan_1"
+									]
+								]
+							},
+							"virtual_macs": [
+								{
+									"link": "LAN_1",
+									"mac": "00:22:22:22:22:22"
+								}
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"post": {
@@ -156,6 +524,97 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_application_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new application-group",
+						"description": "新建应用组管理配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/ha/application-group/{name}",
+							"body": {
+								"name": "AI_default_B",
+								"all_active_mode": "DISABLE",
+								"session_synchronize": "ENABLE",
+								"connection_state_synchronize": "DISABLE",
+								"select_method": "BY-PRIORITY",
+								"preempt_mode": "DISABLE",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/ha/application-group/{name} 响应",
+						"description": "返回POST /api/ad/v3/ha/application-group/{name}的响应数据",
+						"value": {
+							"name": "AI_default_B",
+							"project": "myproject",
+							"description": "example_string",
+							"all_active_mode": "DISABLE",
+							"session_synchronize": "ENABLE",
+							"connection_state_synchronize": "DISABLE",
+							"associated": {
+								"virtual_services": [
+									"virtual_service_1"
+								],
+								"arp_combinations": [
+									"arp_application_group_1"
+								],
+								"snat_combinations": [
+									"nat_group_1"
+								],
+								"dnats": [
+									"dnat_1"
+								],
+								"float_ips": [
+									"200.200.1.149"
+								],
+								"snat_pools": [
+									"snat_pool_1"
+								]
+							},
+							"member": {
+								"member_structure": "MEMBER-SEQUENCE",
+								"member_sequence": [
+									"ad_2"
+								],
+								"member_group": [
+									{
+										"name": "dc_bj_member_group",
+										"member_sequence": [
+											"ad_1",
+											"ad_3",
+											"ad_2"
+										]
+									}
+								]
+							},
+							"select_method": "BY-PRIORITY",
+							"preempt_mode": "DISABLE",
+							"fault_detect": {
+								"state": "DISABLE",
+								"method": "FAULT-REQUIREMENT",
+								"fault_requirement": {
+									"objects": [
+										"POOL:pool_mail"
+									],
+									"fault_object_count": 0
+								},
+								"fault_rules": [
+									[
+										"LINK:lan_1"
+									]
+								]
+							},
+							"virtual_macs": [
+								{
+									"link": "LAN_1",
+									"mac": "00:22:22:22:22:22"
+								}
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"put": {
@@ -173,6 +632,97 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_application_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific application-group",
+						"description": "修改应用组管理配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/ha/application-group/{name}",
+							"body": {
+								"name": "default",
+								"all_active_mode": "DISABLE",
+								"session_synchronize": "ENABLE",
+								"connection_state_synchronize": "DISABLE",
+								"select_method": "BY-PRIORITY",
+								"preempt_mode": "DISABLE",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/ha/application-group/{name} 响应",
+						"description": "返回PUT /api/ad/v3/ha/application-group/{name}的响应数据",
+						"value": {
+							"name": "default",
+							"project": "myproject",
+							"description": "example_string",
+							"all_active_mode": "DISABLE",
+							"session_synchronize": "ENABLE",
+							"connection_state_synchronize": "DISABLE",
+							"associated": {
+								"virtual_services": [
+									"virtual_service_1"
+								],
+								"arp_combinations": [
+									"arp_application_group_1"
+								],
+								"snat_combinations": [
+									"nat_group_1"
+								],
+								"dnats": [
+									"dnat_1"
+								],
+								"float_ips": [
+									"200.200.1.149"
+								],
+								"snat_pools": [
+									"snat_pool_1"
+								]
+							},
+							"member": {
+								"member_structure": "MEMBER-SEQUENCE",
+								"member_sequence": [
+									"ad_2"
+								],
+								"member_group": [
+									{
+										"name": "dc_bj_member_group",
+										"member_sequence": [
+											"ad_1",
+											"ad_3",
+											"ad_2"
+										]
+									}
+								]
+							},
+							"select_method": "BY-PRIORITY",
+							"preempt_mode": "DISABLE",
+							"fault_detect": {
+								"state": "DISABLE",
+								"method": "FAULT-REQUIREMENT",
+								"fault_requirement": {
+									"objects": [
+										"POOL:pool_mail"
+									],
+									"fault_object_count": 0
+								},
+								"fault_rules": [
+									[
+										"LINK:lan_1"
+									]
+								]
+							},
+							"virtual_macs": [
+								{
+									"link": "LAN_1",
+									"mac": "00:22:22:22:22:22"
+								}
+							],
+							"default": "NON-DEFAULT"
+						}
 					}
 				}
 			},
@@ -192,6 +742,97 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_application_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific application-group",
+						"description": "修改应用组管理配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/ha/application-group/{name}",
+							"body": {
+								"name": "default",
+								"all_active_mode": "DISABLE",
+								"session_synchronize": "ENABLE",
+								"connection_state_synchronize": "DISABLE",
+								"select_method": "BY-PRIORITY",
+								"preempt_mode": "DISABLE",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/ha/application-group/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/ha/application-group/{name}的响应数据",
+						"value": {
+							"name": "default",
+							"project": "myproject",
+							"description": "example_string",
+							"all_active_mode": "DISABLE",
+							"session_synchronize": "ENABLE",
+							"connection_state_synchronize": "DISABLE",
+							"associated": {
+								"virtual_services": [
+									"virtual_service_1"
+								],
+								"arp_combinations": [
+									"arp_application_group_1"
+								],
+								"snat_combinations": [
+									"nat_group_1"
+								],
+								"dnats": [
+									"dnat_1"
+								],
+								"float_ips": [
+									"200.200.1.149"
+								],
+								"snat_pools": [
+									"snat_pool_1"
+								]
+							},
+							"member": {
+								"member_structure": "MEMBER-SEQUENCE",
+								"member_sequence": [
+									"ad_2"
+								],
+								"member_group": [
+									{
+										"name": "dc_bj_member_group",
+										"member_sequence": [
+											"ad_1",
+											"ad_3",
+											"ad_2"
+										]
+									}
+								]
+							},
+							"select_method": "BY-PRIORITY",
+							"preempt_mode": "DISABLE",
+							"fault_detect": {
+								"state": "DISABLE",
+								"method": "FAULT-REQUIREMENT",
+								"fault_requirement": {
+									"objects": [
+										"POOL:pool_mail"
+									],
+									"fault_object_count": 0
+								},
+								"fault_rules": [
+									[
+										"LINK:lan_1"
+									]
+								]
+							},
+							"virtual_macs": [
+								{
+									"link": "LAN_1",
+									"mac": "00:22:22:22:22:22"
+								}
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -205,6 +846,88 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_application_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific application-group",
+						"description": "删除应用组管理配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/ha/application-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/ha/application-group/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/ha/application-group/{name}的响应数据",
+						"value": {
+							"name": "default",
+							"project": "myproject",
+							"description": "example_string",
+							"all_active_mode": "DISABLE",
+							"session_synchronize": "ENABLE",
+							"connection_state_synchronize": "DISABLE",
+							"associated": {
+								"virtual_services": [
+									"virtual_service_1"
+								],
+								"arp_combinations": [
+									"arp_application_group_1"
+								],
+								"snat_combinations": [
+									"nat_group_1"
+								],
+								"dnats": [
+									"dnat_1"
+								],
+								"float_ips": [
+									"200.200.1.149"
+								],
+								"snat_pools": [
+									"snat_pool_1"
+								]
+							},
+							"member": {
+								"member_structure": "MEMBER-SEQUENCE",
+								"member_sequence": [
+									"ad_2"
+								],
+								"member_group": [
+									{
+										"name": "dc_bj_member_group",
+										"member_sequence": [
+											"ad_1",
+											"ad_3",
+											"ad_2"
+										]
+									}
+								]
+							},
+							"select_method": "BY-PRIORITY",
+							"preempt_mode": "DISABLE",
+							"fault_detect": {
+								"state": "DISABLE",
+								"method": "FAULT-REQUIREMENT",
+								"fault_requirement": {
+									"objects": [
+										"POOL:pool_mail"
+									],
+									"fault_object_count": 0
+								},
+								"fault_rules": [
+									[
+										"LINK:lan_1"
+									]
+								]
+							},
+							"virtual_macs": [
+								{
+									"link": "LAN_1",
+									"mac": "00:22:22:22:22:22"
+								}
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -217,7 +940,7 @@ module.exports ={
 					"description": "获取指定应用组Default配置"
 				},
 				{
-					"command": "create ha application-group app1 session_synchronize enable associated { virtual_service_combinations [ 虚拟服务关联组_1 ] snat_combinations [ 源地址转换关联组_1 ] float_ips [ 195.197.197.106 123.12.23.22 ] dnats [ dnat1 ] } member { member_structure member-sequence member_sequence [ dev_A ] } select_method by-priority preempt_mode enable fault_detect { state enable method fault-requirement fault_requirement { fault_object_count 2 objects [ LINK:LAN1 LINK:WAN1 POOL:pool-80 ] } } virtual_macs [ { link LAN1 mac da:ef:80:f3:b0:ab } { link WAN1 mac da:16:b8:75:18:60 } ]",
+					"command": "create ha application-group app1 session_synchronize enable associated { virtual_services [ 虚拟服务_1 ] snat_combinations [ 源地址转换关联组_1 ] float_ips [ 195.197.197.106 123.12.23.22 ] dnats [ dnat1 ] } member { member_structure member-sequence member_sequence [ dev_A ] } select_method by-priority preempt_mode enable fault_detect { state enable method fault-requirement fault_requirement { fault_object_count 2 objects [ LINK:LAN1 LINK:WAN1 POOL:pool-80 ] } } virtual_macs [ { link LAN1 mac da:ef:80:f3:b0:ab } { link WAN1 mac da:16:b8:75:18:60 } ]",
 					"description": "创建名称为app1的应用组，开启连接镜像，选择关联内容：虚拟服务关联组_1、源地址转换关联组_1、dnat1，以及浮动IP 195.197.197.106、123.12.23.22，优先设备列表为dev_A，启用按设备优先级切换，并开启抢占功能，开启故障切换，故障切换方式选择为按数量切换，选择任意2条链路或节点池发生故障时切换，关注的链路节点池列表为：LAN1、WAN1、pool-80，开启虚拟MAC，为链路LAN1添加虚拟MAC da:ef:80:f3:b0:ab，为链路WAN1添加虚拟MAC da:16:b8:75:18:60"
 				},
 				{
@@ -335,6 +1058,15 @@ module.exports ={
 					"description": "可以对该应用组进行额外的信息补充",
 					"type": "string"
 				},
+				"all_active_mode": {
+					"description": "多主模式",
+					"type": "string",
+					"enum": [
+						"ENABLE",
+						"DISABLE"
+					],
+					"default": "DISABLE"
+				},
 				"session_synchronize": {
 					"description": "连接镜像开关，enable表示启用，disable表示禁用",
 					"type": "string",
@@ -345,17 +1077,27 @@ module.exports ={
 					"default": "ENABLE",
 					"example": "ENABLE"
 				},
+				"connection_state_synchronize": {
+					"description": "全状态同步",
+					"type": "string",
+					"enum": [
+						"ENABLE",
+						"DISABLE"
+					],
+					"default": "DISABLE",
+					"example": "DISABLE"
+				},
 				"associated": {
 					"description": "关联信息（虚拟服务关联组、源地址转换关联组、DNAT、浮动IP等",
 					"type": "object",
 					"properties": {
-						"virtual_service_combinations": {
-							"description": "本应用组关联的虚拟服务关联组列表",
+						"virtual_services": {
+							"description": "本应用组关联的虚拟服务列表",
 							"type": "array",
 							"items": {
-								"description": "虚拟服务关联组",
+								"description": "虚拟服务",
 								"type": "string",
-								"example": "virtual_application_group_1"
+								"example": "virtual_service_1"
 							}
 						},
 						"arp_combinations": {

@@ -68,6 +68,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_macvlan_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all macvlan",
+						"description": "获取macvlan配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/macvlan/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/macvlan/ 响应",
+						"description": "返回GET /api/ad/v3/net/macvlan/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "mymacvlan",
+									"description": "macvlan1 belongs to netns1",
+									"state": "ENABLE",
+									"type": "FLAT",
+									"segment_id": 0,
+									"mac_address": "00:fe:ff:ff:ff:ff",
+									"mac_addr": "00:22:22:22:22:22"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -85,6 +119,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_macvlan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new macvlan",
+						"description": "新建macvlan配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/macvlan/",
+							"body": {
+								"name": "AI_mymacvlan_A",
+								"description": "macvlan1 belongs to netns1",
+								"state": "ENABLE",
+								"type": "FLAT",
+								"segment_id": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/macvlan/ 响应",
+						"description": "返回POST /api/ad/v3/net/macvlan/的响应数据",
+						"value": {
+							"name": "AI_mymacvlan_A",
+							"description": "macvlan1 belongs to netns1",
+							"state": "ENABLE",
+							"type": "FLAT",
+							"segment_id": 0,
+							"mac_address": "00:fe:ff:ff:ff:ff",
+							"mac_addr": "00:22:22:22:22:22"
+						}
 					}
 				}
 			},
@@ -104,6 +168,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_macvlan_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify macvlan",
+						"description": "修改macvlan配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/macvlan/",
+							"body": {
+								"name": "mymacvlan",
+								"description": "macvlan1 belongs to netns1",
+								"state": "ENABLE",
+								"type": "FLAT",
+								"segment_id": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/macvlan/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/macvlan/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "mymacvlan",
+									"description": "macvlan1 belongs to netns1",
+									"state": "ENABLE",
+									"type": "FLAT",
+									"segment_id": 0,
+									"mac_address": "00:fe:ff:ff:ff:ff",
+									"mac_addr": "00:22:22:22:22:22"
+								}
+							]
+						}
 					}
 				}
 			}
@@ -138,6 +243,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_macvlan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific macvlan",
+						"description": "获取macvlan配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/macvlan/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/macvlan/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/macvlan/{name}的响应数据",
+						"value": {
+							"name": "mymacvlan",
+							"description": "macvlan1 belongs to netns1",
+							"state": "ENABLE",
+							"type": "FLAT",
+							"segment_id": 0,
+							"mac_address": "00:fe:ff:ff:ff:ff",
+							"mac_addr": "00:22:22:22:22:22"
+						}
+					}
 				}
 			},
 			"post": {
@@ -157,6 +285,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_macvlan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new macvlan",
+						"description": "新建macvlan配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/macvlan/{name}",
+							"body": {
+								"name": "AI_mymacvlan_B",
+								"description": "macvlan1 belongs to netns1",
+								"state": "ENABLE",
+								"type": "FLAT",
+								"segment_id": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/macvlan/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/macvlan/{name}的响应数据",
+						"value": {
+							"name": "AI_mymacvlan_B",
+							"description": "macvlan1 belongs to netns1",
+							"state": "ENABLE",
+							"type": "FLAT",
+							"segment_id": 0,
+							"mac_address": "00:fe:ff:ff:ff:ff",
+							"mac_addr": "00:22:22:22:22:22"
+						}
+					}
 				}
 			},
 			"put": {
@@ -174,6 +332,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_macvlan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific macvlan",
+						"description": "修改macvlan配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/macvlan/{name}",
+							"body": {
+								"name": "mymacvlan",
+								"description": "macvlan1 belongs to netns1",
+								"state": "ENABLE",
+								"type": "FLAT",
+								"segment_id": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/macvlan/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/macvlan/{name}的响应数据",
+						"value": {
+							"name": "mymacvlan",
+							"description": "macvlan1 belongs to netns1",
+							"state": "ENABLE",
+							"type": "FLAT",
+							"segment_id": 0,
+							"mac_address": "00:fe:ff:ff:ff:ff",
+							"mac_addr": "00:22:22:22:22:22"
+						}
 					}
 				}
 			},
@@ -193,6 +381,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_macvlan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific macvlan",
+						"description": "The PATCH method updates specific properties of one config.",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/macvlan/{name}",
+							"body": {
+								"name": "mymacvlan",
+								"description": "macvlan1 belongs to netns1",
+								"state": "ENABLE",
+								"type": "FLAT",
+								"segment_id": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/macvlan/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/macvlan/{name}的响应数据",
+						"value": {
+							"name": "mymacvlan",
+							"description": "macvlan1 belongs to netns1",
+							"state": "ENABLE",
+							"type": "FLAT",
+							"segment_id": 0,
+							"mac_address": "00:fe:ff:ff:ff:ff",
+							"mac_addr": "00:22:22:22:22:22"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -205,6 +423,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_macvlan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific macvlan",
+						"description": "DELETE /api/ad/v3/net/macvlan/{name}",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/macvlan/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/macvlan/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/macvlan/{name}的响应数据",
+						"value": {
+							"name": "mymacvlan",
+							"description": "macvlan1 belongs to netns1",
+							"state": "ENABLE",
+							"type": "FLAT",
+							"segment_id": 0,
+							"mac_address": "00:fe:ff:ff:ff:ff",
+							"mac_addr": "00:22:22:22:22:22"
+						}
 					}
 				}
 			}

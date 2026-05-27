@@ -59,6 +59,25 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_domain_map"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get  domain-map statistics",
+						"description": "查询单个域名映射的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/domain-map/{dns_config_area}/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/domain-map/{dns_config_area}/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/domain-map/{dns_config_area}/{name}的响应数据",
+						"value": {
+							"status": "normal",
+							"name": "1.1.1.1_1_TCP",
+							"area": "GLOBAL"
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -99,6 +118,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_domain_map_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get  all domain-map statistics",
+						"description": "查询域名映射的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/domain-map/{dns_config_area}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/domain-map/{dns_config_area} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/domain-map/{dns_config_area}的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"status": "normal",
+									"name": "1.1.1.1_1_TCP",
+									"area": "GLOBAL"
+								}
+							]
+						}
 					}
 				}
 			},

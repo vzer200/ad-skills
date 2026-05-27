@@ -6,7 +6,7 @@
       "id": "delete-virtual-service",
       "action": "delete",
       "schema": "config.virtual_service",
-      "document": "slb/virtual-service.js",
+      "document": "slb/virtual-service/http.js",
       "rollback": {
         "rollback_method": "POST",
         "rollback_path": "/api/ad/v3/slb/virtual-service/"

@@ -40,7 +40,24 @@ module.exports ={
 				],
 				"summary": "clear dnat hit",
 				"description": "重置DNAT命中统计次数",
-				"operationId": "clear_dnat_hit"
+				"operationId": "clear_dnat_hit",
+				"x-examples": {
+					"request": {
+						"summary": "clear dnat hit",
+						"description": "重置DNAT命中统计次数",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/net/dnat/reset"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/net/dnat/reset 响应",
+						"description": "返回POST /api/ad/v3/debug/net/dnat/reset的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

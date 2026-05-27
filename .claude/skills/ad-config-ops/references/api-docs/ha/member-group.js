@@ -62,6 +62,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_member_group_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all member-group",
+						"description": "获取所有设备组配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/ha/member-group/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/ha/member-group/ 响应",
+						"description": "返回GET /api/ad/v3/ha/member-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "default_member_group",
+									"description": "example_string",
+									"members": [
+										"ad_ssloffload_1"
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +111,41 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_member_group_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new member-group",
+						"description": "新建设备组配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/ha/member-group/",
+							"body": {
+								"name": "AI_default_member_group_A"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/ha/member-group/ 响应",
+						"description": "返回POST /api/ad/v3/ha/member-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "default_member_group",
+									"description": "example_string",
+									"members": [
+										"ad_ssloffload_1"
+									]
+								}
+							]
+						}
 					}
 				}
 			},
@@ -98,6 +165,41 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_member_group_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify member-group",
+						"description": "修改设备组配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/ha/member-group/",
+							"body": {
+								"name": "default_member_group"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/ha/member-group/ 响应",
+						"description": "返回PATCH /api/ad/v3/ha/member-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "default_member_group",
+									"description": "example_string",
+									"members": [
+										"ad_ssloffload_1"
+									]
+								}
+							]
+						}
 					}
 				}
 			}
@@ -129,6 +231,27 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_member_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific member-group",
+						"description": "获取指定设备组配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/ha/member-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/ha/member-group/{name} 响应",
+						"description": "返回GET /api/ad/v3/ha/member-group/{name}的响应数据",
+						"value": {
+							"name": "default_member_group",
+							"description": "example_string",
+							"members": [
+								"ad_ssloffload_1"
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -148,6 +271,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_member_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new member-group",
+						"description": "新建设备组配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/ha/member-group/{name}",
+							"body": {
+								"name": "AI_default_member_group_B"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/ha/member-group/{name} 响应",
+						"description": "返回POST /api/ad/v3/ha/member-group/{name}的响应数据",
+						"value": {
+							"name": "AI_default_member_group_B",
+							"description": "example_string",
+							"members": [
+								"ad_ssloffload_1"
+							]
+						}
+					}
 				}
 			},
 			"patch": {
@@ -166,6 +313,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_member_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific member-group",
+						"description": "修改指定设备组配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/ha/member-group/{name}",
+							"body": {
+								"name": "default_member_group"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/ha/member-group/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/ha/member-group/{name}的响应数据",
+						"value": {
+							"name": "default_member_group",
+							"description": "example_string",
+							"members": [
+								"ad_ssloffload_1"
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -178,6 +349,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_member_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "删除指定设备组",
+						"description": "DELETE /api/ad/v3/ha/member-group/{name}",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/ha/member-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/ha/member-group/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/ha/member-group/{name}的响应数据",
+						"value": {
+							"name": "default_member_group",
+							"description": "example_string",
+							"members": [
+								"ad_ssloffload_1"
+							]
+						}
 					}
 				}
 			},

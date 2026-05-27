@@ -62,6 +62,71 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_qos_profile_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all qos-profile",
+						"description": "查看当前已有的QoS策略配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/qos-profile/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/qos-profile/ 响应",
+						"description": "返回GET /api/ad/v3/slb/qos-profile/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "qos_srcip_10m",
+									"description": "example_string",
+									"link_bandwidth_control": {
+										"state": "DISABLE",
+										"link_rules": [
+											{
+												"link": "{wan_link}",
+												"upstream_bandwidth_precent": 100,
+												"downstream_bandwidth_precent": 100
+											}
+										]
+									},
+									"user_flow_control": {
+										"state": "DISABLE",
+										"ip_rules": [
+											{
+												"source_address": "1.4.2.3",
+												"upstream_rate_reserve_kbps": 1,
+												"upstream_rate_limit_kbps": 10000,
+												"downstream_rate_reserve_kbps": 1,
+												"downstream_rate_limit_kbps": 20000
+											}
+										]
+									},
+									"dos_attack_control": {
+										"state": "DISABLE",
+										"service": "HTTP",
+										"statistical_time": 60,
+										"request_or_query_threshold": 10000,
+										"http_url_rules": [
+											{
+												"url_pattern_wildcard": "/login*",
+												"url_pattern_case_sensitive": "DISABLE",
+												"action": "TCP-FIN",
+												"http_response": "{http_response}"
+											}
+										]
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +144,63 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_qos_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new qos-profile",
+						"description": "新建一个QoS策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/qos-profile/",
+							"body": {
+								"name": "AI_qos_srcip_10m_A"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/qos-profile/ 响应",
+						"description": "返回POST /api/ad/v3/slb/qos-profile/的响应数据",
+						"value": {
+							"name": "AI_qos_srcip_10m_A",
+							"description": "example_string",
+							"link_bandwidth_control": {
+								"state": "DISABLE",
+								"link_rules": [
+									{
+										"link": "{wan_link}",
+										"upstream_bandwidth_precent": 100,
+										"downstream_bandwidth_precent": 100
+									}
+								]
+							},
+							"user_flow_control": {
+								"state": "DISABLE",
+								"ip_rules": [
+									{
+										"source_address": "1.4.2.3",
+										"upstream_rate_reserve_kbps": 1,
+										"upstream_rate_limit_kbps": 10000,
+										"downstream_rate_reserve_kbps": 1,
+										"downstream_rate_limit_kbps": 20000
+									}
+								]
+							},
+							"dos_attack_control": {
+								"state": "DISABLE",
+								"service": "HTTP",
+								"statistical_time": 60,
+								"request_or_query_threshold": 10000,
+								"http_url_rules": [
+									{
+										"url_pattern_wildcard": "/login*",
+										"url_pattern_case_sensitive": "DISABLE",
+										"action": "TCP-FIN",
+										"http_response": "{http_response}"
+									}
+								]
+							}
+						}
 					}
 				}
 			},
@@ -128,6 +250,60 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_qos_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific qos-profile",
+						"description": "查看指定的QoS策略配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/qos-profile/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/qos-profile/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/qos-profile/{name}的响应数据",
+						"value": {
+							"name": "qos_srcip_10m",
+							"description": "example_string",
+							"link_bandwidth_control": {
+								"state": "DISABLE",
+								"link_rules": [
+									{
+										"link": "{wan_link}",
+										"upstream_bandwidth_precent": 100,
+										"downstream_bandwidth_precent": 100
+									}
+								]
+							},
+							"user_flow_control": {
+								"state": "DISABLE",
+								"ip_rules": [
+									{
+										"source_address": "1.4.2.3",
+										"upstream_rate_reserve_kbps": 1,
+										"upstream_rate_limit_kbps": 10000,
+										"downstream_rate_reserve_kbps": 1,
+										"downstream_rate_limit_kbps": 20000
+									}
+								]
+							},
+							"dos_attack_control": {
+								"state": "DISABLE",
+								"service": "HTTP",
+								"statistical_time": 60,
+								"request_or_query_threshold": 10000,
+								"http_url_rules": [
+									{
+										"url_pattern_wildcard": "/login*",
+										"url_pattern_case_sensitive": "DISABLE",
+										"action": "TCP-FIN",
+										"http_response": "{http_response}"
+									}
+								]
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -147,6 +323,63 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_qos_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new qos-profile",
+						"description": "新建指定的QoS策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/qos-profile/{name}",
+							"body": {
+								"name": "AI_qos_srcip_10m_B"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/qos-profile/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/qos-profile/{name}的响应数据",
+						"value": {
+							"name": "AI_qos_srcip_10m_B",
+							"description": "example_string",
+							"link_bandwidth_control": {
+								"state": "DISABLE",
+								"link_rules": [
+									{
+										"link": "{wan_link}",
+										"upstream_bandwidth_precent": 100,
+										"downstream_bandwidth_precent": 100
+									}
+								]
+							},
+							"user_flow_control": {
+								"state": "DISABLE",
+								"ip_rules": [
+									{
+										"source_address": "1.4.2.3",
+										"upstream_rate_reserve_kbps": 1,
+										"upstream_rate_limit_kbps": 10000,
+										"downstream_rate_reserve_kbps": 1,
+										"downstream_rate_limit_kbps": 20000
+									}
+								]
+							},
+							"dos_attack_control": {
+								"state": "DISABLE",
+								"service": "HTTP",
+								"statistical_time": 60,
+								"request_or_query_threshold": 10000,
+								"http_url_rules": [
+									{
+										"url_pattern_wildcard": "/login*",
+										"url_pattern_case_sensitive": "DISABLE",
+										"action": "TCP-FIN",
+										"http_response": "{http_response}"
+									}
+								]
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -164,6 +397,63 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_qos_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific qos-profile",
+						"description": "修改指定的QoS策略配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/qos-profile/{name}",
+							"body": {
+								"name": "qos_srcip_10m"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/qos-profile/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/qos-profile/{name}的响应数据",
+						"value": {
+							"name": "qos_srcip_10m",
+							"description": "example_string",
+							"link_bandwidth_control": {
+								"state": "DISABLE",
+								"link_rules": [
+									{
+										"link": "{wan_link}",
+										"upstream_bandwidth_precent": 100,
+										"downstream_bandwidth_precent": 100
+									}
+								]
+							},
+							"user_flow_control": {
+								"state": "DISABLE",
+								"ip_rules": [
+									{
+										"source_address": "1.4.2.3",
+										"upstream_rate_reserve_kbps": 1,
+										"upstream_rate_limit_kbps": 10000,
+										"downstream_rate_reserve_kbps": 1,
+										"downstream_rate_limit_kbps": 20000
+									}
+								]
+							},
+							"dos_attack_control": {
+								"state": "DISABLE",
+								"service": "HTTP",
+								"statistical_time": 60,
+								"request_or_query_threshold": 10000,
+								"http_url_rules": [
+									{
+										"url_pattern_wildcard": "/login*",
+										"url_pattern_case_sensitive": "DISABLE",
+										"action": "TCP-FIN",
+										"http_response": "{http_response}"
+									}
+								]
+							}
+						}
 					}
 				}
 			},
@@ -183,6 +473,63 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_qos_profile_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific qos-profile",
+						"description": "修改指定的QoS策略配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/qos-profile/{name}",
+							"body": {
+								"name": "qos_srcip_10m"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/qos-profile/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/qos-profile/{name}的响应数据",
+						"value": {
+							"name": "qos_srcip_10m",
+							"description": "example_string",
+							"link_bandwidth_control": {
+								"state": "DISABLE",
+								"link_rules": [
+									{
+										"link": "{wan_link}",
+										"upstream_bandwidth_precent": 100,
+										"downstream_bandwidth_precent": 100
+									}
+								]
+							},
+							"user_flow_control": {
+								"state": "DISABLE",
+								"ip_rules": [
+									{
+										"source_address": "1.4.2.3",
+										"upstream_rate_reserve_kbps": 1,
+										"upstream_rate_limit_kbps": 10000,
+										"downstream_rate_reserve_kbps": 1,
+										"downstream_rate_limit_kbps": 20000
+									}
+								]
+							},
+							"dos_attack_control": {
+								"state": "DISABLE",
+								"service": "HTTP",
+								"statistical_time": 60,
+								"request_or_query_threshold": 10000,
+								"http_url_rules": [
+									{
+										"url_pattern_wildcard": "/login*",
+										"url_pattern_case_sensitive": "DISABLE",
+										"action": "TCP-FIN",
+										"http_response": "{http_response}"
+									}
+								]
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -195,6 +542,60 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_qos_profile_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific qos-profile",
+						"description": "删除指定的QoS策略配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/qos-profile/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/qos-profile/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/qos-profile/{name}的响应数据",
+						"value": {
+							"name": "qos_srcip_10m",
+							"description": "example_string",
+							"link_bandwidth_control": {
+								"state": "DISABLE",
+								"link_rules": [
+									{
+										"link": "{wan_link}",
+										"upstream_bandwidth_precent": 100,
+										"downstream_bandwidth_precent": 100
+									}
+								]
+							},
+							"user_flow_control": {
+								"state": "DISABLE",
+								"ip_rules": [
+									{
+										"source_address": "1.4.2.3",
+										"upstream_rate_reserve_kbps": 1,
+										"upstream_rate_limit_kbps": 10000,
+										"downstream_rate_reserve_kbps": 1,
+										"downstream_rate_limit_kbps": 20000
+									}
+								]
+							},
+							"dos_attack_control": {
+								"state": "DISABLE",
+								"service": "HTTP",
+								"statistical_time": 60,
+								"request_or_query_threshold": 10000,
+								"http_url_rules": [
+									{
+										"url_pattern_wildcard": "/login*",
+										"url_pattern_case_sensitive": "DISABLE",
+										"action": "TCP-FIN",
+										"http_response": "{http_response}"
+									}
+								]
+							}
+						}
 					}
 				}
 			}

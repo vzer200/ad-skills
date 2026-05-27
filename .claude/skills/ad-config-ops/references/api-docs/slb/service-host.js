@@ -62,6 +62,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_host_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-host",
+						"description": "查看当前已有的业务主机配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-host"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-host 响应",
+						"description": "返回GET /api/ad/v3/slb/service-host的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "oa_server_port_25",
+									"description": "example_string",
+									"type": "ADDRESS",
+									"address": "192.168.1.101",
+									"state": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"weight": 10,
+									"connection_limit": 0,
+									"connection_rate_limit": 0,
+									"request_rate_limit": 0,
+									"dns_query_interval": 3600,
+									"dns_query_down_interval": 5,
+									"associated_domain": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +122,50 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_host_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-host",
+						"description": "新建一个业务主机配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-host",
+							"body": {
+								"type": "ADDRESS",
+								"address": "192.168.1.101",
+								"state": "ENABLE",
+								"available_requirement": 0,
+								"weight": 10,
+								"connection_limit": 0,
+								"connection_rate_limit": 0,
+								"request_rate_limit": 0,
+								"dns_query_interval": 3600,
+								"dns_query_down_interval": 5
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-host 响应",
+						"description": "返回POST /api/ad/v3/slb/service-host的响应数据",
+						"value": {
+							"name": "AI_oa_server_port_25_A",
+							"description": "example_string",
+							"type": "ADDRESS",
+							"address": "192.168.1.101",
+							"state": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"weight": 10,
+							"connection_limit": 0,
+							"connection_rate_limit": 0,
+							"request_rate_limit": 0,
+							"dns_query_interval": 3600,
+							"dns_query_down_interval": 5,
+							"associated_domain": ""
+						}
 					}
 				}
 			},
@@ -128,6 +215,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_host_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-host",
+						"description": "查看指定的业务主机配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-host/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-host/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-host/{name}的响应数据",
+						"value": {
+							"name": "oa_server_port_25",
+							"description": "example_string",
+							"type": "ADDRESS",
+							"address": "192.168.1.101",
+							"state": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"weight": 10,
+							"connection_limit": 0,
+							"connection_rate_limit": 0,
+							"request_rate_limit": 0,
+							"dns_query_interval": 3600,
+							"dns_query_down_interval": 5,
+							"associated_domain": ""
+						}
+					}
 				}
 			},
 			"post": {
@@ -147,6 +266,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_host_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-host",
+						"description": "新建指定的业务主机配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-host/{name}",
+							"body": {
+								"type": "ADDRESS",
+								"address": "192.168.1.101",
+								"state": "ENABLE",
+								"available_requirement": 0,
+								"weight": 10,
+								"connection_limit": 0,
+								"connection_rate_limit": 0,
+								"request_rate_limit": 0,
+								"dns_query_interval": 3600,
+								"dns_query_down_interval": 5
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-host/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-host/{name}的响应数据",
+						"value": {
+							"name": "AI_oa_server_port_25_B",
+							"description": "example_string",
+							"type": "ADDRESS",
+							"address": "192.168.1.101",
+							"state": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"weight": 10,
+							"connection_limit": 0,
+							"connection_rate_limit": 0,
+							"request_rate_limit": 0,
+							"dns_query_interval": 3600,
+							"dns_query_down_interval": 5,
+							"associated_domain": ""
+						}
+					}
 				}
 			},
 			"put": {
@@ -164,6 +327,50 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_host_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-host",
+						"description": "修改指定的业务主机配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-host/{name}",
+							"body": {
+								"type": "ADDRESS",
+								"address": "192.168.1.101",
+								"state": "ENABLE",
+								"available_requirement": 0,
+								"weight": 10,
+								"connection_limit": 0,
+								"connection_rate_limit": 0,
+								"request_rate_limit": 0,
+								"dns_query_interval": 3600,
+								"dns_query_down_interval": 5
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-host/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-host/{name}的响应数据",
+						"value": {
+							"name": "oa_server_port_25",
+							"description": "example_string",
+							"type": "ADDRESS",
+							"address": "192.168.1.101",
+							"state": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"weight": 10,
+							"connection_limit": 0,
+							"connection_rate_limit": 0,
+							"request_rate_limit": 0,
+							"dns_query_interval": 3600,
+							"dns_query_down_interval": 5,
+							"associated_domain": ""
+						}
 					}
 				}
 			},
@@ -183,6 +390,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_host_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-host",
+						"description": "修改指定的业务主机配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-host/{name}",
+							"body": {
+								"type": "ADDRESS",
+								"address": "192.168.1.101",
+								"state": "ENABLE",
+								"available_requirement": 0,
+								"weight": 10,
+								"connection_limit": 0,
+								"connection_rate_limit": 0,
+								"request_rate_limit": 0,
+								"dns_query_interval": 3600,
+								"dns_query_down_interval": 5
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-host/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-host/{name}的响应数据",
+						"value": {
+							"name": "oa_server_port_25",
+							"description": "example_string",
+							"type": "ADDRESS",
+							"address": "192.168.1.101",
+							"state": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"weight": 10,
+							"connection_limit": 0,
+							"connection_rate_limit": 0,
+							"request_rate_limit": 0,
+							"dns_query_interval": 3600,
+							"dns_query_down_interval": 5,
+							"associated_domain": ""
+						}
+					}
 				}
 			},
 			"delete": {
@@ -195,6 +446,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_host_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-host",
+						"description": "删除指定的业务主机配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-host/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-host/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-host/{name}的响应数据",
+						"value": {
+							"name": "oa_server_port_25",
+							"description": "example_string",
+							"type": "ADDRESS",
+							"address": "192.168.1.101",
+							"state": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"weight": 10,
+							"connection_limit": 0,
+							"connection_rate_limit": 0,
+							"request_rate_limit": 0,
+							"dns_query_interval": 3600,
+							"dns_query_down_interval": 5,
+							"associated_domain": ""
+						}
 					}
 				}
 			}
@@ -343,10 +626,10 @@ module.exports ={
 					"minimum": 0
 				},
 				"weight": {
-					"description": "可选字段;指定业务主机的权重,取值范围为[1,100],默认为10",
+					"description": "可选字段;指定业务主机的权重,取值范围为[1,1000],默认为10",
 					"type": "integer",
 					"default": 10,
-					"maximum": 100,
+					"maximum": 1000,
 					"example": 10,
 					"minimum": 1
 				},

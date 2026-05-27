@@ -62,6 +62,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_data_center_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all data-center",
+						"description": "查看所有数据中心信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/dns/data-center/all/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/dns/data-center/all/ 响应",
+						"description": "返回GET /api/ad/v3/dns/data-center/all/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "localhost",
+									"description": "Shenzhen - Nanshan",
+									"site": "REMOTE",
+									"addresses": [
+										"200.200.1.1"
+									],
+									"port": 558,
+									"control_role": "ISOLATE",
+									"common_difference": 5,
+									"shared_secret": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -97,6 +134,32 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_data_center"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific data-center",
+						"description": "查看指定已有数据中心全部属性",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/dns/data-center/all/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/dns/data-center/all/{name} 响应",
+						"description": "返回GET /api/ad/v3/dns/data-center/all/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "Shenzhen - Nanshan",
+							"site": "REMOTE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 558,
+							"control_role": "ISOLATE",
+							"common_difference": 5,
+							"shared_secret": ""
+						}
 					}
 				}
 			},
@@ -142,6 +205,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_data_center_remote_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all remote data-center",
+						"description": "查看远端数据中心",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/dns/data-center/remote/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/dns/data-center/remote/ 响应",
+						"description": "返回GET /api/ad/v3/dns/data-center/remote/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "remote",
+									"description": "Shenzhen - Nanshan",
+									"site": "REMOTE",
+									"addresses": [
+										"200.200.1.1"
+									],
+									"port": 558
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -159,6 +256,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_data_center_remote"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new remote data-center",
+						"description": "创建远端数据中心",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/dns/data-center/remote/",
+							"body": {
+								"name": "AI_remote_A",
+								"site": "REMOTE",
+								"addresses": [
+									"200.200.1.1"
+								],
+								"port": 558
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/dns/data-center/remote/ 响应",
+						"description": "返回POST /api/ad/v3/dns/data-center/remote/的响应数据",
+						"value": {
+							"name": "AI_remote_A",
+							"description": "Shenzhen - Nanshan",
+							"site": "REMOTE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 558
+						}
 					}
 				}
 			},
@@ -178,6 +306,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_data_center_remote_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify remote data-center",
+						"description": "修改远端数据中心",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/dns/data-center/remote/",
+							"body": {
+								"name": "remote",
+								"site": "REMOTE",
+								"addresses": [
+									"200.200.1.1"
+								],
+								"port": 558
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/dns/data-center/remote/ 响应",
+						"description": "返回PATCH /api/ad/v3/dns/data-center/remote/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "remote",
+									"description": "Shenzhen - Nanshan",
+									"site": "REMOTE",
+									"addresses": [
+										"200.200.1.1"
+									],
+									"port": 558
+								}
+							]
+						}
 					}
 				}
 			}
@@ -209,6 +379,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_data_center_remote"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific remote data-center",
+						"description": "查看指定已有的远端数据中心",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/dns/data-center/remote/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/dns/data-center/remote/{name} 响应",
+						"description": "返回GET /api/ad/v3/dns/data-center/remote/{name}的响应数据",
+						"value": {
+							"name": "remote",
+							"description": "Shenzhen - Nanshan",
+							"site": "REMOTE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 558
+						}
+					}
 				}
 			},
 			"post": {
@@ -228,6 +421,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_data_center_remote"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new data-center",
+						"description": "创建远端数据中心",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/dns/data-center/remote/{name}",
+							"body": {
+								"name": "AI_remote_B",
+								"site": "REMOTE",
+								"addresses": [
+									"200.200.1.1"
+								],
+								"port": 558
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/dns/data-center/remote/{name} 响应",
+						"description": "返回POST /api/ad/v3/dns/data-center/remote/{name}的响应数据",
+						"value": {
+							"name": "AI_remote_B",
+							"description": "Shenzhen - Nanshan",
+							"site": "REMOTE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 558
+						}
+					}
 				}
 			},
 			"put": {
@@ -245,6 +469,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_data_center_remote"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific data-center",
+						"description": "修改指定已有的远端数据中心",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/dns/data-center/remote/{name}",
+							"body": {
+								"name": "remote",
+								"site": "REMOTE",
+								"addresses": [
+									"200.200.1.1"
+								],
+								"port": 558
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/dns/data-center/remote/{name} 响应",
+						"description": "返回PUT /api/ad/v3/dns/data-center/remote/{name}的响应数据",
+						"value": {
+							"name": "remote",
+							"description": "Shenzhen - Nanshan",
+							"site": "REMOTE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 558
+						}
 					}
 				}
 			},
@@ -264,6 +519,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_data_center_remote"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific data-center",
+						"description": "增量修改指定已有的远端数据中心",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/dns/data-center/remote/{name}",
+							"body": {
+								"name": "remote",
+								"site": "REMOTE",
+								"addresses": [
+									"200.200.1.1"
+								],
+								"port": 558
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/dns/data-center/remote/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/dns/data-center/remote/{name}的响应数据",
+						"value": {
+							"name": "remote",
+							"description": "Shenzhen - Nanshan",
+							"site": "REMOTE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 558
+						}
+					}
 				}
 			},
 			"delete": {
@@ -276,6 +562,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_data_center_remote"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific data-center",
+						"description": "删除指定已有的远端数据中心",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/dns/data-center/remote/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/dns/data-center/remote/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/dns/data-center/remote/{name}的响应数据",
+						"value": {
+							"name": "remote",
+							"description": "Shenzhen - Nanshan",
+							"site": "REMOTE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 558
+						}
 					}
 				}
 			},
@@ -322,6 +631,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_data_center_local"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get local data-center",
+						"description": "查看本地数据中心信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/dns/data-center/local"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/dns/data-center/local 响应",
+						"description": "返回GET /api/ad/v3/dns/data-center/local的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "Shenzhen - Nanshan",
+							"site": "LOCAL",
+							"addresses": [
+								{
+									"inner_ip": "example_string",
+									"internet_ip": "example_string"
+								}
+							],
+							"port": 558,
+							"control_role": "ISOLATE",
+							"common_difference": 5,
+							"shared_secret": "",
+							"pk_shared_secret": "example_string",
+							"encrypted_shared_secret": "A1B2C3D4"
+						}
+					}
 				}
 			},
 			"put": {
@@ -340,6 +680,44 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_data_center_local"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace local data-center",
+						"description": "修改本地数据中心信息",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/dns/data-center/local",
+							"body": {
+								"name": "localhost",
+								"site": "LOCAL",
+								"port": 558,
+								"control_role": "ISOLATE",
+								"common_difference": 5
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/dns/data-center/local 响应",
+						"description": "返回PUT /api/ad/v3/dns/data-center/local的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "Shenzhen - Nanshan",
+							"site": "LOCAL",
+							"addresses": [
+								{
+									"inner_ip": "example_string",
+									"internet_ip": "example_string"
+								}
+							],
+							"port": 558,
+							"control_role": "ISOLATE",
+							"common_difference": 5,
+							"shared_secret": "",
+							"pk_shared_secret": "example_string",
+							"encrypted_shared_secret": "A1B2C3D4"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -357,6 +735,44 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_data_center_local"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify local data-center",
+						"description": "增量修改本地数据中心信息",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/dns/data-center/local",
+							"body": {
+								"name": "localhost",
+								"site": "LOCAL",
+								"port": 558,
+								"control_role": "ISOLATE",
+								"common_difference": 5
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/dns/data-center/local 响应",
+						"description": "返回PATCH /api/ad/v3/dns/data-center/local的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "Shenzhen - Nanshan",
+							"site": "LOCAL",
+							"addresses": [
+								{
+									"inner_ip": "example_string",
+									"internet_ip": "example_string"
+								}
+							],
+							"port": 558,
+							"control_role": "ISOLATE",
+							"common_difference": 5,
+							"shared_secret": "",
+							"pk_shared_secret": "example_string",
+							"encrypted_shared_secret": "A1B2C3D4"
+						}
 					}
 				}
 			},

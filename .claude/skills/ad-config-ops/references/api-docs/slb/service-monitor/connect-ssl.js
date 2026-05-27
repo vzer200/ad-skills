@@ -65,6 +65,59 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_ssl_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-connect-ssl",
+						"description": "查看当前已有的监视器（CONNECT-SSL）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/connect-ssl/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/connect-ssl/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/connect-ssl/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "CONNECT-SSL",
+									"timeout": 16,
+									"interval": 5,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"host": "*",
+									"port": 0,
+									"debug_mode": "DISABLE",
+									"gateway_detect": "DISABLE",
+									"gm_sign_cert": "NONE",
+									"gm_enc_cert": "NONE",
+									"send_content": "GET / HTTP/1.1",
+									"receive_cache_size": 5120,
+									"receive_content_match": "200",
+									"reverse_result": "DISABLE",
+									"send_content_before_disconnect": "example_string",
+									"hexadecimal_mode": "DISABLE",
+									"ssl_cipher": "DEFAULT:+SHA:+kEDH",
+									"protocols": [
+										"SSLV3"
+									],
+									"certificate_type": "RSA_ECDSA",
+									"client_auth_state": "DISABLE",
+									"client_certificate": "NONE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +135,76 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_ssl_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-connect-ssl",
+						"description": "新建一个监视器（CONNECT-SSL）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/connect-ssl/",
+							"body": {
+								"name": "AI_http_connect_ssl_A",
+								"type": "CONNECT-SSL",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"gm_sign_cert": "NONE",
+								"gm_enc_cert": "NONE",
+								"receive_cache_size": 5120,
+								"reverse_result": "DISABLE",
+								"hexadecimal_mode": "DISABLE",
+								"ssl_cipher": "DEFAULT:+SHA:+kEDH",
+								"protocols": [
+									"SSLV3",
+									"TLS1.0",
+									"TLS1.1",
+									"TLS1.2",
+									"TLS1.3"
+								],
+								"certificate_type": "RSA_ECDSA",
+								"client_auth_state": "DISABLE",
+								"client_certificate": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/connect-ssl/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/connect-ssl/的响应数据",
+						"value": {
+							"name": "AI_http_connect_ssl_A",
+							"description": "example_string",
+							"type": "CONNECT-SSL",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"gm_sign_cert": "NONE",
+							"gm_enc_cert": "NONE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE",
+							"ssl_cipher": "DEFAULT:+SHA:+kEDH",
+							"protocols": [
+								"SSLV3"
+							],
+							"certificate_type": "RSA_ECDSA",
+							"client_auth_state": "DISABLE",
+							"client_certificate": "NONE"
+						}
 					}
 				}
 			},
@@ -130,6 +253,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_ssl_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-connect-ssl",
+						"description": "查看指定的监视器（CONNECT-SSL）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/connect-ssl/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/connect-ssl/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/connect-ssl/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-SSL",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"gm_sign_cert": "NONE",
+							"gm_enc_cert": "NONE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE",
+							"ssl_cipher": "DEFAULT:+SHA:+kEDH",
+							"protocols": [
+								"SSLV3"
+							],
+							"certificate_type": "RSA_ECDSA",
+							"client_auth_state": "DISABLE",
+							"client_certificate": "NONE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +314,76 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_ssl_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-connect-ssl",
+						"description": "新建指定的监视器（CONNECT-SSL）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/connect-ssl/{name}",
+							"body": {
+								"name": "AI_http_connect_ssl_B",
+								"type": "CONNECT-SSL",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"gm_sign_cert": "NONE",
+								"gm_enc_cert": "NONE",
+								"receive_cache_size": 5120,
+								"reverse_result": "DISABLE",
+								"hexadecimal_mode": "DISABLE",
+								"ssl_cipher": "DEFAULT:+SHA:+kEDH",
+								"protocols": [
+									"SSLV3",
+									"TLS1.0",
+									"TLS1.1",
+									"TLS1.2",
+									"TLS1.3"
+								],
+								"certificate_type": "RSA_ECDSA",
+								"client_auth_state": "DISABLE",
+								"client_certificate": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/connect-ssl/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/connect-ssl/{name}的响应数据",
+						"value": {
+							"name": "AI_http_connect_ssl_B",
+							"description": "example_string",
+							"type": "CONNECT-SSL",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"gm_sign_cert": "NONE",
+							"gm_enc_cert": "NONE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE",
+							"ssl_cipher": "DEFAULT:+SHA:+kEDH",
+							"protocols": [
+								"SSLV3"
+							],
+							"certificate_type": "RSA_ECDSA",
+							"client_auth_state": "DISABLE",
+							"client_certificate": "NONE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +401,76 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_ssl_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-connect-ssl",
+						"description": "修改指定的监视器（CONNECT-SSL）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/connect-ssl/{name}",
+							"body": {
+								"name": "http",
+								"type": "CONNECT-SSL",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"gm_sign_cert": "NONE",
+								"gm_enc_cert": "NONE",
+								"receive_cache_size": 5120,
+								"reverse_result": "DISABLE",
+								"hexadecimal_mode": "DISABLE",
+								"ssl_cipher": "DEFAULT:+SHA:+kEDH",
+								"protocols": [
+									"SSLV3",
+									"TLS1.0",
+									"TLS1.1",
+									"TLS1.2",
+									"TLS1.3"
+								],
+								"certificate_type": "RSA_ECDSA",
+								"client_auth_state": "DISABLE",
+								"client_certificate": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/connect-ssl/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/connect-ssl/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-SSL",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"gm_sign_cert": "NONE",
+							"gm_enc_cert": "NONE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE",
+							"ssl_cipher": "DEFAULT:+SHA:+kEDH",
+							"protocols": [
+								"SSLV3"
+							],
+							"certificate_type": "RSA_ECDSA",
+							"client_auth_state": "DISABLE",
+							"client_certificate": "NONE"
+						}
 					}
 				}
 			},
@@ -185,6 +490,76 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_ssl_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-connect-ssl",
+						"description": "修改指定的监视器（CONNECT-SSL）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/connect-ssl/{name}",
+							"body": {
+								"name": "http",
+								"type": "CONNECT-SSL",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"gm_sign_cert": "NONE",
+								"gm_enc_cert": "NONE",
+								"receive_cache_size": 5120,
+								"reverse_result": "DISABLE",
+								"hexadecimal_mode": "DISABLE",
+								"ssl_cipher": "DEFAULT:+SHA:+kEDH",
+								"protocols": [
+									"SSLV3",
+									"TLS1.0",
+									"TLS1.1",
+									"TLS1.2",
+									"TLS1.3"
+								],
+								"certificate_type": "RSA_ECDSA",
+								"client_auth_state": "DISABLE",
+								"client_certificate": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/connect-ssl/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/connect-ssl/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-SSL",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"gm_sign_cert": "NONE",
+							"gm_enc_cert": "NONE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE",
+							"ssl_cipher": "DEFAULT:+SHA:+kEDH",
+							"protocols": [
+								"SSLV3"
+							],
+							"certificate_type": "RSA_ECDSA",
+							"client_auth_state": "DISABLE",
+							"client_certificate": "NONE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +572,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_ssl_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-connect-ssl",
+						"description": "删除指定的监视器（CONNECT-SSL）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/connect-ssl/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/connect-ssl/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/connect-ssl/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-SSL",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"gm_sign_cert": "NONE",
+							"gm_enc_cert": "NONE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE",
+							"ssl_cipher": "DEFAULT:+SHA:+kEDH",
+							"protocols": [
+								"SSLV3"
+							],
+							"certificate_type": "RSA_ECDSA",
+							"client_auth_state": "DISABLE",
+							"client_certificate": "NONE"
+						}
 					}
 				}
 			}
@@ -464,6 +881,24 @@ module.exports ={
 					],
 					"minItems": 1,
 					"maxItems": 6
+				},
+				"certificate_type": {
+					"description": "证书类型,必须是RSA_ECDSA或者SM2",
+					"type": "string",
+					"enum": [
+						"RSA_ECDSA",
+						"SM2"
+					],
+					"default": "RSA_ECDSA"
+				},
+				"client_auth_state": {
+					"description": "是否开启客户端认证",
+					"type": "string",
+					"enum": [
+						"ENABLE",
+						"DISABLE"
+					],
+					"default": "DISABLE"
 				},
 				"client_certificate": {
 					"description": "可选参数;指定客户端证书,默认为none，表示不携带证书；或者通过资源管理模块创建/导入证书",

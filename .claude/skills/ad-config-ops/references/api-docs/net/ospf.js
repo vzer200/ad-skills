@@ -51,6 +51,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ospf_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get ospf",
+						"description": "获取ospf全局配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/ospf"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/ospf 响应",
+						"description": "返回GET /api/ad/v3/net/ospf的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"route_id": "6.6.6.6",
+							"area_id": "0",
+							"redistribute_default_route": "DISABLE",
+							"redistribute_static_route": "DISABLE",
+							"redistribute_rip": "DISABLE",
+							"metric_type_1_value": 10,
+							"networks": [
+								"1.1.1.0/24"
+							],
+							"connected_route_redispatch": "DISABLE",
+							"metric_type": 2,
+							"metric_value": 20,
+							"accept_non_as_route": "ENABLE",
+							"area_type": "NORMAL",
+							"log_level": "INFO"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +101,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ospf_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace ospf",
+						"description": "修改ospf全局配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/ospf",
+							"body": {
+								"state": "ENABLE",
+								"area_id": "0",
+								"redistribute_default_route": "DISABLE",
+								"redistribute_static_route": "DISABLE",
+								"redistribute_rip": "DISABLE",
+								"connected_route_redispatch": "DISABLE",
+								"metric_type": 2,
+								"metric_value": 20,
+								"accept_non_as_route": "ENABLE",
+								"area_type": "NORMAL",
+								"log_level": "INFO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/ospf 响应",
+						"description": "返回PUT /api/ad/v3/net/ospf的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"route_id": "6.6.6.6",
+							"area_id": "0",
+							"redistribute_default_route": "DISABLE",
+							"redistribute_static_route": "DISABLE",
+							"redistribute_rip": "DISABLE",
+							"metric_type_1_value": 10,
+							"networks": [
+								"1.1.1.0/24"
+							],
+							"connected_route_redispatch": "DISABLE",
+							"metric_type": 2,
+							"metric_value": 20,
+							"accept_non_as_route": "ENABLE",
+							"area_type": "NORMAL",
+							"log_level": "INFO"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +163,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ospf_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify ospf",
+						"description": "修改ospf全局配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/ospf",
+							"body": {
+								"state": "ENABLE",
+								"area_id": "0",
+								"redistribute_default_route": "DISABLE",
+								"redistribute_static_route": "DISABLE",
+								"redistribute_rip": "DISABLE",
+								"connected_route_redispatch": "DISABLE",
+								"metric_type": 2,
+								"metric_value": 20,
+								"accept_non_as_route": "ENABLE",
+								"area_type": "NORMAL",
+								"log_level": "INFO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/ospf 响应",
+						"description": "返回PATCH /api/ad/v3/net/ospf的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"route_id": "6.6.6.6",
+							"area_id": "0",
+							"redistribute_default_route": "DISABLE",
+							"redistribute_static_route": "DISABLE",
+							"redistribute_rip": "DISABLE",
+							"metric_type_1_value": 10,
+							"networks": [
+								"1.1.1.0/24"
+							],
+							"connected_route_redispatch": "DISABLE",
+							"metric_type": 2,
+							"metric_value": 20,
+							"accept_non_as_route": "ENABLE",
+							"area_type": "NORMAL",
+							"log_level": "INFO"
+						}
 					}
 				}
 			},

@@ -62,6 +62,21 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_banner_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all banner",
+						"description": "查看登录提示语",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/banner/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/banner/ 响应",
+						"description": "返回GET /api/ad/v3/sys/banner/的响应数据",
+						"value": {}
+					}
 				}
 			},
 			"put": {
@@ -80,6 +95,24 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_banner_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific banner",
+						"description": "修改登录提示语",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/banner/",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/banner/ 响应",
+						"description": "返回PUT /api/ad/v3/sys/banner/的响应数据",
+						"value": {
+							"banner_tip": "example_string"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -97,6 +130,24 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_banner_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific banner",
+						"description": "修改登录提示语",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/banner/",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/banner/ 响应",
+						"description": "返回PATCH /api/ad/v3/sys/banner/的响应数据",
+						"value": {
+							"banner_tip": "example_string"
+						}
 					}
 				}
 			},

@@ -62,6 +62,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_bridge_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all bridge statistics",
+						"description": "获取端口桥接信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/bridge"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/bridge 响应",
+						"description": "返回GET /api/ad/v3/stat/net/bridge的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "bridge_0",
+									"interfaces": [
+										{
+											"type": "PHYSICAL",
+											"interface": "NET2"
+										}
+									],
+									"stp": {
+										"state": "DISABLE",
+										"root_bridge_id": "16384.00:03:0f:01:0f:52",
+										"bridge_id": "32768 - 00:03:0f:01:0e:30"
+									}
+								}
+							]
+						}
+					}
 				}
 			}
 		}

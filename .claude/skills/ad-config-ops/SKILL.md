@@ -14,14 +14,19 @@ description: >
 - Default mode is generation only. Do not connect to real devices unless the user accepts real-device validation.
 - After generating a script and batch JSON, always ask whether to enter real-device validation.
 - If validation is requested, collect only device address plus username/password or token. Use HTTPS, `verify=False`, and Basic Auth by default.
+- If the user says to use `devices.json`, gives a device alias such as `AD1`, or asks to reuse the packaged device list, pass `--devices devices.json --device <alias>` to the device script instead of opening, printing, or manually copying secrets from `devices.json`. If the file contains multiple devices and the user did not choose one, ask for the device alias.
+- Device-capable scripts in this skill are `execute_plan.py`, `rollback.py`, `prepare_edit_template.py`, and `interface_adapter.py`; each accepts `--devices <path> --device <name>`. `--host` may be either `192.168.8.30` or `https://192.168.8.30`.
 - This `verify=False` default is intentional for the approved AD appliance integration workflow.
 - Current `scripts/execute_plan.py` preview mode is offline plan preview only; it returns without connecting, prompting for credentials, running precheck GETs, or mutating a device.
 - Do not claim a separate read-only device precheck mode exists unless it is implemented.
-- Every new AD-OPS user task must begin by initializing the runtime file environment with `scripts/init_env.py`; this is the skill's first operation, before lookup, template generation, planning, rendering, validation, apply, or rollback.
-    - Set `AD_OPS_WORKDIR` before running any AD-OPS script. If no host-managed directory is provided, use `./ad_ops_workdir`.
-- Run `init_env.py` once per user task. Do not rerun it inside the same task.
+- Every new AD-OPS create, modify/patch/replace, or delete workflow must begin by initializing the runtime file environment with `scripts/init_env.py`; this is the skill's first operation, before lookup, template generation, planning, rendering, validation, apply, or rollback.
+    - In WorkBot, keep `AD_OPS_WORKDIR` as an internal runtime directory such as `/tmp/ad-ops-workdir`; use `/opt/agent/data/outputs` only for user-downloadable outputs.
+    - In WorkBot, initialization must clean `/opt/agent/data/outputs` before starting the workflow so stale files from earlier prompts cannot remain downloadable.
+    - During the template-only stage in WorkBot, `/opt/agent/data/outputs` must contain only the downloadable `adops-bundle.yml`; do not leave lookup JSON, artifact JSON, env files, scripts, or other AD-OPS internals there.
+    - Outside WorkBot, set `AD_OPS_WORKDIR` before running any AD-OPS script. If no host-managed directory is provided, use `./ad_ops_workdir`.
+- Run `init_env.py` once per workflow start. Do not rerun it after the user uploads or finishes a YAML for the same workflow, because that would erase current workflow artifacts.
 - Always pass `--workdir "$AD_OPS_WORKDIR"` to AD-OPS scripts.
-- User-facing files, generated plans, scripts, results, and rollback files are all created under `AD_OPS_WORKDIR`.
+- User-facing files, generated plans, scripts, results, and rollback files are created under `AD_OPS_WORKDIR`; in WorkBot copy only the requested user-facing deliverable into `/opt/agent/data/outputs`.
 - Do not create any nested work directory inside `AD_OPS_WORKDIR`.
 - By default, scripts that can write large outputs should write files and print only short JSON summaries. Use explicit `--json`, `--summary`, `--out`, `--result-out`, or `--workdir` flags rather than routing large stdout back through the model.
 - For 修改场景 edit-template preparation and real-device snapshot/verification GETs, fetch only the selected resource path and include `all_properties=true` so the device returns all configuration fields.
@@ -34,17 +39,22 @@ description: >
 ## Deterministic Guardrails
 
 - Use scripts and files as the source of truth. Do not use values from chat history, previous turns, old artifacts, or memory as device state, API output, payload content, schema fields, enum values, verification results, or rollback state.
+- Treat every new create, modify/patch/replace, or delete request as a new ambiguity scope. Do not carry resource-type clarification answers from earlier workflows into the current workflow unless the user explicitly repeats that type in the current request.
+- Do not rewrite an ambiguous current request into a typed query before lookup. For example, if the current request says `创建虚拟服务，节点池，前置策略和http优化策略`, the `http` only determines the HTTP optimization profile; it does not determine the virtual service type or pre-rule type. Run lookup on the current raw intent and ask the returned virtual-service/pre-rule clarification questions.
 - Generated artifacts are opaque machine files. Never open, cat, sed, grep, summarize, parse, or paste generated bundle/plan/batch/apply/result/rollback artifacts for model-side analysis unless debugging the AD-OPS implementation itself.
 - Use script JSON summaries and `AD_OPS_WORKDIR/adops-artifacts.json` to pass file paths between steps. Do not read, paste, or summarize generated bundle, plan, batch, apply, result, or rollback files unless debugging AD-OPS itself.
 - Never ask another model, tool, or agent to parse AD-OPS intermediate files. If information is needed, run `scripts/ad_ops_flow.py status`, `scripts/ad_ops_flow.py summarize-plan`, `scripts/execute_plan.py`, or `scripts/rollback.py` and use only their short JSON stdout summaries.
 - Do not reuse an existing adops-plan.json, adops-batch.json, apply.py, adops-execute-result.json, or adops-rollback.json across user requests. After a new template is filled or a new device read is approved, regenerate downstream artifacts from the current bundle file under `AD_OPS_WORKDIR`.
 - All internal generated files must use the `adops-` prefix. `apply.py` is the only reusable user-facing exception; cleanup still treats it as an AD-OPS generated file.
-- If `init_env.py` reports residual AD-OPS generated artifacts at task start, ask the user whether to delete them. If the user agrees, rerun `init_env.py` with `--confirm-clean`; if the user refuses, stop the task and tell the user the workdir must be cleaned before continuing.
+- In WorkBot create/modify/delete workflows, clean stale generated files automatically by running `init_env.py` with `--confirm-clean --clean-output-dir`. Outside WorkBot, if `init_env.py` reports residual AD-OPS generated artifacts at task start, ask the user whether to delete them. If the user agrees, rerun `init_env.py` with `--confirm-clean`; if the user refuses, stop the task and tell the user the workdir must be cleaned before continuing.
 - Do not reuse a previous device address, username, password, or token unless the user explicitly provides it again or explicitly says to reuse it for the current run.
 - Do not guess API paths, schemas, request methods, path parameters, enum values, or required fields. Run `lookup_api.py`, `resolve_schema.py`, `render_template.py`, `render_bundle_template.py`, `prepare_edit_template.py`, and `plan_operations.py` as appropriate.
 - `lookup_api.py` has a deterministic exact-match layer before scoring: if `exact_terms` from `references/search/search-map-effective.json` match the user request, returned matches carry `match_source: exact` and must be trusted over scored fallback matches. Do not override exact hits with model judgment. Add or remove exact terms only through `references/search/search-map-overrides.json`; use `references/search/exact-match-review.yml` as the generated audit file.
 - If `lookup_api.py` returns `needs_clarification`, stop and ask the returned question and options. If the result contains `clarifications`, ask every question and option block in `clarifications` 一次性 in one user message; do not ask only the first ambiguity. Treat `reason: multiple_ambiguities` as a multi-family or multi-variant clarification response. Do not generate templates until the user chooses a precise resource or variant for every returned clarification. Treat `reason: ambiguous_resource_family` as a resource-family clarification, for example 网口 or 监视器; treat `reason: ambiguous_variant_family` as a variant-family clarification, for example 虚拟服务 service 类型.
+- A clarification answer is valid only for the workflow that asked it. If a later user message starts a new workflow and omits the type, ask again. Never say "the type was confirmed earlier" as the reason to skip clarification.
 - If `lookup_api.py` returns a selected match with `preset_fields`, pass each preset to template generation as `--preset key=value`, for example `--preset service=HTTP`; do not ask the user to fill an already determined variant field.
+- If the user answers a clarification with a concrete resource type such as `HTTP`, select the matching split document for every affected operation, for example `slb/virtual-service/http.js` and `slb/pre-rule/http.js`. These documents must render `service: HTTP` in their payloads.
+- Template rendering automatically prefills top-level single-value `service` or `type` discriminator fields from the selected schema/document, so users do not have to fill a type that was already determined by lookup or clarification.
 - For network resources whose template contains `interface` or `interfaces` fields, do not guess usable physical/Bond/VLAN/Bridge interface names. If the user wants device assistance, run `scripts/interface_adapter.py` and use only its short JSON summary to present candidate `interface.type` and `interface.interface` fill hints.
 - Multi-operation bundles must be dependency-sorted by scripts, not by model judgment. `render_bundle_template.py`, `plan_operations.py`, and `ad_ops_flow.py` use `scripts/dependency_order.py` plus `references/recipes/slb-basic.json`, covering all current SLB writable resource prefixes in `references/api-index.json`: create/patch/replace place unranked external resources first in user order, then SLB resources in dependency order; delete places SLB resources first in reverse dependency order, then unranked external resources in reverse user order. If a script reports mixed delete and non-delete operations, stop and report the error.
 - If a script fails, stop and report the short error. Do not handcraft a payload, plan, batch, result, rollback manifest, or verification conclusion to work around the failure.
@@ -56,7 +66,14 @@ description: >
 
 Run from the repository root. Each step below names the script that owns the behavior; do not replace script calls with model-side parsing, handcrafted payloads, or values remembered from earlier turns.
 
-Before any AD-OPS command, set the runtime directory. If the host product provides a work directory, set `AD_OPS_WORKDIR` to that path; otherwise use the default:
+Before any AD-OPS command, set the runtime directory. In WorkBot, keep runtime internals outside the downloadable outputs directory:
+
+```bash
+export AD_OPS_WORKDIR="${AD_OPS_WORKDIR:-/tmp/ad-ops-workdir}"
+export AD_OPS_OUTPUT_DIR=/opt/agent/data/outputs
+```
+
+If another host product provides a work directory, set `AD_OPS_WORKDIR` to that path; otherwise use the local default:
 
 ```bash
 export AD_OPS_WORKDIR="${AD_OPS_WORKDIR:-./ad_ops_workdir}"
@@ -64,23 +81,25 @@ export AD_OPS_WORKDIR="${AD_OPS_WORKDIR:-./ad_ops_workdir}"
 
 ### Step 0. Initialize Runtime
 
-Purpose: create the current task's artifact contract and detect stale AD-OPS files before any lookup, template, plan, apply, or rollback work.
+Purpose: create the current workflow's artifact contract and remove stale AD-OPS files before any lookup, template, plan, apply, or rollback work. This step is mandatory for every create, modify/patch/replace, and delete workflow.
 
-Run once at the start of each new user task:
+Run once at the start of each new WorkBot create/modify/delete workflow:
+
+```bash
+python3 skills/ad-config-ops/scripts/init_env.py --workdir "$AD_OPS_WORKDIR" --confirm-clean --clean-output-dir
+python3 skills/ad-config-ops/scripts/ad_ops_flow.py status --workdir "$AD_OPS_WORKDIR"
+```
+
+`init_env.py` cleans `AD_OPS_WORKDIR` generated artifacts and the WorkBot downloadable output directory. After Step 0, `/opt/agent/data/outputs` must be empty until the current workflow publishes its requested deliverable.
+
+Outside WorkBot, run once at the start of each new workflow:
 
 ```bash
 python3 skills/ad-config-ops/scripts/init_env.py --workdir "$AD_OPS_WORKDIR"
 python3 skills/ad-config-ops/scripts/ad_ops_flow.py status --workdir "$AD_OPS_WORKDIR"
 ```
 
-If `init_env.py` reports residual generated artifacts, ask the user whether to delete them. If the user agrees, run:
-
-```bash
-python3 skills/ad-config-ops/scripts/init_env.py --workdir "$AD_OPS_WORKDIR" --confirm-clean
-python3 skills/ad-config-ops/scripts/ad_ops_flow.py status --workdir "$AD_OPS_WORKDIR"
-```
-
-If the user refuses cleanup, stop the task. Do not rerun `init_env.py` later in the same task to switch files; use the paths in `AD_OPS_WORKDIR/adops-artifacts.json`.
+If the non-WorkBot command reports residual generated artifacts, ask the user whether to delete them. If the user agrees, rerun it with `--confirm-clean`; if the user refuses cleanup, stop the task. Do not rerun `init_env.py` later in the same workflow to switch files; use the paths in `AD_OPS_WORKDIR/adops-artifacts.json`.
 
 ### Step 1. Resolve API
 
@@ -92,14 +111,14 @@ Run lookup and use only the short JSON summary plus selected file paths:
 python3 skills/ad-config-ops/scripts/lookup_api.py --skill-root skills/ad-config-ops --query "<intent>" --module <module> --out "$AD_OPS_WORKDIR/adops-lookup.json" --summary
 ```
 
-If lookup returns matches with `match_source: exact`, use those exact matches first; do not substitute a scored fallback candidate. Examples: `HTTP虚拟服务` maps directly to `slb/virtual-service.js` with `service=HTTP`, `ICMP监视器` maps directly to `slb/service-monitor/icmp.js`, and `节点池` maps directly to `slb/pool.js`.
+If lookup returns matches with `match_source: exact`, use those exact matches first; do not substitute a scored fallback candidate. Examples: `HTTP虚拟服务` maps directly to `slb/virtual-service/http.js`, `ICMP监视器` maps directly to `slb/service-monitor/icmp.js`, and `节点池` maps directly to `slb/pool.js`.
 
 If lookup returns `needs_clarification`, stop the workflow and ask the returned question and options from the lookup summary. When the summary or saved lookup result contains `clarifications`, present all blocks in `clarifications` 一次性 as a compact selection template and require the user to choose one precise option for each block. `multiple_ambiguities` means the user request contains more than one ambiguous resource family or field variant. Do not generate templates until every returned clarification has a precise user choice; rerun lookup or template generation only after the precise resource or variant is known. `ambiguous_resource_family` covers resource families such as 网口 or 监视器. `ambiguous_variant_family` covers variant families such as 虚拟服务 service 类型.
 
-If lookup returns `preset_fields` on the selected match, convert every pair into a template preset. Example for an HTTP virtual service:
+If lookup returns `preset_fields` on the selected match, convert every pair into a template preset. For split documents such as HTTP virtual service, use the selected document directly; the template renderer prefills its single-value `service` field:
 
 ```bash
-python3 skills/ad-config-ops/scripts/render_template.py --skill-root skills/ad-config-ops --schema config.virtual_service --document slb/virtual-service.js --preset service=HTTP --out "$AD_OPS_WORKDIR/adops-bundle.yml" --workdir "$AD_OPS_WORKDIR"
+python3 skills/ad-config-ops/scripts/render_template.py --skill-root skills/ad-config-ops --schema config.virtual_service --document slb/virtual-service/http.js --out "$AD_OPS_WORKDIR/adops-bundle.yml" --workdir "$AD_OPS_WORKDIR"
 ```
 
 After Step 1, branch by intent. If the request is modify, patch, replace, or edit, run Step 2 and skip Step 3. If the request is create, run Step 3 and skip Step 2.
@@ -116,7 +135,7 @@ After the user approves the read, run:
 python3 skills/ad-config-ops/scripts/prepare_edit_template.py --skill-root skills/ad-config-ops --schema <schema> --document <document> --name <object-name> --host <ad-host:port> --username <user> --out "$AD_OPS_WORKDIR/adops-bundle.yml" --workdir "$AD_OPS_WORKDIR"
 ```
 
-Use `--token <token>` instead of `--username <user>` when the user provides a token. The script performs one GET for the selected resource with `all_properties=true`, then writes a full-field bundle YAML in API schema order with `action: patch` by default. Tell the user to edit `"$AD_OPS_WORKDIR/adops-bundle.yml"` and stop until they say it is filled.
+When the user selects a device from `devices.json`, use `--devices devices.json --device <alias>` instead of `--host/--username/--password`. Use `--token <token>` instead of `--username <user>` when the user provides a token. The script performs one GET for the selected resource with `all_properties=true`, then writes a full-field bundle YAML in API schema order with `action: patch` by default. Tell the user to edit `"$AD_OPS_WORKDIR/adops-bundle.yml"` and stop until they say it is filled.
 
 ### Step 3. Generate Create Template
 
@@ -134,7 +153,25 @@ For a multi-resource change, generate one bundle file with repeated `--operation
 python3 skills/ad-config-ops/scripts/render_bundle_template.py --skill-root skills/ad-config-ops --operation <id> <action> <schema> <document> --out "$AD_OPS_WORKDIR/adops-bundle.yml" --workdir "$AD_OPS_WORKDIR"
 ```
 
-Tell the user to fill `"$AD_OPS_WORKDIR/adops-bundle.yml"` and stop until they say it is filled. Do not read or summarize the YAML file contents.
+When the user has already clarified a type, append `KEY=VALUE` presets to each affected operation. Example for creating an HTTP pool, HTTP pre-rule, and HTTP virtual service:
+
+```bash
+python3 skills/ad-config-ops/scripts/render_bundle_template.py --skill-root skills/ad-config-ops \
+  --operation pool1 create config.pool slb/pool.js \
+  --operation policy1 create config.pre_rule_http slb/pre-rule/http.js \
+  --operation vs1 create config.virtual_service slb/virtual-service/http.js \
+  --out "$AD_OPS_WORKDIR/adops-bundle.yml" --workdir "$AD_OPS_WORKDIR"
+```
+
+In WorkBot template-only stages, publish only the bundle YAML to the downloadable outputs directory:
+
+```bash
+mkdir -p "$AD_OPS_OUTPUT_DIR"
+find "$AD_OPS_OUTPUT_DIR" -maxdepth 1 -type f \( -name 'adops-*' -o -name 'apply.py' -o -name 'rollback_apply.py' -o -name 'apply.sfcli' \) -delete
+cp "$AD_OPS_WORKDIR/adops-bundle.yml" "$AD_OPS_OUTPUT_DIR/adops-bundle.yml"
+```
+
+Tell the user to fill `"$AD_OPS_OUTPUT_DIR/adops-bundle.yml"` in WorkBot, or `"$AD_OPS_WORKDIR/adops-bundle.yml"` outside WorkBot, and stop until they say it is filled. Do not read or summarize the YAML file contents.
 
 For network interface/link resources, offer optional device-side interface assistance before the user fills the template. This is read-only but still connects to a real device, so ask whether to query available interfaces and collect only device address plus username/password or token. If approved, run:
 
@@ -142,7 +179,7 @@ For network interface/link resources, offer optional device-side interface assis
 python3 skills/ad-config-ops/scripts/interface_adapter.py --document <document> --host <ad-host:port> --username <user> --workdir "$AD_OPS_WORKDIR"
 ```
 
-Use `--token <token>` instead of `--username <user>` when applicable. The script maps known documents to adapter modules, including `net/link/lan.js -> net/link/lan/interface`, `net/link/wan.js -> net/link/wan/interface`, `net/link/pppoe.js -> net/link/pppoe/interface`, `net/bond.js -> net/bond/interfaces`, `net/vlan.js -> net/vlan/interface`, and `net/bridge.js -> net/bridge/interfaces`. It writes `"$AD_OPS_WORKDIR/adops-interface-adapter.json"` and prints a short summary with `fill_hints`; use those hints to tell the user how to fill `interface.type` and `interface.interface`. Do not open or parse `adops-interface-adapter.json` unless debugging AD-OPS itself.
+When the user selects a device from `devices.json`, use `--devices devices.json --device <alias>` instead of `--host/--username/--password`. Use `--token <token>` instead of `--username <user>` when applicable. The script maps known documents to adapter modules, including `net/link/lan.js -> net/link/lan/interface`, `net/link/wan.js -> net/link/wan/interface`, `net/link/pppoe.js -> net/link/pppoe/interface`, `net/bond.js -> net/bond/interfaces`, `net/vlan.js -> net/vlan/interface`, and `net/bridge.js -> net/bridge/interfaces`. It writes `"$AD_OPS_WORKDIR/adops-interface-adapter.json"` and prints a short summary with `fill_hints`; use those hints to tell the user how to fill `interface.type` and `interface.interface`. Do not open or parse `adops-interface-adapter.json` unless debugging AD-OPS itself.
 
 ### Step 4. Plan And Render
 
@@ -181,7 +218,7 @@ Collect only device address plus username/password or token if not already avail
 python3 skills/ad-config-ops/scripts/execute_plan.py --plan "$AD_OPS_WORKDIR/adops-plan.json" --host <ad-host:port> --username <user> --execute --result-out "$AD_OPS_WORKDIR/adops-execute-result.json" --rollback-out "$AD_OPS_WORKDIR/adops-rollback.json" --workdir "$AD_OPS_WORKDIR"
 ```
 
-Use `--token <token>` instead of `--username <user>` when applicable. The script performs real-device precheck GETs with `all_properties=true`, applies the plan, performs verification GETs with `all_properties=true`, compares results, creates the rollback manifest, and prints a short JSON summary.
+When the user selects a device from `devices.json`, use `--devices devices.json --device <alias>` instead of `--host/--username/--password`. Use `--token <token>` instead of `--username <user>` when applicable. The script performs real-device precheck GETs with `all_properties=true`, applies the plan, performs verification GETs with `all_properties=true`, compares results, creates the rollback manifest, and prints a short JSON summary.
 
 ### Step 7. User Verification
 
@@ -199,7 +236,7 @@ If the user requests rollback, run the rollback workflow without asking for a se
 python3 skills/ad-config-ops/scripts/rollback.py --manifest "$AD_OPS_WORKDIR/adops-rollback.json" --host <ad-host:port> --username <user> --execute --result-out "$AD_OPS_WORKDIR/adops-rollback-result.json" --workdir "$AD_OPS_WORKDIR"
 ```
 
-Use `--token <token>` instead of `--username <user>` when applicable. Rollback verification GETs also include `all_properties=true`.
+When the user selects a device from `devices.json`, use `--devices devices.json --device <alias>` instead of `--host/--username/--password`. Use `--token <token>` instead of `--username <user>` when applicable. Rollback verification GETs also include `all_properties=true`.
 
 ### Step 9. Finish With Final Deliverable
 

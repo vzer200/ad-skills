@@ -64,6 +64,57 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_all_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all ssl-certificate-all",
+						"description": "GET /api/ad/v3/rc/ssl-certificate/all/",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/all/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/all/ 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/all/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.abc.com_cert",
+									"description": "example_string",
+									"type": "CERTIFICATE-REQUEST",
+									"subject": {
+										"cn": "example_string",
+										"c": "example_string",
+										"ou": "example_string",
+										"o": "example_string",
+										"l": "example_string",
+										"st": "example_string",
+										"email": "example_string"
+									},
+									"public_key_algorithm": "RSA",
+									"public_key_length": 2048,
+									"signature_algorithm": "SHA256",
+									"validity_not_before": "example_string",
+									"validity_not_after": "example_string",
+									"password": "example_string",
+									"encrypted_password": "example_string",
+									"certificate_chains": [
+										"example_item"
+									],
+									"certificate_request_pem": "example_string",
+									"project": "common"
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -110,6 +161,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_all_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific ssl-certificate-all",
+						"description": "GET /api/ad/v3/rc/ssl-certificate/all/{name}",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/all/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/all/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/all/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "CERTIFICATE-REQUEST",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"certificate_request_pem": "example_string",
+							"project": "common"
+						}
+					}
 				}
 			}
 		},
@@ -142,6 +233,27 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_cgi_file_resource_response"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "export specific ssl-certificate-all file",
+						"description": "GET /api/ad/v3/rc/ssl-certificate/all/{name}/request",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/all/{name}/request"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/all/{name}/request 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/all/{name}/request的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
+					}
 				}
 			}
 		},
@@ -173,6 +285,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_cgi_file_resource_response"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "export specific ssl-certificate-all certificate file",
+						"description": "GET /api/ad/v3/rc/ssl-certificate/all/{name}/certificate/",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/all/{name}/certificate/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/all/{name}/certificate/ 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/all/{name}/certificate/的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
 					}
 				}
 			}

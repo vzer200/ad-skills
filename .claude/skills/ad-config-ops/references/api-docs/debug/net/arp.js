@@ -53,6 +53,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_arp_discover"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "arp discover",
+						"description": "批量获取ARP/ND",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/net/arp/discover",
+							"body": {
+								"link": "wan_1",
+								"ip_address": "192.168.1.12-192.168.2.1"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/net/arp/discover 响应",
+						"description": "返回POST /api/ad/v3/debug/net/arp/discover的响应数据",
+						"value": {
+							"arp_records": [
+								{
+									"ip_address": "192.168.1.12",
+									"mac_address": "00:10:b4:12:65:34",
+									"link": "WAN_2"
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

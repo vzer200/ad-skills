@@ -65,6 +65,63 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_self_signed_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all ssl-certificate-self-signed",
+						"description": "获取自签名证书配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/self-signed/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/self-signed/ 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/self-signed/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.abc.com_cert",
+									"description": "example_string",
+									"type": "SELF-SIGNED",
+									"subject": {
+										"cn": "example_string",
+										"c": "example_string",
+										"ou": "example_string",
+										"o": "example_string",
+										"l": "example_string",
+										"st": "example_string",
+										"email": "example_string",
+										"ou_list": [
+											"example_string"
+										]
+									},
+									"san_extensions": [
+										"example_item"
+									],
+									"public_key_algorithm": "RSA",
+									"public_key_length": 2048,
+									"signature_algorithm": "SHA256",
+									"validity_not_before": "example_string",
+									"validity_not_after": "example_string",
+									"password": "example_string",
+									"pk_password": "example_string",
+									"encrypted_password": "example_string",
+									"certificate_chains": [
+										"example_item"
+									],
+									"project": "example_string"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +139,63 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_self_signed_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ssl-certificate-self-signed",
+						"description": "新建自签名证书配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/ssl-certificate/self-signed/",
+							"body": {
+								"name": "AI_www.abc.com_cert_A",
+								"type": "SELF-SIGNED",
+								"subject": {
+									"cn": "example_string"
+								},
+								"public_key_algorithm": "RSA",
+								"public_key_length": 2048,
+								"signature_algorithm": "SHA256",
+								"validity_time_year": 5
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/ssl-certificate/self-signed/ 响应",
+						"description": "返回POST /api/ad/v3/rc/ssl-certificate/self-signed/的响应数据",
+						"value": {
+							"name": "AI_www.abc.com_cert_A",
+							"description": "example_string",
+							"type": "SELF-SIGNED",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string",
+								"ou_list": [
+									"example_string"
+								]
+							},
+							"san_extensions": [
+								"example_item"
+							],
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "example_string"
+						}
 					}
 				}
 			},
@@ -101,6 +215,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_self_signed_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify ssl-certificate-self-signed",
+						"description": "修改自签名证书配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/ssl-certificate/self-signed/",
+							"body": {
+								"name": "www.abc.com_cert"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/ssl-certificate/self-signed/ 响应",
+						"description": "返回PATCH /api/ad/v3/rc/ssl-certificate/self-signed/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.abc.com_cert",
+									"description": "example_string",
+									"type": "SELF-SIGNED",
+									"subject": {
+										"cn": "example_string",
+										"c": "example_string",
+										"ou": "example_string",
+										"o": "example_string",
+										"l": "example_string",
+										"st": "example_string",
+										"email": "example_string",
+										"ou_list": [
+											"example_string"
+										]
+									},
+									"san_extensions": [
+										"example_item"
+									],
+									"public_key_algorithm": "RSA",
+									"public_key_length": 2048,
+									"signature_algorithm": "SHA256",
+									"validity_not_before": "example_string",
+									"validity_not_after": "example_string",
+									"password": "example_string",
+									"pk_password": "example_string",
+									"encrypted_password": "example_string",
+									"certificate_chains": [
+										"example_item"
+									],
+									"project": "example_string"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -153,6 +327,52 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_self_signed_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific ssl-certificate-self-signed",
+						"description": "获取自签名证书配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/self-signed/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/self-signed/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/self-signed/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "SELF-SIGNED",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string",
+								"ou_list": [
+									"example_string"
+								]
+							},
+							"san_extensions": [
+								"example_item"
+							],
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "example_string"
+						}
+					}
 				}
 			},
 			"post": {
@@ -172,6 +392,63 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_self_signed_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ssl-certificate-self-signed",
+						"description": "新建自签名证书配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/ssl-certificate/self-signed/{name}",
+							"body": {
+								"name": "AI_www.abc.com_cert_B",
+								"type": "SELF-SIGNED",
+								"subject": {
+									"cn": "example_string"
+								},
+								"public_key_algorithm": "RSA",
+								"public_key_length": 2048,
+								"signature_algorithm": "SHA256",
+								"validity_time_year": 5
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/ssl-certificate/self-signed/{name} 响应",
+						"description": "返回POST /api/ad/v3/rc/ssl-certificate/self-signed/{name}的响应数据",
+						"value": {
+							"name": "AI_www.abc.com_cert_B",
+							"description": "example_string",
+							"type": "SELF-SIGNED",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string",
+								"ou_list": [
+									"example_string"
+								]
+							},
+							"san_extensions": [
+								"example_item"
+							],
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "example_string"
+						}
+					}
 				}
 			},
 			"put": {
@@ -189,6 +466,55 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_self_signed_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific ssl-certificate-self-signed",
+						"description": "修改自签名证书配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/rc/ssl-certificate/self-signed/{name}",
+							"body": {
+								"name": "www.abc.com_cert"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/rc/ssl-certificate/self-signed/{name} 响应",
+						"description": "返回PUT /api/ad/v3/rc/ssl-certificate/self-signed/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "SELF-SIGNED",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string",
+								"ou_list": [
+									"example_string"
+								]
+							},
+							"san_extensions": [
+								"example_item"
+							],
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "example_string"
+						}
 					}
 				}
 			},
@@ -208,6 +534,55 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_self_signed_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific ssl-certificate-self-signed",
+						"description": "修改自签名证书配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/ssl-certificate/self-signed/{name}",
+							"body": {
+								"name": "www.abc.com_cert"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/ssl-certificate/self-signed/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/rc/ssl-certificate/self-signed/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "SELF-SIGNED",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string",
+								"ou_list": [
+									"example_string"
+								]
+							},
+							"san_extensions": [
+								"example_item"
+							],
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "example_string"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -220,6 +595,52 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_self_signed_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific ssl-certificate-self-signed",
+						"description": "删除自签名证书配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/rc/ssl-certificate/self-signed/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/rc/ssl-certificate/self-signed/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/rc/ssl-certificate/self-signed/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "SELF-SIGNED",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string",
+								"ou_list": [
+									"example_string"
+								]
+							},
+							"san_extensions": [
+								"example_item"
+							],
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "example_string"
+						}
 					}
 				}
 			}
@@ -253,6 +674,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_cgi_file_resource_response"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "export specific ssl-certificate-self-signed file",
+						"description": "获取自签名证书的证书详情",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/self-signed/{name}/certificate/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/self-signed/{name}/certificate/ 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/self-signed/{name}/certificate/的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
 					}
 				}
 			}
@@ -478,7 +920,8 @@ module.exports ={
 						"SHA1",
 						"SM3",
 						"SHA384",
-						"SHA512"
+						"SHA512",
+						"SHA224"
 					]
 				},
 				"validity_not_before": {
@@ -652,7 +1095,8 @@ module.exports ={
 						"SHA1",
 						"SM3",
 						"SHA384",
-						"SHA512"
+						"SHA512",
+						"SHA224"
 					],
 					"default": "SHA256"
 				},

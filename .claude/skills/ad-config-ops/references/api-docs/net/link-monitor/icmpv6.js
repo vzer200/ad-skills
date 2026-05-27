@@ -62,6 +62,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_icmpv6_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all link-monitor-icmpv6",
+						"description": "查看ICMPV6链路健康检查配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link-monitor/icmpv6/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link-monitor/icmpv6/ 响应",
+						"description": "返回GET /api/ad/v3/net/link-monitor/icmpv6/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "ICMPV6",
+									"timeout": 16,
+									"interval": 5,
+									"host": "*",
+									"debug_mode": "DISABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +113,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_icmpv6_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new link-monitor-icmpv6",
+						"description": "新建ICMPV6链路健康检查配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/link-monitor/icmpv6/",
+							"body": {
+								"name": "AI_http_A",
+								"type": "ICMPV6",
+								"timeout": 16,
+								"interval": 5,
+								"host": "*",
+								"debug_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/link-monitor/icmpv6/ 响应",
+						"description": "返回POST /api/ad/v3/net/link-monitor/icmpv6/的响应数据",
+						"value": {
+							"name": "AI_http_A",
+							"description": "example_string",
+							"type": "ICMPV6",
+							"timeout": 16,
+							"interval": 5,
+							"host": "*",
+							"debug_mode": "DISABLE"
+						}
 					}
 				}
 			},
@@ -98,6 +163,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_icmpv6_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify link-monitor-icmpv6",
+						"description": "修改ICMPV6链路健康检查配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/link-monitor/icmpv6/",
+							"body": {
+								"name": "http",
+								"type": "ICMPV6",
+								"timeout": 16,
+								"interval": 5,
+								"host": "*",
+								"debug_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/link-monitor/icmpv6/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/link-monitor/icmpv6/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "ICMPV6",
+									"timeout": 16,
+									"interval": 5,
+									"host": "*",
+									"debug_mode": "DISABLE"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -151,6 +258,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_icmpv6_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific link-monitor-icmpv6",
+						"description": "查看指定ICMPV6链路健康检查配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link-monitor/icmpv6/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link-monitor/icmpv6/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/link-monitor/icmpv6/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "ICMPV6",
+							"timeout": 16,
+							"interval": 5,
+							"host": "*",
+							"debug_mode": "DISABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -170,6 +300,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_icmpv6_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new link-monitor-icmpv6",
+						"description": "新建ICMPV6链路健康检查配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/link-monitor/icmpv6/{name}",
+							"body": {
+								"name": "AI_http_B",
+								"type": "ICMPV6",
+								"timeout": 16,
+								"interval": 5,
+								"host": "*",
+								"debug_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/link-monitor/icmpv6/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/link-monitor/icmpv6/{name}的响应数据",
+						"value": {
+							"name": "AI_http_B",
+							"description": "example_string",
+							"type": "ICMPV6",
+							"timeout": 16,
+							"interval": 5,
+							"host": "*",
+							"debug_mode": "DISABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -187,6 +348,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_icmpv6_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific link-monitor-icmpv6",
+						"description": "替换指定ICMPV6链路健康检查配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/link-monitor/icmpv6/{name}",
+							"body": {
+								"name": "http",
+								"type": "ICMPV6",
+								"timeout": 16,
+								"interval": 5,
+								"host": "*",
+								"debug_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/link-monitor/icmpv6/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/link-monitor/icmpv6/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "ICMPV6",
+							"timeout": 16,
+							"interval": 5,
+							"host": "*",
+							"debug_mode": "DISABLE"
+						}
 					}
 				}
 			},
@@ -206,6 +398,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_icmpv6_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific link-monitor-icmpv6",
+						"description": "修改指定ICMPV6链路健康检查配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/link-monitor/icmpv6/{name}",
+							"body": {
+								"name": "http",
+								"type": "ICMPV6",
+								"timeout": 16,
+								"interval": 5,
+								"host": "*",
+								"debug_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/link-monitor/icmpv6/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/link-monitor/icmpv6/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "ICMPV6",
+							"timeout": 16,
+							"interval": 5,
+							"host": "*",
+							"debug_mode": "DISABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -218,6 +441,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_icmpv6_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific link-monitor-icmpv6",
+						"description": "删除指定ICMPV6链路健康检查配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/link-monitor/icmpv6/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/link-monitor/icmpv6/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/link-monitor/icmpv6/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "ICMPV6",
+							"timeout": 16,
+							"interval": 5,
+							"host": "*",
+							"debug_mode": "DISABLE"
+						}
 					}
 				}
 			}

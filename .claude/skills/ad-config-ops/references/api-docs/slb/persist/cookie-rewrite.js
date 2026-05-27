@@ -65,6 +65,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_rewrite_cookie_rewrite_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all persist-cookie-rewrite-cookie-rewrite",
+						"description": "查看已有会话保持（改写cookie）配置信息列表",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/persist/cookie-rewrite/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/persist/cookie-rewrite/ 响应",
+						"description": "返回GET /api/ad/v3/slb/persist/cookie-rewrite/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "cookie_passive",
+									"description": "",
+									"type": "COOKIE-REWRITE",
+									"cookie": "sangfor_ad",
+									"http_only": "DISABLE",
+									"secure": "DISABLE",
+									"cookie_encryption": {
+										"state": "DISABLE",
+										"accept_plaintext": "ENABLE",
+										"password": "abcd1234",
+										"pk_password": "A1B2C3D4",
+										"encrypted_password": "A1B2C3D4"
+									},
+									"session_persist_synchronize": "ENABLE",
+									"busy_protect": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +124,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_rewrite_cookie_rewrite_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new persist-cookie-rewrite-cookie-rewrite",
+						"description": "新建会话保持（改写cookie）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/persist/cookie-rewrite/",
+							"body": {
+								"name": "AI_cookie_passive_cookie_rewrite_A",
+								"type": "COOKIE-REWRITE",
+								"cookie": "sangfor_ad",
+								"http_only": "DISABLE",
+								"secure": "DISABLE",
+								"session_persist_synchronize": "ENABLE",
+								"busy_protect": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/persist/cookie-rewrite/ 响应",
+						"description": "返回POST /api/ad/v3/slb/persist/cookie-rewrite/的响应数据",
+						"value": {
+							"name": "AI_cookie_passive_cookie_rewrite_A",
+							"description": "",
+							"type": "COOKIE-REWRITE",
+							"cookie": "sangfor_ad",
+							"http_only": "DISABLE",
+							"secure": "DISABLE",
+							"cookie_encryption": {
+								"state": "DISABLE",
+								"accept_plaintext": "ENABLE",
+								"password": "abcd1234",
+								"pk_password": "A1B2C3D4",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"session_persist_synchronize": "ENABLE",
+							"busy_protect": "ENABLE"
+						}
 					}
 				}
 			},
@@ -130,6 +212,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_rewrite_cookie_rewrite_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific persist-cookie-rewrite-cookie-rewrite",
+						"description": "查看指定会话保持（改写cookie）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/persist/cookie-rewrite/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/persist/cookie-rewrite/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/persist/cookie-rewrite/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "COOKIE-REWRITE",
+							"cookie": "sangfor_ad",
+							"http_only": "DISABLE",
+							"secure": "DISABLE",
+							"cookie_encryption": {
+								"state": "DISABLE",
+								"accept_plaintext": "ENABLE",
+								"password": "abcd1234",
+								"pk_password": "A1B2C3D4",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"session_persist_synchronize": "ENABLE",
+							"busy_protect": "ENABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +262,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_rewrite_cookie_rewrite_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new persist-cookie-rewrite-cookie-rewrite",
+						"description": "新建会话保持（改写cookie）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/persist/cookie-rewrite/{name}",
+							"body": {
+								"name": "AI_cookie_passive_cookie_rewrite_B",
+								"type": "COOKIE-REWRITE",
+								"cookie": "sangfor_ad",
+								"http_only": "DISABLE",
+								"secure": "DISABLE",
+								"session_persist_synchronize": "ENABLE",
+								"busy_protect": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/persist/cookie-rewrite/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/persist/cookie-rewrite/{name}的响应数据",
+						"value": {
+							"name": "AI_cookie_passive_cookie_rewrite_B",
+							"description": "",
+							"type": "COOKIE-REWRITE",
+							"cookie": "sangfor_ad",
+							"http_only": "DISABLE",
+							"secure": "DISABLE",
+							"cookie_encryption": {
+								"state": "DISABLE",
+								"accept_plaintext": "ENABLE",
+								"password": "abcd1234",
+								"pk_password": "A1B2C3D4",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"session_persist_synchronize": "ENABLE",
+							"busy_protect": "ENABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +319,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_rewrite_cookie_rewrite_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific persist-cookie-rewrite-cookie-rewrite",
+						"description": "修改指定会话保持（改写cookie）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/persist/cookie-rewrite/{name}",
+							"body": {
+								"name": "cookie_passive",
+								"type": "COOKIE-REWRITE",
+								"cookie": "sangfor_ad",
+								"http_only": "DISABLE",
+								"secure": "DISABLE",
+								"session_persist_synchronize": "ENABLE",
+								"busy_protect": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/persist/cookie-rewrite/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/persist/cookie-rewrite/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "COOKIE-REWRITE",
+							"cookie": "sangfor_ad",
+							"http_only": "DISABLE",
+							"secure": "DISABLE",
+							"cookie_encryption": {
+								"state": "DISABLE",
+								"accept_plaintext": "ENABLE",
+								"password": "abcd1234",
+								"pk_password": "A1B2C3D4",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"session_persist_synchronize": "ENABLE",
+							"busy_protect": "ENABLE"
+						}
 					}
 				}
 			},
@@ -185,6 +378,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_rewrite_cookie_rewrite_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific persist-cookie-rewrite-cookie-rewrite",
+						"description": "修改指定会话保持（改写cookie）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/persist/cookie-rewrite/{name}",
+							"body": {
+								"name": "cookie_passive",
+								"type": "COOKIE-REWRITE",
+								"cookie": "sangfor_ad",
+								"http_only": "DISABLE",
+								"secure": "DISABLE",
+								"session_persist_synchronize": "ENABLE",
+								"busy_protect": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/persist/cookie-rewrite/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/persist/cookie-rewrite/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "COOKIE-REWRITE",
+							"cookie": "sangfor_ad",
+							"http_only": "DISABLE",
+							"secure": "DISABLE",
+							"cookie_encryption": {
+								"state": "DISABLE",
+								"accept_plaintext": "ENABLE",
+								"password": "abcd1234",
+								"pk_password": "A1B2C3D4",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"session_persist_synchronize": "ENABLE",
+							"busy_protect": "ENABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +430,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_rewrite_cookie_rewrite_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific persist-cookie-rewrite-cookie-rewrite",
+						"description": "删除指定会话保持（改写cookie）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/persist/cookie-rewrite/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/persist/cookie-rewrite/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/persist/cookie-rewrite/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "COOKIE-REWRITE",
+							"cookie": "sangfor_ad",
+							"http_only": "DISABLE",
+							"secure": "DISABLE",
+							"cookie_encryption": {
+								"state": "DISABLE",
+								"accept_plaintext": "ENABLE",
+								"password": "abcd1234",
+								"pk_password": "A1B2C3D4",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"session_persist_synchronize": "ENABLE",
+							"busy_protect": "ENABLE"
+						}
 					}
 				}
 			}
@@ -393,7 +657,7 @@ module.exports ={
 					"example": "ENABLE"
 				},
 				"busy_protect": {
-					"description": "可选参数；指定繁忙保护的开关，disable表示禁用，enable表示启用；默认禁用。",
+					"description": "可选参数；指定繁忙保护的开关，disable表示禁用，enable表示启用；默认启用。",
 					"type": "string",
 					"enum": [
 						"ENABLE",

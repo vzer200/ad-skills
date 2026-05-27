@@ -65,6 +65,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_dns_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-dns",
+						"description": "查看当前已有的监视器（DNS）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/dns/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/dns/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/dns/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "DNS",
+									"timeout": 16,
+									"interval": 5,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"records_type": "AUTO",
+									"host": "*",
+									"port": 0,
+									"debug_mode": "DISABLE",
+									"gateway_detect": "DISABLE",
+									"dns_query_domain": "www.abc.com",
+									"expect_dns_answer": "*"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +123,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_dns_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-dns",
+						"description": "新建一个监视器（DNS）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/dns/",
+							"body": {
+								"name": "AI_http_dns_A",
+								"type": "DNS",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"records_type": "AUTO",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"dns_query_domain": "www.abc.com",
+								"expect_dns_answer": "*"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/dns/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/dns/的响应数据",
+						"value": {
+							"name": "AI_http_dns_A",
+							"description": "example_string",
+							"type": "DNS",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"records_type": "AUTO",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"dns_query_domain": "www.abc.com",
+							"expect_dns_answer": "*"
+						}
 					}
 				}
 			},
@@ -130,6 +216,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_dns_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-dns",
+						"description": "查看指定的监视器（DNS）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/dns/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/dns/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/dns/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "DNS",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"records_type": "AUTO",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"dns_query_domain": "www.abc.com",
+							"expect_dns_answer": "*"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +265,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_dns_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-dns",
+						"description": "新建指定的监视器（DNS）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/dns/{name}",
+							"body": {
+								"name": "AI_http_dns_B",
+								"type": "DNS",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"records_type": "AUTO",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"dns_query_domain": "www.abc.com",
+								"expect_dns_answer": "*"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/dns/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/dns/{name}的响应数据",
+						"value": {
+							"name": "AI_http_dns_B",
+							"description": "example_string",
+							"type": "DNS",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"records_type": "AUTO",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"dns_query_domain": "www.abc.com",
+							"expect_dns_answer": "*"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +327,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_dns_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-dns",
+						"description": "修改指定的监视器（DNS）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/dns/{name}",
+							"body": {
+								"name": "http",
+								"type": "DNS",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"records_type": "AUTO",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"dns_query_domain": "www.abc.com",
+								"expect_dns_answer": "*"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/dns/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/dns/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "DNS",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"records_type": "AUTO",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"dns_query_domain": "www.abc.com",
+							"expect_dns_answer": "*"
+						}
 					}
 				}
 			},
@@ -185,6 +391,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_dns_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-dns",
+						"description": "修改指定的监视器（DNS）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/dns/{name}",
+							"body": {
+								"name": "http",
+								"type": "DNS",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"records_type": "AUTO",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"dns_query_domain": "www.abc.com",
+								"expect_dns_answer": "*"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/dns/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/dns/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "DNS",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"records_type": "AUTO",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"dns_query_domain": "www.abc.com",
+							"expect_dns_answer": "*"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +448,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_dns_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-dns",
+						"description": "删除指定的监视器（DNS）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/dns/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/dns/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/dns/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "DNS",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"records_type": "AUTO",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"dns_query_domain": "www.abc.com",
+							"expect_dns_answer": "*"
+						}
 					}
 				}
 			}

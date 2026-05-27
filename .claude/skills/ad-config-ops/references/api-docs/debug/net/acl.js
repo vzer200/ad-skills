@@ -40,7 +40,24 @@ module.exports ={
 				],
 				"summary": "clear acl hit",
 				"description": "重置ACL命中数统计",
-				"operationId": "clear_acl_hit"
+				"operationId": "clear_acl_hit",
+				"x-examples": {
+					"request": {
+						"summary": "clear acl hit",
+						"description": "重置ACL命中数统计",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/net/acl/reset"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/net/acl/reset 响应",
+						"description": "返回POST /api/ad/v3/debug/net/acl/reset的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

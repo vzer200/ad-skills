@@ -59,6 +59,30 @@ module.exports ={
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "start a maintenance operation",
+						"description": "执行系统维护操作",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/maintenance/{operation}",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/maintenance/{operation} 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/maintenance/{operation}的响应数据",
+						"value": {
+							"event_id": 0,
+							"operation": "/debug/sys/maintenance/restart-service",
+							"state": "WAITING",
+							"start_time": "2018-04-02 08:30:21",
+							"finish_time": "2018-04-02 08:31:05",
+							"triggered_by": "admin",
+							"data": {}
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

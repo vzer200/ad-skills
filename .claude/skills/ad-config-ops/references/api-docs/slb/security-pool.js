@@ -65,6 +65,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_security_pool_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all security-pools",
+						"description": "查看安全资源池配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/security-pool/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/security-pool/ 响应",
+						"description": "返回GET /api/ad/v3/slb/security-pool/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "security_pool_1",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "SECURITY",
+									"security_type": "NGFW",
+									"method": "WEIGHTED-LEAST-CONNECTIONS",
+									"priority_level_available_node": 0,
+									"bypass": "ENABLE",
+									"connection_statistic": "COMPLETED",
+									"port_map": 0,
+									"service_monitors": [
+										"ping"
+									],
+									"snat": "DISABLE",
+									"snat_pool": "example_string",
+									"available_requirement": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +125,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_security_pool_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new security-pool",
+						"description": "新建安全资源池配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/security-pool/",
+							"body": {
+								"name": "AI_security_pool_1_A",
+								"state": "ENABLE",
+								"type": "SECURITY",
+								"security_type": "NGFW",
+								"method": "WEIGHTED-LEAST-CONNECTIONS",
+								"priority_level_available_node": 0,
+								"bypass": "ENABLE",
+								"connection_statistic": "COMPLETED",
+								"port_map": 0,
+								"snat": "DISABLE",
+								"available_requirement": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/security-pool/ 响应",
+						"description": "返回POST /api/ad/v3/slb/security-pool/的响应数据",
+						"value": {
+							"name": "AI_security_pool_1_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "SECURITY",
+							"security_type": "NGFW",
+							"method": "WEIGHTED-LEAST-CONNECTIONS",
+							"priority_level_available_node": 0,
+							"bypass": "ENABLE",
+							"connection_statistic": "COMPLETED",
+							"port_map": 0,
+							"service_monitors": [
+								"ping"
+							],
+							"snat": "DISABLE",
+							"snat_pool": "example_string",
+							"available_requirement": 0
+						}
 					}
 				}
 			}
@@ -113,6 +201,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_security_pool_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pool",
+						"description": "查看指定的资源设备池配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/security-pool/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/security-pool/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/security-pool/{name}的响应数据",
+						"value": {
+							"name": "security_pool_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "SECURITY",
+							"security_type": "NGFW",
+							"method": "WEIGHTED-LEAST-CONNECTIONS",
+							"priority_level_available_node": 0,
+							"bypass": "ENABLE",
+							"connection_statistic": "COMPLETED",
+							"port_map": 0,
+							"service_monitors": [
+								"ping"
+							],
+							"snat": "DISABLE",
+							"snat_pool": "example_string",
+							"available_requirement": 0
+						}
+					}
 				}
 			},
 			"put": {
@@ -130,6 +250,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_security_pool_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific security-pool",
+						"description": "修改指定的安全资源池配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/security-pool/{name}",
+							"body": {
+								"name": "security_pool_1",
+								"state": "ENABLE",
+								"type": "SECURITY",
+								"security_type": "NGFW",
+								"method": "WEIGHTED-LEAST-CONNECTIONS",
+								"priority_level_available_node": 0,
+								"bypass": "ENABLE",
+								"connection_statistic": "COMPLETED",
+								"port_map": 0,
+								"snat": "DISABLE",
+								"available_requirement": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/security-pool/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/security-pool/{name}的响应数据",
+						"value": {
+							"name": "security_pool_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "SECURITY",
+							"security_type": "NGFW",
+							"method": "WEIGHTED-LEAST-CONNECTIONS",
+							"priority_level_available_node": 0,
+							"bypass": "ENABLE",
+							"connection_statistic": "COMPLETED",
+							"port_map": 0,
+							"service_monitors": [
+								"ping"
+							],
+							"snat": "DISABLE",
+							"snat_pool": "example_string",
+							"available_requirement": 0
+						}
 					}
 				}
 			},
@@ -149,6 +314,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_security_pool_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific security-pool",
+						"description": "修改指定的安全资源池配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/security-pool/{name}",
+							"body": {
+								"name": "security_pool_1",
+								"state": "ENABLE",
+								"type": "SECURITY",
+								"security_type": "NGFW",
+								"method": "WEIGHTED-LEAST-CONNECTIONS",
+								"priority_level_available_node": 0,
+								"bypass": "ENABLE",
+								"connection_statistic": "COMPLETED",
+								"port_map": 0,
+								"snat": "DISABLE",
+								"available_requirement": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/security-pool/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/security-pool/{name}的响应数据",
+						"value": {
+							"name": "security_pool_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "SECURITY",
+							"security_type": "NGFW",
+							"method": "WEIGHTED-LEAST-CONNECTIONS",
+							"priority_level_available_node": 0,
+							"bypass": "ENABLE",
+							"connection_statistic": "COMPLETED",
+							"port_map": 0,
+							"service_monitors": [
+								"ping"
+							],
+							"snat": "DISABLE",
+							"snat_pool": "example_string",
+							"available_requirement": 0
+						}
+					}
 				}
 			},
 			"delete": {
@@ -161,6 +371,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_security_pool_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific security-pool",
+						"description": "删除指定的安全设备池",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/security-pool/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/security-pool/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/security-pool/{name}的响应数据",
+						"value": {
+							"name": "security_pool_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "SECURITY",
+							"security_type": "NGFW",
+							"method": "WEIGHTED-LEAST-CONNECTIONS",
+							"priority_level_available_node": 0,
+							"bypass": "ENABLE",
+							"connection_statistic": "COMPLETED",
+							"port_map": 0,
+							"service_monitors": [
+								"ping"
+							],
+							"snat": "DISABLE",
+							"snat_pool": "example_string",
+							"available_requirement": 0
+						}
 					}
 				}
 			}

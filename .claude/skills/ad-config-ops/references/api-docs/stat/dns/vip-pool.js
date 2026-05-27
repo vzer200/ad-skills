@@ -59,6 +59,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_vip_pool_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all vip-pool statistics",
+						"description": "查询虚拟IP池的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/vip-pool/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/vip-pool/ 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/vip-pool/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vip_pool_1",
+									"area": "GLOBAL",
+									"vip": {
+										"total": 4,
+										"health": {
+											"normal": [
+												"192.168.1.1:8080"
+											],
+											"busy": [
+												"192.168.1.1:8080"
+											],
+											"failure": [
+												"192.168.1.4:80"
+											]
+										}
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -99,6 +142,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_vip_pool_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get local vip-pool statistics",
+						"description": "查询本地虚拟IP池的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/vip-pool/local"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/vip-pool/local 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/vip-pool/local的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vip_pool_1",
+									"area": "GLOBAL",
+									"vip": {
+										"total": 4,
+										"health": {
+											"normal": [
+												"192.168.1.1:8080"
+											],
+											"busy": [
+												"192.168.1.1:8080"
+											],
+											"failure": [
+												"192.168.1.4:80"
+											]
+										}
+									}
+								}
+							]
+						}
 					}
 				}
 			},
@@ -141,6 +227,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_vip_pool_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get global vip-pool statistics",
+						"description": "查询全局虚拟IP池的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/vip-pool/global"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/vip-pool/global 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/vip-pool/global的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vip_pool_1",
+									"area": "GLOBAL",
+									"vip": {
+										"total": 4,
+										"health": {
+											"normal": [
+												"192.168.1.1:8080"
+											],
+											"busy": [
+												"192.168.1.1:8080"
+											],
+											"failure": [
+												"192.168.1.4:80"
+											]
+										}
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -182,6 +311,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_vip_pool_single"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get vip-pool state",
+						"description": "查询虚拟IP池的状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/vip-pool/single/{dns_config_area}/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/vip-pool/single/{dns_config_area}/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/vip-pool/single/{dns_config_area}/{name}的响应数据",
+						"value": {
+							"name": "vip_pool_1",
+							"vip_pool_health": "normal",
+							"area": "GLOBAL",
+							"items": [
+								{
+									"ip": "1.1.1.1",
+									"offline_reason": "ONLINE_STATE_MONITOR_OFF",
+									"proto": 6,
+									"port": 6,
+									"health": "normal",
+									"name": "1.1.1.1_1_TCP"
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -220,6 +378,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_vip_pool"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific vip-pool statistics",
+						"description": "查询指定虚拟IP池的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/vip-pool/{dns_config_area}/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/vip-pool/{dns_config_area}/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/vip-pool/{dns_config_area}/{name}的响应数据",
+						"value": {
+							"name": "vip_pool_1",
+							"area": "GLOBAL",
+							"vip": {
+								"total": 4,
+								"health": {
+									"normal": [
+										"192.168.1.1:8080"
+									],
+									"busy": [
+										"192.168.1.1:8080"
+									],
+									"failure": [
+										"192.168.1.4:80"
+									]
+								}
+							}
+						}
 					}
 				}
 			},
@@ -267,6 +457,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_vip_pool_vip_detail_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific vip-pool statistics",
+						"description": "查询指定虚拟IP池的指定vip的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/vip-pool/{dns_config_area}/{name}/vips/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/vip-pool/{dns_config_area}/{name}/vips/ 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/vip-pool/{dns_config_area}/{name}/vips/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "192.168.1.1:8080",
+									"health": "NORMAL",
+									"failure_reason": "",
+									"connection": null,
+									"upstream_throughput": null,
+									"downstream_throughput": null
+								}
+							]
+						}
 					}
 				}
 			},

@@ -62,6 +62,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_bgp_neighbors_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get bgp-neighbors table",
+						"description": "获取bgp邻居表",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/bgp-neighbors"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/bgp-neighbors 响应",
+						"description": "返回GET /api/ad/v3/stat/net/bgp-neighbors的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"neighbor_ip": "192.200.200.22",
+									"neighbor_as": 421354,
+									"communication_state": "Established(00:00:08)",
+									"local_address": "192.200.200.117:179",
+									"neighbor_address": "192.200.200.22:43500",
+									"type": "EBGP"
+								}
+							]
+						}
+					}
 				}
 			}
 		}

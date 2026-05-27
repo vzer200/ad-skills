@@ -62,6 +62,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vlan_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all vlan",
+						"description": "查看VLAN子接口配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/vlan/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/vlan/ 响应",
+						"description": "返回GET /api/ad/v3/net/vlan/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "myvlan6",
+									"description": "example_string",
+									"interface": {
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									},
+									"vlan_id": 6,
+									"device_name": "eth2.6",
+									"mac_address": "example_string",
+									"create_by_virtual_wire": true
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +116,40 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vlan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new vlan",
+						"description": "新建VLAN子接口配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/vlan/",
+							"body": {
+								"name": "AI_myvlan6_A",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "NET1"
+								},
+								"vlan_id": 6
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/vlan/ 响应",
+						"description": "返回POST /api/ad/v3/net/vlan/的响应数据",
+						"value": {
+							"name": "AI_myvlan6_A",
+							"description": "example_string",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"vlan_id": 6,
+							"device_name": "eth2.6",
+							"mac_address": "example_string",
+							"create_by_virtual_wire": true
+						}
 					}
 				}
 			},
@@ -98,6 +169,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vlan_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify vlan",
+						"description": "修改VLAN子接口配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/vlan/",
+							"body": {
+								"name": "myvlan6",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "NET1"
+								},
+								"vlan_id": 6
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/vlan/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/vlan/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "myvlan6",
+									"description": "example_string",
+									"interface": {
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									},
+									"vlan_id": 6,
+									"device_name": "eth2.6",
+									"mac_address": "example_string",
+									"create_by_virtual_wire": true
+								}
+							]
+						}
 					}
 				}
 			},
@@ -151,6 +267,32 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vlan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific vlan",
+						"description": "查看指定VLAN子接口配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/vlan/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/vlan/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/vlan/{name}的响应数据",
+						"value": {
+							"name": "myvlan6",
+							"description": "example_string",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"vlan_id": 6,
+							"device_name": "eth2.6",
+							"mac_address": "example_string",
+							"create_by_virtual_wire": true
+						}
+					}
 				}
 			},
 			"post": {
@@ -170,6 +312,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vlan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new vlan",
+						"description": "新建VLAN子接口配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/vlan/{name}",
+							"body": {
+								"name": "AI_myvlan6_B",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "NET1"
+								},
+								"vlan_id": 6
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/vlan/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/vlan/{name}的响应数据",
+						"value": {
+							"name": "AI_myvlan6_B",
+							"description": "example_string",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"vlan_id": 6,
+							"device_name": "eth2.6",
+							"mac_address": "example_string",
+							"create_by_virtual_wire": true
+						}
+					}
 				}
 			},
 			"put": {
@@ -187,6 +363,40 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vlan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific vlan",
+						"description": "替换指定VLAN子接口配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/vlan/{name}",
+							"body": {
+								"name": "myvlan6",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "NET1"
+								},
+								"vlan_id": 6
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/vlan/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/vlan/{name}的响应数据",
+						"value": {
+							"name": "myvlan6",
+							"description": "example_string",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"vlan_id": 6,
+							"device_name": "eth2.6",
+							"mac_address": "example_string",
+							"create_by_virtual_wire": true
+						}
 					}
 				}
 			},
@@ -206,6 +416,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vlan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific vlan",
+						"description": "修改指定VLAN子接口配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/vlan/{name}",
+							"body": {
+								"name": "myvlan6",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "NET1"
+								},
+								"vlan_id": 6
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/vlan/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/vlan/{name}的响应数据",
+						"value": {
+							"name": "myvlan6",
+							"description": "example_string",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"vlan_id": 6,
+							"device_name": "eth2.6",
+							"mac_address": "example_string",
+							"create_by_virtual_wire": true
+						}
+					}
 				}
 			},
 			"delete": {
@@ -218,6 +462,32 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vlan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific vlan",
+						"description": "删除指定VLAN子接口配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/vlan/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/vlan/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/vlan/{name}的响应数据",
+						"value": {
+							"name": "myvlan6",
+							"description": "example_string",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"vlan_id": 6,
+							"device_name": "eth2.6",
+							"mac_address": "example_string",
+							"create_by_virtual_wire": true
+						}
 					}
 				}
 			}
@@ -364,6 +634,11 @@ module.exports ={
 				"mac_address": {
 					"type": "string",
 					"description": "MAC地址"
+				},
+				"create_by_virtual_wire": {
+					"description": "标识是否由虚拟网线生成的vlan子接口",
+					"type": "boolean",
+					"readOnly": true
 				}
 			}
 		}

@@ -51,6 +51,57 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_system"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get system statistics",
+						"description": "获取系统状态",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/sys/system"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/sys/system 响应",
+						"description": "返回GET /api/ad/v3/stat/sys/system的响应数据",
+						"value": {
+							"boot_time": 0,
+							"interface": {
+								"total": 0,
+								"plug": {
+									"in": [
+										"example_string"
+									],
+									"out": [
+										"example_string"
+									]
+								}
+							},
+							"temperature": [
+								{
+									"name": "example_string",
+									"state": "NORMAL",
+									"temperature": null
+								}
+							],
+							"fan": [
+								{
+									"name": "example_string",
+									"speed": null
+								}
+							],
+							"power_supply": "UNSUPPORTED",
+							"cpu_usage": null,
+							"memory_usage": null,
+							"connection": null,
+							"connection_rate": null,
+							"upstream_throughput": null,
+							"downstream_throughput": null,
+							"hardware": [
+								"SSL-ACCELERATOR-CARD"
+							]
+						}
+					}
 				}
 			}
 		},
@@ -84,6 +135,33 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get system statistics",
+						"description": "获取指定类型系统状态统计数据",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/sys/system/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/sys/system/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/sys/system/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -116,6 +194,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend_multiple_items"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get system statistics",
+						"description": "获取多个类型系统状态统计数据",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/sys/system/combine-items"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/sys/system/combine-items 响应",
+						"description": "返回GET /api/ad/v3/stat/sys/system/combine-items的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"timestamp": 0,
+							"items": [
+								{
+									"item": "example_string",
+									"feature": "DISABLE",
+									"unit": "BIT-PER-SECOND",
+									"values": [
+										0
+									],
+									"additional_data": [
+										null
+									]
+								}
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
 					}
 				}
 			}

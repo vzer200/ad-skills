@@ -62,6 +62,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ospf_interface_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all ospf-interface",
+						"description": "获取ospf动态路由接口配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/ospf-interface/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/ospf-interface/ 响应",
+						"description": "返回GET /api/ad/v3/net/ospf-interface/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "Lan_1",
+									"description": "example_string",
+									"link": "Lan_1",
+									"hello_interval": 10,
+									"retransmit_interval": 5,
+									"dead_interval": 40,
+									"Authentication": {
+										"mode": "NONE",
+										"key-id": 1,
+										"key-string": "example_string"
+									},
+									"priority": 1,
+									"cost": 10,
+									"network_type": "BROADCAST"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +120,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ospf_interface_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ospf-interface",
+						"description": "新建ospf动态路由接口配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/ospf-interface/",
+							"body": {
+								"name": "AI_Lan_1_A",
+								"link": "Lan_1",
+								"hello_interval": 10,
+								"retransmit_interval": 5,
+								"dead_interval": 40,
+								"priority": 1,
+								"cost": 10,
+								"network_type": "BROADCAST"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/ospf-interface/ 响应",
+						"description": "返回POST /api/ad/v3/net/ospf-interface/的响应数据",
+						"value": {
+							"name": "AI_Lan_1_A",
+							"description": "example_string",
+							"link": "Lan_1",
+							"hello_interval": 10,
+							"retransmit_interval": 5,
+							"dead_interval": 40,
+							"Authentication": {
+								"mode": "NONE",
+								"key-id": 1,
+								"key-string": "example_string"
+							},
+							"priority": 1,
+							"cost": 10,
+							"network_type": "BROADCAST"
+						}
 					}
 				}
 			},
@@ -98,6 +179,57 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ospf_interface_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify ospf-interface",
+						"description": "修改ospf动态路由接口配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/ospf-interface/",
+							"body": {
+								"name": "Lan_1",
+								"link": "Lan_1",
+								"hello_interval": 10,
+								"retransmit_interval": 5,
+								"dead_interval": 40,
+								"priority": 1,
+								"cost": 10,
+								"network_type": "BROADCAST"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/ospf-interface/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/ospf-interface/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "Lan_1",
+									"description": "example_string",
+									"link": "Lan_1",
+									"hello_interval": 10,
+									"retransmit_interval": 5,
+									"dead_interval": 40,
+									"Authentication": {
+										"mode": "NONE",
+										"key-id": 1,
+										"key-string": "example_string"
+									},
+									"priority": 1,
+									"cost": 10,
+									"network_type": "BROADCAST"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -151,6 +283,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ospf_interface_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific ospf-interface",
+						"description": "获取ospf动态路由接口配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/ospf-interface/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/ospf-interface/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/ospf-interface/{name}的响应数据",
+						"value": {
+							"name": "Lan_1",
+							"description": "example_string",
+							"link": "Lan_1",
+							"hello_interval": 10,
+							"retransmit_interval": 5,
+							"dead_interval": 40,
+							"Authentication": {
+								"mode": "NONE",
+								"key-id": 1,
+								"key-string": "example_string"
+							},
+							"priority": 1,
+							"cost": 10,
+							"network_type": "BROADCAST"
+						}
+					}
 				}
 			},
 			"post": {
@@ -170,6 +332,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ospf_interface_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ospf-interface",
+						"description": "新建ospf动态路由接口配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/ospf-interface/{name}",
+							"body": {
+								"name": "AI_Lan_1_B",
+								"link": "Lan_1",
+								"hello_interval": 10,
+								"retransmit_interval": 5,
+								"dead_interval": 40,
+								"priority": 1,
+								"cost": 10,
+								"network_type": "BROADCAST"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/ospf-interface/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/ospf-interface/{name}的响应数据",
+						"value": {
+							"name": "AI_Lan_1_B",
+							"description": "example_string",
+							"link": "Lan_1",
+							"hello_interval": 10,
+							"retransmit_interval": 5,
+							"dead_interval": 40,
+							"Authentication": {
+								"mode": "NONE",
+								"key-id": 1,
+								"key-string": "example_string"
+							},
+							"priority": 1,
+							"cost": 10,
+							"network_type": "BROADCAST"
+						}
+					}
 				}
 			},
 			"put": {
@@ -187,6 +389,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ospf_interface_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific ospf-interface",
+						"description": "修改ospf动态路由接口配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/ospf-interface/{name}",
+							"body": {
+								"name": "Lan_1",
+								"link": "Lan_1",
+								"hello_interval": 10,
+								"retransmit_interval": 5,
+								"dead_interval": 40,
+								"priority": 1,
+								"cost": 10,
+								"network_type": "BROADCAST"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/ospf-interface/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/ospf-interface/{name}的响应数据",
+						"value": {
+							"name": "Lan_1",
+							"description": "example_string",
+							"link": "Lan_1",
+							"hello_interval": 10,
+							"retransmit_interval": 5,
+							"dead_interval": 40,
+							"Authentication": {
+								"mode": "NONE",
+								"key-id": 1,
+								"key-string": "example_string"
+							},
+							"priority": 1,
+							"cost": 10,
+							"network_type": "BROADCAST"
+						}
 					}
 				}
 			},
@@ -206,6 +448,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ospf_interface_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific ospf-interface",
+						"description": "修改ospf动态路由接口配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/ospf-interface/{name}",
+							"body": {
+								"name": "Lan_1",
+								"link": "Lan_1",
+								"hello_interval": 10,
+								"retransmit_interval": 5,
+								"dead_interval": 40,
+								"priority": 1,
+								"cost": 10,
+								"network_type": "BROADCAST"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/ospf-interface/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/ospf-interface/{name}的响应数据",
+						"value": {
+							"name": "Lan_1",
+							"description": "example_string",
+							"link": "Lan_1",
+							"hello_interval": 10,
+							"retransmit_interval": 5,
+							"dead_interval": 40,
+							"Authentication": {
+								"mode": "NONE",
+								"key-id": 1,
+								"key-string": "example_string"
+							},
+							"priority": 1,
+							"cost": 10,
+							"network_type": "BROADCAST"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -218,6 +500,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ospf_interface_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific ospf-interface",
+						"description": "删除ospf动态路由接口配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/ospf-interface/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/ospf-interface/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/ospf-interface/{name}的响应数据",
+						"value": {
+							"name": "Lan_1",
+							"description": "example_string",
+							"link": "Lan_1",
+							"hello_interval": 10,
+							"retransmit_interval": 5,
+							"dead_interval": 40,
+							"Authentication": {
+								"mode": "NONE",
+								"key-id": 1,
+								"key-string": "example_string"
+							},
+							"priority": 1,
+							"cost": 10,
+							"network_type": "BROADCAST"
+						}
 					}
 				}
 			}

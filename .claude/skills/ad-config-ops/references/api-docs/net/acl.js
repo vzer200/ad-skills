@@ -62,6 +62,58 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_acl_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all acl",
+						"description": "获取ACL配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/acl/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/acl/ 响应",
+						"description": "返回GET /api/ad/v3/net/acl/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "deny_10.1.2.3",
+									"description": "example_string",
+									"position": 1,
+									"state": "ENABLE",
+									"inbound_links": [
+										"ALL"
+									],
+									"source_address": {
+										"type": "IP-ADDRESS",
+										"address": "192.168.1.1",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"destination_address": {
+										"type": "IP-ADDRESS",
+										"address": "192.168.1.1",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"protocol": "ALL",
+									"protocol_number": 6,
+									"icmp_types": [
+										0
+									],
+									"source_ports": "ALL",
+									"destination_ports": "ALL",
+									"policy": "DENY"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +131,61 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_acl_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new acl",
+						"description": "新建ACL配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/acl/",
+							"body": {
+								"name": "AI_deny_10.1.2.3_A",
+								"state": "ENABLE",
+								"source_address": {
+									"type": "IP-ADDRESS"
+								},
+								"destination_address": {
+									"type": "IP-ADDRESS"
+								},
+								"protocol": "ALL",
+								"source_ports": "ALL",
+								"destination_ports": "ALL",
+								"policy": "DENY"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/acl/ 响应",
+						"description": "返回POST /api/ad/v3/net/acl/的响应数据",
+						"value": {
+							"name": "AI_deny_10.1.2.3_A",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"inbound_links": [
+								"ALL"
+							],
+							"source_address": {
+								"type": "IP-ADDRESS",
+								"address": "192.168.1.1",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "IP-ADDRESS",
+								"address": "192.168.1.1",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"protocol": "ALL",
+							"protocol_number": 6,
+							"icmp_types": [
+								0
+							],
+							"source_ports": "ALL",
+							"destination_ports": "ALL",
+							"policy": "DENY"
+						}
 					}
 				}
 			},
@@ -98,6 +205,72 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_acl_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify acl",
+						"description": "修改ACL配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/acl/",
+							"body": {
+								"name": "deny_10.1.2.3",
+								"state": "ENABLE",
+								"source_address": {
+									"type": "IP-ADDRESS"
+								},
+								"destination_address": {
+									"type": "IP-ADDRESS"
+								},
+								"protocol": "ALL",
+								"source_ports": "ALL",
+								"destination_ports": "ALL",
+								"policy": "DENY"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/acl/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/acl/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "deny_10.1.2.3",
+									"description": "example_string",
+									"position": 1,
+									"state": "ENABLE",
+									"inbound_links": [
+										"ALL"
+									],
+									"source_address": {
+										"type": "IP-ADDRESS",
+										"address": "192.168.1.1",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"destination_address": {
+										"type": "IP-ADDRESS",
+										"address": "192.168.1.1",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"protocol": "ALL",
+									"protocol_number": 6,
+									"icmp_types": [
+										0
+									],
+									"source_ports": "ALL",
+									"destination_ports": "ALL",
+									"policy": "DENY"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -143,6 +316,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_acl_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific acl",
+						"description": "获取ACL配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/acl/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/acl/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/acl/{name}的响应数据",
+						"value": {
+							"name": "deny_10.1.2.3",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"inbound_links": [
+								"ALL"
+							],
+							"source_address": {
+								"type": "IP-ADDRESS",
+								"address": "192.168.1.1",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "IP-ADDRESS",
+								"address": "192.168.1.1",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"protocol": "ALL",
+							"protocol_number": 6,
+							"icmp_types": [
+								0
+							],
+							"source_ports": "ALL",
+							"destination_ports": "ALL",
+							"policy": "DENY"
+						}
+					}
 				}
 			},
 			"post": {
@@ -162,6 +376,61 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_acl_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new acl",
+						"description": "新建ACL配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/acl/{name}",
+							"body": {
+								"name": "AI_deny_10.1.2.3_B",
+								"state": "ENABLE",
+								"source_address": {
+									"type": "IP-ADDRESS"
+								},
+								"destination_address": {
+									"type": "IP-ADDRESS"
+								},
+								"protocol": "ALL",
+								"source_ports": "ALL",
+								"destination_ports": "ALL",
+								"policy": "DENY"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/acl/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/acl/{name}的响应数据",
+						"value": {
+							"name": "AI_deny_10.1.2.3_B",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"inbound_links": [
+								"ALL"
+							],
+							"source_address": {
+								"type": "IP-ADDRESS",
+								"address": "192.168.1.1",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "IP-ADDRESS",
+								"address": "192.168.1.1",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"protocol": "ALL",
+							"protocol_number": 6,
+							"icmp_types": [
+								0
+							],
+							"source_ports": "ALL",
+							"destination_ports": "ALL",
+							"policy": "DENY"
+						}
+					}
 				}
 			},
 			"put": {
@@ -179,6 +448,61 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_acl_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific acl",
+						"description": "修改ACL配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/acl/{name}",
+							"body": {
+								"name": "deny_10.1.2.3",
+								"state": "ENABLE",
+								"source_address": {
+									"type": "IP-ADDRESS"
+								},
+								"destination_address": {
+									"type": "IP-ADDRESS"
+								},
+								"protocol": "ALL",
+								"source_ports": "ALL",
+								"destination_ports": "ALL",
+								"policy": "DENY"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/acl/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/acl/{name}的响应数据",
+						"value": {
+							"name": "deny_10.1.2.3",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"inbound_links": [
+								"ALL"
+							],
+							"source_address": {
+								"type": "IP-ADDRESS",
+								"address": "192.168.1.1",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "IP-ADDRESS",
+								"address": "192.168.1.1",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"protocol": "ALL",
+							"protocol_number": 6,
+							"icmp_types": [
+								0
+							],
+							"source_ports": "ALL",
+							"destination_ports": "ALL",
+							"policy": "DENY"
+						}
 					}
 				}
 			},
@@ -198,6 +522,61 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_acl_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific acl",
+						"description": "修改ACL配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/acl/{name}",
+							"body": {
+								"name": "deny_10.1.2.3",
+								"state": "ENABLE",
+								"source_address": {
+									"type": "IP-ADDRESS"
+								},
+								"destination_address": {
+									"type": "IP-ADDRESS"
+								},
+								"protocol": "ALL",
+								"source_ports": "ALL",
+								"destination_ports": "ALL",
+								"policy": "DENY"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/acl/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/acl/{name}的响应数据",
+						"value": {
+							"name": "deny_10.1.2.3",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"inbound_links": [
+								"ALL"
+							],
+							"source_address": {
+								"type": "IP-ADDRESS",
+								"address": "192.168.1.1",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "IP-ADDRESS",
+								"address": "192.168.1.1",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"protocol": "ALL",
+							"protocol_number": 6,
+							"icmp_types": [
+								0
+							],
+							"source_ports": "ALL",
+							"destination_ports": "ALL",
+							"policy": "DENY"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -210,6 +589,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_acl_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific acl",
+						"description": "DELETE /api/ad/v3/net/acl/{name}",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/acl/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/acl/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/acl/{name}的响应数据",
+						"value": {
+							"name": "deny_10.1.2.3",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"inbound_links": [
+								"ALL"
+							],
+							"source_address": {
+								"type": "IP-ADDRESS",
+								"address": "192.168.1.1",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "IP-ADDRESS",
+								"address": "192.168.1.1",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"protocol": "ALL",
+							"protocol_number": 6,
+							"icmp_types": [
+								0
+							],
+							"source_ports": "ALL",
+							"destination_ports": "ALL",
+							"policy": "DENY"
+						}
 					}
 				}
 			}
