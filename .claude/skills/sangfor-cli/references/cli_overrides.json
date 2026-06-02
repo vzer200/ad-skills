@@ -1,0 +1,27 @@
+{
+  "value_rewrites": [
+    {
+      "command": "modify sys web-service",
+      "path": "sys/web-service",
+      "document": "sys/web-service.js",
+      "field": "multi_login",
+      "from": "ENABLE",
+      "to": "enable",
+      "source": "manual"
+    }
+  ],
+  "command_suffix_rewrites": [
+    {
+      "command": "modify sys whitelist",
+      "path": "sys/whitelist",
+      "document": "sys/whitelist.js",
+      "append": [
+        "force"
+      ],
+      "when_error_contains": [
+        "强制提交"
+      ],
+      "source": "manual-business-force"
+    }
+  ]
+}
