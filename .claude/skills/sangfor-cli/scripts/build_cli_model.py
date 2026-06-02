@@ -11,6 +11,9 @@ API_PREFIX_RE = re.compile(r"^/api/ad/v\d+/", re.IGNORECASE)
 PATH_PARAMETER_RE = re.compile(r"^\{([^{}]+)\}$")
 REF_SCHEMA_RE = re.compile(r"#/definitions/([^#]+)$")
 UNSUPPORTED_PATH_RE = re.compile(r"\(\?:|\\[dDsSwW]|\(|\)")
+SCRIPT_DIR = Path(__file__).resolve().parent
+SKILL_ROOT = SCRIPT_DIR.parent
+DEFAULT_API_INDEX = SKILL_ROOT.parent / "ad-config-ops" / "references" / "api-index.json"
 
 
 def parse_args() -> argparse.Namespace:
@@ -18,13 +21,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--api-index",
         type=Path,
-        default=Path(".claude/skills/ad-config-ops/references/api-index.json"),
+        default=DEFAULT_API_INDEX,
         help="Structured API index generated from the AD API manual source.",
     )
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path(".local-skills/sangfor-cli/references/cli_model.jsonl"),
+        default=SKILL_ROOT / "references" / "cli_model.jsonl",
         help="Output JSONL command model.",
     )
     return parser.parse_args()

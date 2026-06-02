@@ -235,4 +235,4 @@ sfcli run debug sys maintenance-passwd username admin password <current_admin_pa
 - 增加字段语义别名校验，例如 `http_sched_mode` 中 `connection` 对应按连接调度/首个请求，`request` 对应按每个请求调度，避免自然语言和 CLI 枚举含义搞反
 - 批量变更通过 `sfcli -f` 执行，把审核后的命令转换成无 `sfcli` 前缀、无尾部分号的批量文件正文，远端只需一次性执行 heredoc
 
-当前完整自测结果：`6139` 条检查，`0` 失败；覆盖 `839` 个标量字段、`315` 个对象字段、`457` 个数组字段、`1023` 个路径占位符命令。以后重新生成模型或打包 zip 前，必须先跑 selftest 和 `validate_cli_model.py`，两者都通过后才能发布。
+当前完整自测结果：`6142` 条检查，`0` 失败；覆盖 `839` 个标量字段、`315` 个对象字段、`457` 个数组字段、`1023` 个路径占位符命令。以后重新生成模型或打包 zip 前，必须先跑 selftest 和 `validate_cli_model.py`，两者都通过后才能发布。

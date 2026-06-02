@@ -2363,16 +2363,26 @@ def probe_ad_environment(timeout: int = 5) -> dict[str, Any]:
 
 def run_local_commands(commands: list[str], timeout: int) -> dict[str, Any]:
     command_text = "\n".join(commands)
-    completed = subprocess.run(
-        command_text,
-        shell=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=timeout,
-    )
+    try:
+        completed = subprocess.run(
+            command_text,
+            shell=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "ok": False,
+            "exit_code": None,
+            "stdout": subprocess_timeout_text(exc.stdout),
+            "stderr": subprocess_timeout_text(exc.stderr),
+            "error": f"sfcli command timed out after {timeout}s",
+            "timed_out": True,
+        }
     return {
         "ok": completed.returncode == 0,
         "exit_code": completed.returncode,
@@ -2491,10 +2501,18 @@ def command_run(
         "stdout_preview": (result.get("stdout") or "")[-4000:],
         "stderr_preview": (result.get("stderr") or "")[-4000:],
     }
+    if result.get("error"):
+        response["error"] = result.get("error")
+    if result.get("timed_out"):
+        response["timed_out"] = True
+    if use_sfcli_f and result.get("batch_file_text"):
+        response["batch_file_text_preview"] = (result.get("batch_file_text") or "")[-4000:]
     if result.get("ok"):
         return response
 
-    error_text = "\n".join([str(result.get("stdout") or ""), str(result.get("stderr") or "")])
+    error_text = "\n".join(
+        [str(result.get("stdout") or ""), str(result.get("stderr") or ""), str(result.get("error") or "")]
+    )
     repair_candidates, repair_notes = repair_candidates_for_commands(commands, error_text)
     if repair_candidates:
         response["repair_candidates"] = repair_candidates
@@ -2509,12 +2527,19 @@ def command_run(
         return response
     if auto_repair and confirm_auto_repair and repair_candidates:
         repaired_shell_safe_commands = to_shell_safe_commands(repair_candidates)
-        retry = run_local_commands(repaired_shell_safe_commands, timeout)
+        retry = run_local_batch_file(repair_candidates, timeout) if use_sfcli_f else run_local_commands(repaired_shell_safe_commands, timeout)
         response["auto_repair_attempted"] = True
         response["auto_repair_commands"] = repaired_shell_safe_commands
+        response["auto_repair_uses_sfcli_file"] = use_sfcli_f
+        if use_sfcli_f:
+            response["auto_repair_batch_file_text_preview"] = (retry.get("batch_file_text") or "")[-4000:]
         response["auto_repair_exit_code"] = retry.get("exit_code")
         response["auto_repair_stdout_preview"] = (retry.get("stdout") or "")[-4000:]
         response["auto_repair_stderr_preview"] = (retry.get("stderr") or "")[-4000:]
+        if retry.get("error"):
+            response["auto_repair_error"] = retry.get("error")
+        if retry.get("timed_out"):
+            response["auto_repair_timed_out"] = True
         if retry.get("ok"):
             for bad, good in zip(commands, repair_candidates):
                 if bad != good:

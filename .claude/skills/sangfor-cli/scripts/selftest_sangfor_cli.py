@@ -494,6 +494,110 @@ def run_selftest(model: Path, quick: bool = False) -> dict[str, Any]:
 
     harness.check("empty batch file rejected", empty_batch_file_rejected)
 
+    def batch_auto_repair_retries_with_sfcli_file() -> None:
+        calls: list[list[str]] = []
+        old_probe = module.probe_ad_environment
+        old_run_batch = module.run_local_batch_file
+        old_run_commands = module.run_local_commands
+        old_repair = module.repair_candidates_for_commands
+        try:
+            module.probe_ad_environment = lambda timeout=5: {"ok": True, "is_ad": True}
+
+            def fake_run_batch(commands: list[str], timeout: int) -> dict[str, Any]:
+                calls.append(list(commands))
+                if len(calls) == 1:
+                    return {"ok": False, "exit_code": 1, "stdout": "Syntax error", "stderr": ""}
+                return {
+                    "ok": True,
+                    "exit_code": 0,
+                    "stdout": "",
+                    "stderr": "",
+                    "batch_file_text": module.to_sfcli_batch_file_text(commands),
+                }
+
+            def forbidden_run_commands(commands: list[str], timeout: int) -> dict[str, Any]:
+                raise AssertionError("batch auto-repair must retry through sfcli -f")
+
+            module.run_local_batch_file = fake_run_batch
+            module.run_local_commands = forbidden_run_commands
+            module.repair_candidates_for_commands = lambda commands, error_text, **kwargs: (
+                ["sfcli modify sys web-service multi_login enable;"],
+                [{"reason": "test"}],
+            )
+            data = module.command_run(
+                ["sfcli modify sys web-service multi_login ENABLE;"],
+                probe_timeout=1,
+                timeout=1,
+                auto_repair=True,
+                confirm_auto_repair=True,
+                use_batch_file=True,
+            )
+            if not data.get("ok") or not data.get("auto_repaired") or not data.get("auto_repair_uses_sfcli_file"):
+                raise AssertionError(data)
+            if len(calls) != 2 or "enable" not in calls[-1][0]:
+                raise AssertionError(calls)
+        finally:
+            module.probe_ad_environment = old_probe
+            module.run_local_batch_file = old_run_batch
+            module.run_local_commands = old_run_commands
+            module.repair_candidates_for_commands = old_repair
+
+    harness.check("batch auto-repair retries with sfcli file", batch_auto_repair_retries_with_sfcli_file)
+
+    def batch_timeout_returns_structured_error() -> None:
+        old_probe = module.probe_ad_environment
+        old_run_batch = module.run_local_batch_file
+        try:
+            module.probe_ad_environment = lambda timeout=5: {"ok": True, "is_ad": True}
+            module.run_local_batch_file = lambda commands, timeout: {
+                "ok": False,
+                "exit_code": None,
+                "stdout": "",
+                "stderr": "",
+                "error": "sfcli -f timed out after 1s",
+                "timed_out": True,
+                "batch_file_text": module.to_sfcli_batch_file_text(commands),
+            }
+            data = module.command_run(
+                ["sfcli modify sys web-service multi_login enable;"],
+                probe_timeout=1,
+                timeout=1,
+                use_batch_file=True,
+            )
+            if data.get("ok") or not data.get("timed_out") or "sfcli -f timed out" not in str(data.get("error") or ""):
+                raise AssertionError(data)
+        finally:
+            module.probe_ad_environment = old_probe
+            module.run_local_batch_file = old_run_batch
+
+    harness.check("batch timeout returns structured error", batch_timeout_returns_structured_error)
+
+    def single_command_timeout_returns_structured_error() -> None:
+        old_probe = module.probe_ad_environment
+        old_run_commands = module.run_local_commands
+        try:
+            module.probe_ad_environment = lambda timeout=5: {"ok": True, "is_ad": True}
+            module.run_local_commands = lambda commands, timeout: {
+                "ok": False,
+                "exit_code": None,
+                "stdout": "",
+                "stderr": "",
+                "error": "sfcli command timed out after 1s",
+                "timed_out": True,
+            }
+            data = module.command_run(
+                ["sfcli modify sys web-service multi_login enable;"],
+                probe_timeout=1,
+                timeout=1,
+            )
+            if data.get("ok") or not data.get("timed_out") or "timed out" not in str(data.get("error") or ""):
+                raise AssertionError(data)
+        finally:
+            module.probe_ad_environment = old_probe
+            module.run_local_commands = old_run_commands
+
+    harness.check("single command timeout returns structured error", single_command_timeout_returns_structured_error)
+
     force_error = "Server error: 管理口配置-Web控制台引用了白名单或者用户地址集，客户端源IP[10.32.33.75]不在其中，请确认是否强制提交"
     force_bad = "sfcli modify sys whitelist web_console { whitelist_address { type global-whitelist } }"
     harness.expect_format_ok(
