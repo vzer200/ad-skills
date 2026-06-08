@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "PowerShell(Test-Path *)",
-      "Skill(update-config)",
-      "PowerShell(New-Item *)"
-    ]
-  }
-}

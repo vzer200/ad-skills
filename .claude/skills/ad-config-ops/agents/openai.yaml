@@ -1,3 +1,0 @@
-display_name: ad-config-ops
-short_description: Generate, validate, and safely roll back Sangfor AD API operations.
-default_prompt: Generate AD API configuration templates, scripts, batch JSON, validation plans, and rollback plans from Sangfor AD API docs.
