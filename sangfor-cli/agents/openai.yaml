@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sangfor CLI"
+  short_description: "Find and review Sangfor AD product sfcli commands"
+  default_prompt: "Use Sangfor CLI only for AD product resource sfcli commands. Search the command model, render exact templates, require human review, then run locally on AD or hand approved remote_text to the available SSH tool."
