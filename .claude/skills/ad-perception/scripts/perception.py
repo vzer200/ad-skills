@@ -1426,8 +1426,11 @@ def _service_log_job_path(job_id: str, state_dir: str = "") -> str:
 
 def _write_service_log_job(job: Dict[str, Any], state_dir: str = "") -> None:
     path = _service_log_job_path(str(job["job_id"]), state_dir)
-    with open(path, "w", encoding="utf-8") as f:
+    directory = os.path.dirname(path)
+    fd, temp_path = tempfile.mkstemp(prefix=".tmp-", suffix=".json", dir=directory)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
         json.dump(job, f, ensure_ascii=False, indent=2)
+    os.replace(temp_path, path)
 
 
 def _read_service_log_job(job_id: str, state_dir: str = "") -> Dict[str, Any]:
@@ -1491,7 +1494,6 @@ def create_service_log_job(
         "log_type_label": log_type_label(normalized_type),
         "display_limit": display_limit,
         "page_size": page_size,
-        "max_items_per_query": 4000,
         "segments": _service_log_scan_segments(levels or ["ALERT", "ERROR"], modules or []),
         "entries": [],
         "seen": [],
@@ -1519,7 +1521,8 @@ def _service_log_page_kwargs(job: Dict[str, Any], segment: Dict[str, Any]) -> Di
 def _service_log_job_result(job: Dict[str, Any]) -> Dict[str, Any]:
     entries = _sort_log_entries(job.get("entries", []))
     display_limit = int(job.get("display_limit") or 20)
-    scanned = sum(int(segment.get("scanned") or 0) for segment in job.get("segments", []))
+    segments = job.get("segments", [])
+    scanned = sum(int(segment.get("scanned") or 0) for segment in segments)
     return {
         "job_id": job.get("job_id"),
         "host": job.get("host", ""),
@@ -1535,7 +1538,7 @@ def _service_log_job_result(job: Dict[str, Any]) -> Dict[str, Any]:
         "modules": job.get("modules", []),
         "log_type": job.get("log_type", ""),
         "log_type_label": job.get("log_type_label", ""),
-        "segments": job.get("segments", []),
+        "segments": segments,
     }
 
 
@@ -1583,7 +1586,6 @@ def advance_service_log_job(
         return _service_log_job_result(job)
 
     page_size = int(job.get("page_size") or 100)
-    max_items_per_query = int(job.get("max_items_per_query") or 4000)
     max_pages = max(1, int(max_pages or 1))
     pages_done = 0
     seen = set(tuple(item) if isinstance(item, list) else item for item in job.get("seen", []))
@@ -1593,7 +1595,7 @@ def advance_service_log_job(
     for segment in job.get("segments", []):
         if segment.get("done"):
             continue
-        while pages_done < max_pages and int(segment.get("skip") or 0) < max_items_per_query:
+        while pages_done < max_pages:
             if deadline_ts is not None and time.time() >= deadline_ts:
                 job["entries"] = _sort_log_entries(entries)
                 job["seen"] = [list(item) if isinstance(item, tuple) else item for item in seen]
@@ -1660,7 +1662,6 @@ def _fetch_service_log_data(
     modules: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     page_size = max(1, int(limit or 100))
-    max_items_per_query = 4000
     level_values: List[Optional[str]] = levels or [None]
     module_values: List[Optional[str]] = modules or [None]
     merged: List[Dict[str, Any]] = []
@@ -1669,7 +1670,7 @@ def _fetch_service_log_data(
     for level in level_values:
         for module in module_values:
             skip = 0
-            while skip < max_items_per_query:
+            while True:
                 kwargs: Dict[str, Any] = {"limit": page_size, "skip": skip}
                 if from_time:
                     kwargs["from_time"] = from_time

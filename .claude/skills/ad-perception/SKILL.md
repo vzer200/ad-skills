@@ -36,7 +36,7 @@ description: 深信服 AD 感知分析 skill。用于分析 VS 流量异常、CP
 - “设备资源分析/资源状态异常/状态趋势/状态告警”映射到 `perception.py state --trend last-hour`；用户指定“最近一天/一天/24 小时”时改用 `--trend last-day`，指定“最近一个月/一个月”时改用 `--trend last-month`。用户指定固定时间段时按覆盖窗口选窗：最近 1 小时内的短区间用 `--trend last-hour --from-time "2026-06-02 20:32:00" --to-time "2026-06-02 21:02:00"`；超出最近 1 小时但仍在最近 24 小时内的区间用 `--trend last-day --from-time "2026-06-02 10:20:00" --to-time "2026-06-02 12:00:00"`；两天前的一小时段要用 `--trend last-month`。在 WorkBot 中加 `--html-out /opt/agent/data/outputs/ad-state-trend-AD1-20260602-1020-1200.html` 生成 HTML 趋势产物。只说“设备状态/硬件状态/资源状态查一下”仍属于 `ad-ops` 查询。
 - “地址冲突/地址端口冲突/冲突分析”映射到 `perception.py conflict`；冲突结论只能复述脚本返回的 `vs_overlaps` / `pool_overlaps`，没有冲突时明确说未发现冲突，不要编造正例。
 - “日志分析/服务日志/日志线索”短范围查询映射到 `perception.py logs`。默认查最近 24 小时所有模块的告警/错误日志，必须加 `--levels ALERT,ERROR --limit 20`，不要默认加 `--modules ALARM`。用户明确说“地址冲突类型日志/地址端口冲突日志/IP 冲突日志”时，必须加 `--log-type address-conflict`，这是脚本本地语义过滤，不是设备模块过滤，禁止为这个需求加 `--modules`。只有用户明确指定 APPD、SYS、ALARM 这类设备日志模块时才加 `--modules`。输出只展示按时间倒序的最新 20 条，避免上下文过长。
-- 日志长范围或语义过滤查询必须走进度式流程，禁止直接调用同步 `perception.py logs`：当用户明确说近 5 天、7 天、30 天、最近一个月，或任何 `--days N` 且 `N > 1` 的日志查询，尤其是 `--log-type address-conflict`，必须先执行 `logs-start` 创建任务，再用 `logs-wait --timeout 55` 推进；若返回状态仍为“进行中”，继续调用 `logs-progress` 或 `logs-wait`，直到脚本输出完成状态后再复制最终结果。不要因为同步 `logs` 超时就下结论说设备日志接口异常。
+- 日志查询时间范围大于 1 天必须走进度式流程，禁止直接调用同步 `perception.py logs`：当用户明确说近 2 天、5 天、7 天、30 天、最近一个月，或任何 `--days N` 且 `N > 1` 的日志查询，或固定 `--from-time/--to-time` 跨度超过 24 小时的日志查询，尤其是 `--log-type address-conflict`，必须先执行 `logs-start` 创建任务，再用 `logs-wait --timeout 55` 推进；若返回状态仍为“进行中”，继续调用 `logs-progress` 或 `logs-wait`，直到脚本输出完成状态后再复制最终结果。WorkBot 中 `logs-wait --timeout` 禁止超过 55 秒，避免外层 60 秒执行限制杀掉进程。不要因为同步 `logs` 超时就下结论说设备日志接口异常。
 
 ## 全量感知分析
 

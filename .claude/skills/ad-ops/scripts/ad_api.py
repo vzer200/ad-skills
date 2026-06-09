@@ -381,33 +381,19 @@ class ADClient:
         clean_modules = [str(module).strip() for module in (modules or []) if str(module).strip()]
 
         def base_params() -> Dict[str, Any]:
-            params: Dict[str, Any] = {"top": limit, "skip": skip}
+            params: Dict[str, Any] = {"$top": limit, "$skip": skip, "_dc": int(time.time() * 1000)}
             if from_time:
                 params["from"] = from_time
             if to_time:
                 params["to"] = to_time
             return params
 
-        queries: List[Dict[str, Any]] = []
-        if clean_levels and clean_modules:
-            for level in clean_levels:
-                for module in clean_modules:
-                    params = base_params()
-                    params["level"] = level
-                    params["module"] = module
-                    queries.append(params)
-        elif clean_levels:
-            for level in clean_levels:
-                params = base_params()
-                params["level"] = level
-                queries.append(params)
-        elif clean_modules:
-            for module in clean_modules:
-                params = base_params()
-                params["module"] = module
-                queries.append(params)
-        else:
-            queries.append(base_params())
+        params = base_params()
+        if clean_levels:
+            params["level"] = ",".join(clean_levels)
+        if clean_modules:
+            params["module"] = ",".join(clean_modules)
+        queries: List[Dict[str, Any]] = [params]
 
         merged: List[Dict[str, Any]] = []
         result: Dict[str, Any] = {}
