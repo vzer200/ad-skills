@@ -56,6 +56,27 @@ module.exports ={
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "export blackbox-log",
+						"description": "导出未加密的黑盒日志",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/log/blackbox-log/export"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/log/blackbox-log/export 响应",
+						"description": "返回GET /api/ad/v3/log/blackbox-log/export的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
+					}
 				}
 			},
 			"post": {
@@ -76,6 +97,28 @@ module.exports ={
 					},
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "export encrypted blackbox-log",
+						"description": "导出加密的黑盒日志",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/log/blackbox-log/export",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/log/blackbox-log/export 响应",
+						"description": "返回POST /api/ad/v3/log/blackbox-log/export的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
 					}
 				}
 			},

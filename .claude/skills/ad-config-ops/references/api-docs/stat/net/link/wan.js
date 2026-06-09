@@ -65,6 +65,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_link_wan_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all link-wan statistics",
+						"description": "获取所有WAN口链路详细统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/link/wan/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/link/wan/ 响应",
+						"description": "返回GET /api/ad/v3/stat/net/link/wan/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "",
+									"state": "ENABLE",
+									"interface": {},
+									"health": "NORMAL",
+									"failure_reason": "",
+									"upstream_bandwidth_mbps": 100,
+									"downstream_bandwidth_mbps": 100,
+									"connection_rate": null,
+									"upstream_throughput": null,
+									"downstream_throughput": null,
+									"general_throughput": null,
+									"general_bandwidth_usage": null,
+									"netns": "nenns名称"
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -97,6 +137,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_link_wan_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific link-wan statistics",
+						"description": "获取指定WAN口链路详细统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/link/wan/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/link/wan/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/net/link/wan/{name}的响应数据",
+						"value": {
+							"name": "",
+							"state": "ENABLE",
+							"interface": {},
+							"health": "NORMAL",
+							"failure_reason": "",
+							"upstream_bandwidth_mbps": 100,
+							"downstream_bandwidth_mbps": 100,
+							"connection_rate": null,
+							"upstream_throughput": null,
+							"downstream_throughput": null,
+							"general_throughput": null,
+							"general_bandwidth_usage": null,
+							"netns": "nenns名称"
+						}
 					}
 				}
 			}
@@ -134,6 +203,33 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific link-wan statistics",
+						"description": "获取指定WAN口链路详细统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/link/wan/{name}/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/link/wan/{name}/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/net/link/wan/{name}/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -160,6 +256,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_link_wan_summary_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get link-wan summary statistics",
+						"description": "获取WAN口链路概要信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/link/wan-summary"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/link/wan-summary 响应",
+						"description": "返回GET /api/ad/v3/stat/net/link/wan-summary的响应数据",
+						"value": {
+							"link_wan_count": {
+								"state": {
+									"enable": 0,
+									"disable": 0
+								},
+								"health": {
+									"normal": 0,
+									"failure": 0,
+									"busy": 0
+								}
+							},
+							"connection_rate": null,
+							"upstream_throughput": null,
+							"downstream_throughput": null,
+							"general_throughput": null
+						}
 					}
 				}
 			}
@@ -194,6 +321,33 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get link-wan summary statistics",
+						"description": "获取WAN口链路概要信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/link/wan-summary/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/link/wan-summary/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/net/link/wan-summary/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -227,6 +381,38 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend_multiple"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get each link-wan statistics",
+						"description": "获取WAN口链路统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/link/wan-each/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/link/wan-each/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/net/link/wan-each/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"series": [
+								{
+									"name": "example_string",
+									"values": [
+										0
+									],
+									"additional_data": [
+										"example_item"
+									]
+								}
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -256,6 +442,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_link_wan_summary_application_throughput"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get link-wan application-throughput",
+						"description": "获取WAN口链路的应用流量信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/link/wan-application-throughput"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/link/wan-application-throughput 响应",
+						"description": "返回GET /api/ad/v3/stat/net/link/wan-application-throughput的响应数据",
+						"value": {
+							"application": [
+								{
+									"type": "OTHER",
+									"link": [
+										{
+											"name": "WAN_2",
+											"general_throughput": null
+										}
+									],
+									"general_throughput": null
+								}
+							],
+							"link": [
+								{
+									"name": "",
+									"application": [
+										{
+											"type": "OTHER",
+											"general_throughput": null
+										}
+									],
+									"general_throughput": null
+								}
+							]
+						}
 					}
 				}
 			}

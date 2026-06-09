@@ -56,6 +56,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_local_dns_block_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all blocked local-dns",
+						"description": "获取已经被手动封锁的全部LDNS地址",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/dns/local-dns/block/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/dns/local-dns/block/ 响应",
+						"description": "返回GET /api/ad/v3/debug/dns/local-dns/block/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"source_address": "8.15.2.64"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -73,6 +101,26 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_debug_local_dns_block"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new local-dns block",
+						"description": "手动封锁LDNS地址",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/dns/local-dns/block/",
+							"body": {
+								"source_address": "8.15.2.64"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/dns/local-dns/block/ 响应",
+						"description": "返回POST /api/ad/v3/debug/dns/local-dns/block/的响应数据",
+						"value": {
+							"source_address": "8.15.2.64"
+						}
 					}
 				}
 			},
@@ -122,6 +170,23 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_local_dns_block"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific local-dns block",
+						"description": "查看LDNS地址是否被封锁",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/dns/local-dns/block/{source_address}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/dns/local-dns/block/{source_address} 响应",
+						"description": "返回GET /api/ad/v3/debug/dns/local-dns/block/{source_address}的响应数据",
+						"value": {
+							"source_address": "8.15.2.64"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -134,6 +199,23 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_debug_local_dns_block"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific local-dns block",
+						"description": "解封LDNS地址",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/debug/dns/local-dns/block/{source_address}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/debug/dns/local-dns/block/{source_address} 响应",
+						"description": "返回DELETE /api/ad/v3/debug/dns/local-dns/block/{source_address}的响应数据",
+						"value": {
+							"source_address": "8.15.2.64"
+						}
 					}
 				}
 			}

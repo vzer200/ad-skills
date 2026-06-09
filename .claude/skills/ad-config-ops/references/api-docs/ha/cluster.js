@@ -51,6 +51,53 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_cluster_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get cluster",
+						"description": "获取当前集群配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/ha/cluster"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/ha/cluster 响应",
+						"description": "返回GET /api/ad/v3/ha/cluster的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"heartbeat_timeout_ms": 6000,
+							"heartbeat_interval_ms": 100,
+							"ha": {
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"address": "10.0.1.1/24",
+								"gateway": "10.0.1.100"
+							},
+							"alternate_ha": {
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"address": "200.0.0.1/24",
+								"gateway": "200.0.0.100"
+							},
+							"brain_split_detect": {
+								"state": "DISABLE",
+								"link": "wan_1"
+							},
+							"username": "admin",
+							"password": "admin",
+							"pk_password": "example_string",
+							"cluster_ip": "10.0.0.1/24",
+							"openad_net_check_flat": "DISABLE",
+							"openad_net_check_vlan": "DISABLE",
+							"openad_net_check_vxlan": "DISABLE",
+							"weight_in_diff_platform": 1
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +116,62 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_cluster_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace cluster",
+						"description": "修改集群配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/ha/cluster",
+							"body": {
+								"state": "ENABLE",
+								"heartbeat_timeout_ms": 6000,
+								"heartbeat_interval_ms": 100,
+								"openad_net_check_flat": "DISABLE",
+								"openad_net_check_vlan": "DISABLE",
+								"openad_net_check_vxlan": "DISABLE",
+								"weight_in_diff_platform": 1
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/ha/cluster 响应",
+						"description": "返回PUT /api/ad/v3/ha/cluster的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"heartbeat_timeout_ms": 6000,
+							"heartbeat_interval_ms": 100,
+							"ha": {
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"address": "10.0.1.1/24",
+								"gateway": "10.0.1.100"
+							},
+							"alternate_ha": {
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"address": "200.0.0.1/24",
+								"gateway": "200.0.0.100"
+							},
+							"brain_split_detect": {
+								"state": "DISABLE",
+								"link": "wan_1"
+							},
+							"username": "admin",
+							"password": "admin",
+							"pk_password": "example_string",
+							"cluster_ip": "10.0.0.1/24",
+							"openad_net_check_flat": "DISABLE",
+							"openad_net_check_vlan": "DISABLE",
+							"openad_net_check_vxlan": "DISABLE",
+							"weight_in_diff_platform": 1
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +189,62 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_cluster_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify cluster",
+						"description": "修改集群配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/ha/cluster",
+							"body": {
+								"state": "ENABLE",
+								"heartbeat_timeout_ms": 6000,
+								"heartbeat_interval_ms": 100,
+								"openad_net_check_flat": "DISABLE",
+								"openad_net_check_vlan": "DISABLE",
+								"openad_net_check_vxlan": "DISABLE",
+								"weight_in_diff_platform": 1
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/ha/cluster 响应",
+						"description": "返回PATCH /api/ad/v3/ha/cluster的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"heartbeat_timeout_ms": 6000,
+							"heartbeat_interval_ms": 100,
+							"ha": {
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"address": "10.0.1.1/24",
+								"gateway": "10.0.1.100"
+							},
+							"alternate_ha": {
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"address": "200.0.0.1/24",
+								"gateway": "200.0.0.100"
+							},
+							"brain_split_detect": {
+								"state": "DISABLE",
+								"link": "wan_1"
+							},
+							"username": "admin",
+							"password": "admin",
+							"pk_password": "example_string",
+							"cluster_ip": "10.0.0.1/24",
+							"openad_net_check_flat": "DISABLE",
+							"openad_net_check_vlan": "DISABLE",
+							"openad_net_check_vxlan": "DISABLE",
+							"weight_in_diff_platform": 1
+						}
 					}
 				}
 			},

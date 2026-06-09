@@ -62,6 +62,106 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_pppoe_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all link-pppoe",
+						"description": "查看链路pppoe拨号设置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link/pppoe/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link/pppoe/ 响应",
+						"description": "返回GET /api/ad/v3/net/link/pppoe/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "wan_1",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "PPPOE",
+									"interface": {
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									},
+									"username": "123456789@ct.com",
+									"password": "abcd1234",
+									"pk_password": "example_string",
+									"encrypted_password": "A1B2C3D4",
+									"echo_retransmission_interval": 80,
+									"echo_retransmission_count": 3,
+									"auto_dial": "ENABLE",
+									"auto_dial_interval": 1,
+									"mtu": 1492,
+									"mac_address": "00:90:0b:3c:33:18",
+									"auto_snat": "DISABLE",
+									"upstream_bandwidth_mbps": 1000,
+									"upstream_busy_percent": 80,
+									"downstream_bandwidth_mbps": 1000,
+									"downstream_busy_percent": 80,
+									"monitors": [
+										{
+											"monitor": "ping",
+											"target_host": "10.10.10.254"
+										}
+									],
+									"cable_plugin_detect": "ENABLE",
+									"autolasthop": "GLOBAL",
+									"failsafe": {
+										"state": "DISABLE",
+										"timeout": 120,
+										"action": "FAILOVER"
+									},
+									"dev_mgt": {
+										"report_console": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"snmp_svc": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"ssh_console": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"troubleshooting_port": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"web_console": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										}
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +179,117 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_pppoe_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new link-pppoe",
+						"description": "新建链路pppoe拨号设置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/link/pppoe/",
+							"body": {
+								"name": "AI_wan_1_A",
+								"state": "ENABLE",
+								"type": "PPPOE",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"username": "123456789@ct.com",
+								"echo_retransmission_interval": 80,
+								"echo_retransmission_count": 3,
+								"auto_dial": "ENABLE",
+								"auto_dial_interval": 1,
+								"mtu": 1492,
+								"auto_snat": "DISABLE",
+								"upstream_bandwidth_mbps": 1000,
+								"upstream_busy_percent": 80,
+								"downstream_bandwidth_mbps": 1000,
+								"downstream_busy_percent": 80,
+								"cable_plugin_detect": "ENABLE",
+								"autolasthop": "GLOBAL"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/link/pppoe/ 响应",
+						"description": "返回POST /api/ad/v3/net/link/pppoe/的响应数据",
+						"value": {
+							"name": "AI_wan_1_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "PPPOE",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"username": "123456789@ct.com",
+							"password": "abcd1234",
+							"pk_password": "example_string",
+							"encrypted_password": "A1B2C3D4",
+							"echo_retransmission_interval": 80,
+							"echo_retransmission_count": 3,
+							"auto_dial": "ENABLE",
+							"auto_dial_interval": 1,
+							"mtu": 1492,
+							"mac_address": "00:90:0b:3c:33:18",
+							"auto_snat": "DISABLE",
+							"upstream_bandwidth_mbps": 1000,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 1000,
+							"downstream_busy_percent": 80,
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "ENABLE",
+							"autolasthop": "GLOBAL",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"dev_mgt": {
+								"report_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"snmp_svc": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"ssh_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"troubleshooting_port": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"web_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								}
+							}
+						}
 					}
 				}
 			},
@@ -98,6 +309,128 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_pppoe_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify link-pppoe",
+						"description": "修改链路pppoe拨号设置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/link/pppoe/",
+							"body": {
+								"name": "wan_1",
+								"state": "ENABLE",
+								"type": "PPPOE",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"username": "123456789@ct.com",
+								"echo_retransmission_interval": 80,
+								"echo_retransmission_count": 3,
+								"auto_dial": "ENABLE",
+								"auto_dial_interval": 1,
+								"mtu": 1492,
+								"auto_snat": "DISABLE",
+								"upstream_bandwidth_mbps": 1000,
+								"upstream_busy_percent": 80,
+								"downstream_bandwidth_mbps": 1000,
+								"downstream_busy_percent": 80,
+								"cable_plugin_detect": "ENABLE",
+								"autolasthop": "GLOBAL"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/link/pppoe/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/link/pppoe/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "wan_1",
+									"description": "example_string",
+									"state": "ENABLE",
+									"type": "PPPOE",
+									"interface": {
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									},
+									"username": "123456789@ct.com",
+									"password": "abcd1234",
+									"pk_password": "example_string",
+									"encrypted_password": "A1B2C3D4",
+									"echo_retransmission_interval": 80,
+									"echo_retransmission_count": 3,
+									"auto_dial": "ENABLE",
+									"auto_dial_interval": 1,
+									"mtu": 1492,
+									"mac_address": "00:90:0b:3c:33:18",
+									"auto_snat": "DISABLE",
+									"upstream_bandwidth_mbps": 1000,
+									"upstream_busy_percent": 80,
+									"downstream_bandwidth_mbps": 1000,
+									"downstream_busy_percent": 80,
+									"monitors": [
+										{
+											"monitor": "ping",
+											"target_host": "10.10.10.254"
+										}
+									],
+									"cable_plugin_detect": "ENABLE",
+									"autolasthop": "GLOBAL",
+									"failsafe": {
+										"state": "DISABLE",
+										"timeout": 120,
+										"action": "FAILOVER"
+									},
+									"dev_mgt": {
+										"report_console": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"snmp_svc": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"ssh_console": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"troubleshooting_port": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										},
+										"web_console": {
+											"whitelist_address": {
+												"ref_custom_address_group": "",
+												"type": "ALL"
+											},
+											"whitelist_switch": "GLOBAL"
+										}
+									}
+								}
+							]
+						}
 					}
 				}
 			},
@@ -151,6 +484,95 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_pppoe_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific link-pppoe",
+						"description": "查看指定链路pppoe拨号设置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link/pppoe/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link/pppoe/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/link/pppoe/{name}的响应数据",
+						"value": {
+							"name": "wan_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "PPPOE",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"username": "123456789@ct.com",
+							"password": "abcd1234",
+							"pk_password": "example_string",
+							"encrypted_password": "A1B2C3D4",
+							"echo_retransmission_interval": 80,
+							"echo_retransmission_count": 3,
+							"auto_dial": "ENABLE",
+							"auto_dial_interval": 1,
+							"mtu": 1492,
+							"mac_address": "00:90:0b:3c:33:18",
+							"auto_snat": "DISABLE",
+							"upstream_bandwidth_mbps": 1000,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 1000,
+							"downstream_busy_percent": 80,
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "ENABLE",
+							"autolasthop": "GLOBAL",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"dev_mgt": {
+								"report_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"snmp_svc": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"ssh_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"troubleshooting_port": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"web_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								}
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -170,6 +592,117 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_pppoe_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new link-pppoe",
+						"description": "新建链路pppoe拨号设置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/link/pppoe/{name}",
+							"body": {
+								"name": "AI_wan_1_B",
+								"state": "ENABLE",
+								"type": "PPPOE",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"username": "123456789@ct.com",
+								"echo_retransmission_interval": 80,
+								"echo_retransmission_count": 3,
+								"auto_dial": "ENABLE",
+								"auto_dial_interval": 1,
+								"mtu": 1492,
+								"auto_snat": "DISABLE",
+								"upstream_bandwidth_mbps": 1000,
+								"upstream_busy_percent": 80,
+								"downstream_bandwidth_mbps": 1000,
+								"downstream_busy_percent": 80,
+								"cable_plugin_detect": "ENABLE",
+								"autolasthop": "GLOBAL"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/link/pppoe/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/link/pppoe/{name}的响应数据",
+						"value": {
+							"name": "AI_wan_1_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "PPPOE",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"username": "123456789@ct.com",
+							"password": "abcd1234",
+							"pk_password": "example_string",
+							"encrypted_password": "A1B2C3D4",
+							"echo_retransmission_interval": 80,
+							"echo_retransmission_count": 3,
+							"auto_dial": "ENABLE",
+							"auto_dial_interval": 1,
+							"mtu": 1492,
+							"mac_address": "00:90:0b:3c:33:18",
+							"auto_snat": "DISABLE",
+							"upstream_bandwidth_mbps": 1000,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 1000,
+							"downstream_busy_percent": 80,
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "ENABLE",
+							"autolasthop": "GLOBAL",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"dev_mgt": {
+								"report_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"snmp_svc": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"ssh_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"troubleshooting_port": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"web_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								}
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -187,6 +720,117 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_pppoe_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific link-pppoe",
+						"description": "替换指定链路pppoe拨号设置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/link/pppoe/{name}",
+							"body": {
+								"name": "wan_1",
+								"state": "ENABLE",
+								"type": "PPPOE",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"username": "123456789@ct.com",
+								"echo_retransmission_interval": 80,
+								"echo_retransmission_count": 3,
+								"auto_dial": "ENABLE",
+								"auto_dial_interval": 1,
+								"mtu": 1492,
+								"auto_snat": "DISABLE",
+								"upstream_bandwidth_mbps": 1000,
+								"upstream_busy_percent": 80,
+								"downstream_bandwidth_mbps": 1000,
+								"downstream_busy_percent": 80,
+								"cable_plugin_detect": "ENABLE",
+								"autolasthop": "GLOBAL"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/link/pppoe/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/link/pppoe/{name}的响应数据",
+						"value": {
+							"name": "wan_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "PPPOE",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"username": "123456789@ct.com",
+							"password": "abcd1234",
+							"pk_password": "example_string",
+							"encrypted_password": "A1B2C3D4",
+							"echo_retransmission_interval": 80,
+							"echo_retransmission_count": 3,
+							"auto_dial": "ENABLE",
+							"auto_dial_interval": 1,
+							"mtu": 1492,
+							"mac_address": "00:90:0b:3c:33:18",
+							"auto_snat": "DISABLE",
+							"upstream_bandwidth_mbps": 1000,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 1000,
+							"downstream_busy_percent": 80,
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "ENABLE",
+							"autolasthop": "GLOBAL",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"dev_mgt": {
+								"report_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"snmp_svc": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"ssh_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"troubleshooting_port": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"web_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								}
+							}
+						}
 					}
 				}
 			},
@@ -206,6 +850,117 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_pppoe_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific link-pppoe",
+						"description": "修改指定链路pppoe拨号设置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/link/pppoe/{name}",
+							"body": {
+								"name": "wan_1",
+								"state": "ENABLE",
+								"type": "PPPOE",
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"username": "123456789@ct.com",
+								"echo_retransmission_interval": 80,
+								"echo_retransmission_count": 3,
+								"auto_dial": "ENABLE",
+								"auto_dial_interval": 1,
+								"mtu": 1492,
+								"auto_snat": "DISABLE",
+								"upstream_bandwidth_mbps": 1000,
+								"upstream_busy_percent": 80,
+								"downstream_bandwidth_mbps": 1000,
+								"downstream_busy_percent": 80,
+								"cable_plugin_detect": "ENABLE",
+								"autolasthop": "GLOBAL"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/link/pppoe/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/link/pppoe/{name}的响应数据",
+						"value": {
+							"name": "wan_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "PPPOE",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"username": "123456789@ct.com",
+							"password": "abcd1234",
+							"pk_password": "example_string",
+							"encrypted_password": "A1B2C3D4",
+							"echo_retransmission_interval": 80,
+							"echo_retransmission_count": 3,
+							"auto_dial": "ENABLE",
+							"auto_dial_interval": 1,
+							"mtu": 1492,
+							"mac_address": "00:90:0b:3c:33:18",
+							"auto_snat": "DISABLE",
+							"upstream_bandwidth_mbps": 1000,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 1000,
+							"downstream_busy_percent": 80,
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "ENABLE",
+							"autolasthop": "GLOBAL",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"dev_mgt": {
+								"report_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"snmp_svc": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"ssh_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"troubleshooting_port": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"web_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								}
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -218,6 +973,95 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_pppoe_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific link-pppoe",
+						"description": "删除指定链路pppoe拨号设置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/link/pppoe/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/link/pppoe/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/link/pppoe/{name}的响应数据",
+						"value": {
+							"name": "wan_1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"type": "PPPOE",
+							"interface": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"username": "123456789@ct.com",
+							"password": "abcd1234",
+							"pk_password": "example_string",
+							"encrypted_password": "A1B2C3D4",
+							"echo_retransmission_interval": 80,
+							"echo_retransmission_count": 3,
+							"auto_dial": "ENABLE",
+							"auto_dial_interval": 1,
+							"mtu": 1492,
+							"mac_address": "00:90:0b:3c:33:18",
+							"auto_snat": "DISABLE",
+							"upstream_bandwidth_mbps": 1000,
+							"upstream_busy_percent": 80,
+							"downstream_bandwidth_mbps": 1000,
+							"downstream_busy_percent": 80,
+							"monitors": [
+								{
+									"monitor": "ping",
+									"target_host": "10.10.10.254"
+								}
+							],
+							"cable_plugin_detect": "ENABLE",
+							"autolasthop": "GLOBAL",
+							"failsafe": {
+								"state": "DISABLE",
+								"timeout": 120,
+								"action": "FAILOVER"
+							},
+							"dev_mgt": {
+								"report_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"snmp_svc": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"ssh_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"troubleshooting_port": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								},
+								"web_console": {
+									"whitelist_address": {
+										"ref_custom_address_group": "",
+										"type": "ALL"
+									},
+									"whitelist_switch": "GLOBAL"
+								}
+							}
+						}
 					}
 				}
 			}
@@ -526,6 +1370,16 @@ module.exports ={
 					"default": "ENABLE",
 					"example": "ENABLE"
 				},
+				"autolasthop": {
+					"description": "可选参数；对称路由（global-全局/enable-启用/disable-禁用），默认值global",
+					"type": "string",
+					"enum": [
+						"GLOBAL",
+						"ENABLE",
+						"DISABLE"
+					],
+					"default": "GLOBAL"
+				},
 				"failsafe": {
 					"description": "可选参数；零流量监测，双机/集群模式下才可配置",
 					"type": "object",
@@ -558,6 +1412,222 @@ module.exports ={
 							],
 							"default": "FAILOVER",
 							"example": "FAILOVER"
+						}
+					}
+				},
+				"dev_mgt": {
+					"type": "object",
+					"description": "pppoe的设备管理",
+					"properties": {
+						"report_console": {
+							"type": "object",
+							"description": "报表中心",
+							"properties": {
+								"whitelist_address": {
+									"description": "白名单地址",
+									"properties": {
+										"ref_custom_address_group": {
+											"description": "用户地址集",
+											"example": "{custom_address_group}",
+											"type": "string",
+											"default": ""
+										},
+										"type": {
+											"default": "ALL",
+											"description": "地址类型",
+											"enum": [
+												"ALL",
+												"GLOBAL-WHITELIST",
+												"CUSTOM-ADDRESS-GROUP"
+											],
+											"example": "ALL",
+											"type": "string"
+										}
+									},
+									"required": [
+										"type"
+									],
+									"type": "object"
+								},
+								"whitelist_switch": {
+									"default": "GLOBAL",
+									"description": "白名单的开关",
+									"enum": [
+										"ENABLE",
+										"DISABLE",
+										"GLOBAL"
+									],
+									"type": "string"
+								}
+							}
+						},
+						"snmp_svc": {
+							"description": "SNMP服务",
+							"type": "object",
+							"properties": {
+								"whitelist_address": {
+									"description": "白名单地址",
+									"properties": {
+										"ref_custom_address_group": {
+											"description": "用户地址集",
+											"example": "{custom_address_group}",
+											"type": "string",
+											"default": ""
+										},
+										"type": {
+											"default": "ALL",
+											"description": "地址类型",
+											"enum": [
+												"ALL",
+												"GLOBAL-WHITELIST",
+												"CUSTOM-ADDRESS-GROUP"
+											],
+											"example": "ALL",
+											"type": "string"
+										}
+									},
+									"required": [
+										"type"
+									],
+									"type": "object"
+								},
+								"whitelist_switch": {
+									"default": "GLOBAL",
+									"description": "白名单的开关",
+									"enum": [
+										"ENABLE",
+										"DISABLE",
+										"GLOBAL"
+									],
+									"type": "string"
+								}
+							}
+						},
+						"ssh_console": {
+							"description": "SSH维护",
+							"type": "object",
+							"properties": {
+								"whitelist_address": {
+									"description": "白名单地址",
+									"properties": {
+										"ref_custom_address_group": {
+											"description": "用户地址集",
+											"example": "{custom_address_group}",
+											"type": "string",
+											"default": ""
+										},
+										"type": {
+											"default": "ALL",
+											"description": "地址类型",
+											"enum": [
+												"ALL",
+												"GLOBAL-WHITELIST",
+												"CUSTOM-ADDRESS-GROUP"
+											],
+											"example": "ALL",
+											"type": "string"
+										}
+									},
+									"required": [
+										"type"
+									],
+									"type": "object"
+								},
+								"whitelist_switch": {
+									"default": "GLOBAL",
+									"description": "白名单的开关",
+									"enum": [
+										"ENABLE",
+										"DISABLE",
+										"GLOBAL"
+									],
+									"type": "string"
+								}
+							}
+						},
+						"troubleshooting_port": {
+							"description": "SSH命令行",
+							"type": "object",
+							"properties": {
+								"whitelist_address": {
+									"description": "白名单地址",
+									"properties": {
+										"ref_custom_address_group": {
+											"description": "用户地址集",
+											"example": "{custom_address_group}",
+											"type": "string",
+											"default": ""
+										},
+										"type": {
+											"default": "ALL",
+											"description": "地址类型",
+											"enum": [
+												"ALL",
+												"GLOBAL-WHITELIST",
+												"CUSTOM-ADDRESS-GROUP"
+											],
+											"example": "ALL",
+											"type": "string"
+										}
+									},
+									"required": [
+										"type"
+									],
+									"type": "object"
+								},
+								"whitelist_switch": {
+									"default": "GLOBAL",
+									"description": "白名单的开关",
+									"enum": [
+										"ENABLE",
+										"DISABLE",
+										"GLOBAL"
+									],
+									"type": "string"
+								}
+							}
+						},
+						"web_console": {
+							"description": "web控制台白名单",
+							"type": "object",
+							"properties": {
+								"whitelist_address": {
+									"description": "白名单地址",
+									"properties": {
+										"ref_custom_address_group": {
+											"description": "用户地址集",
+											"example": "{custom_address_group}",
+											"type": "string",
+											"default": ""
+										},
+										"type": {
+											"default": "ALL",
+											"description": "地址类型",
+											"enum": [
+												"ALL",
+												"GLOBAL-WHITELIST",
+												"CUSTOM-ADDRESS-GROUP"
+											],
+											"example": "ALL",
+											"type": "string"
+										}
+									},
+									"required": [
+										"type"
+									],
+									"type": "object"
+								},
+								"whitelist_switch": {
+									"default": "GLOBAL",
+									"description": "白名单的开关",
+									"enum": [
+										"ENABLE",
+										"DISABLE",
+										"GLOBAL"
+									],
+									"type": "string"
+								}
+							}
 						}
 					}
 				}

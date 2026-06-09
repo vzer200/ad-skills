@@ -62,6 +62,65 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_trap_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all trap",
+						"description": "查看已有的Trap配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/trap/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/trap/ 响应",
+						"description": "返回GET /api/ad/v3/sys/trap/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "DC_SNMP_Trap_public",
+									"description": "example_string",
+									"state": "ENABLE",
+									"trap_encode": "GBK",
+									"version": "V1",
+									"address": "192.168.10.135",
+									"port": 162,
+									"network": "AUTO",
+									"snmpv1v2c": {
+										"community": "public",
+										"pk_community": "A1B2C3D4",
+										"encrypted_community": "A1B2C3D4"
+									},
+									"snmpv3": {
+										"engine_id": "0x010203040506adf",
+										"username": "admin",
+										"authentication": {
+											"state": "ENABLE",
+											"algorithm": "SHA",
+											"password": "",
+											"pk_password": "",
+											"encrypted_password": "A1B2C3D4"
+										},
+										"encrypt": {
+											"state": "ENABLE",
+											"algorithm": "AES",
+											"reuse_authentication_password": "DISABLE",
+											"password": "",
+											"pk_password": "",
+											"encrypted_password": "A1B2C3D4"
+										}
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +138,63 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_trap_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new trap",
+						"description": "新建Trap配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/trap/",
+							"body": {
+								"name": "AI_DC_SNMP_Trap_public_A",
+								"state": "ENABLE",
+								"trap_encode": "GBK",
+								"version": "V1",
+								"address": "192.168.10.135",
+								"port": 162,
+								"network": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/trap/ 响应",
+						"description": "返回POST /api/ad/v3/sys/trap/的响应数据",
+						"value": {
+							"name": "AI_DC_SNMP_Trap_public_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"trap_encode": "GBK",
+							"version": "V1",
+							"address": "192.168.10.135",
+							"port": 162,
+							"network": "AUTO",
+							"snmpv1v2c": {
+								"community": "public",
+								"pk_community": "A1B2C3D4",
+								"encrypted_community": "A1B2C3D4"
+							},
+							"snmpv3": {
+								"engine_id": "0x010203040506adf",
+								"username": "admin",
+								"authentication": {
+									"state": "ENABLE",
+									"algorithm": "SHA",
+									"password": "",
+									"pk_password": "",
+									"encrypted_password": "A1B2C3D4"
+								},
+								"encrypt": {
+									"state": "ENABLE",
+									"algorithm": "AES",
+									"reuse_authentication_password": "DISABLE",
+									"password": "",
+									"pk_password": "",
+									"encrypted_password": "A1B2C3D4"
+								}
+							}
+						}
 					}
 				}
 			},
@@ -128,6 +244,54 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_trap_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific trap",
+						"description": "查看指定的Trap配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/trap/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/trap/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/trap/{name}的响应数据",
+						"value": {
+							"name": "DC_SNMP_Trap_public",
+							"description": "example_string",
+							"state": "ENABLE",
+							"trap_encode": "GBK",
+							"version": "V1",
+							"address": "192.168.10.135",
+							"port": 162,
+							"network": "AUTO",
+							"snmpv1v2c": {
+								"community": "public",
+								"pk_community": "A1B2C3D4",
+								"encrypted_community": "A1B2C3D4"
+							},
+							"snmpv3": {
+								"engine_id": "0x010203040506adf",
+								"username": "admin",
+								"authentication": {
+									"state": "ENABLE",
+									"algorithm": "SHA",
+									"password": "",
+									"pk_password": "",
+									"encrypted_password": "A1B2C3D4"
+								},
+								"encrypt": {
+									"state": "ENABLE",
+									"algorithm": "AES",
+									"reuse_authentication_password": "DISABLE",
+									"password": "",
+									"pk_password": "",
+									"encrypted_password": "A1B2C3D4"
+								}
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -147,6 +311,63 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_trap_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new trap",
+						"description": "新建指定的Trap配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/trap/{name}",
+							"body": {
+								"name": "AI_DC_SNMP_Trap_public_B",
+								"state": "ENABLE",
+								"trap_encode": "GBK",
+								"version": "V1",
+								"address": "192.168.10.135",
+								"port": 162,
+								"network": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/trap/{name} 响应",
+						"description": "返回POST /api/ad/v3/sys/trap/{name}的响应数据",
+						"value": {
+							"name": "AI_DC_SNMP_Trap_public_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"trap_encode": "GBK",
+							"version": "V1",
+							"address": "192.168.10.135",
+							"port": 162,
+							"network": "AUTO",
+							"snmpv1v2c": {
+								"community": "public",
+								"pk_community": "A1B2C3D4",
+								"encrypted_community": "A1B2C3D4"
+							},
+							"snmpv3": {
+								"engine_id": "0x010203040506adf",
+								"username": "admin",
+								"authentication": {
+									"state": "ENABLE",
+									"algorithm": "SHA",
+									"password": "",
+									"pk_password": "",
+									"encrypted_password": "A1B2C3D4"
+								},
+								"encrypt": {
+									"state": "ENABLE",
+									"algorithm": "AES",
+									"reuse_authentication_password": "DISABLE",
+									"password": "",
+									"pk_password": "",
+									"encrypted_password": "A1B2C3D4"
+								}
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -164,6 +385,63 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_trap_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific trap",
+						"description": "修改指定的Trap配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/trap/{name}",
+							"body": {
+								"name": "DC_SNMP_Trap_public",
+								"state": "ENABLE",
+								"trap_encode": "GBK",
+								"version": "V1",
+								"address": "192.168.10.135",
+								"port": 162,
+								"network": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/trap/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/trap/{name}的响应数据",
+						"value": {
+							"name": "DC_SNMP_Trap_public",
+							"description": "example_string",
+							"state": "ENABLE",
+							"trap_encode": "GBK",
+							"version": "V1",
+							"address": "192.168.10.135",
+							"port": 162,
+							"network": "AUTO",
+							"snmpv1v2c": {
+								"community": "public",
+								"pk_community": "A1B2C3D4",
+								"encrypted_community": "A1B2C3D4"
+							},
+							"snmpv3": {
+								"engine_id": "0x010203040506adf",
+								"username": "admin",
+								"authentication": {
+									"state": "ENABLE",
+									"algorithm": "SHA",
+									"password": "",
+									"pk_password": "",
+									"encrypted_password": "A1B2C3D4"
+								},
+								"encrypt": {
+									"state": "ENABLE",
+									"algorithm": "AES",
+									"reuse_authentication_password": "DISABLE",
+									"password": "",
+									"pk_password": "",
+									"encrypted_password": "A1B2C3D4"
+								}
+							}
+						}
 					}
 				}
 			},
@@ -183,6 +461,63 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_trap_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific trap",
+						"description": "修改指定的Trap配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/trap/{name}",
+							"body": {
+								"name": "DC_SNMP_Trap_public",
+								"state": "ENABLE",
+								"trap_encode": "GBK",
+								"version": "V1",
+								"address": "192.168.10.135",
+								"port": 162,
+								"network": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/trap/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/trap/{name}的响应数据",
+						"value": {
+							"name": "DC_SNMP_Trap_public",
+							"description": "example_string",
+							"state": "ENABLE",
+							"trap_encode": "GBK",
+							"version": "V1",
+							"address": "192.168.10.135",
+							"port": 162,
+							"network": "AUTO",
+							"snmpv1v2c": {
+								"community": "public",
+								"pk_community": "A1B2C3D4",
+								"encrypted_community": "A1B2C3D4"
+							},
+							"snmpv3": {
+								"engine_id": "0x010203040506adf",
+								"username": "admin",
+								"authentication": {
+									"state": "ENABLE",
+									"algorithm": "SHA",
+									"password": "",
+									"pk_password": "",
+									"encrypted_password": "A1B2C3D4"
+								},
+								"encrypt": {
+									"state": "ENABLE",
+									"algorithm": "AES",
+									"reuse_authentication_password": "DISABLE",
+									"password": "",
+									"pk_password": "",
+									"encrypted_password": "A1B2C3D4"
+								}
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -195,6 +530,54 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_trap_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific trap",
+						"description": "删除指定的Trap配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/trap/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/trap/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/trap/{name}的响应数据",
+						"value": {
+							"name": "DC_SNMP_Trap_public",
+							"description": "example_string",
+							"state": "ENABLE",
+							"trap_encode": "GBK",
+							"version": "V1",
+							"address": "192.168.10.135",
+							"port": 162,
+							"network": "AUTO",
+							"snmpv1v2c": {
+								"community": "public",
+								"pk_community": "A1B2C3D4",
+								"encrypted_community": "A1B2C3D4"
+							},
+							"snmpv3": {
+								"engine_id": "0x010203040506adf",
+								"username": "admin",
+								"authentication": {
+									"state": "ENABLE",
+									"algorithm": "SHA",
+									"password": "",
+									"pk_password": "",
+									"encrypted_password": "A1B2C3D4"
+								},
+								"encrypt": {
+									"state": "ENABLE",
+									"algorithm": "AES",
+									"reuse_authentication_password": "DISABLE",
+									"password": "",
+									"pk_password": "",
+									"encrypted_password": "A1B2C3D4"
+								}
+							}
+						}
 					}
 				}
 			}
@@ -424,8 +807,7 @@ module.exports ={
 									"description": "可选参数；认证密码，当启用认证时，password和encrypted_password必须选填一个",
 									"passwdDesc": "authentication password",
 									"type": "string",
-									"minLength": 8,
-									"maxLength": 64,
+									"minLength": 1,
 									"example": ""
 								},
 								"pk_password": {
@@ -478,10 +860,8 @@ module.exports ={
 								},
 								"password": {
 									"description": "可选参数；加密密码，当启用加密时，password和encrypted_password只能选填一个",
-									"passwdDesc": "encrypt password",
 									"type": "string",
-									"minLength": 8,
-									"maxLength": 64,
+									"minLength": 1,
 									"example": ""
 								},
 								"pk_password": {

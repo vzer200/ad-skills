@@ -62,6 +62,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual-wire_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all virtual-wire",
+						"description": "查看虚拟网线配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/virtual-wire/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/virtual-wire/ 响应",
+						"description": "返回GET /api/ad/v3/net/virtual-wire/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "virtual-wire1",
+									"description": "example_string",
+									"interface_1": {
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									},
+									"interface_2": {
+										"type": "PHYSICAL",
+										"interface": "bond-135"
+									},
+									"vlan_ids": [
+										1
+									],
+									"session_isolation": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +120,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_virtual-wire_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new virtual-wire",
+						"description": "新建虚拟网线配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/virtual-wire/",
+							"body": {
+								"name": "AI_virtual-wire1_A",
+								"interface_1": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"interface_2": {
+									"type": "PHYSICAL",
+									"interface": "bond-135"
+								},
+								"session_isolation": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/virtual-wire/ 响应",
+						"description": "返回POST /api/ad/v3/net/virtual-wire/的响应数据",
+						"value": {
+							"name": "AI_virtual-wire1_A",
+							"description": "example_string",
+							"interface_1": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"interface_2": {
+								"type": "PHYSICAL",
+								"interface": "bond-135"
+							},
+							"vlan_ids": [
+								1
+							],
+							"session_isolation": "ENABLE"
+						}
 					}
 				}
 			},
@@ -98,6 +181,59 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_virtual-wire_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify virtual-wire",
+						"description": "修改虚拟网线配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/virtual-wire/",
+							"body": {
+								"name": "virtual-wire1",
+								"interface_1": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"interface_2": {
+									"type": "PHYSICAL",
+									"interface": "bond-135"
+								},
+								"session_isolation": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/virtual-wire/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/virtual-wire/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "virtual-wire1",
+									"description": "example_string",
+									"interface_1": {
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									},
+									"interface_2": {
+										"type": "PHYSICAL",
+										"interface": "bond-135"
+									},
+									"vlan_ids": [
+										1
+									],
+									"session_isolation": "ENABLE"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -151,6 +287,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual-wire_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-wire",
+						"description": "查看指定虚拟网线配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/virtual-wire/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/virtual-wire/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/virtual-wire/{name}的响应数据",
+						"value": {
+							"name": "virtual-wire1",
+							"description": "example_string",
+							"interface_1": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"interface_2": {
+								"type": "PHYSICAL",
+								"interface": "bond-135"
+							},
+							"vlan_ids": [
+								1
+							],
+							"session_isolation": "ENABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -170,6 +336,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual-wire_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new virtual-wire",
+						"description": "新建虚拟网线配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/virtual-wire/{name}",
+							"body": {
+								"name": "AI_virtual-wire1_B",
+								"interface_1": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"interface_2": {
+									"type": "PHYSICAL",
+									"interface": "bond-135"
+								},
+								"session_isolation": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/virtual-wire/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/virtual-wire/{name}的响应数据",
+						"value": {
+							"name": "AI_virtual-wire1_B",
+							"description": "example_string",
+							"interface_1": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"interface_2": {
+								"type": "PHYSICAL",
+								"interface": "bond-135"
+							},
+							"vlan_ids": [
+								1
+							],
+							"session_isolation": "ENABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -187,6 +395,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_virtual-wire_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific virtual-wire",
+						"description": "替换指定虚拟网线配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/virtual-wire/{name}",
+							"body": {
+								"name": "virtual-wire1",
+								"interface_1": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"interface_2": {
+									"type": "PHYSICAL",
+									"interface": "bond-135"
+								},
+								"session_isolation": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/virtual-wire/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/virtual-wire/{name}的响应数据",
+						"value": {
+							"name": "virtual-wire1",
+							"description": "example_string",
+							"interface_1": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"interface_2": {
+								"type": "PHYSICAL",
+								"interface": "bond-135"
+							},
+							"vlan_ids": [
+								1
+							],
+							"session_isolation": "ENABLE"
+						}
 					}
 				}
 			},
@@ -206,6 +456,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual-wire_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific virtual-wire",
+						"description": "修改指定虚拟网线配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/virtual-wire/{name}",
+							"body": {
+								"name": "virtual-wire1",
+								"interface_1": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"interface_2": {
+									"type": "PHYSICAL",
+									"interface": "bond-135"
+								},
+								"session_isolation": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/virtual-wire/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/virtual-wire/{name}的响应数据",
+						"value": {
+							"name": "virtual-wire1",
+							"description": "example_string",
+							"interface_1": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"interface_2": {
+								"type": "PHYSICAL",
+								"interface": "bond-135"
+							},
+							"vlan_ids": [
+								1
+							],
+							"session_isolation": "ENABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -218,6 +510,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_virtual-wire_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific virtual-wire",
+						"description": "删除指定虚拟网线配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/virtual-wire/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/virtual-wire/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/virtual-wire/{name}的响应数据",
+						"value": {
+							"name": "virtual-wire1",
+							"description": "example_string",
+							"interface_1": {
+								"type": "PHYSICAL",
+								"interface": "bond-134"
+							},
+							"interface_2": {
+								"type": "PHYSICAL",
+								"interface": "bond-135"
+							},
+							"vlan_ids": [
+								1
+							],
+							"session_isolation": "ENABLE"
+						}
 					}
 				}
 			}
@@ -309,14 +631,15 @@ module.exports ={
 			"type": "object",
 			"required": [
 				"name",
-				"interfaces"
+				"interface_1",
+				"interface_2"
 			],
 			"properties": {
 				"name": {
 					"type": "string",
 					"description": "必选参数；配置名称",
 					"example": "virtual-wire1",
-					"maxLength": 511,
+					"maxLength": 480,
 					"minLength": 1
 				},
 				"description": {

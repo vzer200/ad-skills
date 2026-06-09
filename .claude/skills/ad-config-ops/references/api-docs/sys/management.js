@@ -51,6 +51,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_management_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get management",
+						"description": "查看当前已有的管理口配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/management"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/management 响应",
+						"description": "返回GET /api/ad/v3/sys/management的响应数据",
+						"value": {
+							"addresses": [
+								"192.168.1.100/24"
+							],
+							"gateway": "200.200.0.254",
+							"gateway_ipv6": "2001::1",
+							"host": "localhost",
+							"lldp_status": "LLDP-STATUS-RX-TX",
+							"description": "example_string"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +93,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_management_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace management",
+						"description": "修改管理口配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/management",
+							"body": {
+								"addresses": [
+									"192.168.1.100/24"
+								],
+								"host": "localhost",
+								"lldp_status": "LLDP-STATUS-RX-TX"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/management 响应",
+						"description": "返回PUT /api/ad/v3/sys/management的响应数据",
+						"value": {
+							"addresses": [
+								"192.168.1.100/24"
+							],
+							"gateway": "200.200.0.254",
+							"gateway_ipv6": "2001::1",
+							"host": "localhost",
+							"lldp_status": "LLDP-STATUS-RX-TX",
+							"description": "example_string"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +141,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_management_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify management",
+						"description": "修改管理口配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/management",
+							"body": {
+								"addresses": [
+									"192.168.1.100/24"
+								],
+								"host": "localhost",
+								"lldp_status": "LLDP-STATUS-RX-TX"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/management 响应",
+						"description": "返回PATCH /api/ad/v3/sys/management的响应数据",
+						"value": {
+							"addresses": [
+								"192.168.1.100/24"
+							],
+							"gateway": "200.200.0.254",
+							"gateway_ipv6": "2001::1",
+							"host": "localhost",
+							"lldp_status": "LLDP-STATUS-RX-TX",
+							"description": "example_string"
+						}
 					}
 				}
 			},

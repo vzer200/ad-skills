@@ -54,6 +54,24 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_crl_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific crl",
+						"description": "更新CRL证书吊销列表",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/rc/crl/{name}/update"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/rc/crl/{name}/update 响应",
+						"description": "返回POST /api/ad/v3/debug/rc/crl/{name}/update的响应数据",
+						"value": {
+							"name": "AI_abc.com_crl_B",
+							"update": "example_string"
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

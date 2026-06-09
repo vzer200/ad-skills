@@ -62,6 +62,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snmp_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all snmp",
+						"description": "查看已有的SNMP（V1/V2C）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/snmp/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/snmp/ 响应",
+						"description": "返回GET /api/ad/v3/sys/snmp/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "snmp3_admin",
+									"description": "example_string",
+									"state": "ENABLE",
+									"community": "public",
+									"pk_community": "A1B2C3D4",
+									"encrypted_community": "A1B2C3D4",
+									"privileges": "GET",
+									"permit_source_address": {
+										"type": "ALL",
+										"addresses": [
+											"200.200.0.123/24"
+										]
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +119,40 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snmp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new snmp",
+						"description": "新建SNMP（V1/V2C）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/snmp/",
+							"body": {
+								"name": "AI_snmp3_admin_A",
+								"state": "ENABLE",
+								"privileges": "GET"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/snmp/ 响应",
+						"description": "返回POST /api/ad/v3/sys/snmp/的响应数据",
+						"value": {
+							"name": "AI_snmp3_admin_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"community": "public",
+							"pk_community": "A1B2C3D4",
+							"encrypted_community": "A1B2C3D4",
+							"privileges": "GET",
+							"permit_source_address": {
+								"type": "ALL",
+								"addresses": [
+									"200.200.0.123/24"
+								]
+							}
+						}
 					}
 				}
 			},
@@ -128,6 +202,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snmp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific snmp",
+						"description": "查看指定的SNMP（V1/V2C）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/snmp/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/snmp/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/snmp/{name}的响应数据",
+						"value": {
+							"name": "snmp3_admin",
+							"description": "example_string",
+							"state": "ENABLE",
+							"community": "public",
+							"pk_community": "A1B2C3D4",
+							"encrypted_community": "A1B2C3D4",
+							"privileges": "GET",
+							"permit_source_address": {
+								"type": "ALL",
+								"addresses": [
+									"200.200.0.123/24"
+								]
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -147,6 +250,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snmp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new snmp",
+						"description": "新建指定的SNMP（V1/V2C）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/snmp/{name}",
+							"body": {
+								"name": "AI_snmp3_admin_B",
+								"state": "ENABLE",
+								"privileges": "GET"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/snmp/{name} 响应",
+						"description": "返回POST /api/ad/v3/sys/snmp/{name}的响应数据",
+						"value": {
+							"name": "AI_snmp3_admin_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"community": "public",
+							"pk_community": "A1B2C3D4",
+							"encrypted_community": "A1B2C3D4",
+							"privileges": "GET",
+							"permit_source_address": {
+								"type": "ALL",
+								"addresses": [
+									"200.200.0.123/24"
+								]
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -164,6 +301,40 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snmp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific snmp",
+						"description": "修改指定的SNMP（V1/V2C）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/snmp/{name}",
+							"body": {
+								"name": "snmp3_admin",
+								"state": "ENABLE",
+								"privileges": "GET"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/snmp/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/snmp/{name}的响应数据",
+						"value": {
+							"name": "snmp3_admin",
+							"description": "example_string",
+							"state": "ENABLE",
+							"community": "public",
+							"pk_community": "A1B2C3D4",
+							"encrypted_community": "A1B2C3D4",
+							"privileges": "GET",
+							"permit_source_address": {
+								"type": "ALL",
+								"addresses": [
+									"200.200.0.123/24"
+								]
+							}
+						}
 					}
 				}
 			},
@@ -183,6 +354,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snmp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific snmp",
+						"description": "修改指定的SNMP（V1/V2C）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/snmp/{name}",
+							"body": {
+								"name": "snmp3_admin",
+								"state": "ENABLE",
+								"privileges": "GET"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/snmp/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/snmp/{name}的响应数据",
+						"value": {
+							"name": "snmp3_admin",
+							"description": "example_string",
+							"state": "ENABLE",
+							"community": "public",
+							"pk_community": "A1B2C3D4",
+							"encrypted_community": "A1B2C3D4",
+							"privileges": "GET",
+							"permit_source_address": {
+								"type": "ALL",
+								"addresses": [
+									"200.200.0.123/24"
+								]
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -195,6 +400,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snmp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific snmp",
+						"description": "删除指定的SNMP（V1/V2C）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/snmp/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/snmp/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/snmp/{name}的响应数据",
+						"value": {
+							"name": "snmp3_admin",
+							"description": "example_string",
+							"state": "ENABLE",
+							"community": "public",
+							"pk_community": "A1B2C3D4",
+							"encrypted_community": "A1B2C3D4",
+							"privileges": "GET",
+							"permit_source_address": {
+								"type": "ALL",
+								"addresses": [
+									"200.200.0.123/24"
+								]
+							}
+						}
 					}
 				}
 			}
@@ -310,7 +544,7 @@ module.exports ={
 					"description": "可选参数；SNMP共同体，默认为public",
 					"type": "string",
 					"maxLength": 64,
-					"minLength": 8,
+					"minLength": 1,
 					"example": "public"
 				},
 				"pk_community": {

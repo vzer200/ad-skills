@@ -62,6 +62,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_backup_config_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all backup-config",
+						"description": "查看当前已有的备份配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/backup-config/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/backup-config/ 响应",
+						"description": "返回GET /api/ad/v3/sys/backup-config/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "backup1",
+									"description": "change CNC link ip",
+									"time_point": "2018-01-04 08:05:10",
+									"version": "AD-7.0.24"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +110,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_backup_config_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new backup-config",
+						"description": "新建一个备份配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/backup-config/",
+							"body": {
+								"name": "AI_backup1_A"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/backup-config/ 响应",
+						"description": "返回POST /api/ad/v3/sys/backup-config/的响应数据",
+						"value": {
+							"name": "AI_backup1_A",
+							"description": "change CNC link ip",
+							"time_point": "2018-01-04 08:05:10",
+							"version": "AD-7.0.24"
+						}
 					}
 				}
 			},
@@ -132,6 +186,26 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_backup_config_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific backup-config",
+						"description": "查看指定的备份配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/backup-config/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/backup-config/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/backup-config/{name}的响应数据",
+						"value": {
+							"name": "backup1",
+							"description": "change CNC link ip",
+							"time_point": "2018-01-04 08:05:10",
+							"version": "AD-7.0.24"
+						}
+					}
 				}
 			},
 			"post": {
@@ -154,6 +228,29 @@ module.exports ={
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new backup-config",
+						"description": "新建指定的备份配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/backup-config/{name}",
+							"body": {
+								"name": "AI_backup1_B"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/backup-config/{name} 响应",
+						"description": "返回POST /api/ad/v3/sys/backup-config/{name}的响应数据",
+						"value": {
+							"name": "AI_backup1_B",
+							"description": "change CNC link ip",
+							"time_point": "2018-01-04 08:05:10",
+							"version": "AD-7.0.24"
+						}
+					}
 				}
 			},
 			"put": {
@@ -171,6 +268,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_backup_config_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific backup-config",
+						"description": "修改指定的备份配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/backup-config/{name}",
+							"body": {
+								"name": "backup1"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/backup-config/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/backup-config/{name}的响应数据",
+						"value": {
+							"name": "backup1",
+							"description": "change CNC link ip",
+							"time_point": "2018-01-04 08:05:10",
+							"version": "AD-7.0.24"
+						}
 					}
 				}
 			},
@@ -190,6 +310,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_backup_config_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific backup-config",
+						"description": "修改指定的备份配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/backup-config/{name}",
+							"body": {
+								"name": "backup1"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/backup-config/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/backup-config/{name}的响应数据",
+						"value": {
+							"name": "backup1",
+							"description": "change CNC link ip",
+							"time_point": "2018-01-04 08:05:10",
+							"version": "AD-7.0.24"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -202,6 +345,26 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_backup_config_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific backup-config",
+						"description": "删除指定的备份配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/backup-config/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/backup-config/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/backup-config/{name}的响应数据",
+						"value": {
+							"name": "backup1",
+							"description": "change CNC link ip",
+							"time_point": "2018-01-04 08:05:10",
+							"version": "AD-7.0.24"
+						}
 					}
 				}
 			}
@@ -232,6 +395,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_cgi_file_resource_response"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific backup-config package",
+						"description": "通过指定备份的名字，获取一个备份文件，返回备份文件的token等信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/backup-config/{name}/package"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/backup-config/{name}/package 响应",
+						"description": "返回GET /api/ad/v3/sys/backup-config/{name}/package的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
 					}
 				}
 			}
@@ -271,6 +455,32 @@ module.exports ={
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "recover specific backup-config",
+						"description": "通过备份的名字，恢复配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/backup-config/{name}/recovery",
+							"body": {
+								"mgmt_recover_enable": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/backup-config/{name}/recovery 响应",
+						"description": "返回POST /api/ad/v3/sys/backup-config/{name}/recovery的响应数据",
+						"value": {
+							"event_id": 0,
+							"operation": "/debug/sys/maintenance/restart-service",
+							"state": "WAITING",
+							"start_time": "2018-04-02 08:30:21",
+							"finish_time": "2018-04-02 08:31:05",
+							"triggered_by": "admin",
+							"data": {}
+						}
+					}
 				}
 			}
 		},
@@ -306,6 +516,32 @@ module.exports ={
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "recover default backup-config",
+						"description": "使设备恢复默认配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/backup-config/default/recovery",
+							"body": {
+								"mgmt_recover_enable": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/backup-config/default/recovery 响应",
+						"description": "返回POST /api/ad/v3/sys/backup-config/default/recovery的响应数据",
+						"value": {
+							"event_id": 0,
+							"operation": "/debug/sys/maintenance/restart-service",
+							"state": "WAITING",
+							"start_time": "2018-04-02 08:30:21",
+							"finish_time": "2018-04-02 08:31:05",
+							"triggered_by": "admin",
+							"data": {}
+						}
+					}
 				}
 			}
 		},
@@ -333,6 +569,27 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_cgi_file_resource_response"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "export backup-config package",
+						"description": "系統备份包用get接口进行导出",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/backup-config-package"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/backup-config-package 响应",
+						"description": "返回GET /api/ad/v3/sys/backup-config-package的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
+					}
 				}
 			},
 			"post": {
@@ -350,6 +607,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_cgi_file_resource_response"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "export backup-config package",
+						"description": "业务配置包用post接口进行导出",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/backup-config-package",
+							"body": {
+								"type": "BACKUP-CONFIG-PACKAGE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/backup-config-package 响应",
+						"description": "返回POST /api/ad/v3/sys/backup-config-package的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
 					}
 				}
 			}
@@ -385,6 +666,33 @@ module.exports ={
 				"responses": {
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "recover external backup-config.",
+						"description": "系统配置导入路由，转调明文导入或系统备份包导入",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/backup-config-recovery",
+							"body": {
+								"file_token": "example_string",
+								"mgmt_recover_enable": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/backup-config-recovery 响应",
+						"description": "返回POST /api/ad/v3/sys/backup-config-recovery的响应数据",
+						"value": {
+							"event_id": 0,
+							"operation": "/debug/sys/maintenance/restart-service",
+							"state": "WAITING",
+							"start_time": "2018-04-02 08:30:21",
+							"finish_time": "2018-04-02 08:31:05",
+							"triggered_by": "admin",
+							"data": {}
+						}
 					}
 				}
 			}

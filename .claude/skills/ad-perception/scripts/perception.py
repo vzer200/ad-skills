@@ -29,6 +29,7 @@ from multi_device import (
 )
 
 import argparse
+import html as html_lib
 import json
 import math
 import statistics
@@ -36,6 +37,23 @@ import sqlite3
 from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
+
+
+STATE_TREND_OPTIONS = {
+    "last-hour": {"label": "最近 1 小时"},
+    "last-day": {"label": "最近 24 小时"},
+    "last-month": {"label": "最近 1 个月"},
+}
+
+TRAFFIC_TREND_OPTIONS = STATE_TREND_OPTIONS
+
+STATE_TREND_METRICS = [
+    {"api": "cpu_usage", "metric": "cpu", "label": "CPU"},
+    {"api": "memory_usage", "metric": "memory", "label": "内存"},
+    {"api": "connection_rate", "metric": "connection_rate", "label": "新建速率"},
+]
+
+TOTAL_CPU_KEYS = {"TotalCpu", "total_cpu", "totalcpu"}
 
 
 def detect_anomaly_3sigma(points: List[Dict[str, Any]], window_seconds: int = 21600, z_threshold: int = 3, min_window: int = 30) -> List[Dict[str, Any]]:
@@ -249,6 +267,149 @@ def _build_metric_tables_from_trend(trends_by_vs: Dict[str, Any]) -> List[Dict[s
     return result
 
 
+def _summarize_vs_metric_trend(
+    vs_name: str,
+    item: Dict[str, Any],
+    data: Dict[str, Any],
+    from_ts: Optional[int] = None,
+    to_ts: Optional[int] = None,
+) -> Dict[str, Any]:
+    metric_name = str(item.get("name") or item.get("metric") or "")
+    values = item.get("values", [])
+    if not isinstance(values, list):
+        values = []
+    points = _build_points_from_trend(values, data.get("start_time"), data.get("step_time"))
+    points = _filter_points_by_time(points, from_ts=from_ts, to_ts=to_ts)
+    filtered_values = [
+        float(point["value"])
+        for point in points
+        if isinstance(point.get("value"), (int, float))
+    ]
+    summary: Dict[str, Any] = {
+        "vs": vs_name,
+        "metric": metric_name,
+        "label": f"{vs_name} / {_metric_label(metric_name)}",
+        "sample_count": len(filtered_values),
+        "unit": item.get("unit") or data.get("unit", ""),
+        "step_time": data.get("step_time"),
+        "points": points,
+    }
+    if filtered_values:
+        summary.update({
+            "latest": filtered_values[-1],
+            "mean": statistics.mean(filtered_values),
+            "max": max(filtered_values),
+        })
+    return summary
+
+
+def fetch_traffic_trends(
+    client: Any,
+    vs_name: Optional[str] = None,
+    trend: str = "last-hour",
+    from_time: str = "",
+    to_time: str = "",
+) -> Dict[str, Any]:
+    """Fetch VS traffic trends directly from the device API."""
+    if trend not in TRAFFIC_TREND_OPTIONS:
+        supported = "、".join(TRAFFIC_TREND_OPTIONS)
+        return {
+            "status": "error",
+            "period": trend,
+            "range": "",
+            "sample_count": 0,
+            "metrics": [],
+            "errors": [f"不支持的流量趋势区间：{trend}；当前支持：{supported}"],
+        }
+
+    try:
+        from_ts = _parse_time_bound(from_time)
+        to_ts = _parse_time_bound(to_time)
+    except ValueError as exc:
+        return {
+            "status": "error",
+            "period": trend,
+            "range": _traffic_trend_range_label(trend, from_time, to_time),
+            "query_range": TRAFFIC_TREND_OPTIONS[trend]["label"],
+            "sample_count": 0,
+            "metrics": [],
+            "errors": [str(exc)],
+        }
+    if from_ts is not None and to_ts is not None and from_ts > to_ts:
+        return {
+            "status": "error",
+            "period": trend,
+            "range": _traffic_trend_range_label(trend, from_time, to_time),
+            "query_range": TRAFFIC_TREND_OPTIONS[trend]["label"],
+            "sample_count": 0,
+            "metrics": [],
+            "errors": ["开始时间不能晚于结束时间"],
+        }
+
+    vs_names = [vs_name] if vs_name else _fetch_vs_names(client)
+    if not vs_names:
+        return {
+            "status": "error",
+            "period": trend,
+            "range": _traffic_trend_range_label(trend, from_time, to_time),
+            "query_range": TRAFFIC_TREND_OPTIONS[trend]["label"],
+            "from_time": from_time,
+            "to_time": to_time,
+            "sample_count": 0,
+            "metrics": [],
+            "errors": ["未找到目标虚拟服务"],
+        }
+
+    metrics: List[Dict[str, Any]] = []
+    errors: List[str] = []
+    for name in vs_names:
+        try:
+            data = _fetch_trend_raw(
+                client,
+                name,
+                trend=trend,
+                from_time=from_time,
+                to_time=to_time,
+            )
+        except Exception as exc:
+            data = None
+            errors.append(f"{name} 趋势获取失败：{exc}")
+        if not isinstance(data, dict):
+            errors.append(f"{name} 趋势获取失败")
+            continue
+        items = data.get("items", []) if isinstance(data.get("items"), list) else []
+        if not items:
+            errors.append(f"{name} 趋势无有效指标")
+            continue
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            summary = _summarize_vs_metric_trend(name, item, data, from_ts=from_ts, to_ts=to_ts)
+            if summary["sample_count"] == 0:
+                errors.append(f"{name} / {_metric_label(summary.get('metric'))} 趋势无有效样本")
+            metrics.append(summary)
+
+    sample_count = sum(int(item.get("sample_count", 0)) for item in metrics)
+    step_times = [item.get("step_time") for item in metrics if item.get("step_time") is not None]
+    status = "ok"
+    if sample_count == 0:
+        status = "insufficient_data" if metrics else "error"
+    elif errors:
+        status = "partial"
+    return {
+        "status": status,
+        "period": trend,
+        "range": _traffic_trend_range_label(trend, from_time, to_time),
+        "query_range": TRAFFIC_TREND_OPTIONS[trend]["label"],
+        "from_time": from_time,
+        "to_time": to_time,
+        "step_time": step_times[0] if step_times else None,
+        "sample_count": sample_count,
+        "metrics": metrics,
+        "errors": errors,
+    }
+
+
 def _extract_metric_values(item: Dict[str, Any]) -> List[float]:
     """从趋势 API 返回的字典中提取数值。
 
@@ -258,6 +419,243 @@ def _extract_metric_values(item: Dict[str, Any]) -> List[float]:
     if not isinstance(vals, list):
         return []
     return [float(v) for v in vals if isinstance(v, (int, float)) and math.isfinite(v)]
+
+
+def _extract_system_trend_values(data: Dict[str, Any], api_metric: str) -> List[Any]:
+    """Extract numeric values from system trend responses."""
+    if not isinstance(data, dict):
+        return []
+    if api_metric == "cpu_usage" and isinstance(data.get("series"), list):
+        for series in data["series"]:
+            if isinstance(series, dict) and series.get("name") in TOTAL_CPU_KEYS:
+                values = series.get("values", [])
+                return values if isinstance(values, list) else []
+        return []
+    if isinstance(data.get("values"), list):
+        return data["values"]
+    return []
+
+
+def _build_points_from_trend(values: List[Any], start_time: Any, step_time: Any) -> List[Dict[str, Any]]:
+    """Build timestamped points from AD trend metadata."""
+    try:
+        start = int(start_time)
+        step = int(step_time)
+    except (TypeError, ValueError):
+        start = 0
+        step = 60
+    points = []
+    for idx, raw_value in enumerate(values):
+        if isinstance(raw_value, (int, float)) and math.isfinite(float(raw_value)):
+            points.append({"ts": start + idx * step, "value": float(raw_value)})
+    return points
+
+
+def _parse_time_bound(value: str) -> Optional[int]:
+    """Parse a CLI time bound into epoch seconds."""
+    if not value:
+        return None
+    raw = str(value).strip()
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"):
+        try:
+            return int(datetime.strptime(raw, fmt).timestamp())
+        except ValueError:
+            continue
+    raise ValueError(f"时间格式不正确：{value}；请使用 YYYY-MM-DD HH:MM:SS")
+
+
+def select_state_trend(
+    trend: Optional[str] = "auto",
+    from_time: str = "",
+    to_time: str = "",
+) -> str:
+    """Select the AD state trend window from an explicit value or fixed time range."""
+    requested = str(trend or "auto").strip()
+    if requested and requested != "auto":
+        if requested not in STATE_TREND_OPTIONS:
+            supported = "、".join(["auto", *STATE_TREND_OPTIONS.keys()])
+            raise ValueError(f"不支持的状态趋势区间：{requested}；当前支持：{supported}")
+        return requested
+
+    if from_time and to_time:
+        from_ts = _parse_time_bound(from_time)
+        to_ts = _parse_time_bound(to_time)
+        if from_ts is None or to_ts is None:
+            return "last-hour"
+        if from_ts > to_ts:
+            raise ValueError("开始时间不能晚于结束时间")
+        duration = to_ts - from_ts
+        now_ts = int(datetime.now().timestamp())
+        required_window = duration
+        if from_ts <= now_ts:
+            required_window = max(required_window, now_ts - from_ts)
+        if required_window <= 3600:
+            return "last-hour"
+        if required_window <= 86400:
+            return "last-day"
+        if required_window <= 31 * 86400:
+            return "last-month"
+        raise ValueError("固定时间段超过 1 个月，设备状态趋势 API 只支持最近 1 小时、1 天、1 个月三个窗口")
+
+    return "last-hour"
+
+
+def select_traffic_trend(
+    trend: Optional[str] = "auto",
+    from_time: str = "",
+    to_time: str = "",
+) -> str:
+    """Select the AD traffic trend window from an explicit value or fixed time range."""
+    try:
+        return select_state_trend(trend, from_time=from_time, to_time=to_time)
+    except ValueError as exc:
+        message = str(exc).replace("状态趋势", "流量趋势").replace("设备状态趋势 API", "设备流量趋势 API")
+        raise ValueError(message)
+
+
+def _filter_points_by_time(
+    points: List[Dict[str, Any]],
+    from_ts: Optional[int] = None,
+    to_ts: Optional[int] = None,
+) -> List[Dict[str, Any]]:
+    """Keep only points inside the requested inclusive time range."""
+    if from_ts is None and to_ts is None:
+        return points
+    filtered = []
+    for point in points:
+        ts = point.get("ts")
+        if not isinstance(ts, int):
+            continue
+        if from_ts is not None and ts < from_ts:
+            continue
+        if to_ts is not None and ts > to_ts:
+            continue
+        filtered.append(point)
+    return filtered
+
+
+def _system_trend_range_label(trend: str, from_time: str = "", to_time: str = "") -> str:
+    if from_time or to_time:
+        start = from_time or "起始时间未指定"
+        end = to_time or "当前"
+        return f"{start} 至 {end}"
+    return STATE_TREND_OPTIONS[trend]["label"]
+
+
+def _traffic_trend_range_label(trend: str, from_time: str = "", to_time: str = "") -> str:
+    if from_time or to_time:
+        start = from_time or "起始时间未指定"
+        end = to_time or "当前"
+        return f"{start} 至 {end}"
+    return TRAFFIC_TREND_OPTIONS[trend]["label"]
+
+
+def _summarize_system_trend(
+    metric: Dict[str, str],
+    data: Dict[str, Any],
+    from_ts: Optional[int] = None,
+    to_ts: Optional[int] = None,
+) -> Dict[str, Any]:
+    values = _extract_system_trend_values(data, metric["api"])
+    points = _build_points_from_trend(values, data.get("start_time"), data.get("step_time"))
+    points = _filter_points_by_time(points, from_ts=from_ts, to_ts=to_ts)
+    values = [float(point["value"]) for point in points if isinstance(point.get("value"), (int, float))]
+    summary: Dict[str, Any] = {
+        "metric": metric["metric"],
+        "label": metric["label"],
+        "sample_count": len(values),
+        "unit": data.get("unit", ""),
+        "step_time": data.get("step_time"),
+        "points": points,
+    }
+    if values:
+        summary.update({
+            "latest": values[-1],
+            "mean": statistics.mean(values),
+            "max": max(values),
+        })
+    return summary
+
+
+def fetch_system_trends(
+    client: Any,
+    trend: str = "last-hour",
+    from_time: str = "",
+    to_time: str = "",
+) -> Dict[str, Any]:
+    """Fetch CPU, memory, and connection-rate trends directly from the device."""
+    if trend not in STATE_TREND_OPTIONS:
+        supported = "、".join(STATE_TREND_OPTIONS)
+        return {
+            "status": "error",
+            "period": trend,
+            "range": "",
+            "sample_count": 0,
+            "metrics": [],
+            "errors": [f"不支持的状态趋势区间：{trend}；当前支持：{supported}"],
+        }
+
+    try:
+        from_ts = _parse_time_bound(from_time)
+        to_ts = _parse_time_bound(to_time)
+    except ValueError as exc:
+        return {
+            "status": "error",
+            "period": trend,
+            "range": _system_trend_range_label(trend, from_time, to_time),
+            "query_range": STATE_TREND_OPTIONS[trend]["label"],
+            "sample_count": 0,
+            "metrics": [],
+            "errors": [str(exc)],
+        }
+    if from_ts is not None and to_ts is not None and from_ts > to_ts:
+        return {
+            "status": "error",
+            "period": trend,
+            "range": _system_trend_range_label(trend, from_time, to_time),
+            "query_range": STATE_TREND_OPTIONS[trend]["label"],
+            "sample_count": 0,
+            "metrics": [],
+            "errors": ["开始时间不能晚于结束时间"],
+        }
+
+    metrics: List[Dict[str, Any]] = []
+    errors: List[str] = []
+    for metric in STATE_TREND_METRICS:
+        try:
+            data = client._request(
+                "GET",
+                f"/stat/sys/system/{metric['api']}",
+                params={"trend": trend, "all_properties": "true"},
+            )
+            summary = _summarize_system_trend(metric, data, from_ts=from_ts, to_ts=to_ts)
+            if summary["sample_count"] == 0:
+                errors.append(f"{metric['label']} 趋势无有效样本")
+            metrics.append(summary)
+        except Exception as exc:
+            errors.append(f"{metric['label']} 趋势获取失败：{exc}")
+
+    sample_count = sum(int(item.get("sample_count", 0)) for item in metrics)
+    step_times = [item.get("step_time") for item in metrics if item.get("step_time") is not None]
+    status = "ok"
+    if sample_count == 0 and errors:
+        status = "error"
+    elif errors and metrics:
+        status = "partial"
+    elif errors and not metrics:
+        status = "error"
+    return {
+        "status": status,
+        "period": trend,
+        "range": _system_trend_range_label(trend, from_time, to_time),
+        "query_range": STATE_TREND_OPTIONS[trend]["label"],
+        "from_time": from_time,
+        "to_time": to_time,
+        "step_time": step_times[0] if step_times else None,
+        "sample_count": sample_count,
+        "metrics": metrics,
+        "errors": errors,
+    }
 
 
 def build_traffic_window(
@@ -281,33 +679,29 @@ def traffic_analysis(
     vs_name: Optional[str] = None,
     days: int = 7,
     require_db: bool = False,
+    trend: Optional[str] = "auto",
     from_time: str = "",
     to_time: str = "",
 ) -> Dict[str, Any]:
     """
-    流量分析: 默认优先使用 SQLite 数据，必要时回退到 API。
-    require_db=True 时必须从 SQLite 得到结果，禁止实时 API 回退。
+    流量趋势分析: 默认直接使用设备 VS 趋势 API。
+    require_db=True 时保留旧版 SQLite/collector 兼容路径，禁止实时 API 回退。
 
     返回字典包含:
-        status: 'ok' | 'insufficient_data' | 'error'
+        status: 'ok' | 'warning' | 'insufficient_data' | 'error'
         anomalies: 异常字典列表 (当 status == 'ok' 时)
         error: 错误信息或 None
     """
     safe_days = max(1, int(days or 7))
-    trend_from, trend_to, range_label = build_traffic_window(
-        days=safe_days,
-        from_time=from_time,
-        to_time=to_time,
-    )
     result = {
         'status': 'ok',
         'anomalies': [],
         'error': None,
-        'source': 'sqlite',
+        'source': 'device_trend_api',
         'days': safe_days,
-        'range': range_label,
-        'from_time': trend_from,
-        'to_time': trend_to,
+        'range': '',
+        'from_time': from_time,
+        'to_time': to_time,
         'vs': vs_name,
         'db_queried': False,
         'db_path': db_path,
@@ -323,84 +717,100 @@ def traffic_analysis(
             db_path = f"vs_samples_{safe}.db"
             result['db_path'] = db_path
 
-    # Try SQLite
-    rows = None
-    if db_path and os.path.isfile(db_path):
-        rows = query_traffic_db(db_path, vs_name, days=result['days'])
-        result['db_queried'] = rows is not None
-        result['sample_count'] = len(rows or [])
-    elif require_db:
-        result['status'] = 'error'
-        result['source'] = 'sqlite'
-        result['error'] = f"历史流量库不存在，无法进行数据库趋势分析：{db_path or '未指定'}"
-        return result
+    if require_db:
+        trend_from, trend_to, range_label = build_traffic_window(
+            days=safe_days,
+            from_time=from_time,
+            to_time=to_time,
+        )
+        result.update({
+            'source': 'sqlite',
+            'range': range_label,
+            'from_time': trend_from,
+            'to_time': trend_to,
+        })
+        rows = None
+        if db_path and os.path.isfile(db_path):
+            rows = query_traffic_db(db_path, vs_name, days=result['days'])
+            result['db_queried'] = rows is not None
+            result['sample_count'] = len(rows or [])
+        else:
+            result['status'] = 'error'
+            result['error'] = f"历史流量库不存在，无法进行数据库趋势分析：{db_path or '未指定'}"
+            return result
 
-    if rows is not None and len(rows) >= 100:
-        # Enough data for 3σ analysis
-        result['anomalies'] = _analyze_traffic_rows(rows)
-        result['source'] = 'sqlite'
-        if result['anomalies']:
-            result['status'] = 'warning'
-    elif require_db:
+        if rows is not None and len(rows) >= 100:
+            result['anomalies'] = _analyze_traffic_rows(rows)
+            if result['anomalies']:
+                result['status'] = 'warning'
+            return result
+
         result['status'] = 'insufficient_data' if rows else 'error'
-        result['source'] = 'sqlite'
         if rows:
             result['error'] = None
         else:
             result['error'] = f"历史流量库中未查询到 {vs_name or '目标虚拟服务'} 最近 {result['days']} 天的数据"
         return result
+
+    try:
+        selected_trend = select_traffic_trend(trend or "auto", from_time=from_time, to_time=to_time)
+    except ValueError as exc:
+        result['status'] = 'error'
+        result['error'] = str(exc)
+        return result
+
+    trend_info = fetch_traffic_trends(
+        client,
+        vs_name=vs_name,
+        trend=selected_trend,
+        from_time=from_time,
+        to_time=to_time,
+    )
+    result.update({
+        'status': trend_info.get('status', 'ok'),
+        'range': trend_info.get('range') or '',
+        'from_time': trend_info.get('from_time') or from_time,
+        'to_time': trend_info.get('to_time') or to_time,
+        'sample_count': trend_info.get('sample_count', 0),
+        'trend': trend_info,
+        'raw_trends': [
+            {
+                'vs': metric.get('vs', ''),
+                'metric': metric.get('metric', ''),
+                'trend': trend_info.get('period', selected_trend),
+                'mean': metric.get('mean', 0.0),
+                'max': metric.get('max', 0.0),
+            }
+            for metric in trend_info.get('metrics', [])
+            if isinstance(metric.get('mean'), (int, float)) or isinstance(metric.get('max'), (int, float))
+        ],
+    })
+
+    if result['status'] in ('ok', 'partial'):
+        groups: Dict[Tuple[str, str], List[Dict[str, Any]]] = {}
+        for metric in trend_info.get('metrics', []):
+            key = (str(metric.get('vs') or vs_name or ''), str(metric.get('metric') or ''))
+            groups[key] = list(metric.get('points') or [])
+        result['anomalies'] = _run_3sigma_on_vs_group(groups)
+        if result['anomalies']:
+            result['status'] = 'warning'
+    elif result['status'] == 'insufficient_data':
+        result['error'] = None
     else:
-        # Injection branch: try to seed SQLite with trend API last-hour data
-        if client is not None and db_path:
-            try:
-                from collector import collect_once
-            except ImportError:
-                pass
-            else:
-                injected = collect_once(client, db_path)
-                if injected > 0:
-                    rows = query_traffic_db(db_path, vs_name, days=result['days'])
-                    result['db_queried'] = rows is not None
-                    result['sample_count'] = len(rows or [])
-                    if rows is not None and len(rows) >= 100:
-                        result['anomalies'] = _analyze_traffic_rows(rows)
-                        result['source'] = 'sqlite_injected'
-                        if result['anomalies']:
-                            result['status'] = 'warning'
-                        return result
-
-        # API fallback - insufficient data
-        result['status'] = 'insufficient_data'
-        result['source'] = 'api_fallback'
-
-        vs_names = [vs_name] if vs_name else _fetch_vs_names(client)
-        if not vs_names:
-            return result
-
-        trends_by_vs = {}
-        for vn in vs_names:
-            trends = {}
-            for trend_period in ('last-hour', 'last-day'):
-                trends[trend_period] = _fetch_trend_raw(
-                    client,
-                    vn,
-                    trend_period,
-                    from_time=trend_from,
-                    to_time=trend_to,
-                )
-            trends_by_vs[vn] = trends
-
-        result['raw_trends'] = _build_metric_tables_from_trend(trends_by_vs)
-
-        # If API fallback returned no data, mark as error
-        if not result['raw_trends']:
-            result['status'] = 'error'
-            result['error'] = '数据库和 API 均无法获取流量数据'
+        errors = trend_info.get('errors') or []
+        result['error'] = "；".join(errors) if errors else "设备趋势 API 无法获取流量数据"
 
     return result
 
 
-def state_analysis(client: Any, disk_source: Optional[str] = None, db_path: Optional[str] = None) -> Dict[str, Any]:
+def state_analysis(
+    client: Any,
+    disk_source: Optional[str] = None,
+    db_path: Optional[str] = None,
+    trend: Optional[str] = None,
+    from_time: str = "",
+    to_time: str = "",
+) -> Dict[str, Any]:
     """
     设备状态异常检测。
 
@@ -421,10 +831,38 @@ def state_analysis(client: Any, disk_source: Optional[str] = None, db_path: Opti
         disk: 包含磁盘可用性信息的字典
         anomalies: 3σ 异常字典列表
     """
+    trend_requested = trend is not None or bool(from_time or to_time)
+    selected_trend: Optional[str] = None
+    if trend_requested:
+        try:
+            selected_trend = select_state_trend(trend or "auto", from_time=from_time, to_time=to_time)
+        except ValueError as exc:
+            supported = "、".join(["auto", *STATE_TREND_OPTIONS.keys()])
+            message = str(exc) if str(exc) else f"不支持的状态趋势区间：{trend}；当前支持：{supported}"
+            if "当前支持" not in message and "超过 1 个月" not in message and "开始时间" not in message and "时间格式" not in message:
+                message = f"{message}；当前支持：{supported}"
+            return {
+                'status': 'error',
+                'error': message,
+                'items': [],
+                'disk': {'available': False, 'value': None, 'source': 'none'},
+                'anomalies': [],
+            }
+    if selected_trend and selected_trend not in STATE_TREND_OPTIONS:
+        supported = "、".join(STATE_TREND_OPTIONS)
+        return {
+            'status': 'error',
+            'error': f"不支持的状态趋势区间：{selected_trend}；当前支持：{supported}",
+            'items': [],
+            'disk': {'available': False, 'value': None, 'source': 'none'},
+            'anomalies': [],
+        }
+
     items = []
     has_warn = False
     has_critical = False
     disk_info = {'available': False, 'value': None, 'source': 'none'}
+    trend_info: Optional[Dict[str, Any]] = None
 
     try:
         sys_data = client.get_sys_system()
@@ -560,9 +998,20 @@ def state_analysis(client: Any, disk_source: Optional[str] = None, db_path: Opti
         items.append({'metric': 'disk', 'value': None, 'level': 'ok',
                       'message': '磁盘: 未提供巡检数据'})
 
-    # 3σ anomaly detection on historical data
     anomalies = []
-    if db_path and os.path.isfile(db_path):
+    if selected_trend:
+        trend_info = fetch_system_trends(client, selected_trend, from_time=from_time, to_time=to_time)
+        for metric_summary in trend_info.get("metrics", []):
+            points = metric_summary.get("points", [])
+            if len(points) < 30:
+                continue
+            detected = detect_anomaly_3sigma(points)
+            for anomaly in detected:
+                anomaly["metric"] = metric_summary.get("metric")
+                anomalies.append(anomaly)
+        if anomalies:
+            has_warn = True
+    elif db_path and os.path.isfile(db_path):
         rows = query_device_state_db(db_path)
         if rows is not None and len(rows) > 0:
             # Group by metric
@@ -631,8 +1080,16 @@ def state_analysis(client: Any, disk_source: Optional[str] = None, db_path: Opti
         status = 'warning'
     else:
         status = 'ok'
+    if trend_info:
+        if trend_info.get('status') == 'error':
+            status = 'error'
+        elif trend_info.get('status') == 'partial' and status == 'ok':
+            status = 'warning'
 
-    return {'status': status, 'items': items, 'disk': disk_info, 'anomalies': anomalies}
+    result = {'status': status, 'items': items, 'disk': disk_info, 'anomalies': anomalies}
+    if trend_info is not None:
+        result['trend'] = trend_info
+    return result
 
 
 def conflict_analysis(client: Any) -> Dict[str, Any]:
@@ -836,6 +1293,51 @@ _LOG_TYPE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     },
 }
 
+_LOG_TYPE_DEFINITIONS["address-conflict"] = {
+    "label": "地址冲突",
+    "aliases": {
+        "address-conflict",
+        "address_conflict",
+        "ip-conflict",
+        "ip_conflict",
+        "conflict",
+        "地址冲突",
+        "地址端口冲突",
+        "ip冲突",
+        "ip地址冲突",
+    },
+    "strong_keywords": (
+        "地址冲突",
+        "地址端口冲突",
+        "ip冲突",
+        "ip 地址冲突",
+        "vip冲突",
+        "vip 冲突",
+        "端口冲突",
+    ),
+    "context_keywords": (
+        "地址",
+        "ip",
+        "vip",
+        "端口",
+        "port",
+        "虚拟服务",
+        "virtual",
+        "slb",
+        "pool",
+        "节点",
+        "node",
+    ),
+    "conflict_keywords": (
+        "冲突",
+        "重复",
+        "重叠",
+        "conflict",
+        "duplicate",
+        "overlap",
+    ),
+}
+
 
 def normalize_log_type(value: Optional[str] = None) -> str:
     """Normalize a user-facing semantic log type to an internal key."""
@@ -890,6 +1392,21 @@ def filter_log_entries_by_type(entries: List[Dict[str, Any]], log_type: str) -> 
     return [entry for entry in entries if isinstance(entry, dict) and log_entry_matches_type(entry, normalized)]
 
 
+def _log_entry_identity(entry: Dict[str, Any]) -> Tuple[Any, ...]:
+    return (
+        entry.get("log_id") or entry.get("service_log_id"),
+        entry.get("date"),
+        entry.get("time"),
+        entry.get("level"),
+        entry.get("module"),
+        entry.get("detail"),
+    )
+
+
+def _sort_log_entries(entries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    return sorted(entries, key=lambda x: f"{x.get('date', '')} {x.get('time', '')}", reverse=True)
+
+
 def build_log_window(
     days: int = 0,
     hours: int = 24,
@@ -917,17 +1434,46 @@ def _fetch_service_log_data(
     levels: Optional[List[str]] = None,
     modules: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
-    kwargs: Dict[str, Any] = {"limit": _normalize_log_limit(limit)}
-    if from_time:
-        kwargs["from_time"] = from_time
-    if to_time:
-        kwargs["to_time"] = to_time
-    if levels:
-        kwargs["levels"] = levels
-    if modules:
-        kwargs["modules"] = modules
-    data = client.get_service_log(**kwargs)
-    return data if isinstance(data, dict) else {"items": []}
+    page_size = max(1, int(limit or 100))
+    max_items_per_query = 4000
+    level_values: List[Optional[str]] = levels or [None]
+    module_values: List[Optional[str]] = modules or [None]
+    merged: List[Dict[str, Any]] = []
+    seen = set()
+
+    for level in level_values:
+        for module in module_values:
+            skip = 0
+            while skip < max_items_per_query:
+                kwargs: Dict[str, Any] = {"limit": page_size, "skip": skip}
+                if from_time:
+                    kwargs["from_time"] = from_time
+                if to_time:
+                    kwargs["to_time"] = to_time
+                if level:
+                    kwargs["levels"] = [level]
+                if module:
+                    kwargs["modules"] = [module]
+
+                data = client.get_service_log(**kwargs)
+                page_items = data.get("items", []) if isinstance(data, dict) else []
+                for item in page_items:
+                    if not isinstance(item, dict):
+                        continue
+                    identity = _log_entry_identity(item)
+                    if identity in seen:
+                        continue
+                    seen.add(identity)
+                    merged.append(item)
+
+                total_items = data.get("total_items") if isinstance(data, dict) else None
+                if len(page_items) < page_size:
+                    break
+                skip += page_size
+                if isinstance(total_items, int) and skip >= total_items:
+                    break
+
+    return {"items": _sort_log_entries(merged), "total": len(merged)}
 
 
 def fetch_service_logs(
@@ -1110,7 +1656,7 @@ def _analysis_status_badge(statuses: List[str]) -> str:
     """Summarize scoped perception dimensions into one user-facing status."""
     if any(status == 'error' for status in statuses):
         return _STATUS_BADGES['失败']
-    if any(status in ('critical', 'warning', 'warn', 'conflict_found', 'insufficient_data', 'no_match') for status in statuses):
+    if any(status in ('critical', 'warning', 'warn', 'partial', 'conflict_found', 'insufficient_data', 'no_match') for status in statuses):
         return _STATUS_BADGES['需关注']
     return _STATUS_BADGES['未发现明显异常']
 
@@ -1161,6 +1707,10 @@ def render_markdown(results: Dict[str, Any]) -> str:
     source_label = '📡 设备实时分析'
     if show_traffic and traffic.get('source') in ('sqlite', 'sqlite_injected'):
         source_label = '📊 历史流量库'
+    if show_traffic and traffic.get('source') == 'device_trend_api':
+        source_label = '📈 设备趋势 API'
+    if show_state and state.get('trend'):
+        source_label = '📈 设备趋势 API'
     if scope == 'logs':
         source_label = '📄 设备日志接口'
     lines.append(f'- 数据来源：{source_label}')
@@ -1182,8 +1732,31 @@ def render_markdown(results: Dict[str, Any]) -> str:
         elif range_label:
             lines.append(f"- 分析对象：{vs_label}")
             lines.append(f"- 时间范围：{range_label}")
+            if traffic.get('source') == 'device_trend_api':
+                trend_info = traffic.get('trend') or {}
+                lines.append(f"- 查询窗口：{trend_info.get('query_range') or trend_info.get('period') or '-'}")
+                if trend_info.get('step_time') is not None:
+                    lines.append(f"- 采样粒度：{trend_info.get('step_time')} 秒")
+                lines.append(f"- 数据样本：{traffic.get('sample_count', 0)} 条")
             lines.append('')
-        if traffic.get('status') in ('ok', 'warning'):
+        if traffic.get('status') in ('ok', 'warning', 'partial'):
+            trend_info = traffic.get('trend') or {}
+            metrics = trend_info.get('metrics') or []
+            if metrics:
+                lines.append('| 虚拟服务 | 指标 | 样本数 | 最新值 | 均值 | 峰值 |')
+                lines.append('|---|---|---:|---:|---:|---:|')
+                for metric in metrics:
+                    latest = metric.get('latest')
+                    mean = metric.get('mean')
+                    max_value = metric.get('max')
+                    latest_text = f"{latest:.1f}" if isinstance(latest, (int, float)) else "-"
+                    mean_text = f"{mean:.1f}" if isinstance(mean, (int, float)) else "-"
+                    max_text = f"{max_value:.1f}" if isinstance(max_value, (int, float)) else "-"
+                    lines.append(
+                        f"| {metric.get('vs', vs_label)} | {_metric_label(metric.get('metric'))} | "
+                        f"{int(metric.get('sample_count', 0))} | {latest_text} | {mean_text} | {max_text} |"
+                    )
+                lines.append('')
             anomalies = traffic.get('anomalies', [])
             if anomalies:
                 lines.append('| 虚拟服务 | 指标 | 时间 | 当前值 | 基线值 | 变化比例 |')
@@ -1196,11 +1769,20 @@ def render_markdown(results: Dict[str, Any]) -> str:
                     change_label = f"{a['direction']} {abs(pct):.1f}%"
                     lines.append(f"| {a['vs']} | {_metric_label(a['metric'])} | {ts_str} | {value:.1f} | {baseline:.1f} | {change_label} |")
             else:
-                lines.append(f'✅ 最近 {days_label} 天内未检测到流量异常。')
+                lines.append(f'✅ {range_label} 内未检测到流量异常。')
+            if traffic.get('status') == 'partial':
+                errors = trend_info.get('errors') or []
+                if errors:
+                    lines.append('')
+                    lines.append('⚠️ 部分虚拟服务或指标趋势获取失败：')
+                    for error in errors[:5]:
+                        lines.append(f'- {error}')
         elif traffic.get('status') == 'insufficient_data':
             if traffic.get('source') == 'sqlite':
                 lines.append('⚠️ 已完成数据库查询，但历史样本不足，暂不输出趋势判断。')
                 lines.append('ℹ️ 为避免误判，本次没有回退到实时 API 生成趋势结论。')
+            elif traffic.get('source') == 'device_trend_api':
+                lines.append('⚠️ 设备趋势 API 在该时间段内返回的有效样本不足，暂不输出趋势判断。')
             else:
                 lines.append('⚠️ 历史样本不足，已回退到设备实时趋势。')
             raw_trends = traffic.get('raw_trends', [])
@@ -1232,6 +1814,38 @@ def render_markdown(results: Dict[str, Any]) -> str:
             if not cpu_item and not mem_item:
                 lines.append('- ℹ️ 设备未返回 CPU/内存使用率。')
             lines.append('')
+
+            trend_info = state.get('trend', {})
+            if trend_info:
+                lines.append('**资源趋势**')
+                lines.append('')
+                if trend_info.get('range'):
+                    lines.append(f"- 趋势窗口：{trend_info.get('range')}")
+                if trend_info.get('step_time') is not None:
+                    lines.append(f"- 采样粒度：{trend_info.get('step_time')} 秒")
+                lines.append(f"- 数据样本：{trend_info.get('sample_count', 0)} 条")
+                errors = trend_info.get('errors') or []
+                if errors:
+                    lines.append(f"- 采集状态：{trend_info.get('status', '-')}")
+                    for error in errors:
+                        lines.append(f"  - {error}")
+                metrics = trend_info.get('metrics') or []
+                if metrics:
+                    lines.append('')
+                    lines.append('| 指标 | 样本数 | 最新值 | 均值 | 峰值 |')
+                    lines.append('|---|---:|---:|---:|---:|')
+                    for metric in metrics:
+                        latest = metric.get('latest')
+                        mean = metric.get('mean')
+                        max_value = metric.get('max')
+                        latest_text = f"{latest:.1f}" if isinstance(latest, (int, float)) else '-'
+                        mean_text = f"{mean:.1f}" if isinstance(mean, (int, float)) else '-'
+                        max_text = f"{max_value:.1f}" if isinstance(max_value, (int, float)) else '-'
+                        lines.append(
+                            f"| {metric.get('label') or _metric_label(metric.get('metric'))} | "
+                            f"{metric.get('sample_count', 0)} | {latest_text} | {mean_text} | {max_text} |"
+                        )
+                lines.append('')
 
             state_anomalies = state.get('anomalies', [])
             if state_anomalies:
@@ -1336,6 +1950,722 @@ def render_markdown(results: Dict[str, Any]) -> str:
     lines.append('')
 
     return '\n'.join(lines)
+
+
+def _state_html_result(results: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalize single-device or one-selected-device state results for HTML rendering."""
+    if results.get("state"):
+        return results
+    nested = results.get("results")
+    if isinstance(nested, dict):
+        for item in nested.values():
+            if isinstance(item, dict) and item.get("state"):
+                return item
+    return results
+
+
+def _format_point_time(ts: Any) -> str:
+    try:
+        return datetime.fromtimestamp(int(ts)).strftime("%Y-%m-%d %H:%M:%S")
+    except (TypeError, ValueError, OSError):
+        return "-"
+
+
+STATE_SVG_WIDTH = 920
+STATE_SVG_HEIGHT = 380
+STATE_SVG_PAD_LEFT = 104
+STATE_SVG_PAD_RIGHT = 44
+STATE_SVG_PAD_TOP = 26
+STATE_SVG_PAD_BOTTOM = 92
+
+
+def _svg_point_x(ts: int, x_min: int, x_max: int) -> float:
+    span_x = max(1, x_max - x_min)
+    return STATE_SVG_PAD_LEFT + (ts - x_min) / span_x * (STATE_SVG_WIDTH - STATE_SVG_PAD_LEFT - STATE_SVG_PAD_RIGHT)
+
+
+def _svg_point_xy(ts: int, value: float, x_min: int, x_max: int, y_max: float) -> Tuple[float, float]:
+    pad_top = STATE_SVG_PAD_TOP
+    pad_bottom = STATE_SVG_PAD_BOTTOM
+    safe_y_max = max(1.0, y_max)
+    x = _svg_point_x(ts, x_min, x_max)
+    y = STATE_SVG_HEIGHT - pad_bottom - (value / safe_y_max) * (STATE_SVG_HEIGHT - pad_top - pad_bottom)
+    return x, y
+
+
+def _svg_polyline(points: List[Dict[str, Any]], x_min: int, x_max: int, y_max: float, color: str) -> str:
+    coords = []
+    for point in points:
+        try:
+            ts = int(point["ts"])
+            value = float(point["value"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        x, y = _svg_point_xy(ts, value, x_min, x_max, y_max)
+        coords.append(f"{x:.1f},{y:.1f}")
+    if len(coords) < 2:
+        return ""
+    return f'<polyline class="data-line" points="{" ".join(coords)}" fill="none" stroke="{color}" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" />'
+
+
+def _svg_value_anchor(x: float) -> str:
+    if x <= STATE_SVG_PAD_LEFT + 18:
+        return "start"
+    if x >= STATE_SVG_WIDTH - STATE_SVG_PAD_RIGHT - 18:
+        return "end"
+    return "middle"
+
+
+def _svg_value_y(y: float) -> float:
+    if y <= STATE_SVG_PAD_TOP + 14:
+        return y + 18
+    return y - 10
+
+
+def _svg_markers(
+    points: List[Dict[str, Any]],
+    x_min: int,
+    x_max: int,
+    y_max: float,
+    color: str,
+    label: str,
+    show_value_labels: bool = False,
+) -> List[str]:
+    markers = []
+    safe_label = html_lib.escape(label)
+    for point in points:
+        try:
+            ts = int(point["ts"])
+            value = float(point["value"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        x, y = _svg_point_xy(ts, value, x_min, x_max, y_max)
+        title = html_lib.escape(f"{_format_point_time(ts)} / {label}: {value:.1f}")
+        markers.append(
+            f'<circle class="data-point" cx="{x:.1f}" cy="{y:.1f}" r="4.6" '
+            f'fill="#fff" stroke="{color}" stroke-width="2.4" data-label="{safe_label}" data-value="{value:.1f}">'
+            f"<title>{title}</title></circle>"
+        )
+        if show_value_labels:
+            markers.append(
+                f'<text class="point-value-label" x="{x:.1f}" y="{_svg_value_y(y):.1f}" '
+                f'text-anchor="{_svg_value_anchor(x)}" fill="{color}">{value:.1f}</text>'
+            )
+    return markers
+
+
+def _render_state_svg_grid(x_min: int, x_max: int, y_max: float) -> str:
+    width = STATE_SVG_WIDTH
+    height = STATE_SVG_HEIGHT
+    pad_left = STATE_SVG_PAD_LEFT
+    pad_right = STATE_SVG_PAD_RIGHT
+    pad_top = STATE_SVG_PAD_TOP
+    pad_bottom = STATE_SVG_PAD_BOTTOM
+    plot_w = width - pad_left - pad_right
+    plot_h = height - pad_top - pad_bottom
+    safe_y_max = max(1.0, y_max)
+    lines = [
+        f'<rect x="{pad_left}" y="{pad_top}" width="{plot_w}" height="{plot_h}" rx="10" class="plot-bg" />',
+    ]
+    for idx in range(5):
+        ratio = idx / 4
+        y = height - pad_bottom - ratio * plot_h
+        value = ratio * safe_y_max
+        lines.append(f'<line x1="{pad_left}" y1="{y:.1f}" x2="{width - pad_right}" y2="{y:.1f}" class="grid" />')
+        lines.append(f'<text x="{pad_left - 12}" y="{y + 4:.1f}" text-anchor="end" class="tick">{value:.1f}</text>')
+    for idx in range(4):
+        ratio = idx / 3 if idx else 0
+        x = pad_left + ratio * plot_w
+        lines.append(f'<line x1="{x:.1f}" y1="{pad_top}" x2="{x:.1f}" y2="{height - pad_bottom}" class="grid vertical" />')
+    lines.extend([
+        f'<line x1="{pad_left}" y1="{pad_top}" x2="{pad_left}" y2="{height - pad_bottom}" class="axis" />',
+        f'<line x1="{pad_left}" y1="{height - pad_bottom}" x2="{width - pad_right}" y2="{height - pad_bottom}" class="axis" />',
+    ])
+    return "\n".join(lines)
+
+
+def _format_point_time_label(ts: int, same_day: bool) -> str:
+    try:
+        dt = datetime.fromtimestamp(int(ts))
+    except (TypeError, ValueError, OSError):
+        return "-"
+    return dt.strftime("%H:%M") if same_day else dt.strftime("%m-%d %H:%M")
+
+
+def _render_point_time_labels(timestamps: List[int], x_min: int, x_max: int) -> List[str]:
+    unique_ts = sorted({int(ts) for ts in timestamps})
+    if not unique_ts:
+        return []
+    try:
+        same_day = len({datetime.fromtimestamp(ts).date() for ts in unique_ts}) == 1
+    except (TypeError, ValueError, OSError):
+        same_day = True
+    dense = len(unique_ts) > 10
+    axis_y = STATE_SVG_HEIGHT - STATE_SVG_PAD_BOTTOM
+    label_y = axis_y + (34 if dense else 24)
+    tick_y2 = axis_y + (12 if dense else 8)
+    lines: List[str] = []
+    for ts in unique_ts:
+        x = _svg_point_x(ts, x_min, x_max)
+        label = html_lib.escape(_format_point_time_label(ts, same_day))
+        lines.append(f'<line class="point-time-tick" x1="{x:.1f}" y1="{axis_y:.1f}" x2="{x:.1f}" y2="{tick_y2:.1f}" />')
+        if dense:
+            label_x = x
+            lines.append(
+                f'<text class="point-time-label" x="{label_x:.1f}" y="{label_y:.1f}" '
+                f'text-anchor="end" transform="rotate(-58 {label_x:.1f} {label_y:.1f})">{label}</text>'
+            )
+        else:
+            lines.append(
+                f'<text class="point-time-label" x="{x:.1f}" y="{label_y:.1f}" '
+                f'text-anchor="{_svg_value_anchor(x)}">{label}</text>'
+            )
+    return lines
+
+
+def _parse_optional_time_bound(value: Any) -> Optional[int]:
+    try:
+        return _parse_time_bound(str(value)) if value else None
+    except ValueError:
+        return None
+
+
+def _render_state_svg(metrics: List[Dict[str, Any]], from_time: str = "", to_time: str = "") -> str:
+    all_points = [
+        point
+        for metric in metrics
+        for point in metric.get("points", [])
+        if isinstance(point, dict) and isinstance(point.get("ts"), int) and isinstance(point.get("value"), (int, float))
+    ]
+    if not all_points:
+        return '<div class="empty">该时间段内没有可渲染的趋势点。</div>'
+
+    data_x_min = min(int(point["ts"]) for point in all_points)
+    data_x_max = max(int(point["ts"]) for point in all_points)
+    from_ts = _parse_optional_time_bound(from_time)
+    to_ts = _parse_optional_time_bound(to_time)
+    x_min = min(data_x_min, from_ts) if from_ts is not None else data_x_min
+    x_max = max(data_x_max, to_ts) if to_ts is not None else data_x_max
+    y_max = max(float(point["value"]) for point in all_points)
+    colors = ["#2563eb", "#16a34a", "#e11d48", "#9333ea"]
+    polylines = []
+    markers = []
+    legends = []
+    point_timestamps = [int(point["ts"]) for point in all_points]
+    time_labels = _render_point_time_labels(point_timestamps, x_min, x_max)
+    show_value_labels = len(set(point_timestamps)) <= 24 or len(all_points) <= 36
+    for idx, metric in enumerate(metrics):
+        color = colors[idx % len(colors)]
+        points = metric.get("points", [])
+        line = _svg_polyline(points, x_min, x_max, y_max, color)
+        if line:
+            polylines.append(line)
+        label_raw = str(metric.get("label") or _metric_label(metric.get("metric")))
+        label = html_lib.escape(label_raw)
+        markers.extend(_svg_markers(points, x_min, x_max, y_max, color, label_raw, show_value_labels=show_value_labels))
+        legends.append(f'<span class="legend-item"><i style="background:{color}"></i>{label}</span>')
+
+    return "\n".join([
+        f'<div class="legend">{"".join(legends)}</div>',
+        f'<svg viewBox="0 0 {STATE_SVG_WIDTH} {STATE_SVG_HEIGHT}" role="img" aria-label="资源趋势折线图">',
+        _render_state_svg_grid(x_min, x_max, y_max),
+        *polylines,
+        *markers,
+        *time_labels,
+        '</svg>',
+    ])
+
+
+def _render_state_points_table(metrics: List[Dict[str, Any]]) -> str:
+    labels = [str(metric.get("label") or _metric_label(metric.get("metric"))) for metric in metrics]
+    rows: Dict[int, Dict[str, float]] = {}
+    for metric in metrics:
+        label = str(metric.get("label") or _metric_label(metric.get("metric")))
+        for point in metric.get("points", []):
+            try:
+                ts = int(point["ts"])
+                value = float(point["value"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            rows.setdefault(ts, {})[label] = value
+    if not rows:
+        return ""
+
+    header = "".join(f"<th>{html_lib.escape(label)}</th>" for label in labels)
+    body = []
+    for ts in sorted(rows):
+        values = rows[ts]
+        cells = []
+        for label in labels:
+            value = values.get(label)
+            cells.append(f"<td>{value:.1f}</td>" if isinstance(value, (int, float)) else "<td>-</td>")
+        body.append(f"<tr><td>{html_lib.escape(_format_point_time(ts))}</td>{''.join(cells)}</tr>")
+    return "\n".join([
+        "<table>",
+        f"<thead><tr><th>时间</th>{header}</tr></thead>",
+        f"<tbody>{''.join(body)}</tbody>",
+        "</table>",
+    ])
+
+
+def render_state_trend_html(results: Dict[str, Any]) -> str:
+    """Render the state trend as a self-contained HTML artifact."""
+    result = _state_html_result(results)
+    state = result.get("state", {}) if isinstance(result.get("state", {}), dict) else {}
+    trend = state.get("trend", {}) if isinstance(state.get("trend", {}), dict) else {}
+    metrics = trend.get("metrics") or []
+    device = _display_device_ref(result.get("device") or result.get("_device") or result.get("host"))
+    range_label = trend.get("range") or "-"
+    query_range = trend.get("query_range") or trend.get("period") or "-"
+    sample_count = trend.get("sample_count", 0)
+    step_time = trend.get("step_time")
+
+    summary_rows = []
+    for metric in metrics:
+        label = html_lib.escape(str(metric.get("label") or _metric_label(metric.get("metric"))))
+        latest = metric.get("latest")
+        mean = metric.get("mean")
+        max_value = metric.get("max")
+        latest_text = f"{latest:.1f}" if isinstance(latest, (int, float)) else "-"
+        mean_text = f"{mean:.1f}" if isinstance(mean, (int, float)) else "-"
+        max_text = f"{max_value:.1f}" if isinstance(max_value, (int, float)) else "-"
+        summary_rows.append(
+            "<tr>"
+            f"<td>{label}</td>"
+            f"<td>{int(metric.get('sample_count', 0))}</td>"
+            f"<td>{latest_text}</td>"
+            f"<td>{mean_text}</td>"
+            f"<td>{max_text}</td>"
+            "</tr>"
+        )
+
+    return "\n".join([
+        "<!doctype html>",
+        '<html lang="zh-CN">',
+        "<head>",
+        '<meta charset="utf-8">',
+        '<meta name="viewport" content="width=device-width,initial-scale=1">',
+        "<title>AD 设备资源趋势</title>",
+        "<style>",
+        ":root{--bg:#f4f7fb;--panel:#ffffff;--ink:#0f172a;--muted:#64748b;--border:#d8e2ef;--soft:#eef4fb}",
+        "*{box-sizing:border-box}",
+        "body{font-family:Arial,'Microsoft YaHei',sans-serif;margin:0;background:var(--bg);color:var(--ink)}",
+        "main{max-width:1180px;margin:0 auto;padding:30px 28px 36px}",
+        ".top{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:18px}",
+        "h1{font-size:28px;line-height:1.2;margin:0;font-weight:800;letter-spacing:0}",
+        ".subtitle{color:var(--muted);font-size:13px;margin-top:6px}",
+        ".meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:18px}",
+        ".meta-card,.panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;box-shadow:0 10px 24px rgba(15,23,42,.05)}",
+        ".meta-card{padding:16px 18px;min-height:104px;display:flex;flex-direction:column;justify-content:space-between}",
+        ".label{color:var(--muted);font-size:12px;margin-bottom:10px}",
+        ".value{font-size:18px;font-weight:800;line-height:1.25;word-break:break-word}",
+        ".panel{padding:18px;margin-top:16px}",
+        ".panel h2{font-size:16px;line-height:1.25;margin:0 0 12px;font-weight:800}",
+        "svg{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--border);border-radius:8px}",
+        ".plot-bg{fill:#fbfdff;stroke:#e2eaf5;stroke-width:1}",
+        ".axis{stroke:#91a4bd;stroke-width:1.2}",
+        ".grid{stroke:#e6edf6;stroke-width:1}",
+        ".grid.vertical{stroke-dasharray:4 6}",
+        ".tick{fill:#64748b;font-size:11px}",
+        ".data-line{filter:drop-shadow(0 3px 4px rgba(15,23,42,.10))}",
+        ".data-point{cursor:pointer;filter:drop-shadow(0 2px 3px rgba(15,23,42,.20));transition:stroke-width .16s ease}",
+        ".data-point:hover{stroke-width:4}",
+        ".point-value-label{font-size:10px;font-weight:800;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round;pointer-events:none}",
+        ".point-time-tick{stroke:#c7d4e5;stroke-width:1}",
+        ".point-time-label{font-size:9px;font-weight:700;fill:#475569;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;pointer-events:none}",
+        ".legend{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}",
+        ".legend-item{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:#334155;background:#f8fbff;border:1px solid #dfe8f4;border-radius:999px;padding:6px 10px}",
+        ".legend-item i{display:inline-block;width:12px;height:12px;border-radius:3px}",
+        "table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden}",
+        "th,td{border-bottom:1px solid #e7edf5;padding:10px 12px;text-align:right;font-size:13px}",
+        "tr:last-child td{border-bottom:0}",
+        "th:first-child,td:first-child{text-align:left}",
+        "th{background:#f0f5fb;color:#334155;font-weight:800}",
+        ".empty{background:#fff;border:1px dashed #cbd5e1;border-radius:8px;padding:20px;color:#64748b}",
+        "@media(max-width:720px){main{padding:20px 14px}.top{display:block}h1{font-size:24px}.value{font-size:16px}th,td{padding:8px 9px}}",
+        "</style>",
+        "</head>",
+        "<body>",
+        "<main>",
+        '<div class="top"><div><h1>AD 设备资源趋势</h1><div class="subtitle">CPU、内存与新建速率的固定时间段趋势</div></div></div>',
+        '<section class="meta">',
+        f'<div class="meta-card"><div class="label">设备</div><div class="value">{html_lib.escape(str(device))}</div></div>',
+        f'<div class="meta-card"><div class="label">时间范围</div><div class="value">{html_lib.escape(str(range_label))}</div></div>',
+        f'<div class="meta-card"><div class="label">查询窗口</div><div class="value">{html_lib.escape(str(query_range))}</div></div>',
+        f'<div class="meta-card"><div class="label">采样</div><div class="value">{sample_count} 条 / {html_lib.escape(str(step_time if step_time is not None else "-"))} 秒</div></div>',
+        "</section>",
+        '<section class="panel">',
+        "<h2>趋势图</h2>",
+        _render_state_svg(metrics, from_time=str(trend.get("from_time") or ""), to_time=str(trend.get("to_time") or "")),
+        "</section>",
+        '<section class="panel">',
+        "<h2>指标摘要</h2>",
+        "<table><thead><tr><th>指标</th><th>样本数</th><th>最新值</th><th>均值</th><th>峰值</th></tr></thead>",
+        f"<tbody>{''.join(summary_rows)}</tbody></table>",
+        "</section>",
+        '<section class="panel">',
+        "<h2>数据点</h2>",
+        _render_state_points_table(metrics) or '<div class="empty">该时间段内没有数据点。</div>',
+        "</section>",
+        "</main>",
+        "</body>",
+        "</html>",
+    ])
+
+
+def write_state_trend_html(results: Dict[str, Any], output_path: str) -> str:
+    """Write a state trend HTML artifact and return the absolute path."""
+    if not output_path:
+        return ""
+    path = os.path.abspath(output_path)
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8") as file:
+        file.write(render_state_trend_html(results))
+    return path
+
+
+def _traffic_html_result(results: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalize single-device or one-selected-device traffic results for HTML rendering."""
+    if results.get("traffic"):
+        return results
+    nested = results.get("results")
+    if isinstance(nested, dict):
+        for item in nested.values():
+            if isinstance(item, dict) and item.get("traffic"):
+                return item
+    return results
+
+
+def _traffic_metric_xy(
+    ts: int,
+    value: float,
+    x_min: int,
+    x_max: int,
+    y_max: float,
+    panel_top: float,
+    panel_height: float,
+) -> Tuple[float, float]:
+    safe_y_max = max(1.0, y_max)
+    x = _svg_point_x(ts, x_min, x_max)
+    y = panel_top + panel_height - (value / safe_y_max) * panel_height
+    return x, y
+
+
+def _traffic_svg_polyline(
+    points: List[Dict[str, Any]],
+    x_min: int,
+    x_max: int,
+    y_max: float,
+    panel_top: float,
+    panel_height: float,
+    color: str,
+) -> str:
+    coords = []
+    for point in points:
+        try:
+            ts = int(point["ts"])
+            value = float(point["value"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        x, y = _traffic_metric_xy(ts, value, x_min, x_max, y_max, panel_top, panel_height)
+        coords.append(f"{x:.1f},{y:.1f}")
+    if len(coords) < 2:
+        return ""
+    return f'<polyline class="data-line" points="{" ".join(coords)}" fill="none" stroke="{color}" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" />'
+
+
+def _traffic_value_label_y(y: float, panel_top: float, panel_height: float) -> float:
+    if y <= panel_top + 22:
+        label_y = y + 18
+    else:
+        label_y = y - 10
+    return min(max(label_y, panel_top + 12), panel_top + panel_height - 8)
+
+
+def _traffic_svg_markers(
+    points: List[Dict[str, Any]],
+    x_min: int,
+    x_max: int,
+    y_max: float,
+    panel_top: float,
+    panel_height: float,
+    color: str,
+    label: str,
+    show_value_labels: bool,
+) -> List[str]:
+    markers = []
+    safe_label = html_lib.escape(label)
+    for point in points:
+        try:
+            ts = int(point["ts"])
+            value = float(point["value"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        x, y = _traffic_metric_xy(ts, value, x_min, x_max, y_max, panel_top, panel_height)
+        title = html_lib.escape(f"{_format_point_time(ts)} / {label}: {value:.1f}")
+        markers.append(
+            f'<circle class="data-point" cx="{x:.1f}" cy="{y:.1f}" r="4.6" '
+            f'fill="#fff" stroke="{color}" stroke-width="2.4" data-label="{safe_label}" data-value="{value:.1f}">'
+            f"<title>{title}</title></circle>"
+        )
+        if show_value_labels:
+            label_y = _traffic_value_label_y(y, panel_top, panel_height)
+            markers.append(
+                f'<text class="point-value-label" x="{x:.1f}" y="{label_y:.1f}" '
+                f'text-anchor="{_svg_value_anchor(x)}" fill="{color}">{value:.1f}</text>'
+            )
+    return markers
+
+
+def _render_traffic_time_labels(timestamps: List[int], x_min: int, x_max: int, axis_y: float) -> List[str]:
+    unique_ts = sorted({int(ts) for ts in timestamps})
+    if not unique_ts:
+        return []
+    try:
+        same_day = len({datetime.fromtimestamp(ts).date() for ts in unique_ts}) == 1
+    except (TypeError, ValueError, OSError):
+        same_day = True
+    dense = len(unique_ts) > 10
+    label_y = axis_y + (34 if dense else 24)
+    tick_y2 = axis_y + (12 if dense else 8)
+    lines: List[str] = []
+    for ts in unique_ts:
+        x = _svg_point_x(ts, x_min, x_max)
+        label = html_lib.escape(_format_point_time_label(ts, same_day))
+        lines.append(f'<line class="point-time-tick" x1="{x:.1f}" y1="{axis_y:.1f}" x2="{x:.1f}" y2="{tick_y2:.1f}" />')
+        if dense:
+            lines.append(
+                f'<text class="point-time-label" x="{x:.1f}" y="{label_y:.1f}" '
+                f'text-anchor="end" transform="rotate(-58 {x:.1f} {label_y:.1f})">{label}</text>'
+            )
+        else:
+            lines.append(
+                f'<text class="point-time-label" x="{x:.1f}" y="{label_y:.1f}" '
+                f'text-anchor="{_svg_value_anchor(x)}">{label}</text>'
+            )
+    return lines
+
+
+def _render_traffic_svg(metrics: List[Dict[str, Any]], from_time: str = "", to_time: str = "") -> str:
+    all_points = [
+        point
+        for metric in metrics
+        for point in metric.get("points", [])
+        if isinstance(point, dict) and isinstance(point.get("ts"), int) and isinstance(point.get("value"), (int, float))
+    ]
+    if not all_points:
+        return '<div class="empty">\u8be5\u65f6\u95f4\u6bb5\u5185\u6ca1\u6709\u53ef\u6e32\u67d3\u7684\u8d8b\u52bf\u70b9\u3002</div>'
+
+    data_x_min = min(int(point["ts"]) for point in all_points)
+    data_x_max = max(int(point["ts"]) for point in all_points)
+    from_ts = _parse_optional_time_bound(from_time)
+    to_ts = _parse_optional_time_bound(to_time)
+    x_min = min(data_x_min, from_ts) if from_ts is not None else data_x_min
+    x_max = max(data_x_max, to_ts) if to_ts is not None else data_x_max
+    colors = ["#2563eb", "#16a34a", "#e11d48", "#9333ea", "#0891b2", "#f97316"]
+    panel_height = 128
+    panel_gap = 48
+    pad_top = 34
+    pad_bottom = 86
+    panel_count = max(1, len(metrics))
+    svg_height = int(pad_top + panel_count * panel_height + (panel_count - 1) * panel_gap + pad_bottom)
+    plot_w = STATE_SVG_WIDTH - STATE_SVG_PAD_LEFT - STATE_SVG_PAD_RIGHT
+    lines: List[str] = []
+    legends = []
+    point_timestamps = [int(point["ts"]) for point in all_points]
+    show_value_labels = len(set(point_timestamps)) <= 24 or len(all_points) <= 36
+
+    for idx, metric in enumerate(metrics):
+        color = colors[idx % len(colors)]
+        points = [
+            point
+            for point in metric.get("points", [])
+            if isinstance(point, dict) and isinstance(point.get("ts"), int) and isinstance(point.get("value"), (int, float))
+        ]
+        if not points:
+            continue
+        label_raw = str(metric.get("label") or _metric_label(metric.get("metric")))
+        label = html_lib.escape(label_raw)
+        panel_top = pad_top + idx * (panel_height + panel_gap)
+        axis_y = panel_top + panel_height
+        y_max = max(float(point["value"]) for point in points)
+        legends.append(f'<span class="legend-item"><i style="background:{color}"></i>{label}</span>')
+        lines.append(
+            f'<rect x="{STATE_SVG_PAD_LEFT}" y="{panel_top:.1f}" width="{plot_w}" height="{panel_height}" rx="10" class="plot-bg" />'
+        )
+        lines.append(
+            f'<text x="{STATE_SVG_PAD_LEFT}" y="{panel_top - 10:.1f}" text-anchor="start" class="metric-title" fill="{color}">{label}</text>'
+        )
+        for tick_idx in range(4):
+            ratio = tick_idx / 3
+            y = axis_y - ratio * panel_height
+            value = ratio * max(1.0, y_max)
+            lines.append(f'<line x1="{STATE_SVG_PAD_LEFT}" y1="{y:.1f}" x2="{STATE_SVG_WIDTH - STATE_SVG_PAD_RIGHT}" y2="{y:.1f}" class="grid" />')
+            lines.append(f'<text x="{STATE_SVG_PAD_LEFT - 12}" y="{y + 4:.1f}" text-anchor="end" class="tick">{value:.1f}</text>')
+        for grid_idx in range(4):
+            ratio = grid_idx / 3 if grid_idx else 0
+            x = STATE_SVG_PAD_LEFT + ratio * plot_w
+            lines.append(f'<line x1="{x:.1f}" y1="{panel_top:.1f}" x2="{x:.1f}" y2="{axis_y:.1f}" class="grid vertical" />')
+        lines.append(f'<line x1="{STATE_SVG_PAD_LEFT}" y1="{panel_top:.1f}" x2="{STATE_SVG_PAD_LEFT}" y2="{axis_y:.1f}" class="axis" />')
+        lines.append(f'<line x1="{STATE_SVG_PAD_LEFT}" y1="{axis_y:.1f}" x2="{STATE_SVG_WIDTH - STATE_SVG_PAD_RIGHT}" y2="{axis_y:.1f}" class="axis" />')
+        line = _traffic_svg_polyline(points, x_min, x_max, y_max, panel_top, panel_height, color)
+        if line:
+            lines.append(line)
+        lines.extend(_traffic_svg_markers(points, x_min, x_max, y_max, panel_top, panel_height, color, label_raw, show_value_labels))
+
+    time_axis_y = pad_top + (panel_count - 1) * (panel_height + panel_gap) + panel_height
+    lines.extend(_render_traffic_time_labels(point_timestamps, x_min, x_max, time_axis_y))
+
+    return "\n".join([
+        f'<div class="legend">{"".join(legends)}</div>',
+        f'<svg viewBox="0 0 {STATE_SVG_WIDTH} {svg_height}" role="img" aria-label="\u6d41\u91cf\u8d8b\u52bf\u5206\u9762\u6298\u7ebf\u56fe">',
+        *lines,
+        '</svg>',
+    ])
+
+
+def _render_traffic_trend_html_legacy(results: Dict[str, Any]) -> str:
+    """Render the traffic trend as a self-contained HTML artifact."""
+    result = _traffic_html_result(results)
+    traffic = result.get("traffic", {}) if isinstance(result.get("traffic", {}), dict) else {}
+    trend = traffic.get("trend", {}) if isinstance(traffic.get("trend", {}), dict) else {}
+    state_like = {
+        "device": result.get("device") or result.get("_device") or result.get("host"),
+        "_scope": "state",
+        "state": {
+            "status": traffic.get("status", "ok"),
+            "items": [],
+            "disk": {"available": False, "value": None, "source": "none"},
+            "anomalies": traffic.get("anomalies", []),
+            "trend": trend,
+        },
+    }
+    html = render_state_trend_html(state_like)
+    replacements = {
+        "AD 设备资源趋势": "AD 虚拟服务流量趋势",
+        "CPU、内存与新建速率的固定时间段趋势": "虚拟服务连接数、新建速率与吞吐量趋势",
+        "资源趋势折线图": "流量趋势折线图",
+    }
+    for old, new in replacements.items():
+        html = html.replace(old, new)
+    return html
+
+
+def render_traffic_trend_html(results: Dict[str, Any]) -> str:
+    """Render traffic trend metrics as faceted charts with independent Y axes."""
+    result = _traffic_html_result(results)
+    traffic = result.get("traffic", {}) if isinstance(result.get("traffic", {}), dict) else {}
+    trend = traffic.get("trend", {}) if isinstance(traffic.get("trend", {}), dict) else {}
+    metrics = trend.get("metrics") or []
+    device = _display_device_ref(result.get("device") or result.get("_device") or result.get("host"))
+    range_label = trend.get("range") or "-"
+    query_range = trend.get("query_range") or trend.get("period") or "-"
+    sample_count = trend.get("sample_count", 0)
+    step_time = trend.get("step_time")
+
+    summary_rows = []
+    for metric in metrics:
+        label = html_lib.escape(str(metric.get("label") or _metric_label(metric.get("metric"))))
+        latest = metric.get("latest")
+        mean = metric.get("mean")
+        max_value = metric.get("max")
+        latest_text = f"{latest:.1f}" if isinstance(latest, (int, float)) else "-"
+        mean_text = f"{mean:.1f}" if isinstance(mean, (int, float)) else "-"
+        max_text = f"{max_value:.1f}" if isinstance(max_value, (int, float)) else "-"
+        summary_rows.append(
+            "<tr>"
+            f"<td>{label}</td>"
+            f"<td>{int(metric.get('sample_count', 0))}</td>"
+            f"<td>{latest_text}</td>"
+            f"<td>{mean_text}</td>"
+            f"<td>{max_text}</td>"
+            "</tr>"
+        )
+
+    return "\n".join([
+        "<!doctype html>",
+        '<html lang="zh-CN">',
+        "<head>",
+        '<meta charset="utf-8">',
+        '<meta name="viewport" content="width=device-width,initial-scale=1">',
+        "<title>AD \u865a\u62df\u670d\u52a1\u6d41\u91cf\u8d8b\u52bf</title>",
+        "<style>",
+        ":root{--bg:#f4f7fb;--panel:#ffffff;--ink:#0f172a;--muted:#64748b;--border:#d8e2ef;--soft:#eef4fb}",
+        "*{box-sizing:border-box}",
+        "body{font-family:Arial,'Microsoft YaHei',sans-serif;margin:0;background:var(--bg);color:var(--ink)}",
+        "main{max-width:1180px;margin:0 auto;padding:30px 28px 36px}",
+        ".top{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:18px}",
+        "h1{font-size:28px;line-height:1.2;margin:0;font-weight:800;letter-spacing:0}",
+        ".subtitle{color:var(--muted);font-size:13px;margin-top:6px}",
+        ".meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:18px}",
+        ".meta-card,.panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;box-shadow:0 10px 24px rgba(15,23,42,.05)}",
+        ".meta-card{padding:16px 18px;min-height:104px;display:flex;flex-direction:column;justify-content:space-between}",
+        ".label{color:var(--muted);font-size:12px;margin-bottom:10px}",
+        ".value{font-size:18px;font-weight:800;line-height:1.25;word-break:break-word}",
+        ".panel{padding:18px;margin-top:16px}",
+        ".panel h2{font-size:16px;line-height:1.25;margin:0 0 12px;font-weight:800}",
+        "svg{width:100%;height:auto;display:block;background:#fff;border:1px solid var(--border);border-radius:8px}",
+        ".plot-bg{fill:#fbfdff;stroke:#e2eaf5;stroke-width:1}",
+        ".axis{stroke:#91a4bd;stroke-width:1.2}",
+        ".grid{stroke:#e6edf6;stroke-width:1}",
+        ".grid.vertical{stroke-dasharray:4 6}",
+        ".tick{fill:#64748b;font-size:11px}",
+        ".metric-title{font-size:13px;font-weight:800;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}",
+        ".data-line{filter:drop-shadow(0 3px 4px rgba(15,23,42,.10))}",
+        ".data-point{cursor:pointer;filter:drop-shadow(0 2px 3px rgba(15,23,42,.20));transition:stroke-width .16s ease}",
+        ".data-point:hover{stroke-width:4}",
+        ".point-value-label{font-size:10px;font-weight:800;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round;pointer-events:none}",
+        ".point-time-tick{stroke:#c7d4e5;stroke-width:1}",
+        ".point-time-label{font-size:9px;font-weight:700;fill:#475569;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;pointer-events:none}",
+        ".legend{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}",
+        ".legend-item{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:#334155;background:#f8fbff;border:1px solid #dfe8f4;border-radius:999px;padding:6px 10px}",
+        ".legend-item i{display:inline-block;width:12px;height:12px;border-radius:3px}",
+        "table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden}",
+        "th,td{border-bottom:1px solid #e7edf5;padding:10px 12px;text-align:right;font-size:13px}",
+        "tr:last-child td{border-bottom:0}",
+        "th:first-child,td:first-child{text-align:left}",
+        "th{background:#f0f5fb;color:#334155;font-weight:800}",
+        ".empty{background:#fff;border:1px dashed #cbd5e1;border-radius:8px;padding:20px;color:#64748b}",
+        "@media(max-width:720px){main{padding:20px 14px}.top{display:block}h1{font-size:24px}.value{font-size:16px}th,td{padding:8px 9px}}",
+        "</style>",
+        "</head>",
+        "<body>",
+        "<main>",
+        '<div class="top"><div><h1>AD \u865a\u62df\u670d\u52a1\u6d41\u91cf\u8d8b\u52bf</h1><div class="subtitle">\u865a\u62df\u670d\u52a1\u8fde\u63a5\u6570\u3001\u65b0\u5efa\u901f\u7387\u4e0e\u541e\u5410\u91cf\u72ec\u7acb\u91cf\u7eb2\u8d8b\u52bf</div></div></div>',
+        '<section class="meta">',
+        f'<div class="meta-card"><div class="label">\u8bbe\u5907</div><div class="value">{html_lib.escape(str(device))}</div></div>',
+        f'<div class="meta-card"><div class="label">\u65f6\u95f4\u8303\u56f4</div><div class="value">{html_lib.escape(str(range_label))}</div></div>',
+        f'<div class="meta-card"><div class="label">\u67e5\u8be2\u7a97\u53e3</div><div class="value">{html_lib.escape(str(query_range))}</div></div>',
+        f'<div class="meta-card"><div class="label">\u91c7\u6837</div><div class="value">{sample_count} \u6761 / {html_lib.escape(str(step_time if step_time is not None else "-"))} \u79d2</div></div>',
+        "</section>",
+        '<section class="panel">',
+        "<h2>\u8d8b\u52bf\u56fe</h2>",
+        _render_traffic_svg(metrics, from_time=str(trend.get("from_time") or ""), to_time=str(trend.get("to_time") or "")),
+        "</section>",
+        '<section class="panel">',
+        "<h2>\u6307\u6807\u6458\u8981</h2>",
+        "<table><thead><tr><th>\u6307\u6807</th><th>\u6837\u672c\u6570</th><th>\u6700\u65b0\u503c</th><th>\u5747\u503c</th><th>\u5cf0\u503c</th></tr></thead>",
+        f"<tbody>{''.join(summary_rows)}</tbody></table>",
+        "</section>",
+        '<section class="panel">',
+        "<h2>\u6570\u636e\u70b9</h2>",
+        _render_state_points_table(metrics) or '<div class="empty">\u8be5\u65f6\u95f4\u6bb5\u5185\u6ca1\u6709\u6570\u636e\u70b9\u3002</div>',
+        "</section>",
+        "</main>",
+        "</body>",
+        "</html>",
+    ])
+
+
+def write_traffic_trend_html(results: Dict[str, Any], output_path: str) -> str:
+    """Write a traffic trend HTML artifact and return the absolute path."""
+    if not output_path:
+        return ""
+    path = os.path.abspath(output_path)
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8") as file:
+        file.write(render_traffic_trend_html(results))
+    return path
 
 
 def render_json(results: Dict[str, Any]) -> str:
@@ -1451,7 +2781,7 @@ def _compute_exit_code(results: Dict[str, Any]) -> int:
 
     for key in ('traffic', 'state', 'conflicts'):
         dim = results.get(key, {})
-        if dim.get('status') in ('ok', 'warning', 'critical', 'conflict_found', 'insufficient_data'):
+        if dim.get('status') in ('ok', 'warning', 'critical', 'partial', 'conflict_found', 'insufficient_data'):
             has_success = True
             all_fail = False
         elif dim.get('status') == 'error':
@@ -1501,6 +2831,7 @@ def _traffic_one(
     vs_name: Optional[str] = None,
     days: int = 7,
     require_db: bool = False,
+    trend: Optional[str] = "auto",
     from_time: str = "",
     to_time: str = "",
 ) -> Dict[str, Any]:
@@ -1510,14 +2841,29 @@ def _traffic_one(
         vs_name=vs_name,
         days=days,
         require_db=require_db,
+        trend=trend,
         from_time=from_time,
         to_time=to_time,
     )
     return {'device': client.host, 'traffic': traffic_result, '_scope': 'traffic'}
 
 
-def _state_one(client: Any, db_path: Optional[str] = None, disk_source: Optional[str] = None) -> Dict[str, Any]:
-    state_result = state_analysis(client, disk_source=disk_source, db_path=db_path)
+def _state_one(
+    client: Any,
+    db_path: Optional[str] = None,
+    disk_source: Optional[str] = None,
+    trend: Optional[str] = None,
+    from_time: str = "",
+    to_time: str = "",
+) -> Dict[str, Any]:
+    state_result = state_analysis(
+        client,
+        disk_source=disk_source,
+        db_path=db_path,
+        trend=trend,
+        from_time=from_time,
+        to_time=to_time,
+    )
     return {'device': client.host, 'state': state_result, '_scope': 'state'}
 
 
@@ -1574,12 +2920,29 @@ def main() -> None:
     traffic_p = subparsers.add_parser("traffic", help="Flow anomaly detection")
     _add_common_args(traffic_p)
     traffic_p.add_argument("--vs", default="", help="VS name filter")
-    traffic_p.add_argument("--days", type=int, default=7, help="历史流量库回溯天数 (默认7)")
+    traffic_p.add_argument("--days", type=int, default=7, help="Legacy SQLite history days when --require-db is used")
+    traffic_p.add_argument(
+        "--trend",
+        choices=["auto", *TRAFFIC_TREND_OPTIONS.keys()],
+        default="auto",
+        help="VS traffic trend range: auto, last-hour, last-day, or last-month (default: auto)",
+    )
     traffic_p.add_argument("--from-time", default="", help="开始时间，格式 YYYY-MM-DD HH:MM:SS")
     traffic_p.add_argument("--to-time", default="", help="结束时间，格式 YYYY-MM-DD HH:MM:SS")
-    traffic_p.add_argument("--require-db", action="store_true", help="必须使用 SQLite 历史库，禁止实时 API 回退")
+    traffic_p.add_argument("--html-out", default="", help="Write an HTML traffic trend artifact to this path")
+    traffic_p.add_argument("--require-db", action="store_true", help="Legacy mode: use SQLite history DB and disable device API trend")
     state_p = subparsers.add_parser("state", help="Device state anomaly detection")
-    _add_common_args(state_p); state_p.add_argument("--disk-source", default="", help="Check report directory with ad.json")
+    _add_common_args(state_p)
+    state_p.add_argument("--disk-source", default="", help="Check report directory with ad.json")
+    state_p.add_argument(
+        "--trend",
+        choices=["auto", *STATE_TREND_OPTIONS.keys()],
+        default="auto",
+        help="Device trend range: auto, last-hour, last-day, or last-month (default: auto)",
+    )
+    state_p.add_argument("--from-time", default="", help="开始时间，格式 YYYY-MM-DD HH:MM:SS")
+    state_p.add_argument("--to-time", default="", help="结束时间，格式 YYYY-MM-DD HH:MM:SS")
+    state_p.add_argument("--html-out", default="", help="Write an HTML trend artifact to this path")
     conflict_p = subparsers.add_parser("conflict", help="Address conflict detection")
     _add_common_args(conflict_p)
     logs_p = subparsers.add_parser("logs", help="服务日志查询")
@@ -1620,6 +2983,28 @@ def main() -> None:
             'range_label': range_label,
         }
 
+    def _state_trend_from_args(a: argparse.Namespace) -> str:
+        try:
+            return select_state_trend(
+                getattr(a, 'trend', 'auto'),
+                from_time=getattr(a, 'from_time', ''),
+                to_time=getattr(a, 'to_time', ''),
+            )
+        except ValueError as exc:
+            print(f"错误: {exc}", file=sys.stderr)
+            sys.exit(4)
+
+    def _traffic_trend_from_args(a: argparse.Namespace) -> str:
+        try:
+            return select_traffic_trend(
+                getattr(a, 'trend', 'auto'),
+                from_time=getattr(a, 'from_time', ''),
+                to_time=getattr(a, 'to_time', ''),
+            )
+        except ValueError as exc:
+            print(f"错误: {exc}", file=sys.stderr)
+            sys.exit(4)
+
     # Multi-device mode
     if args.hosts or args.devices:
         if args.host:
@@ -1650,6 +3035,9 @@ def main() -> None:
             sys.exit(_compute_perception_multi_exit_code(results))
         elif cmd == "traffic":
             vs_name = args.vs if hasattr(args, 'vs') and args.vs else None
+            selected_trend = getattr(args, 'trend', 'auto')
+            if not getattr(args, 'require_db', False):
+                selected_trend = _traffic_trend_from_args(args)
             results = run_multi(
                 devices,
                 _traffic_one,
@@ -1657,6 +3045,7 @@ def main() -> None:
                 vs_name=vs_name,
                 days=getattr(args, 'days', 7),
                 require_db=getattr(args, 'require_db', False),
+                trend=selected_trend,
                 from_time=getattr(args, 'from_time', ''),
                 to_time=getattr(args, 'to_time', ''),
             )
@@ -1668,13 +3057,29 @@ def main() -> None:
                                "failed": sum(1 for v in results.values() if "error" in v)},
                     "results": results,
                 }
+                if getattr(args, 'html_out', ''):
+                    html_path = write_traffic_trend_html(output, getattr(args, 'html_out', ''))
+                    print(f"[artifact] HTML written: {html_path}", file=sys.stderr)
                 print(render_json(output))
             else:
-                print(_render_multi_markdown(results, "AD 流量趋势分析 — 多设备", lambda _host, result: render_markdown(result)))
+                rendered = _render_multi_markdown(results, "AD 流量趋势分析 — 多设备", lambda _host, result: render_markdown(result))
+                if getattr(args, 'html_out', ''):
+                    html_path = write_traffic_trend_html({"mode": "multi", "results": results}, getattr(args, 'html_out', ''))
+                    print(f"[artifact] HTML written: {html_path}", file=sys.stderr)
+                print(rendered)
             sys.exit(_compute_perception_multi_exit_code(results))
         elif cmd == "state":
             disk_src = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
-            results = run_multi(devices, _state_one, db_path=db_path, disk_source=disk_src)
+            selected_trend = _state_trend_from_args(args)
+            results = run_multi(
+                devices,
+                _state_one,
+                db_path=db_path,
+                disk_source=disk_src,
+                trend=selected_trend,
+                from_time=getattr(args, 'from_time', ''),
+                to_time=getattr(args, 'to_time', ''),
+            )
 
             if output_format == "json":
                 output = {
@@ -1683,9 +3088,16 @@ def main() -> None:
                                "failed": sum(1 for v in results.values() if "error" in v)},
                     "results": results,
                 }
+                if getattr(args, 'html_out', ''):
+                    html_path = write_state_trend_html(output, getattr(args, 'html_out', ''))
+                    print(f"[artifact] HTML written: {html_path}", file=sys.stderr)
                 print(render_json(output))
             else:
-                print(_render_multi_markdown(results, "AD 设备资源分析 — 多设备", lambda _host, result: render_markdown(result)))
+                rendered = _render_multi_markdown(results, "AD 设备资源分析 — 多设备", lambda _host, result: render_markdown(result))
+                if getattr(args, 'html_out', ''):
+                    html_path = write_state_trend_html({"mode": "multi", "results": results}, getattr(args, 'html_out', ''))
+                    print(f"[artifact] HTML written: {html_path}", file=sys.stderr)
+                print(rendered)
             sys.exit(_compute_perception_multi_exit_code(results))
         elif cmd == "conflict":
             results = run_multi(devices, _conflict_one)
@@ -1730,23 +3142,41 @@ def main() -> None:
 
         if cmd == "traffic":
             vs_name = args.vs if hasattr(args, 'vs') and args.vs else None
+            selected_trend = getattr(args, 'trend', 'auto')
+            if not getattr(args, 'require_db', False):
+                selected_trend = _traffic_trend_from_args(args)
             traffic_result = traffic_analysis(
                 client,
                 db_path=db_path,
                 vs_name=vs_name,
                 days=getattr(args, 'days', 7),
                 require_db=getattr(args, 'require_db', False),
+                trend=selected_trend,
                 from_time=getattr(args, 'from_time', ''),
                 to_time=getattr(args, 'to_time', ''),
             )
             result = {'device': host, 'traffic': traffic_result, '_scope': 'traffic'}
+            if getattr(args, 'html_out', ''):
+                html_path = write_traffic_trend_html(result, getattr(args, 'html_out', ''))
+                print(f"[artifact] HTML written: {html_path}", file=sys.stderr)
             _print_result(result, output_format)
             sys.exit(0 if traffic_result.get('status') != 'error' else 1)
 
         elif cmd == "state":
             disk_source = args.disk_source if hasattr(args, 'disk_source') and args.disk_source else None
-            state_result = state_analysis(client, disk_source=disk_source, db_path=db_path)
+            selected_trend = _state_trend_from_args(args)
+            state_result = state_analysis(
+                client,
+                disk_source=disk_source,
+                db_path=db_path,
+                trend=selected_trend,
+                from_time=getattr(args, 'from_time', ''),
+                to_time=getattr(args, 'to_time', ''),
+            )
             result = {'device': host, 'state': state_result, '_scope': 'state'}
+            if getattr(args, 'html_out', ''):
+                html_path = write_state_trend_html(result, getattr(args, 'html_out', ''))
+                print(f"[artifact] HTML written: {html_path}", file=sys.stderr)
             _print_result(result, output_format)
             sys.exit(0 if state_result.get('status') != 'error' else 1)
 

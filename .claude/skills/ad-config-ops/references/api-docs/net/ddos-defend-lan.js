@@ -51,6 +51,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ddos_defend_lan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get ddos-defend-lan",
+						"description": "查看内网DDoS防护配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/ddos-defend-lan"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/ddos-defend-lan 响应",
+						"description": "返回GET /api/ad/v3/net/ddos-defend-lan的响应数据",
+						"value": {
+							"syn_flood": {
+								"state": "DISABLE",
+								"packet_pre_second_threshold": 4096
+							},
+							"udp_flood": {
+								"state": "DISABLE",
+								"packet_pre_second_threshold": 20480,
+								"drop_empty_packet": "ENABLE",
+								"receive_packet_size_control": "DISABLE",
+								"receive_packet_minimum_size": 8,
+								"receive_packet_maximum_size": 65535
+							},
+							"icmp_flood": {
+								"state": "DISABLE",
+								"packet_pre_second_threshold": 2048
+							},
+							"release_persist_packet": "ENABLE",
+							"source_address_white_list": [
+								"1.1.1.0/24"
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +105,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ddos_defend_lan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace ddos-defend-lan",
+						"description": "修改内网DDoS防护配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/ddos-defend-lan",
+							"body": {
+								"release_persist_packet": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/ddos-defend-lan 响应",
+						"description": "返回PUT /api/ad/v3/net/ddos-defend-lan的响应数据",
+						"value": {
+							"syn_flood": {
+								"state": "DISABLE",
+								"packet_pre_second_threshold": 4096
+							},
+							"udp_flood": {
+								"state": "DISABLE",
+								"packet_pre_second_threshold": 20480,
+								"drop_empty_packet": "ENABLE",
+								"receive_packet_size_control": "DISABLE",
+								"receive_packet_minimum_size": 8,
+								"receive_packet_maximum_size": 65535
+							},
+							"icmp_flood": {
+								"state": "DISABLE",
+								"packet_pre_second_threshold": 2048
+							},
+							"release_persist_packet": "ENABLE",
+							"source_address_white_list": [
+								"1.1.1.0/24"
+							]
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +161,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ddos_defend_lan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify ddos-defend-lan",
+						"description": "修改内网DDoS防护配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/ddos-defend-lan",
+							"body": {
+								"release_persist_packet": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/ddos-defend-lan 响应",
+						"description": "返回PATCH /api/ad/v3/net/ddos-defend-lan的响应数据",
+						"value": {
+							"syn_flood": {
+								"state": "DISABLE",
+								"packet_pre_second_threshold": 4096
+							},
+							"udp_flood": {
+								"state": "DISABLE",
+								"packet_pre_second_threshold": 20480,
+								"drop_empty_packet": "ENABLE",
+								"receive_packet_size_control": "DISABLE",
+								"receive_packet_minimum_size": 8,
+								"receive_packet_maximum_size": 65535
+							},
+							"icmp_flood": {
+								"state": "DISABLE",
+								"packet_pre_second_threshold": 2048
+							},
+							"release_persist_packet": "ENABLE",
+							"source_address_white_list": [
+								"1.1.1.0/24"
+							]
+						}
 					}
 				}
 			},

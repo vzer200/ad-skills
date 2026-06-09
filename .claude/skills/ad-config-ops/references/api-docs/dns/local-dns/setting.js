@@ -51,6 +51,65 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_local_dns_setting_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get local-dns-setting",
+						"description": "查看LDNS基础配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/local-dns/setting"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/local-dns/setting 响应",
+						"description": "返回GET /api/ad/v4/dns/local-dns/setting的响应数据",
+						"value": {
+							"cache": {
+								"message_cache_capacity_mb": 4,
+								"resource_record_cache_capacity_mb": 4,
+								"key_cache_capacity_mb": 4,
+								"negative_cache_capacity_mb": 1,
+								"cache_ttl_minimum": 0,
+								"cache_ttl_maximum": 86400,
+								"negative_cache_ttl": 10800
+							},
+							"resolution": {
+								"ipv6_prefer": "DISABLE",
+								"max_query_per_second": 1024,
+								"edns_cache_capacity_byte": 1232,
+								"root_hints": [
+									"198.41.0.4,199.9.14.201,192.33.4.12,199.7.91.13,192.203.230.10,192.5.5.241,192.112.36.4,198.97.190.53,192.36.148.17,192.58.128.30,193.0.14.129,199.7.83.42,202.12.27.33,2001:503:ba3e::2:30,2001:500:200::b,2001:500:2::c,2001:500:2d::d,2001:500:a8::e,2001:500:2f::f,2001:500:12::d0d,2001:500:1::53,2001:7fe::53,2001:503:c27::2:30,2001:7fd::1,2001:500:9f::42,2001:dc3::35"
+								]
+							},
+							"security": {
+								"randomize_domain_name_case": "DISABLE",
+								"access_control": [
+									{
+										"source_address": "192.168.1.1/24",
+										"policy": "ALLOW"
+									}
+								],
+								"dnssec": "DISABLE",
+								"trust_anchor": [
+									{
+										"trust_anchor_child": ".       86400   IN      DNSKEY  257 3 8 AwEAAaz/tAm8yTn4Mfeh5eyI96WSVexTBAvkMgJzkKTOiW1vkIbzxeF3+/4RgWOq7HrxRixHlFlExOLAJr5emLvN7SWXgnLh4+B5xQlNVz8Og8kvArMtNROxVQuCaSnIDdD5LKyWbRd2n9WGe2R8PzgCmr3EgVLrjyBxWezF0jLHwVN8efS3rCj/EWgvIWgb9tarpVUDK/b58Da+sqqls3eNbuv7pr+eoZG+SrDK6nWeL3c6H5Apxz7LjVc1uTIdsIXxuOLYA4/ilBmSVIzuDWfdRUfhHdY6+cn8HFRm+2hM8AnXGXws9555KrUB5qihylGa8subX2Nn6UwNR1AkUTV74bU=",
+										"domain": "example_string",
+										"ttl": 60,
+										"class": "IN",
+										"record_type": "example_string",
+										"uuid": 257,
+										"algorithm_type": 3,
+										"summary_type": 8,
+										"key_label": 257,
+										"protocol": 3,
+										"value": "example_string",
+										"secret_key": "example_string"
+									}
+								]
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +128,66 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_local_dns_setting_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace local-dns-setting",
+						"description": "修改LDNS基础配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/local-dns/setting",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/local-dns/setting 响应",
+						"description": "返回PUT /api/ad/v4/dns/local-dns/setting的响应数据",
+						"value": {
+							"cache": {
+								"message_cache_capacity_mb": 4,
+								"resource_record_cache_capacity_mb": 4,
+								"key_cache_capacity_mb": 4,
+								"negative_cache_capacity_mb": 1,
+								"cache_ttl_minimum": 0,
+								"cache_ttl_maximum": 86400,
+								"negative_cache_ttl": 10800
+							},
+							"resolution": {
+								"ipv6_prefer": "DISABLE",
+								"max_query_per_second": 1024,
+								"edns_cache_capacity_byte": 1232,
+								"root_hints": [
+									"198.41.0.4,199.9.14.201,192.33.4.12,199.7.91.13,192.203.230.10,192.5.5.241,192.112.36.4,198.97.190.53,192.36.148.17,192.58.128.30,193.0.14.129,199.7.83.42,202.12.27.33,2001:503:ba3e::2:30,2001:500:200::b,2001:500:2::c,2001:500:2d::d,2001:500:a8::e,2001:500:2f::f,2001:500:12::d0d,2001:500:1::53,2001:7fe::53,2001:503:c27::2:30,2001:7fd::1,2001:500:9f::42,2001:dc3::35"
+								]
+							},
+							"security": {
+								"randomize_domain_name_case": "DISABLE",
+								"access_control": [
+									{
+										"source_address": "192.168.1.1/24",
+										"policy": "ALLOW"
+									}
+								],
+								"dnssec": "DISABLE",
+								"trust_anchor": [
+									{
+										"trust_anchor_child": ".       86400   IN      DNSKEY  257 3 8 AwEAAaz/tAm8yTn4Mfeh5eyI96WSVexTBAvkMgJzkKTOiW1vkIbzxeF3+/4RgWOq7HrxRixHlFlExOLAJr5emLvN7SWXgnLh4+B5xQlNVz8Og8kvArMtNROxVQuCaSnIDdD5LKyWbRd2n9WGe2R8PzgCmr3EgVLrjyBxWezF0jLHwVN8efS3rCj/EWgvIWgb9tarpVUDK/b58Da+sqqls3eNbuv7pr+eoZG+SrDK6nWeL3c6H5Apxz7LjVc1uTIdsIXxuOLYA4/ilBmSVIzuDWfdRUfhHdY6+cn8HFRm+2hM8AnXGXws9555KrUB5qihylGa8subX2Nn6UwNR1AkUTV74bU=",
+										"domain": "example_string",
+										"ttl": 60,
+										"class": "IN",
+										"record_type": "example_string",
+										"uuid": 257,
+										"algorithm_type": 3,
+										"summary_type": 8,
+										"key_label": 257,
+										"protocol": 3,
+										"value": "example_string",
+										"secret_key": "example_string"
+									}
+								]
+							}
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +205,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_local_dns_setting_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify ldns-setting",
+						"description": "增量修改DNS基础配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/local-dns/setting",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/local-dns/setting 响应",
+						"description": "返回PATCH /api/ad/v4/dns/local-dns/setting的响应数据",
+						"value": {
+							"cache": {
+								"message_cache_capacity_mb": 4,
+								"resource_record_cache_capacity_mb": 4,
+								"key_cache_capacity_mb": 4,
+								"negative_cache_capacity_mb": 1,
+								"cache_ttl_minimum": 0,
+								"cache_ttl_maximum": 86400,
+								"negative_cache_ttl": 10800
+							},
+							"resolution": {
+								"ipv6_prefer": "DISABLE",
+								"max_query_per_second": 1024,
+								"edns_cache_capacity_byte": 1232,
+								"root_hints": [
+									"198.41.0.4,199.9.14.201,192.33.4.12,199.7.91.13,192.203.230.10,192.5.5.241,192.112.36.4,198.97.190.53,192.36.148.17,192.58.128.30,193.0.14.129,199.7.83.42,202.12.27.33,2001:503:ba3e::2:30,2001:500:200::b,2001:500:2::c,2001:500:2d::d,2001:500:a8::e,2001:500:2f::f,2001:500:12::d0d,2001:500:1::53,2001:7fe::53,2001:503:c27::2:30,2001:7fd::1,2001:500:9f::42,2001:dc3::35"
+								]
+							},
+							"security": {
+								"randomize_domain_name_case": "DISABLE",
+								"access_control": [
+									{
+										"source_address": "192.168.1.1/24",
+										"policy": "ALLOW"
+									}
+								],
+								"dnssec": "DISABLE",
+								"trust_anchor": [
+									{
+										"trust_anchor_child": ".       86400   IN      DNSKEY  257 3 8 AwEAAaz/tAm8yTn4Mfeh5eyI96WSVexTBAvkMgJzkKTOiW1vkIbzxeF3+/4RgWOq7HrxRixHlFlExOLAJr5emLvN7SWXgnLh4+B5xQlNVz8Og8kvArMtNROxVQuCaSnIDdD5LKyWbRd2n9WGe2R8PzgCmr3EgVLrjyBxWezF0jLHwVN8efS3rCj/EWgvIWgb9tarpVUDK/b58Da+sqqls3eNbuv7pr+eoZG+SrDK6nWeL3c6H5Apxz7LjVc1uTIdsIXxuOLYA4/ilBmSVIzuDWfdRUfhHdY6+cn8HFRm+2hM8AnXGXws9555KrUB5qihylGa8subX2Nn6UwNR1AkUTV74bU=",
+										"domain": "example_string",
+										"ttl": 60,
+										"class": "IN",
+										"record_type": "example_string",
+										"uuid": 257,
+										"algorithm_type": 3,
+										"summary_type": 8,
+										"key_label": 257,
+										"protocol": 3,
+										"value": "example_string",
+										"secret_key": "example_string"
+									}
+								]
+							}
+						}
 					}
 				}
 			},

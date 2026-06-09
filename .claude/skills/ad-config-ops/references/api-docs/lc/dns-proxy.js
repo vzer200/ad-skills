@@ -51,6 +51,57 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_proxy_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get dns-proxy",
+						"description": "查看DNS代理配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/dns-proxy"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/dns-proxy 响应",
+						"description": "返回GET /api/ad/v3/lc/dns-proxy的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"proxy_source_address": "ALL",
+							"proxy_source_address_subnet": [
+								"1.1.1.0/24"
+							],
+							"proxy_destination": "LINK-DNS-SERVERS",
+							"listen_ipv4": "1.1.1.1",
+							"listen_ipv6": "2001::78",
+							"listen_port": 5353,
+							"dns_cache": {
+								"state": "DISABLE",
+								"age": 7200
+							},
+							"persist": "ENABLE",
+							"concurrent_query": "DISABLE",
+							"schedule_policy": "ROUND-ROBIN",
+							"pre_rule": "ENABLE",
+							"link_busy_protect": "DISABLE",
+							"health_detect_domains": [
+								"www.baidu.com"
+							],
+							"dns_6to4_query": {
+								"state": "DISABLE",
+								"ipv6_address_prefix": "64:ff9b::",
+								"method": "RESPONSE-FIRST",
+								"response_rewrite": "ANY"
+							},
+							"dns_servers": [
+								{
+									"type": "MANUAL",
+									"link": "wan_1",
+									"server": "192.168.1.1",
+									"weight": 10
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +120,68 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_proxy_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace dns-proxy",
+						"description": "更新DNS代理配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/lc/dns-proxy",
+							"body": {
+								"state": "ENABLE",
+								"proxy_source_address": "ALL",
+								"proxy_destination": "LINK-DNS-SERVERS",
+								"listen_port": 5353,
+								"persist": "ENABLE",
+								"concurrent_query": "DISABLE",
+								"schedule_policy": "ROUND-ROBIN",
+								"pre_rule": "ENABLE",
+								"link_busy_protect": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/lc/dns-proxy 响应",
+						"description": "返回PUT /api/ad/v3/lc/dns-proxy的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"proxy_source_address": "ALL",
+							"proxy_source_address_subnet": [
+								"1.1.1.0/24"
+							],
+							"proxy_destination": "LINK-DNS-SERVERS",
+							"listen_ipv4": "1.1.1.1",
+							"listen_ipv6": "2001::78",
+							"listen_port": 5353,
+							"dns_cache": {
+								"state": "DISABLE",
+								"age": 7200
+							},
+							"persist": "ENABLE",
+							"concurrent_query": "DISABLE",
+							"schedule_policy": "ROUND-ROBIN",
+							"pre_rule": "ENABLE",
+							"link_busy_protect": "DISABLE",
+							"health_detect_domains": [
+								"www.baidu.com"
+							],
+							"dns_6to4_query": {
+								"state": "DISABLE",
+								"ipv6_address_prefix": "64:ff9b::",
+								"method": "RESPONSE-FIRST",
+								"response_rewrite": "ANY"
+							},
+							"dns_servers": [
+								{
+									"type": "MANUAL",
+									"link": "wan_1",
+									"server": "192.168.1.1",
+									"weight": 10
+								}
+							]
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +199,68 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_proxy_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify dns-proxy",
+						"description": "更新DNS代理配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/lc/dns-proxy",
+							"body": {
+								"state": "ENABLE",
+								"proxy_source_address": "ALL",
+								"proxy_destination": "LINK-DNS-SERVERS",
+								"listen_port": 5353,
+								"persist": "ENABLE",
+								"concurrent_query": "DISABLE",
+								"schedule_policy": "ROUND-ROBIN",
+								"pre_rule": "ENABLE",
+								"link_busy_protect": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/lc/dns-proxy 响应",
+						"description": "返回PATCH /api/ad/v3/lc/dns-proxy的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"proxy_source_address": "ALL",
+							"proxy_source_address_subnet": [
+								"1.1.1.0/24"
+							],
+							"proxy_destination": "LINK-DNS-SERVERS",
+							"listen_ipv4": "1.1.1.1",
+							"listen_ipv6": "2001::78",
+							"listen_port": 5353,
+							"dns_cache": {
+								"state": "DISABLE",
+								"age": 7200
+							},
+							"persist": "ENABLE",
+							"concurrent_query": "DISABLE",
+							"schedule_policy": "ROUND-ROBIN",
+							"pre_rule": "ENABLE",
+							"link_busy_protect": "DISABLE",
+							"health_detect_domains": [
+								"www.baidu.com"
+							],
+							"dns_6to4_query": {
+								"state": "DISABLE",
+								"ipv6_address_prefix": "64:ff9b::",
+								"method": "RESPONSE-FIRST",
+								"response_rewrite": "ANY"
+							},
+							"dns_servers": [
+								{
+									"type": "MANUAL",
+									"link": "wan_1",
+									"server": "192.168.1.1",
+									"weight": 10
+								}
+							]
+						}
 					}
 				}
 			},
@@ -156,7 +331,7 @@ module.exports ={
 				"proxy_source_address_subnet": {
 					"description": "可选参数；网段列表，类型为数组。",
 					"type": "array",
-					"maxItems": 16,
+					"maxItems": 20,
 					"items": {
 						"type": "string",
 						"description": "可选参数；IP网段，必须为子网格式，如1.1.1.0/24。",

@@ -40,7 +40,24 @@ module.exports ={
 				],
 				"summary": "clear snat hit",
 				"description": "重置SNAT命中数统计",
-				"operationId": "clear_snat_hit"
+				"operationId": "clear_snat_hit",
+				"x-examples": {
+					"request": {
+						"summary": "clear snat hit",
+						"description": "重置SNAT命中数统计",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/net/snat/reset"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/net/snat/reset 响应",
+						"description": "返回POST /api/ad/v3/debug/net/snat/reset的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

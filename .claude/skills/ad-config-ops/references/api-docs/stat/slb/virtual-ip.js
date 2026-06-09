@@ -65,6 +65,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_virtual_ip_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all virtual-ip",
+						"description": "获取虚拟ip统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-ip/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-ip/ 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-ip/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "url-sched",
+									"description": "example_string",
+									"state": "ONLINE",
+									"reason": "example_string"
+								}
+							]
+						}
+					}
 				}
 			}
 		}

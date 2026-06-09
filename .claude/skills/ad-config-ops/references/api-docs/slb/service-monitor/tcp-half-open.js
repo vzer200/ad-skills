@@ -65,6 +65,44 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_tcp_half_open_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-tcp-half-open",
+						"description": "查看当前已有的监视器（TCP半连接）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/tcp-half-open/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/tcp-half-open/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/tcp-half-open/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "TCP-HALF-OPEN",
+									"timeout": 16,
+									"interval": 5,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"host": "*",
+									"port": 0,
+									"debug_mode": "DISABLE",
+									"gateway_detect": "DISABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +120,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_tcp_half_open_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-tcp-half-open",
+						"description": "新建一个监视器（TCP半连接）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/tcp-half-open/",
+							"body": {
+								"name": "AI_http_tcp_half_open_A",
+								"type": "TCP-HALF-OPEN",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/tcp-half-open/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/tcp-half-open/的响应数据",
+						"value": {
+							"name": "AI_http_tcp_half_open_A",
+							"description": "example_string",
+							"type": "TCP-HALF-OPEN",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE"
+						}
 					}
 				}
 			},
@@ -130,6 +207,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_tcp_half_open_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-tcp-half-open",
+						"description": "查看指定的监视器（TCP半连接）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/tcp-half-open/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/tcp-half-open/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/tcp-half-open/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "TCP-HALF-OPEN",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +253,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_tcp_half_open_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-tcp-half-open",
+						"description": "新建指定的监视器（TCP半连接）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/tcp-half-open/{name}",
+							"body": {
+								"name": "AI_http_tcp_half_open_B",
+								"type": "TCP-HALF-OPEN",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/tcp-half-open/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/tcp-half-open/{name}的响应数据",
+						"value": {
+							"name": "AI_http_tcp_half_open_B",
+							"description": "example_string",
+							"type": "TCP-HALF-OPEN",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +309,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_tcp_half_open_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-tcp-half-open",
+						"description": "修改指定的监视器（TCP半连接）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/tcp-half-open/{name}",
+							"body": {
+								"name": "http",
+								"type": "TCP-HALF-OPEN",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/tcp-half-open/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/tcp-half-open/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "TCP-HALF-OPEN",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE"
+						}
 					}
 				}
 			},
@@ -185,6 +367,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_tcp_half_open_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-tcp-half-open",
+						"description": "修改指定的监视器（TCP半连接）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/tcp-half-open/{name}",
+							"body": {
+								"name": "http",
+								"type": "TCP-HALF-OPEN",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/tcp-half-open/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/tcp-half-open/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "TCP-HALF-OPEN",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +418,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_tcp_half_open_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-tcp-half-open",
+						"description": "删除指定的监视器（TCP半连接）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/tcp-half-open/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/tcp-half-open/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/tcp-half-open/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "TCP-HALF-OPEN",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE"
+						}
 					}
 				}
 			}

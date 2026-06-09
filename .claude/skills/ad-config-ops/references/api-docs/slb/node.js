@@ -68,6 +68,55 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_node_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all nodes",
+						"description": "查看当前已有的节点配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/pool/{pool_name}/nodes"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/pool/{pool_name}/nodes 响应",
+						"description": "返回GET /api/ad/v3/slb/pool/{pool_name}/nodes的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "oa_server_port_25",
+									"description": "example_string",
+									"type": "ADDRESS",
+									"address": "192.168.1.101",
+									"port": 0,
+									"state": "ENABLE",
+									"weight": 10,
+									"priority_level": 1,
+									"connection_limit": 0,
+									"connection_rate_limit": 0,
+									"request_rate_limit": 0,
+									"cookie": 12345678,
+									"node_variable": "",
+									"inherit_pool_monitor": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"associated_domain": "",
+									"recover_by_manual": "DISABLE",
+									"up_throughput_limit": 0,
+									"down_throughput_limit": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -85,6 +134,60 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_node_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new node",
+						"description": "新建一个节点配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/pool/{pool_name}/nodes",
+							"body": {
+								"type": "ADDRESS",
+								"address": "192.168.1.101",
+								"port": 0,
+								"state": "ENABLE",
+								"weight": 10,
+								"priority_level": 1,
+								"connection_limit": 0,
+								"connection_rate_limit": 0,
+								"request_rate_limit": 0,
+								"inherit_pool_monitor": "ENABLE",
+								"available_requirement": 0,
+								"recover_by_manual": "DISABLE",
+								"up_throughput_limit": 0,
+								"down_throughput_limit": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/pool/{pool_name}/nodes 响应",
+						"description": "返回POST /api/ad/v3/slb/pool/{pool_name}/nodes的响应数据",
+						"value": {
+							"name": "AI_oa_server_port_25_A",
+							"description": "example_string",
+							"type": "ADDRESS",
+							"address": "192.168.1.101",
+							"port": 0,
+							"state": "ENABLE",
+							"weight": 10,
+							"priority_level": 1,
+							"connection_limit": 0,
+							"connection_rate_limit": 0,
+							"request_rate_limit": 0,
+							"cookie": 12345678,
+							"node_variable": "",
+							"inherit_pool_monitor": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"associated_domain": "",
+							"recover_by_manual": "DISABLE",
+							"up_throughput_limit": 0,
+							"down_throughput_limit": 0
+						}
 					}
 				}
 			}
@@ -122,6 +225,44 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_node_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific node",
+						"description": "查看指定的节点配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/pool/{pool_name}/nodes/{node_name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/pool/{pool_name}/nodes/{node_name} 响应",
+						"description": "返回GET /api/ad/v3/slb/pool/{pool_name}/nodes/{node_name}的响应数据",
+						"value": {
+							"name": "oa_server_port_25",
+							"description": "example_string",
+							"type": "ADDRESS",
+							"address": "192.168.1.101",
+							"port": 0,
+							"state": "ENABLE",
+							"weight": 10,
+							"priority_level": 1,
+							"connection_limit": 0,
+							"connection_rate_limit": 0,
+							"request_rate_limit": 0,
+							"cookie": 12345678,
+							"node_variable": "",
+							"inherit_pool_monitor": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"associated_domain": "",
+							"recover_by_manual": "DISABLE",
+							"up_throughput_limit": 0,
+							"down_throughput_limit": 0
+						}
+					}
 				}
 			},
 			"post": {
@@ -141,6 +282,60 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_node_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new node",
+						"description": "新建指定的节点配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/pool/{pool_name}/nodes/{node_name}",
+							"body": {
+								"type": "ADDRESS",
+								"address": "192.168.1.101",
+								"port": 0,
+								"state": "ENABLE",
+								"weight": 10,
+								"priority_level": 1,
+								"connection_limit": 0,
+								"connection_rate_limit": 0,
+								"request_rate_limit": 0,
+								"inherit_pool_monitor": "ENABLE",
+								"available_requirement": 0,
+								"recover_by_manual": "DISABLE",
+								"up_throughput_limit": 0,
+								"down_throughput_limit": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/pool/{pool_name}/nodes/{node_name} 响应",
+						"description": "返回POST /api/ad/v3/slb/pool/{pool_name}/nodes/{node_name}的响应数据",
+						"value": {
+							"name": "AI_oa_server_port_25_A",
+							"description": "example_string",
+							"type": "ADDRESS",
+							"address": "192.168.1.101",
+							"port": 0,
+							"state": "ENABLE",
+							"weight": 10,
+							"priority_level": 1,
+							"connection_limit": 0,
+							"connection_rate_limit": 0,
+							"request_rate_limit": 0,
+							"cookie": 12345678,
+							"node_variable": "",
+							"inherit_pool_monitor": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"associated_domain": "",
+							"recover_by_manual": "DISABLE",
+							"up_throughput_limit": 0,
+							"down_throughput_limit": 0
+						}
+					}
 				}
 			},
 			"put": {
@@ -158,6 +353,60 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_node_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific node",
+						"description": "修改指定的节点配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/pool/{pool_name}/nodes/{node_name}",
+							"body": {
+								"type": "ADDRESS",
+								"address": "192.168.1.101",
+								"port": 0,
+								"state": "ENABLE",
+								"weight": 10,
+								"priority_level": 1,
+								"connection_limit": 0,
+								"connection_rate_limit": 0,
+								"request_rate_limit": 0,
+								"inherit_pool_monitor": "ENABLE",
+								"available_requirement": 0,
+								"recover_by_manual": "DISABLE",
+								"up_throughput_limit": 0,
+								"down_throughput_limit": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/pool/{pool_name}/nodes/{node_name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/pool/{pool_name}/nodes/{node_name}的响应数据",
+						"value": {
+							"name": "oa_server_port_25",
+							"description": "example_string",
+							"type": "ADDRESS",
+							"address": "192.168.1.101",
+							"port": 0,
+							"state": "ENABLE",
+							"weight": 10,
+							"priority_level": 1,
+							"connection_limit": 0,
+							"connection_rate_limit": 0,
+							"request_rate_limit": 0,
+							"cookie": 12345678,
+							"node_variable": "",
+							"inherit_pool_monitor": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"associated_domain": "",
+							"recover_by_manual": "DISABLE",
+							"up_throughput_limit": 0,
+							"down_throughput_limit": 0
+						}
 					}
 				}
 			},
@@ -177,6 +426,60 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_node_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific node",
+						"description": "修改指定的节点配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/pool/{pool_name}/nodes/{node_name}",
+							"body": {
+								"type": "ADDRESS",
+								"address": "192.168.1.101",
+								"port": 0,
+								"state": "ENABLE",
+								"weight": 10,
+								"priority_level": 1,
+								"connection_limit": 0,
+								"connection_rate_limit": 0,
+								"request_rate_limit": 0,
+								"inherit_pool_monitor": "ENABLE",
+								"available_requirement": 0,
+								"recover_by_manual": "DISABLE",
+								"up_throughput_limit": 0,
+								"down_throughput_limit": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/pool/{pool_name}/nodes/{node_name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/pool/{pool_name}/nodes/{node_name}的响应数据",
+						"value": {
+							"name": "oa_server_port_25",
+							"description": "example_string",
+							"type": "ADDRESS",
+							"address": "192.168.1.101",
+							"port": 0,
+							"state": "ENABLE",
+							"weight": 10,
+							"priority_level": 1,
+							"connection_limit": 0,
+							"connection_rate_limit": 0,
+							"request_rate_limit": 0,
+							"cookie": 12345678,
+							"node_variable": "",
+							"inherit_pool_monitor": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"associated_domain": "",
+							"recover_by_manual": "DISABLE",
+							"up_throughput_limit": 0,
+							"down_throughput_limit": 0
+						}
+					}
 				}
 			},
 			"delete": {
@@ -189,6 +492,44 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_node_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific node",
+						"description": "删除指定的节点配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/pool/{pool_name}/nodes/{node_name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/pool/{pool_name}/nodes/{node_name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/pool/{pool_name}/nodes/{node_name}的响应数据",
+						"value": {
+							"name": "oa_server_port_25",
+							"description": "example_string",
+							"type": "ADDRESS",
+							"address": "192.168.1.101",
+							"port": 0,
+							"state": "ENABLE",
+							"weight": 10,
+							"priority_level": 1,
+							"connection_limit": 0,
+							"connection_rate_limit": 0,
+							"request_rate_limit": 0,
+							"cookie": 12345678,
+							"node_variable": "",
+							"inherit_pool_monitor": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"associated_domain": "",
+							"recover_by_manual": "DISABLE",
+							"up_throughput_limit": 0,
+							"down_throughput_limit": 0
+						}
 					}
 				}
 			}
@@ -336,20 +677,21 @@ module.exports ={
 					"example": 25
 				},
 				"state": {
-					"description": "指定节点的状态，enable表示启用状态，disable表示平滑退出，offline表示禁用/软关机状态，默认为enable",
+					"description": "指定节点的状态，enable表示启用状态，disable表示平滑退出，offline表示禁用/软关机状态，close表示禁用/硬关机，默认为enable",
 					"type": "string",
 					"enum": [
 						"ENABLE",
 						"DISABLE",
-						"OFFLINE"
+						"OFFLINE",
+						"CLOSE"
 					],
 					"default": "ENABLE"
 				},
 				"weight": {
-					"description": "指定节点的权重，取值范围为[1,100],默认为10",
+					"description": "指定节点的权重，取值范围为[1,1000],默认为10",
 					"type": "integer",
 					"default": 10,
-					"maximum": 100,
+					"maximum": 1000,
 					"minimum": 1,
 					"example": 10
 				},

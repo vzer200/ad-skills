@@ -62,6 +62,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all link-monitor",
+						"description": "查看链路健康检查配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link-monitor/all/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link-monitor/all/ 响应",
+						"description": "返回GET /api/ad/v3/net/link-monitor/all/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "CONNECT-TCP",
+									"timeout": 16,
+									"interval": 5,
+									"debug_mode": "DISABLE",
+									"port": 0,
+									"send_content": "GET / HTTP/1.1",
+									"receive_cache_size": 2048,
+									"receive_content_match": "200",
+									"send_content_before_disconnect": "example_string",
+									"hexadecimal_mode": "DISABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -113,6 +152,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_link_monitor_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific link-monitor",
+						"description": "查看指定链路健康检查配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/link-monitor/all/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/link-monitor/all/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/link-monitor/all/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-TCP",
+							"timeout": 16,
+							"interval": 5,
+							"debug_mode": "DISABLE",
+							"port": 0,
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 2048,
+							"receive_content_match": "200",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE"
+						}
 					}
 				}
 			}

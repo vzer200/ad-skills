@@ -59,6 +59,37 @@ module.exports ={
 					"403": {
 						"$ref": "#/responses/operation_certificate_utility_file_abnormal"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "do certificate-utility certificate-file-processing",
+						"description": "解析证书文件、获取证书详情",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/certificate-utility/certificate-file-processing",
+							"body": {
+								"certificate_files": [
+									{
+										"file_token": "example_string",
+										"password": "",
+										"pk_password": ""
+									}
+								],
+								"sort_certificate": "DISABLE",
+								"import_cert_type": "SM2_SINGLE_CERT",
+								"cert_type": "ONE_CERT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/certificate-utility/certificate-file-processing 响应",
+						"description": "返回POST /api/ad/v3/rc/certificate-utility/certificate-file-processing的响应数据",
+						"value": {
+							"certificate_chains": [
+								"example_item"
+							]
+						}
+					}
 				}
 			}
 		}

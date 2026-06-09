@@ -65,6 +65,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all pre-rule",
+						"description": "查看当前已有的IP三层前置策略（L3）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/pre-rule/ip/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/pre-rule/ip/ 响应",
+						"description": "返回GET /api/ad/v3/slb/pre-rule/ip/的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "IP",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE",
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +118,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new pre-rule",
+						"description": "新建一个IP三层前置策略（L3）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/pre-rule/ip/",
+							"body": {
+								"name": "AI_url-sched_A",
+								"service": "IP",
+								"action": "SCHED-POOL",
+								"notify_status_to_vs": "ENABLE",
+								"sched_pool": "web_oa_80_pool",
+								"sched_failure": "NEXT-RULE",
+								"inherit_vs_service_chain": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/pre-rule/ip/ 响应",
+						"description": "返回POST /api/ad/v3/slb/pre-rule/ip/的响应数据",
+						"value": {
+							"name": "AI_url-sched_A",
+							"description": "example_string",
+							"service": "IP",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE",
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
 					}
 				}
 			},
@@ -130,6 +211,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pre-rule",
+						"description": "查看指定的IP三层前置策略（L3）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/pre-rule/ip/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/pre-rule/ip/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/pre-rule/ip/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "IP",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE",
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +266,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new pre-rule",
+						"description": "新建指定的IP三层前置策略（L3）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/pre-rule/ip/{name}",
+							"body": {
+								"name": "AI_url-sched_B",
+								"service": "IP",
+								"action": "SCHED-POOL",
+								"notify_status_to_vs": "ENABLE",
+								"sched_pool": "web_oa_80_pool",
+								"sched_failure": "NEXT-RULE",
+								"inherit_vs_service_chain": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/pre-rule/ip/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/pre-rule/ip/{name}的响应数据",
+						"value": {
+							"name": "AI_url-sched_B",
+							"description": "example_string",
+							"service": "IP",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE",
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +328,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific pre-rule",
+						"description": "修改指定的IP三层前置策略（L3）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/pre-rule/ip/{name}",
+							"body": {
+								"name": "url-sched",
+								"service": "IP",
+								"action": "SCHED-POOL",
+								"notify_status_to_vs": "ENABLE",
+								"sched_pool": "web_oa_80_pool",
+								"sched_failure": "NEXT-RULE",
+								"inherit_vs_service_chain": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/pre-rule/ip/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/pre-rule/ip/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "IP",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE",
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
 					}
 				}
 			},
@@ -185,6 +392,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ip_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific pre-rule",
+						"description": "修改指定的IP三层前置策略（L3）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/pre-rule/ip/{name}",
+							"body": {
+								"name": "url-sched",
+								"service": "IP",
+								"action": "SCHED-POOL",
+								"notify_status_to_vs": "ENABLE",
+								"sched_pool": "web_oa_80_pool",
+								"sched_failure": "NEXT-RULE",
+								"inherit_vs_service_chain": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/pre-rule/ip/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/pre-rule/ip/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "IP",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE",
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +449,42 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ip_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific pre-rule",
+						"description": "删除指定的IP三层前置策略（L3）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/pre-rule/ip/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/pre-rule/ip/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/pre-rule/ip/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "IP",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE",
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
 					}
 				}
 			}
@@ -416,7 +704,7 @@ module.exports ={
 				},
 				"service_chain": {
 					"type": "string",
-					"description": "指定当前前置策略的服务链，仅当inherit_vs_service_chain为DISBALE时生效",
+					"description": "指定当前前置策略的服务链，仅当inherit_vs_service_chain为DISABLE时生效",
 					"example": "service_chain1_for_pre_rule"
 				}
 			}

@@ -65,6 +65,96 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all vip-pool",
+						"description": "查看虚拟IP池配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/ 响应",
+						"description": "返回GET /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "abc.com",
+									"description": "example_string",
+									"type": "IPV4",
+									"vips": [
+										{
+											"name": "example_string",
+											"description": "example_string",
+											"type": "STATIC-IP",
+											"static_ip": "192.168.1.1",
+											"vs_vip": "200.200.0.1",
+											"link_pppoe": "CTEL_ADSL_100M",
+											"port": 1,
+											"priority": 10,
+											"weight": 10,
+											"state": "ENABLE",
+											"protocol": "TCP",
+											"monitor_inherit": "ENABLE",
+											"service_monitors": [
+												"ping"
+											],
+											"available_requirement": 0,
+											"related_virtual_service": [
+												{
+													"data_center": "north_dc",
+													"device": "localhost",
+													"virtual_service": "vs_http_80"
+												}
+											]
+										}
+									],
+									"state": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"edns_client_subnet": "DISABLE",
+									"related_virtual_service": [
+										{
+											"data_center": "north_dc",
+											"device": "localhost",
+											"virtual_service": "vs_http_80"
+										}
+									],
+									"busy_protect": "ENABLE",
+									"policy": "ROUND-ROBIN",
+									"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+									"topologys": [
+										{
+											"vips": [
+												""
+											],
+											"ldns_address_group": "web_vgroup",
+											"state": "ENABLE"
+										}
+									],
+									"best_resource_rules": [
+										{
+											"resource": "CPU-USAGE",
+											"threshold": 1,
+											"weight": 1
+										}
+									],
+									"alternative_ip": "1.1.1.1"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +172,101 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new vip-pool",
+						"description": "创建虚拟IP池配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/",
+							"body": {
+								"name": "AI_abc.com_A",
+								"type": "IPV4",
+								"state": "ENABLE",
+								"available_requirement": 0,
+								"edns_client_subnet": "DISABLE",
+								"busy_protect": "ENABLE",
+								"policy": "ROUND-ROBIN",
+								"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+								"topologys": [
+									{
+										"ldns_address_group": "match_same_isp",
+										"state": "ENABLE"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/ 响应",
+						"description": "返回POST /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/的响应数据",
+						"value": {
+							"name": "AI_abc.com_A",
+							"description": "example_string",
+							"type": "IPV4",
+							"vips": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"type": "STATIC-IP",
+									"static_ip": "192.168.1.1",
+									"vs_vip": "200.200.0.1",
+									"link_pppoe": "CTEL_ADSL_100M",
+									"port": 1,
+									"priority": 10,
+									"weight": 10,
+									"state": "ENABLE",
+									"protocol": "TCP",
+									"monitor_inherit": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"related_virtual_service": [
+										{
+											"data_center": "north_dc",
+											"device": "localhost",
+											"virtual_service": "vs_http_80"
+										}
+									]
+								}
+							],
+							"state": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"edns_client_subnet": "DISABLE",
+							"related_virtual_service": [
+								{
+									"data_center": "north_dc",
+									"device": "localhost",
+									"virtual_service": "vs_http_80"
+								}
+							],
+							"busy_protect": "ENABLE",
+							"policy": "ROUND-ROBIN",
+							"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+							"topologys": [
+								{
+									"vips": [
+										""
+									],
+									"ldns_address_group": "web_vgroup",
+									"state": "ENABLE"
+								}
+							],
+							"best_resource_rules": [
+								{
+									"resource": "CPU-USAGE",
+									"threshold": 1,
+									"weight": 1
+								}
+							],
+							"alternative_ip": "1.1.1.1"
+						}
 					}
 				}
 			},
@@ -101,6 +286,112 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify vip-pool",
+						"description": "增量修改虚拟IP池配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/",
+							"body": {
+								"name": "abc.com",
+								"type": "IPV4",
+								"state": "ENABLE",
+								"available_requirement": 0,
+								"edns_client_subnet": "DISABLE",
+								"busy_protect": "ENABLE",
+								"policy": "ROUND-ROBIN",
+								"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+								"topologys": [
+									{
+										"ldns_address_group": "match_same_isp",
+										"state": "ENABLE"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/ 响应",
+						"description": "返回PATCH /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "abc.com",
+									"description": "example_string",
+									"type": "IPV4",
+									"vips": [
+										{
+											"name": "example_string",
+											"description": "example_string",
+											"type": "STATIC-IP",
+											"static_ip": "192.168.1.1",
+											"vs_vip": "200.200.0.1",
+											"link_pppoe": "CTEL_ADSL_100M",
+											"port": 1,
+											"priority": 10,
+											"weight": 10,
+											"state": "ENABLE",
+											"protocol": "TCP",
+											"monitor_inherit": "ENABLE",
+											"service_monitors": [
+												"ping"
+											],
+											"available_requirement": 0,
+											"related_virtual_service": [
+												{
+													"data_center": "north_dc",
+													"device": "localhost",
+													"virtual_service": "vs_http_80"
+												}
+											]
+										}
+									],
+									"state": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"edns_client_subnet": "DISABLE",
+									"related_virtual_service": [
+										{
+											"data_center": "north_dc",
+											"device": "localhost",
+											"virtual_service": "vs_http_80"
+										}
+									],
+									"busy_protect": "ENABLE",
+									"policy": "ROUND-ROBIN",
+									"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+									"topologys": [
+										{
+											"vips": [
+												""
+											],
+											"ldns_address_group": "web_vgroup",
+											"state": "ENABLE"
+										}
+									],
+									"best_resource_rules": [
+										{
+											"resource": "CPU-USAGE",
+											"threshold": 1,
+											"weight": 1
+										}
+									],
+									"alternative_ip": "1.1.1.1"
+								}
+							]
+						}
 					}
 				}
 			}
@@ -135,6 +426,85 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific vip-pool",
+						"description": "查看指定已有的虚拟IP池",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name}的响应数据",
+						"value": {
+							"name": "abc.com",
+							"description": "example_string",
+							"type": "IPV4",
+							"vips": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"type": "STATIC-IP",
+									"static_ip": "192.168.1.1",
+									"vs_vip": "200.200.0.1",
+									"link_pppoe": "CTEL_ADSL_100M",
+									"port": 1,
+									"priority": 10,
+									"weight": 10,
+									"state": "ENABLE",
+									"protocol": "TCP",
+									"monitor_inherit": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"related_virtual_service": [
+										{
+											"data_center": "north_dc",
+											"device": "localhost",
+											"virtual_service": "vs_http_80"
+										}
+									]
+								}
+							],
+							"state": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"edns_client_subnet": "DISABLE",
+							"related_virtual_service": [
+								{
+									"data_center": "north_dc",
+									"device": "localhost",
+									"virtual_service": "vs_http_80"
+								}
+							],
+							"busy_protect": "ENABLE",
+							"policy": "ROUND-ROBIN",
+							"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+							"topologys": [
+								{
+									"vips": [
+										""
+									],
+									"ldns_address_group": "web_vgroup",
+									"state": "ENABLE"
+								}
+							],
+							"best_resource_rules": [
+								{
+									"resource": "CPU-USAGE",
+									"threshold": 1,
+									"weight": 1
+								}
+							],
+							"alternative_ip": "1.1.1.1"
+						}
+					}
 				}
 			},
 			"post": {
@@ -154,6 +524,101 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new vip-pool",
+						"description": "创建虚拟IP池",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name}",
+							"body": {
+								"name": "AI_abc.com_B",
+								"type": "IPV4",
+								"state": "ENABLE",
+								"available_requirement": 0,
+								"edns_client_subnet": "DISABLE",
+								"busy_protect": "ENABLE",
+								"policy": "ROUND-ROBIN",
+								"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+								"topologys": [
+									{
+										"ldns_address_group": "match_same_isp",
+										"state": "ENABLE"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name}的响应数据",
+						"value": {
+							"name": "AI_abc.com_B",
+							"description": "example_string",
+							"type": "IPV4",
+							"vips": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"type": "STATIC-IP",
+									"static_ip": "192.168.1.1",
+									"vs_vip": "200.200.0.1",
+									"link_pppoe": "CTEL_ADSL_100M",
+									"port": 1,
+									"priority": 10,
+									"weight": 10,
+									"state": "ENABLE",
+									"protocol": "TCP",
+									"monitor_inherit": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"related_virtual_service": [
+										{
+											"data_center": "north_dc",
+											"device": "localhost",
+											"virtual_service": "vs_http_80"
+										}
+									]
+								}
+							],
+							"state": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"edns_client_subnet": "DISABLE",
+							"related_virtual_service": [
+								{
+									"data_center": "north_dc",
+									"device": "localhost",
+									"virtual_service": "vs_http_80"
+								}
+							],
+							"busy_protect": "ENABLE",
+							"policy": "ROUND-ROBIN",
+							"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+							"topologys": [
+								{
+									"vips": [
+										""
+									],
+									"ldns_address_group": "web_vgroup",
+									"state": "ENABLE"
+								}
+							],
+							"best_resource_rules": [
+								{
+									"resource": "CPU-USAGE",
+									"threshold": 1,
+									"weight": 1
+								}
+							],
+							"alternative_ip": "1.1.1.1"
+						}
+					}
 				}
 			},
 			"put": {
@@ -171,6 +636,101 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific vip-pool",
+						"description": "修改指定已有的虚拟IP池",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name}",
+							"body": {
+								"name": "abc.com",
+								"type": "IPV4",
+								"state": "ENABLE",
+								"available_requirement": 0,
+								"edns_client_subnet": "DISABLE",
+								"busy_protect": "ENABLE",
+								"policy": "ROUND-ROBIN",
+								"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+								"topologys": [
+									{
+										"ldns_address_group": "match_same_isp",
+										"state": "ENABLE"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name}的响应数据",
+						"value": {
+							"name": "abc.com",
+							"description": "example_string",
+							"type": "IPV4",
+							"vips": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"type": "STATIC-IP",
+									"static_ip": "192.168.1.1",
+									"vs_vip": "200.200.0.1",
+									"link_pppoe": "CTEL_ADSL_100M",
+									"port": 1,
+									"priority": 10,
+									"weight": 10,
+									"state": "ENABLE",
+									"protocol": "TCP",
+									"monitor_inherit": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"related_virtual_service": [
+										{
+											"data_center": "north_dc",
+											"device": "localhost",
+											"virtual_service": "vs_http_80"
+										}
+									]
+								}
+							],
+							"state": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"edns_client_subnet": "DISABLE",
+							"related_virtual_service": [
+								{
+									"data_center": "north_dc",
+									"device": "localhost",
+									"virtual_service": "vs_http_80"
+								}
+							],
+							"busy_protect": "ENABLE",
+							"policy": "ROUND-ROBIN",
+							"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+							"topologys": [
+								{
+									"vips": [
+										""
+									],
+									"ldns_address_group": "web_vgroup",
+									"state": "ENABLE"
+								}
+							],
+							"best_resource_rules": [
+								{
+									"resource": "CPU-USAGE",
+									"threshold": 1,
+									"weight": 1
+								}
+							],
+							"alternative_ip": "1.1.1.1"
+						}
 					}
 				}
 			},
@@ -190,6 +750,101 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific vip-pool",
+						"description": "修改指定已有的虚拟IP池",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name}",
+							"body": {
+								"name": "abc.com",
+								"type": "IPV4",
+								"state": "ENABLE",
+								"available_requirement": 0,
+								"edns_client_subnet": "DISABLE",
+								"busy_protect": "ENABLE",
+								"policy": "ROUND-ROBIN",
+								"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+								"topologys": [
+									{
+										"ldns_address_group": "match_same_isp",
+										"state": "ENABLE"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name}的响应数据",
+						"value": {
+							"name": "abc.com",
+							"description": "example_string",
+							"type": "IPV4",
+							"vips": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"type": "STATIC-IP",
+									"static_ip": "192.168.1.1",
+									"vs_vip": "200.200.0.1",
+									"link_pppoe": "CTEL_ADSL_100M",
+									"port": 1,
+									"priority": 10,
+									"weight": 10,
+									"state": "ENABLE",
+									"protocol": "TCP",
+									"monitor_inherit": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"related_virtual_service": [
+										{
+											"data_center": "north_dc",
+											"device": "localhost",
+											"virtual_service": "vs_http_80"
+										}
+									]
+								}
+							],
+							"state": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"edns_client_subnet": "DISABLE",
+							"related_virtual_service": [
+								{
+									"data_center": "north_dc",
+									"device": "localhost",
+									"virtual_service": "vs_http_80"
+								}
+							],
+							"busy_protect": "ENABLE",
+							"policy": "ROUND-ROBIN",
+							"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+							"topologys": [
+								{
+									"vips": [
+										""
+									],
+									"ldns_address_group": "web_vgroup",
+									"state": "ENABLE"
+								}
+							],
+							"best_resource_rules": [
+								{
+									"resource": "CPU-USAGE",
+									"threshold": 1,
+									"weight": 1
+								}
+							],
+							"alternative_ip": "1.1.1.1"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -202,6 +857,85 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific vip-pool",
+						"description": "删除指定已有的虚拟IP池",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{name}的响应数据",
+						"value": {
+							"name": "abc.com",
+							"description": "example_string",
+							"type": "IPV4",
+							"vips": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"type": "STATIC-IP",
+									"static_ip": "192.168.1.1",
+									"vs_vip": "200.200.0.1",
+									"link_pppoe": "CTEL_ADSL_100M",
+									"port": 1,
+									"priority": 10,
+									"weight": 10,
+									"state": "ENABLE",
+									"protocol": "TCP",
+									"monitor_inherit": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"related_virtual_service": [
+										{
+											"data_center": "north_dc",
+											"device": "localhost",
+											"virtual_service": "vs_http_80"
+										}
+									]
+								}
+							],
+							"state": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"edns_client_subnet": "DISABLE",
+							"related_virtual_service": [
+								{
+									"data_center": "north_dc",
+									"device": "localhost",
+									"virtual_service": "vs_http_80"
+								}
+							],
+							"busy_protect": "ENABLE",
+							"policy": "ROUND-ROBIN",
+							"alternative_policy": "WEIGHTED-ROUND-ROBIN",
+							"topologys": [
+								{
+									"vips": [
+										""
+									],
+									"ldns_address_group": "web_vgroup",
+									"state": "ENABLE"
+								}
+							],
+							"best_resource_rules": [
+								{
+									"resource": "CPU-USAGE",
+									"threshold": 1,
+									"weight": 1
+								}
+							],
+							"alternative_ip": "1.1.1.1"
+						}
 					}
 				}
 			},
@@ -278,6 +1012,56 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_vip_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all vips of specific vip-pool",
+						"description": "查看指定已有的虚拟IP池中的虚拟IP",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/ 响应",
+						"description": "返回GET /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"type": "STATIC-IP",
+									"static_ip": "192.168.1.1",
+									"vs_vip": "200.200.0.1",
+									"link_pppoe": "CTEL_ADSL_100M",
+									"port": 1,
+									"priority": 10,
+									"weight": 10,
+									"state": "ENABLE",
+									"protocol": "TCP",
+									"monitor_inherit": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"related_virtual_service": [
+										{
+											"data_center": "north_dc",
+											"device": "localhost",
+											"virtual_service": "vs_http_80"
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -295,6 +1079,55 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_vip"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new vip of specific vip-pool",
+						"description": "在指定已有的虚拟IP池中创建虚拟IP",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/",
+							"body": {
+								"type": "STATIC-IP",
+								"port": 1,
+								"priority": 10,
+								"weight": 10,
+								"state": "ENABLE",
+								"protocol": "TCP",
+								"monitor_inherit": "ENABLE",
+								"available_requirement": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/ 响应",
+						"description": "返回POST /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/的响应数据",
+						"value": {
+							"name": "AI_example_string_A",
+							"description": "example_string",
+							"type": "STATIC-IP",
+							"static_ip": "192.168.1.1",
+							"vs_vip": "200.200.0.1",
+							"link_pppoe": "CTEL_ADSL_100M",
+							"port": 1,
+							"priority": 10,
+							"weight": 10,
+							"state": "ENABLE",
+							"protocol": "TCP",
+							"monitor_inherit": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"related_virtual_service": [
+								{
+									"data_center": "north_dc",
+									"device": "localhost",
+									"virtual_service": "vs_http_80"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -314,6 +1147,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_vip_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify vip of specific vip-pool",
+						"description": "修改指定已有的虚拟IP池的虚拟IP",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/",
+							"body": {
+								"type": "STATIC-IP",
+								"port": 1,
+								"priority": 10,
+								"weight": 10,
+								"state": "ENABLE",
+								"protocol": "TCP",
+								"monitor_inherit": "ENABLE",
+								"available_requirement": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/ 响应",
+						"description": "返回PATCH /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"type": "STATIC-IP",
+									"static_ip": "192.168.1.1",
+									"vs_vip": "200.200.0.1",
+									"link_pppoe": "CTEL_ADSL_100M",
+									"port": 1,
+									"priority": 10,
+									"weight": 10,
+									"state": "ENABLE",
+									"protocol": "TCP",
+									"monitor_inherit": "ENABLE",
+									"service_monitors": [
+										"ping"
+									],
+									"available_requirement": 0,
+									"related_virtual_service": [
+										{
+											"data_center": "north_dc",
+											"device": "localhost",
+											"virtual_service": "vs_http_80"
+										}
+									]
+								}
+							]
+						}
 					}
 				}
 			}
@@ -351,6 +1244,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_vip"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific vip of vip-pool",
+						"description": "查看指定已有的虚拟IP池的指定已有的虚拟IP信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip} 响应",
+						"description": "返回GET /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"type": "STATIC-IP",
+							"static_ip": "192.168.1.1",
+							"vs_vip": "200.200.0.1",
+							"link_pppoe": "CTEL_ADSL_100M",
+							"port": 1,
+							"priority": 10,
+							"weight": 10,
+							"state": "ENABLE",
+							"protocol": "TCP",
+							"monitor_inherit": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"related_virtual_service": [
+								{
+									"data_center": "north_dc",
+									"device": "localhost",
+									"virtual_service": "vs_http_80"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -370,6 +1302,55 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_vip"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new vip of vip-pool",
+						"description": "在指定已有的虚拟IP池中创建虚拟IP",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip}",
+							"body": {
+								"type": "STATIC-IP",
+								"port": 1,
+								"priority": 10,
+								"weight": 10,
+								"state": "ENABLE",
+								"protocol": "TCP",
+								"monitor_inherit": "ENABLE",
+								"available_requirement": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip} 响应",
+						"description": "返回POST /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip}的响应数据",
+						"value": {
+							"name": "AI_example_string_A",
+							"description": "example_string",
+							"type": "STATIC-IP",
+							"static_ip": "192.168.1.1",
+							"vs_vip": "200.200.0.1",
+							"link_pppoe": "CTEL_ADSL_100M",
+							"port": 1,
+							"priority": 10,
+							"weight": 10,
+							"state": "ENABLE",
+							"protocol": "TCP",
+							"monitor_inherit": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"related_virtual_service": [
+								{
+									"data_center": "north_dc",
+									"device": "localhost",
+									"virtual_service": "vs_http_80"
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -387,6 +1368,55 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_vip"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific vip of vip-pool",
+						"description": "修改指定已有的虚拟IP池中的指定已有的虚拟IP",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip}",
+							"body": {
+								"type": "STATIC-IP",
+								"port": 1,
+								"priority": 10,
+								"weight": 10,
+								"state": "ENABLE",
+								"protocol": "TCP",
+								"monitor_inherit": "ENABLE",
+								"available_requirement": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip} 响应",
+						"description": "返回PUT /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"type": "STATIC-IP",
+							"static_ip": "192.168.1.1",
+							"vs_vip": "200.200.0.1",
+							"link_pppoe": "CTEL_ADSL_100M",
+							"port": 1,
+							"priority": 10,
+							"weight": 10,
+							"state": "ENABLE",
+							"protocol": "TCP",
+							"monitor_inherit": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"related_virtual_service": [
+								{
+									"data_center": "north_dc",
+									"device": "localhost",
+									"virtual_service": "vs_http_80"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -406,6 +1436,55 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_vip"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific vip-pool",
+						"description": "增量修改指定已有的虚拟IP池中的指定已有的虚拟IP",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip}",
+							"body": {
+								"type": "STATIC-IP",
+								"port": 1,
+								"priority": 10,
+								"weight": 10,
+								"state": "ENABLE",
+								"protocol": "TCP",
+								"monitor_inherit": "ENABLE",
+								"available_requirement": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"type": "STATIC-IP",
+							"static_ip": "192.168.1.1",
+							"vs_vip": "200.200.0.1",
+							"link_pppoe": "CTEL_ADSL_100M",
+							"port": 1,
+							"priority": 10,
+							"weight": 10,
+							"state": "ENABLE",
+							"protocol": "TCP",
+							"monitor_inherit": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"related_virtual_service": [
+								{
+									"data_center": "north_dc",
+									"device": "localhost",
+									"virtual_service": "vs_http_80"
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -418,6 +1497,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vip_pool_vip"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific vip of vip-pool",
+						"description": "删除指定已有的虚拟IP池中的指定已有的虚拟IP",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/gslb/{dns_config_area}/vip-pool/{vip_pool_name}/vips/{vip}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"type": "STATIC-IP",
+							"static_ip": "192.168.1.1",
+							"vs_vip": "200.200.0.1",
+							"link_pppoe": "CTEL_ADSL_100M",
+							"port": 1,
+							"priority": 10,
+							"weight": 10,
+							"state": "ENABLE",
+							"protocol": "TCP",
+							"monitor_inherit": "ENABLE",
+							"service_monitors": [
+								"ping"
+							],
+							"available_requirement": 0,
+							"related_virtual_service": [
+								{
+									"data_center": "north_dc",
+									"device": "localhost",
+									"virtual_service": "vs_http_80"
+								}
+							]
+						}
 					}
 				}
 			}
@@ -627,7 +1745,7 @@ module.exports ={
 				},
 				"related_virtual_service": {
 					"type": "array",
-					"description": "关联虚拟服务，个数为0-80",
+					"description": "关联虚拟服务，个数为0-80，仅可在全局关联虚拟服务，本地区域不可关联",
 					"items": {
 						"type": "object",
 						"required": [
@@ -678,7 +1796,8 @@ module.exports ={
 						"LEAST-RTT",
 						"TOPOLOGY",
 						"RETURN-ALL",
-						"PRIORITY"
+						"PRIORITY",
+						"BEST-RESOURCE"
 					],
 					"description": "首选策略，其中最佳资源调度在本地区域时失效，默认为轮询",
 					"default": "ROUND-ROBIN",
@@ -698,7 +1817,8 @@ module.exports ={
 						"RETURN-ALL",
 						"REFUSE",
 						"DROP",
-						"ALTERNATIVE-IP"
+						"ALTERNATIVE-IP",
+						"BEST-RESOURCE"
 					],
 					"description": "备选策略，其中最佳资源调度在本地区域时失效，默认为加权轮询",
 					"default": "WEIGHTED-ROUND-ROBIN",
@@ -749,7 +1869,7 @@ module.exports ={
 					"minItems": 0
 				},
 				"best_resource_rules": {
-					"description": "最佳资源调度条件列表",
+					"description": "最佳资源调度条件列表，仅可在全局配置，在本地区域时失效",
 					"type": "array",
 					"items": {
 						"description": "最佳资源调度条件",
@@ -861,7 +1981,7 @@ module.exports ={
 					"type": "string"
 				},
 				"type": {
-					"description": "虚拟IP类型，默认为STATIC-IP",
+					"description": "虚拟IP类型，其中LINK-PPPOE仅能在本地区域选择(且IPv6不支持LINK-PPPOE类型)，默认为STATIC-IP",
 					"type": "string",
 					"enum": [
 						"STATIC-IP",
@@ -960,9 +2080,25 @@ module.exports ={
 				},
 				"related_virtual_service": {
 					"type": "array",
-					"description": "关联的虚拟服务数量范围为0-80",
+					"description": "关联的虚拟服务数量范围为0-80，仅可在全局关联虚拟服务，本地区域不可关联",
 					"title": "关联虚拟服务",
-					"referSchema": "/slb/virtual-service",
+					"referSchema": [
+						"/slb/virtual-service/http",
+						"/slb/virtual-service/tcp-proxy",
+						"/slb/virtual-service/tcp-forward",
+						"/slb/virtual-service/udp-forward",
+						"/slb/virtual-service/udp-proxy",
+						"/slb/virtual-service/ssl-offload",
+						"/slb/virtual-service/ssl-offload-https",
+						"/slb/virtual-service/dns",
+						"/slb/virtual-service/ftp",
+						"/slb/virtual-service/radius",
+						"/slb/virtual-service/sip-tcp",
+						"/slb/virtual-service/sip-udp",
+						"/slb/virtual-service/8583",
+						"/slb/virtual-service/ip",
+						"/slb/virtual-service/any"
+					],
 					"items": {
 						"type": "object",
 						"title": "健康检查方法",

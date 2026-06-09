@@ -62,6 +62,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_smtp_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all smtp",
+						"description": "查看已有的SMTP服务器配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/smtp/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/smtp/ 响应",
+						"description": "返回GET /api/ad/v3/sys/smtp/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "smtp_oa_mail",
+									"description": "",
+									"ip_address": "192.168.1.102",
+									"port": 25,
+									"network": "AUTO",
+									"ssl": "DISABLE",
+									"authentication": {
+										"state": "DISABLE",
+										"username": "abc123@xyz.com",
+										"password": "",
+										"pk_password": "",
+										"encrypted_password": "A1B2C3D4"
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +119,42 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_smtp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new smtp",
+						"description": "新建SMTP服务器配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/smtp/",
+							"body": {
+								"name": "AI_smtp_oa_mail_A",
+								"ip_address": "192.168.1.102",
+								"port": 25,
+								"network": "AUTO",
+								"ssl": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/smtp/ 响应",
+						"description": "返回POST /api/ad/v3/sys/smtp/的响应数据",
+						"value": {
+							"name": "AI_smtp_oa_mail_A",
+							"description": "",
+							"ip_address": "192.168.1.102",
+							"port": 25,
+							"network": "AUTO",
+							"ssl": "DISABLE",
+							"authentication": {
+								"state": "DISABLE",
+								"username": "abc123@xyz.com",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4"
+							}
+						}
 					}
 				}
 			},
@@ -128,6 +204,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_smtp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific smtp",
+						"description": "查看指定的SMTP服务器配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/smtp/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/smtp/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/smtp/{name}的响应数据",
+						"value": {
+							"name": "smtp_oa_mail",
+							"description": "",
+							"ip_address": "192.168.1.102",
+							"port": 25,
+							"network": "AUTO",
+							"ssl": "DISABLE",
+							"authentication": {
+								"state": "DISABLE",
+								"username": "abc123@xyz.com",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4"
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -147,6 +252,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_smtp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new smtp",
+						"description": "新建指定的SMTP服务器配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/smtp/{name}",
+							"body": {
+								"name": "AI_smtp_oa_mail_B",
+								"ip_address": "192.168.1.102",
+								"port": 25,
+								"network": "AUTO",
+								"ssl": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/smtp/{name} 响应",
+						"description": "返回POST /api/ad/v3/sys/smtp/{name}的响应数据",
+						"value": {
+							"name": "AI_smtp_oa_mail_B",
+							"description": "",
+							"ip_address": "192.168.1.102",
+							"port": 25,
+							"network": "AUTO",
+							"ssl": "DISABLE",
+							"authentication": {
+								"state": "DISABLE",
+								"username": "abc123@xyz.com",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4"
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -164,6 +305,42 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_smtp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific smtp",
+						"description": "修改指定的SMTP服务器配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/smtp/{name}",
+							"body": {
+								"name": "smtp_oa_mail",
+								"ip_address": "192.168.1.102",
+								"port": 25,
+								"network": "AUTO",
+								"ssl": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/smtp/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/smtp/{name}的响应数据",
+						"value": {
+							"name": "smtp_oa_mail",
+							"description": "",
+							"ip_address": "192.168.1.102",
+							"port": 25,
+							"network": "AUTO",
+							"ssl": "DISABLE",
+							"authentication": {
+								"state": "DISABLE",
+								"username": "abc123@xyz.com",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4"
+							}
+						}
 					}
 				}
 			},
@@ -183,6 +360,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_smtp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific smtp",
+						"description": "修改指定的SMTP服务器配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/smtp/{name}",
+							"body": {
+								"name": "smtp_oa_mail",
+								"ip_address": "192.168.1.102",
+								"port": 25,
+								"network": "AUTO",
+								"ssl": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/smtp/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/smtp/{name}的响应数据",
+						"value": {
+							"name": "smtp_oa_mail",
+							"description": "",
+							"ip_address": "192.168.1.102",
+							"port": 25,
+							"network": "AUTO",
+							"ssl": "DISABLE",
+							"authentication": {
+								"state": "DISABLE",
+								"username": "abc123@xyz.com",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4"
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -195,6 +408,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_smtp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific smtp",
+						"description": "删除指定的SMTP服务器配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/smtp/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/smtp/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/smtp/{name}的响应数据",
+						"value": {
+							"name": "smtp_oa_mail",
+							"description": "",
+							"ip_address": "192.168.1.102",
+							"port": 25,
+							"network": "AUTO",
+							"ssl": "DISABLE",
+							"authentication": {
+								"state": "DISABLE",
+								"username": "abc123@xyz.com",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4"
+							}
+						}
 					}
 				}
 			}

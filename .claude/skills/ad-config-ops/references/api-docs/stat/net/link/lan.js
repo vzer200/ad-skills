@@ -65,6 +65,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_link_lan_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all link-lan statistics",
+						"description": "获取所有LAN口详细统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/link/lan/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/link/lan/ 响应",
+						"description": "返回GET /api/ad/v3/stat/net/link/lan/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "",
+									"state": "ENABLE",
+									"interface": {
+										"type": "VLAN",
+										"interface": "bond-134"
+									},
+									"health": "NORMAL",
+									"failure_reason": "",
+									"upstream_throughput": null,
+									"downstream_throughput": null,
+									"general_throughput": null,
+									"netns": "netns名称"
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -98,6 +137,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_link_lan_detail"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific link-lan statistics",
+						"description": "获取指定LAN口链路详细统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/link/lan/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/link/lan/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/net/link/lan/{name}的响应数据",
+						"value": {
+							"name": "",
+							"state": "ENABLE",
+							"interface": {
+								"type": "VLAN",
+								"interface": "bond-134"
+							},
+							"health": "NORMAL",
+							"failure_reason": "",
+							"upstream_throughput": null,
+							"downstream_throughput": null,
+							"general_throughput": null,
+							"netns": "netns名称"
+						}
+					}
 				}
 			}
 		},
@@ -124,6 +191,43 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_link_lan_summary_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get link-wan summary statistics",
+						"description": "获取LAN口链路概要信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/link/lan-summary"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/link/lan-summary 响应",
+						"description": "返回GET /api/ad/v3/stat/net/link/lan-summary的响应数据",
+						"value": {
+							"link_lan": {
+								"state": {
+									"enable": [
+										"example_string"
+									],
+									"disable": [
+										"example_string"
+									]
+								},
+								"health": {
+									"normal": [
+										"example_string"
+									],
+									"failure": [
+										"example_string"
+									]
+								}
+							},
+							"upstream_throughput": null,
+							"downstream_throughput": null,
+							"general_throughput": null
+						}
 					}
 				}
 			}

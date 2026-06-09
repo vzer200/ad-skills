@@ -62,6 +62,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_recovery_point_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all recovery-point",
+						"description": "查看全局配置还原点",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/dns/recovery-point/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/dns/recovery-point/ 响应",
+						"description": "返回GET /api/ad/v3/dns/recovery-point/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "backup1",
+									"description": "change CNC link ip",
+									"time_point": "2018-01-04 08:05:10",
+									"content": [
+										"DNS-VIP-POOL"
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +112,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_recovery_point_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new recovery-point",
+						"description": "创建全局配置还原点",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/dns/recovery-point/",
+							"body": {
+								"name": "AI_backup1_A",
+								"content": [
+									"DNS-VIP-POOL"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/dns/recovery-point/ 响应",
+						"description": "返回POST /api/ad/v3/dns/recovery-point/的响应数据",
+						"value": {
+							"name": "AI_backup1_A",
+							"description": "change CNC link ip",
+							"time_point": "2018-01-04 08:05:10",
+							"content": [
+								"DNS-VIP-POOL"
+							]
+						}
 					}
 				}
 			},
@@ -98,6 +159,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_recovery_point_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify recovery-point",
+						"description": "修改全局配置还原点",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/dns/recovery-point/",
+							"body": {
+								"name": "backup1",
+								"content": [
+									"DNS-VIP-POOL"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/dns/recovery-point/ 响应",
+						"description": "返回PATCH /api/ad/v3/dns/recovery-point/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "backup1",
+									"description": "change CNC link ip",
+									"time_point": "2018-01-04 08:05:10",
+									"content": [
+										"DNS-VIP-POOL"
+									]
+								}
+							]
+						}
 					}
 				}
 			}
@@ -129,6 +229,28 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_recovery_point_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific recovery-point",
+						"description": "查看指定已有的全局配置还原点",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/dns/recovery-point/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/dns/recovery-point/{name} 响应",
+						"description": "返回GET /api/ad/v3/dns/recovery-point/{name}的响应数据",
+						"value": {
+							"name": "backup1",
+							"description": "change CNC link ip",
+							"time_point": "2018-01-04 08:05:10",
+							"content": [
+								"DNS-VIP-POOL"
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -148,6 +270,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_recovery_point_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new recovery-point",
+						"description": "创建全局配置还原点",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/dns/recovery-point/{name}",
+							"body": {
+								"name": "AI_backup1_B",
+								"content": [
+									"DNS-VIP-POOL"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/dns/recovery-point/{name} 响应",
+						"description": "返回POST /api/ad/v3/dns/recovery-point/{name}的响应数据",
+						"value": {
+							"name": "AI_backup1_B",
+							"description": "change CNC link ip",
+							"time_point": "2018-01-04 08:05:10",
+							"content": [
+								"DNS-VIP-POOL"
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -165,6 +315,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_recovery_point_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific recovery-point",
+						"description": "修改指定已有的全局配置还原点",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/dns/recovery-point/{name}",
+							"body": {
+								"name": "backup1",
+								"content": [
+									"DNS-VIP-POOL"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/dns/recovery-point/{name} 响应",
+						"description": "返回PUT /api/ad/v3/dns/recovery-point/{name}的响应数据",
+						"value": {
+							"name": "backup1",
+							"description": "change CNC link ip",
+							"time_point": "2018-01-04 08:05:10",
+							"content": [
+								"DNS-VIP-POOL"
+							]
+						}
 					}
 				}
 			},
@@ -184,6 +362,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_recovery_point_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific recovery-point",
+						"description": "增量修改已有的配置还原点",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/dns/recovery-point/{name}",
+							"body": {
+								"name": "backup1",
+								"content": [
+									"DNS-VIP-POOL"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/dns/recovery-point/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/dns/recovery-point/{name}的响应数据",
+						"value": {
+							"name": "backup1",
+							"description": "change CNC link ip",
+							"time_point": "2018-01-04 08:05:10",
+							"content": [
+								"DNS-VIP-POOL"
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -196,6 +402,28 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_recovery_point_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific recovery-point",
+						"description": "删除指定已有的配置还原点",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/dns/recovery-point/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/dns/recovery-point/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/dns/recovery-point/{name}的响应数据",
+						"value": {
+							"name": "backup1",
+							"description": "change CNC link ip",
+							"time_point": "2018-01-04 08:05:10",
+							"content": [
+								"DNS-VIP-POOL"
+							]
+						}
 					}
 				}
 			},
@@ -244,6 +472,29 @@ module.exports ={
 				"responses": {
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "recover dns config",
+						"description": "从指定已有的配置还原点执行还原操作",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/dns/recovery-point/{name}/recovery"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/dns/recovery-point/{name}/recovery 响应",
+						"description": "返回POST /api/ad/v3/dns/recovery-point/{name}/recovery的响应数据",
+						"value": {
+							"event_id": 0,
+							"operation": "/debug/sys/maintenance/restart-service",
+							"state": "WAITING",
+							"start_time": "2018-04-02 08:30:21",
+							"finish_time": "2018-04-02 08:31:05",
+							"triggered_by": "admin",
+							"data": {}
+						}
 					}
 				}
 			}

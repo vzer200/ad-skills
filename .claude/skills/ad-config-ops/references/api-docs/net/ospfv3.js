@@ -51,6 +51,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ospfv3_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get ospfv3",
+						"description": "获取ospfv3全局配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/ospfv3"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/ospfv3 响应",
+						"description": "返回GET /api/ad/v3/net/ospfv3的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"route_id": "6.6.6.6",
+							"redistribute_direct_route": "DISABLE",
+							"redistribute_static_route": "DISABLE",
+							"metric_type": 2,
+							"metric_value": 10,
+							"area_deploy": [
+								{
+									"area_id": "1.1.1.1",
+									"area_type": "NORMAL"
+								}
+							],
+							"route_aggregate": [
+								{
+									"area_id": "1.1.1.1",
+									"ipv6_prefix": "2002:84::/64"
+								}
+							],
+							"log_level": "INFO"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +104,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ospfv3_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace ospfv3",
+						"description": "修改ospfv3全局配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/ospfv3",
+							"body": {
+								"state": "ENABLE",
+								"redistribute_direct_route": "DISABLE",
+								"redistribute_static_route": "DISABLE",
+								"metric_type": 2,
+								"metric_value": 10,
+								"log_level": "INFO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/ospfv3 响应",
+						"description": "返回PUT /api/ad/v3/net/ospfv3的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"route_id": "6.6.6.6",
+							"redistribute_direct_route": "DISABLE",
+							"redistribute_static_route": "DISABLE",
+							"metric_type": 2,
+							"metric_value": 10,
+							"area_deploy": [
+								{
+									"area_id": "1.1.1.1",
+									"area_type": "NORMAL"
+								}
+							],
+							"route_aggregate": [
+								{
+									"area_id": "1.1.1.1",
+									"ipv6_prefix": "2002:84::/64"
+								}
+							],
+							"log_level": "INFO"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +164,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ospfv3_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify ospfv3",
+						"description": "修改ospfv3全局配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/ospfv3",
+							"body": {
+								"state": "ENABLE",
+								"redistribute_direct_route": "DISABLE",
+								"redistribute_static_route": "DISABLE",
+								"metric_type": 2,
+								"metric_value": 10,
+								"log_level": "INFO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/ospfv3 响应",
+						"description": "返回PATCH /api/ad/v3/net/ospfv3的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"route_id": "6.6.6.6",
+							"redistribute_direct_route": "DISABLE",
+							"redistribute_static_route": "DISABLE",
+							"metric_type": 2,
+							"metric_value": 10,
+							"area_deploy": [
+								{
+									"area_id": "1.1.1.1",
+									"area_type": "NORMAL"
+								}
+							],
+							"route_aggregate": [
+								{
+									"area_id": "1.1.1.1",
+									"ipv6_prefix": "2002:84::/64"
+								}
+							],
+							"log_level": "INFO"
+						}
 					}
 				}
 			},

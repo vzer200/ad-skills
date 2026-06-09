@@ -65,6 +65,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_ssl_sessionid_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all persist-ssl-sessionid",
+						"description": "查看已有会话保持（SSL-SESSIONID）配置信息列表",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/persist/ssl-sessionid/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/persist/ssl-sessionid/ 响应",
+						"description": "返回GET /api/ad/v3/slb/persist/ssl-sessionid/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "cookie_passive",
+									"description": "",
+									"type": "SSL-SESSIONID",
+									"timeout": 300,
+									"busy_protect": "ENABLE",
+									"record_scope": "POOL",
+									"session_persist_synchronize": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +116,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_ssl_sessionid_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new persist-ssl-sessionid",
+						"description": "新建会话保持（SSL-SESSIONID）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/persist/ssl-sessionid/",
+							"body": {
+								"name": "AI_cookie_passive_ssl_sessionid_A",
+								"type": "SSL-SESSIONID",
+								"timeout": 300,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL",
+								"session_persist_synchronize": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/persist/ssl-sessionid/ 响应",
+						"description": "返回POST /api/ad/v3/slb/persist/ssl-sessionid/的响应数据",
+						"value": {
+							"name": "AI_cookie_passive_ssl_sessionid_A",
+							"description": "",
+							"type": "SSL-SESSIONID",
+							"timeout": 300,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
 					}
 				}
 			},
@@ -130,6 +195,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_ssl_sessionid_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific persist-ssl-sessionid",
+						"description": "查看指定会话保持（SSL-SESSIONID）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/persist/ssl-sessionid/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/persist/ssl-sessionid/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/persist/ssl-sessionid/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "SSL-SESSIONID",
+							"timeout": 300,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +237,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_ssl_sessionid_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new persist-ssl-sessionid",
+						"description": "新建会话保持（SSL-SESSIONID）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/persist/ssl-sessionid/{name}",
+							"body": {
+								"name": "AI_cookie_passive_ssl_sessionid_B",
+								"type": "SSL-SESSIONID",
+								"timeout": 300,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL",
+								"session_persist_synchronize": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/persist/ssl-sessionid/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/persist/ssl-sessionid/{name}的响应数据",
+						"value": {
+							"name": "AI_cookie_passive_ssl_sessionid_B",
+							"description": "",
+							"type": "SSL-SESSIONID",
+							"timeout": 300,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +285,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_ssl_sessionid_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific persist-ssl-sessionid",
+						"description": "修改指定会话保持（SSL-SESSIONID）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/persist/ssl-sessionid/{name}",
+							"body": {
+								"name": "cookie_passive",
+								"type": "SSL-SESSIONID",
+								"timeout": 300,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL",
+								"session_persist_synchronize": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/persist/ssl-sessionid/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/persist/ssl-sessionid/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "SSL-SESSIONID",
+							"timeout": 300,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
 					}
 				}
 			},
@@ -185,6 +335,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_ssl_sessionid_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific persist-ssl-sessionid",
+						"description": "修改指定会话保持（SSL-SESSIONID）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/persist/ssl-sessionid/{name}",
+							"body": {
+								"name": "cookie_passive",
+								"type": "SSL-SESSIONID",
+								"timeout": 300,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL",
+								"session_persist_synchronize": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/persist/ssl-sessionid/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/persist/ssl-sessionid/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "SSL-SESSIONID",
+							"timeout": 300,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +378,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_ssl_sessionid_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific persist-ssl-sessionid",
+						"description": "删除指定会话保持（SSL-SESSIONID）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/persist/ssl-sessionid/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/persist/ssl-sessionid/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/persist/ssl-sessionid/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "SSL-SESSIONID",
+							"timeout": 300,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL",
+							"session_persist_synchronize": "ENABLE"
+						}
 					}
 				}
 			}
@@ -308,7 +512,7 @@ module.exports ={
 					"default": "SSL-SESSIONID"
 				},
 				"timeout": {
-					"description": "可选参数；设置会话保持超时时间。取值范围为[0,31536000],默认为86400",
+					"description": "可选参数；设置会话保持超时时间。取值范围为[0,31536000],默认为300",
 					"type": "integer",
 					"default": 300,
 					"maximum": 31536000,
@@ -316,7 +520,7 @@ module.exports ={
 					"example": 86400
 				},
 				"busy_protect": {
-					"description": "可选参数；指定繁忙保护的开关，disable表示禁用，enable表示启用；默认禁用。",
+					"description": "可选参数；指定繁忙保护的开关，disable表示禁用，enable表示启用；默认启用。",
 					"type": "string",
 					"enum": [
 						"ENABLE",

@@ -62,6 +62,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_role_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all role",
+						"description": "查看已有的角色配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/role/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/role/ 响应",
+						"description": "返回GET /api/ad/v3/sys/role/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "admin",
+									"description": "Super Administrator role",
+									"access_type": {
+										"web_console": "ENABLE",
+										"ssh_console": "DISABLE",
+										"restful_api": "DISABLE",
+										"ssh_console_privileged_mode": "DISABLE"
+									},
+									"access_control": {
+										"state": "DISABLE",
+										"permit_source_addresses": [
+											"200.200.0.123/24"
+										]
+									},
+									"permissions": [
+										"network-manager"
+									],
+									"default": "NON-DEFAULT"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +124,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_role_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new role",
+						"description": "新建角色配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/role/",
+							"body": {
+								"name": "AI_admin_A",
+								"permissions": [
+									"network-manager"
+								],
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/role/ 响应",
+						"description": "返回POST /api/ad/v3/sys/role/的响应数据",
+						"value": {
+							"name": "AI_admin_A",
+							"description": "Super Administrator role",
+							"access_type": {
+								"web_console": "ENABLE",
+								"ssh_console": "DISABLE",
+								"restful_api": "DISABLE",
+								"ssh_console_privileged_mode": "DISABLE"
+							},
+							"access_control": {
+								"state": "DISABLE",
+								"permit_source_addresses": [
+									"200.200.0.123/24"
+								]
+							},
+							"permissions": [
+								"network-manager"
+							],
+							"default": "NON-DEFAULT"
+						}
 					}
 				}
 			},
@@ -124,6 +210,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_role_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific role",
+						"description": "查看指定的角色配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/role/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/role/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/role/{name}的响应数据",
+						"value": {
+							"name": "admin",
+							"description": "Super Administrator role",
+							"access_type": {
+								"web_console": "ENABLE",
+								"ssh_console": "DISABLE",
+								"restful_api": "DISABLE",
+								"ssh_console_privileged_mode": "DISABLE"
+							},
+							"access_control": {
+								"state": "DISABLE",
+								"permit_source_addresses": [
+									"200.200.0.123/24"
+								]
+							},
+							"permissions": [
+								"network-manager"
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"post": {
@@ -143,6 +263,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_role_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new role",
+						"description": "新建指定的角色配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/role/{name}",
+							"body": {
+								"name": "AI_admin_B",
+								"permissions": [
+									"network-manager"
+								],
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/role/{name} 响应",
+						"description": "返回POST /api/ad/v3/sys/role/{name}的响应数据",
+						"value": {
+							"name": "AI_admin_B",
+							"description": "Super Administrator role",
+							"access_type": {
+								"web_console": "ENABLE",
+								"ssh_console": "DISABLE",
+								"restful_api": "DISABLE",
+								"ssh_console_privileged_mode": "DISABLE"
+							},
+							"access_control": {
+								"state": "DISABLE",
+								"permit_source_addresses": [
+									"200.200.0.123/24"
+								]
+							},
+							"permissions": [
+								"network-manager"
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"put": {
@@ -160,6 +321,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_role_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific role",
+						"description": "修改指定的角色配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/role/{name}",
+							"body": {
+								"name": "admin",
+								"permissions": [
+									"network-manager"
+								],
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/role/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/role/{name}的响应数据",
+						"value": {
+							"name": "admin",
+							"description": "Super Administrator role",
+							"access_type": {
+								"web_console": "ENABLE",
+								"ssh_console": "DISABLE",
+								"restful_api": "DISABLE",
+								"ssh_console_privileged_mode": "DISABLE"
+							},
+							"access_control": {
+								"state": "DISABLE",
+								"permit_source_addresses": [
+									"200.200.0.123/24"
+								]
+							},
+							"permissions": [
+								"network-manager"
+							],
+							"default": "NON-DEFAULT"
+						}
 					}
 				}
 			},
@@ -179,6 +381,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_role_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific role",
+						"description": "修改指定的角色配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/role/{name}",
+							"body": {
+								"name": "admin",
+								"permissions": [
+									"network-manager"
+								],
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/role/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/role/{name}的响应数据",
+						"value": {
+							"name": "admin",
+							"description": "Super Administrator role",
+							"access_type": {
+								"web_console": "ENABLE",
+								"ssh_console": "DISABLE",
+								"restful_api": "DISABLE",
+								"ssh_console_privileged_mode": "DISABLE"
+							},
+							"access_control": {
+								"state": "DISABLE",
+								"permit_source_addresses": [
+									"200.200.0.123/24"
+								]
+							},
+							"permissions": [
+								"network-manager"
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +434,40 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_role_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific role",
+						"description": "删除指定的角色配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/role/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/role/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/role/{name}的响应数据",
+						"value": {
+							"name": "admin",
+							"description": "Super Administrator role",
+							"access_type": {
+								"web_console": "ENABLE",
+								"ssh_console": "DISABLE",
+								"restful_api": "DISABLE",
+								"ssh_console_privileged_mode": "DISABLE"
+							},
+							"access_control": {
+								"state": "DISABLE",
+								"permit_source_addresses": [
+									"200.200.0.123/24"
+								]
+							},
+							"permissions": [
+								"network-manager"
+							],
+							"default": "NON-DEFAULT"
+						}
 					}
 				}
 			}
@@ -320,6 +597,16 @@ module.exports ={
 						},
 						"restful_api": {
 							"description": "api登录权限",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
+						},
+						"ssh_console_privileged_mode": {
+							"description": "命令行特权模式",
 							"type": "string",
 							"enum": [
 								"ENABLE",

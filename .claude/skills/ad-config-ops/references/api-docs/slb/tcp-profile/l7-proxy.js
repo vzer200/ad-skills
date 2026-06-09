@@ -62,6 +62,82 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l7_proxy_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all tcp-profile-l7-proxy",
+						"description": "查看当前已有的七层tcp策略配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/tcp-profile/l7-proxy/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/tcp-profile/l7-proxy/ 响应",
+						"description": "返回GET /api/ad/v3/slb/tcp-profile/l7-proxy/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "DEFAULT-L7",
+									"description": "example_string",
+									"default": "NON-DEFAULT",
+									"type": "L7-PROXY",
+									"idle_timeout": 300,
+									"timewait_timeout_ms": 10000,
+									"lastack_close_timeout_ms": 0,
+									"syn_timeout": 75,
+									"zero_window_timeout": 20,
+									"keep_alive_interval": 60,
+									"maximum_segment_size": 1460,
+									"auto_adjust_mss": {
+										"state": "ENABLE",
+										"back_maximum_segment_size": 1460
+									},
+									"time_stamp": "ENABLE",
+									"reset_invalid_connection": "ENABLE",
+									"close_node_connection_with_rst": "ENABLE",
+									"close_client_connection_with_rst": "ENABLE",
+									"node_fault_close_connection": "DISABLE",
+									"timewait_recycle": "ENABLE",
+									"delay_ack": "DISABLE",
+									"sack_support": "ENABLE",
+									"dsack_support": "DISABLE",
+									"maximum_syn_retransmission_times": 8,
+									"maximum_seg_retransmission_times": 8,
+									"maximum_fin_retransmission_times": 8,
+									"min_retran_time": 250,
+									"receive_window_scale": 0,
+									"initial_receive_window_size": 65535,
+									"tcp_options": [
+										{
+											"kind": 2,
+											"policy": "FIRST-PACKET"
+										}
+									],
+									"fast_tcp": "DISABLE",
+									"connection_pool": {
+										"state": "DISABLE",
+										"size": 10000,
+										"age": 60,
+										"source_address_prefix": 0,
+										"ipv6_source_address_prefix": 0
+									},
+									"service_unavailable_refuse_connection": "NONE",
+									"syn_flood": {
+										"state": "GLOBAL",
+										"packet_pre_second_threshold": 4096
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +155,100 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l7_proxy_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new tcp-profile-l7-proxy",
+						"description": "新建一个七层tcp策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/tcp-profile/l7-proxy/",
+							"body": {
+								"name": "AI_DEFAULT-L7_A",
+								"default": "NON-DEFAULT",
+								"type": "L7-PROXY",
+								"idle_timeout": 300,
+								"timewait_timeout_ms": 10000,
+								"lastack_close_timeout_ms": 0,
+								"syn_timeout": 75,
+								"zero_window_timeout": 20,
+								"keep_alive_interval": 60,
+								"maximum_segment_size": 1460,
+								"time_stamp": "ENABLE",
+								"reset_invalid_connection": "ENABLE",
+								"close_node_connection_with_rst": "ENABLE",
+								"close_client_connection_with_rst": "ENABLE",
+								"node_fault_close_connection": "DISABLE",
+								"timewait_recycle": "ENABLE",
+								"delay_ack": "DISABLE",
+								"sack_support": "ENABLE",
+								"dsack_support": "DISABLE",
+								"maximum_syn_retransmission_times": 8,
+								"maximum_seg_retransmission_times": 8,
+								"maximum_fin_retransmission_times": 8,
+								"min_retran_time": 250,
+								"receive_window_scale": 0,
+								"initial_receive_window_size": 65535,
+								"fast_tcp": "DISABLE",
+								"service_unavailable_refuse_connection": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/tcp-profile/l7-proxy/ 响应",
+						"description": "返回POST /api/ad/v3/slb/tcp-profile/l7-proxy/的响应数据",
+						"value": {
+							"name": "AI_DEFAULT-L7_A",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L7-PROXY",
+							"idle_timeout": 300,
+							"timewait_timeout_ms": 10000,
+							"lastack_close_timeout_ms": 0,
+							"syn_timeout": 75,
+							"zero_window_timeout": 20,
+							"keep_alive_interval": 60,
+							"maximum_segment_size": 1460,
+							"auto_adjust_mss": {
+								"state": "ENABLE",
+								"back_maximum_segment_size": 1460
+							},
+							"time_stamp": "ENABLE",
+							"reset_invalid_connection": "ENABLE",
+							"close_node_connection_with_rst": "ENABLE",
+							"close_client_connection_with_rst": "ENABLE",
+							"node_fault_close_connection": "DISABLE",
+							"timewait_recycle": "ENABLE",
+							"delay_ack": "DISABLE",
+							"sack_support": "ENABLE",
+							"dsack_support": "DISABLE",
+							"maximum_syn_retransmission_times": 8,
+							"maximum_seg_retransmission_times": 8,
+							"maximum_fin_retransmission_times": 8,
+							"min_retran_time": 250,
+							"receive_window_scale": 0,
+							"initial_receive_window_size": 65535,
+							"tcp_options": [
+								{
+									"kind": 2,
+									"policy": "FIRST-PACKET"
+								}
+							],
+							"fast_tcp": "DISABLE",
+							"connection_pool": {
+								"state": "DISABLE",
+								"size": 10000,
+								"age": 60,
+								"source_address_prefix": 0,
+								"ipv6_source_address_prefix": 0
+							},
+							"service_unavailable_refuse_connection": "NONE",
+							"syn_flood": {
+								"state": "GLOBAL",
+								"packet_pre_second_threshold": 4096
+							}
+						}
 					}
 				}
 			},
@@ -124,6 +294,71 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l7_proxy_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific tcp-profile-l7-proxy",
+						"description": "查看指定的七层tcp策略配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/tcp-profile/l7-proxy/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/tcp-profile/l7-proxy/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/tcp-profile/l7-proxy/{name}的响应数据",
+						"value": {
+							"name": "DEFAULT-L7",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L7-PROXY",
+							"idle_timeout": 300,
+							"timewait_timeout_ms": 10000,
+							"lastack_close_timeout_ms": 0,
+							"syn_timeout": 75,
+							"zero_window_timeout": 20,
+							"keep_alive_interval": 60,
+							"maximum_segment_size": 1460,
+							"auto_adjust_mss": {
+								"state": "ENABLE",
+								"back_maximum_segment_size": 1460
+							},
+							"time_stamp": "ENABLE",
+							"reset_invalid_connection": "ENABLE",
+							"close_node_connection_with_rst": "ENABLE",
+							"close_client_connection_with_rst": "ENABLE",
+							"node_fault_close_connection": "DISABLE",
+							"timewait_recycle": "ENABLE",
+							"delay_ack": "DISABLE",
+							"sack_support": "ENABLE",
+							"dsack_support": "DISABLE",
+							"maximum_syn_retransmission_times": 8,
+							"maximum_seg_retransmission_times": 8,
+							"maximum_fin_retransmission_times": 8,
+							"min_retran_time": 250,
+							"receive_window_scale": 0,
+							"initial_receive_window_size": 65535,
+							"tcp_options": [
+								{
+									"kind": 2,
+									"policy": "FIRST-PACKET"
+								}
+							],
+							"fast_tcp": "DISABLE",
+							"connection_pool": {
+								"state": "DISABLE",
+								"size": 10000,
+								"age": 60,
+								"source_address_prefix": 0,
+								"ipv6_source_address_prefix": 0
+							},
+							"service_unavailable_refuse_connection": "NONE",
+							"syn_flood": {
+								"state": "GLOBAL",
+								"packet_pre_second_threshold": 4096
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -143,6 +378,100 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l7_proxy_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new tcp-profile-l7-proxy",
+						"description": "新建指定的七层tcp策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/tcp-profile/l7-proxy/{name}",
+							"body": {
+								"name": "AI_DEFAULT-L7_B",
+								"default": "NON-DEFAULT",
+								"type": "L7-PROXY",
+								"idle_timeout": 300,
+								"timewait_timeout_ms": 10000,
+								"lastack_close_timeout_ms": 0,
+								"syn_timeout": 75,
+								"zero_window_timeout": 20,
+								"keep_alive_interval": 60,
+								"maximum_segment_size": 1460,
+								"time_stamp": "ENABLE",
+								"reset_invalid_connection": "ENABLE",
+								"close_node_connection_with_rst": "ENABLE",
+								"close_client_connection_with_rst": "ENABLE",
+								"node_fault_close_connection": "DISABLE",
+								"timewait_recycle": "ENABLE",
+								"delay_ack": "DISABLE",
+								"sack_support": "ENABLE",
+								"dsack_support": "DISABLE",
+								"maximum_syn_retransmission_times": 8,
+								"maximum_seg_retransmission_times": 8,
+								"maximum_fin_retransmission_times": 8,
+								"min_retran_time": 250,
+								"receive_window_scale": 0,
+								"initial_receive_window_size": 65535,
+								"fast_tcp": "DISABLE",
+								"service_unavailable_refuse_connection": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/tcp-profile/l7-proxy/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/tcp-profile/l7-proxy/{name}的响应数据",
+						"value": {
+							"name": "AI_DEFAULT-L7_B",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L7-PROXY",
+							"idle_timeout": 300,
+							"timewait_timeout_ms": 10000,
+							"lastack_close_timeout_ms": 0,
+							"syn_timeout": 75,
+							"zero_window_timeout": 20,
+							"keep_alive_interval": 60,
+							"maximum_segment_size": 1460,
+							"auto_adjust_mss": {
+								"state": "ENABLE",
+								"back_maximum_segment_size": 1460
+							},
+							"time_stamp": "ENABLE",
+							"reset_invalid_connection": "ENABLE",
+							"close_node_connection_with_rst": "ENABLE",
+							"close_client_connection_with_rst": "ENABLE",
+							"node_fault_close_connection": "DISABLE",
+							"timewait_recycle": "ENABLE",
+							"delay_ack": "DISABLE",
+							"sack_support": "ENABLE",
+							"dsack_support": "DISABLE",
+							"maximum_syn_retransmission_times": 8,
+							"maximum_seg_retransmission_times": 8,
+							"maximum_fin_retransmission_times": 8,
+							"min_retran_time": 250,
+							"receive_window_scale": 0,
+							"initial_receive_window_size": 65535,
+							"tcp_options": [
+								{
+									"kind": 2,
+									"policy": "FIRST-PACKET"
+								}
+							],
+							"fast_tcp": "DISABLE",
+							"connection_pool": {
+								"state": "DISABLE",
+								"size": 10000,
+								"age": 60,
+								"source_address_prefix": 0,
+								"ipv6_source_address_prefix": 0
+							},
+							"service_unavailable_refuse_connection": "NONE",
+							"syn_flood": {
+								"state": "GLOBAL",
+								"packet_pre_second_threshold": 4096
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -160,6 +489,100 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l7_proxy_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific tcp-profile-l7-proxy",
+						"description": "修改指定的七层tcp策略配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/tcp-profile/l7-proxy/{name}",
+							"body": {
+								"name": "DEFAULT-L7",
+								"default": "NON-DEFAULT",
+								"type": "L7-PROXY",
+								"idle_timeout": 300,
+								"timewait_timeout_ms": 10000,
+								"lastack_close_timeout_ms": 0,
+								"syn_timeout": 75,
+								"zero_window_timeout": 20,
+								"keep_alive_interval": 60,
+								"maximum_segment_size": 1460,
+								"time_stamp": "ENABLE",
+								"reset_invalid_connection": "ENABLE",
+								"close_node_connection_with_rst": "ENABLE",
+								"close_client_connection_with_rst": "ENABLE",
+								"node_fault_close_connection": "DISABLE",
+								"timewait_recycle": "ENABLE",
+								"delay_ack": "DISABLE",
+								"sack_support": "ENABLE",
+								"dsack_support": "DISABLE",
+								"maximum_syn_retransmission_times": 8,
+								"maximum_seg_retransmission_times": 8,
+								"maximum_fin_retransmission_times": 8,
+								"min_retran_time": 250,
+								"receive_window_scale": 0,
+								"initial_receive_window_size": 65535,
+								"fast_tcp": "DISABLE",
+								"service_unavailable_refuse_connection": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/tcp-profile/l7-proxy/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/tcp-profile/l7-proxy/{name}的响应数据",
+						"value": {
+							"name": "DEFAULT-L7",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L7-PROXY",
+							"idle_timeout": 300,
+							"timewait_timeout_ms": 10000,
+							"lastack_close_timeout_ms": 0,
+							"syn_timeout": 75,
+							"zero_window_timeout": 20,
+							"keep_alive_interval": 60,
+							"maximum_segment_size": 1460,
+							"auto_adjust_mss": {
+								"state": "ENABLE",
+								"back_maximum_segment_size": 1460
+							},
+							"time_stamp": "ENABLE",
+							"reset_invalid_connection": "ENABLE",
+							"close_node_connection_with_rst": "ENABLE",
+							"close_client_connection_with_rst": "ENABLE",
+							"node_fault_close_connection": "DISABLE",
+							"timewait_recycle": "ENABLE",
+							"delay_ack": "DISABLE",
+							"sack_support": "ENABLE",
+							"dsack_support": "DISABLE",
+							"maximum_syn_retransmission_times": 8,
+							"maximum_seg_retransmission_times": 8,
+							"maximum_fin_retransmission_times": 8,
+							"min_retran_time": 250,
+							"receive_window_scale": 0,
+							"initial_receive_window_size": 65535,
+							"tcp_options": [
+								{
+									"kind": 2,
+									"policy": "FIRST-PACKET"
+								}
+							],
+							"fast_tcp": "DISABLE",
+							"connection_pool": {
+								"state": "DISABLE",
+								"size": 10000,
+								"age": 60,
+								"source_address_prefix": 0,
+								"ipv6_source_address_prefix": 0
+							},
+							"service_unavailable_refuse_connection": "NONE",
+							"syn_flood": {
+								"state": "GLOBAL",
+								"packet_pre_second_threshold": 4096
+							}
+						}
 					}
 				}
 			},
@@ -179,6 +602,100 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l7_proxy_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific tcp-profile-l7-proxy",
+						"description": "修改指定的七层tcp策略配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/tcp-profile/l7-proxy/{name}",
+							"body": {
+								"name": "DEFAULT-L7",
+								"default": "NON-DEFAULT",
+								"type": "L7-PROXY",
+								"idle_timeout": 300,
+								"timewait_timeout_ms": 10000,
+								"lastack_close_timeout_ms": 0,
+								"syn_timeout": 75,
+								"zero_window_timeout": 20,
+								"keep_alive_interval": 60,
+								"maximum_segment_size": 1460,
+								"time_stamp": "ENABLE",
+								"reset_invalid_connection": "ENABLE",
+								"close_node_connection_with_rst": "ENABLE",
+								"close_client_connection_with_rst": "ENABLE",
+								"node_fault_close_connection": "DISABLE",
+								"timewait_recycle": "ENABLE",
+								"delay_ack": "DISABLE",
+								"sack_support": "ENABLE",
+								"dsack_support": "DISABLE",
+								"maximum_syn_retransmission_times": 8,
+								"maximum_seg_retransmission_times": 8,
+								"maximum_fin_retransmission_times": 8,
+								"min_retran_time": 250,
+								"receive_window_scale": 0,
+								"initial_receive_window_size": 65535,
+								"fast_tcp": "DISABLE",
+								"service_unavailable_refuse_connection": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/tcp-profile/l7-proxy/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/tcp-profile/l7-proxy/{name}的响应数据",
+						"value": {
+							"name": "DEFAULT-L7",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L7-PROXY",
+							"idle_timeout": 300,
+							"timewait_timeout_ms": 10000,
+							"lastack_close_timeout_ms": 0,
+							"syn_timeout": 75,
+							"zero_window_timeout": 20,
+							"keep_alive_interval": 60,
+							"maximum_segment_size": 1460,
+							"auto_adjust_mss": {
+								"state": "ENABLE",
+								"back_maximum_segment_size": 1460
+							},
+							"time_stamp": "ENABLE",
+							"reset_invalid_connection": "ENABLE",
+							"close_node_connection_with_rst": "ENABLE",
+							"close_client_connection_with_rst": "ENABLE",
+							"node_fault_close_connection": "DISABLE",
+							"timewait_recycle": "ENABLE",
+							"delay_ack": "DISABLE",
+							"sack_support": "ENABLE",
+							"dsack_support": "DISABLE",
+							"maximum_syn_retransmission_times": 8,
+							"maximum_seg_retransmission_times": 8,
+							"maximum_fin_retransmission_times": 8,
+							"min_retran_time": 250,
+							"receive_window_scale": 0,
+							"initial_receive_window_size": 65535,
+							"tcp_options": [
+								{
+									"kind": 2,
+									"policy": "FIRST-PACKET"
+								}
+							],
+							"fast_tcp": "DISABLE",
+							"connection_pool": {
+								"state": "DISABLE",
+								"size": 10000,
+								"age": 60,
+								"source_address_prefix": 0,
+								"ipv6_source_address_prefix": 0
+							},
+							"service_unavailable_refuse_connection": "NONE",
+							"syn_flood": {
+								"state": "GLOBAL",
+								"packet_pre_second_threshold": 4096
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +708,71 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_tcp_profile_l7_proxy_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific tcp-profile-l7-proxy",
+						"description": "删除指定的七层tcp策略配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/tcp-profile/l7-proxy/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/tcp-profile/l7-proxy/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/tcp-profile/l7-proxy/{name}的响应数据",
+						"value": {
+							"name": "DEFAULT-L7",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"type": "L7-PROXY",
+							"idle_timeout": 300,
+							"timewait_timeout_ms": 10000,
+							"lastack_close_timeout_ms": 0,
+							"syn_timeout": 75,
+							"zero_window_timeout": 20,
+							"keep_alive_interval": 60,
+							"maximum_segment_size": 1460,
+							"auto_adjust_mss": {
+								"state": "ENABLE",
+								"back_maximum_segment_size": 1460
+							},
+							"time_stamp": "ENABLE",
+							"reset_invalid_connection": "ENABLE",
+							"close_node_connection_with_rst": "ENABLE",
+							"close_client_connection_with_rst": "ENABLE",
+							"node_fault_close_connection": "DISABLE",
+							"timewait_recycle": "ENABLE",
+							"delay_ack": "DISABLE",
+							"sack_support": "ENABLE",
+							"dsack_support": "DISABLE",
+							"maximum_syn_retransmission_times": 8,
+							"maximum_seg_retransmission_times": 8,
+							"maximum_fin_retransmission_times": 8,
+							"min_retran_time": 250,
+							"receive_window_scale": 0,
+							"initial_receive_window_size": 65535,
+							"tcp_options": [
+								{
+									"kind": 2,
+									"policy": "FIRST-PACKET"
+								}
+							],
+							"fast_tcp": "DISABLE",
+							"connection_pool": {
+								"state": "DISABLE",
+								"size": 10000,
+								"age": 60,
+								"source_address_prefix": 0,
+								"ipv6_source_address_prefix": 0
+							},
+							"service_unavailable_refuse_connection": "NONE",
+							"syn_flood": {
+								"state": "GLOBAL",
+								"packet_pre_second_threshold": 4096
+							}
+						}
 					}
 				}
 			}
@@ -366,6 +948,29 @@ module.exports ={
 					"maximum": 1460,
 					"minimum": 536,
 					"example": 1460
+				},
+				"auto_adjust_mss": {
+					"description": "自动调整前后端MSS大小",
+					"type": "object",
+					"properties": {
+						"state": {
+							"description": "是否开启自动调整MSS",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "ENABLE",
+							"example": "ENABLE"
+						},
+						"back_maximum_segment_size": {
+							"description": "后端MSS大小,关闭MSS自动调整时，后端连接设置的MSS值",
+							"type": "integer",
+							"default": 1460,
+							"maximum": 1460,
+							"minimum": 536
+						}
+					}
 				},
 				"time_stamp": {
 					"description": "可选参数；指定时间戳状态，enable表示启用，disable表示禁用，默认为启用",
@@ -559,16 +1164,16 @@ module.exports ={
 								"ENABLE",
 								"DISABLE"
 							],
-							"default": "ENABLE",
+							"default": "DISABLE",
 							"example": "ENABLE"
 						},
 						"size": {
-							"description": "可选参数；指定连接池大小，默认为1024",
+							"description": "可选参数；指定连接池大小，默认为10000",
 							"type": "integer",
 							"default": 10000,
 							"maximum": 64000,
 							"minimum": 1,
-							"example": 1024
+							"example": 10000
 						},
 						"age": {
 							"description": "可选参数；指定超时时间，默认为60",
@@ -606,6 +1211,29 @@ module.exports ={
 					],
 					"default": "NONE",
 					"example": "NONE"
+				},
+				"syn_flood": {
+					"description": "synflood防护",
+					"type": "object",
+					"properties": {
+						"state": {
+							"description": "synflood防护启禁用",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE",
+								"GLOBAL"
+							],
+							"default": "GLOBAL"
+						},
+						"packet_pre_second_threshold": {
+							"description": "syncookie触发阈值, 必须为0~2147483647之间的整数",
+							"type": "integer",
+							"default": 4096,
+							"minimum": 0,
+							"maximum": 2147483647
+						}
+					}
 				}
 			}
 		}

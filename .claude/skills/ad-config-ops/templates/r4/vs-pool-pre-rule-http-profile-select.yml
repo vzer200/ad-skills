@@ -1,0 +1,76 @@
+# 虚拟服务、节点池、前置策略和 HTTP 优化策略创建模板。
+# 上传前请替换名称、VIP、端口、节点、前置策略匹配条件和优化策略字段。
+#
+# `service` 是虚拟服务和前置策略的类型选择字段。默认示例使用 HTTP，
+# 并包含 HTTP 优化策略、HTTP 前置策略字段和 HTTP 虚拟服务字段。
+# 如果要改成 TCP-PROXY、UDP-PROXY 等非 HTTP 类型，必须同步删除或替换
+# HTTP 专用字段，并按对应 API 文档补齐该类型的必填字段；阶段 B 会
+# 根据 service 自动选择具体 API 文档并校验，不符合该类型 schema 时会停止。
+version: 1
+source: "R4 基础 YAML 模板：可选类型的虚拟服务、节点池、前置策略和 HTTP 优化策略"
+operations:
+  - id: create-http-profile
+    action: create
+    schema: config.http_profile
+    document: slb/http-profile.js
+    payload:
+      name: r4_http_profile
+      description: R4 HTTP 优化策略。
+      source_address:
+        operation: REQUEST-HEADER-INSERT-SRCIP
+        request_header: X-Forwarded-For
+
+  - id: create-pool
+    action: create
+    schema: config.pool
+    document: slb/pool.js
+    payload:
+      name: r4_pool
+      description: R4 后端节点池。
+      method: ROUND-ROBIN
+      priority_level_available_node: 0
+      nodes:
+        - name: node_1_192_0_2_51_80
+          type: ADDRESS
+          address: 192.0.2.51
+          port: 80
+          state: ENABLE
+          weight: 10
+          priority_level: 1
+
+  - id: create-pre-rule
+    action: create
+    resource_family: slb/pre-rule
+    variant_field: service
+    payload:
+      name: r4_pre_rule
+      description: R4 前置策略。
+      service: HTTP
+      source_address:
+        type: ALL
+      http_request_method_rule: ALL
+      http_request_version_rule: ALL
+      http_request_uri_rule:
+        mode: NONE
+      action: SCHED-POOL
+      sched_pool: r4_pool
+
+  - id: create-virtual-service
+    action: create
+    schema: config.virtual_service
+    resource_family: slb/virtual-service
+    variant_field: service
+    payload:
+      name: r4_virtual_service
+      description: R4 虚拟服务。
+      state: ENABLE
+      service: HTTP
+      vips:
+        - 10.250.250.80
+      vports:
+        - "80"
+      pool: r4_pool
+      pre_rules:
+        - r4_pre_rule
+      http_sched_mode: REQUEST
+      http_profile: r4_http_profile

@@ -74,6 +74,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_service_log_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "retrieve service-log",
+						"description": "GET /api/ad/v3/log/service-log/",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/log/service-log/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/log/service-log/ 响应",
+						"description": "返回GET /api/ad/v3/log/service-log/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"service_log_id": 0,
+									"date": "YYYY-MM-DD",
+									"time": "hh:mm:ss",
+									"level": "ALERT",
+									"module": "CONFIG_CENTER",
+									"detail": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

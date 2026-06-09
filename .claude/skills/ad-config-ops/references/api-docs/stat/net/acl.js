@@ -62,6 +62,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_acl_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all acl",
+						"description": "获取acl信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/acl/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/acl/ 响应",
+						"description": "返回GET /api/ad/v3/stat/net/acl/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "deny_10.1.2.3",
+									"hit": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -91,6 +120,24 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_acl_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific acl",
+						"description": "获取指定acl信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/acl/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/acl/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/net/acl/{name}的响应数据",
+						"value": {
+							"name": "deny_10.1.2.3",
+							"hit": null
+						}
 					}
 				}
 			}

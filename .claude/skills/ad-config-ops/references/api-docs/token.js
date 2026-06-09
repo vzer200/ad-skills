@@ -65,6 +65,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_token_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all token",
+						"description": "查询会话令牌列表",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/token/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/token/ 响应",
+						"description": "返回GET /api/ad/v3/token/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "1A2B3C4D5E6F",
+									"client_name": "Web_Console_7.0.5",
+									"user_name": "admin",
+									"role_name": "admin",
+									"source_address": "192.168.100.12",
+									"timeout": 600,
+									"create_timestamp": 1520534455,
+									"access_timestamp": 1520535129,
+									"expired_timestamp": 1520535729
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +118,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_token_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new token",
+						"description": "创建新的新的会话令牌",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/token/",
+							"body": {
+								"client_name": "Web_Console_7.0.5",
+								"username": "admin"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/token/ 响应",
+						"description": "返回POST /api/ad/v3/token/的响应数据",
+						"value": {
+							"name": "AI_1A2B3C4D5E6F_A",
+							"client_name": "Web_Console_7.0.5",
+							"user_name": "admin",
+							"role_name": "admin",
+							"source_address": "192.168.100.12",
+							"timeout": 600,
+							"create_timestamp": 1520534455,
+							"access_timestamp": 1520535129,
+							"expired_timestamp": 1520535729
+						}
 					}
 				}
 			},
@@ -125,6 +190,31 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_token_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific token",
+						"description": "查询指定会话令牌",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/token/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/token/{name} 响应",
+						"description": "返回GET /api/ad/v3/token/{name}的响应数据",
+						"value": {
+							"name": "1A2B3C4D5E6F",
+							"client_name": "Web_Console_7.0.5",
+							"user_name": "admin",
+							"role_name": "admin",
+							"source_address": "192.168.100.12",
+							"timeout": 600,
+							"create_timestamp": 1520534455,
+							"access_timestamp": 1520535129,
+							"expired_timestamp": 1520535729
+						}
+					}
 				}
 			},
 			"post": {
@@ -144,6 +234,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_token_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new token",
+						"description": "创建指定的名称的会话令牌",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/token/{name}",
+							"body": {
+								"client_name": "Web_Console_7.0.5",
+								"username": "admin"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/token/{name} 响应",
+						"description": "返回POST /api/ad/v3/token/{name}的响应数据",
+						"value": {
+							"name": "AI_1A2B3C4D5E6F_B",
+							"client_name": "Web_Console_7.0.5",
+							"user_name": "admin",
+							"role_name": "admin",
+							"source_address": "192.168.100.12",
+							"timeout": 600,
+							"create_timestamp": 1520534455,
+							"access_timestamp": 1520535129,
+							"expired_timestamp": 1520535729
+						}
+					}
 				}
 			},
 			"delete": {
@@ -161,6 +280,31 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_token_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific token",
+						"description": "删除指定名称的会话令牌",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/token/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/token/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/token/{name}的响应数据",
+						"value": {
+							"name": "1A2B3C4D5E6F",
+							"client_name": "Web_Console_7.0.5",
+							"user_name": "admin",
+							"role_name": "admin",
+							"source_address": "192.168.100.12",
+							"timeout": 600,
+							"create_timestamp": 1520534455,
+							"access_timestamp": 1520535129,
+							"expired_timestamp": 1520535729
+						}
 					}
 				}
 			},
@@ -204,6 +348,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_token_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "refresh new token",
+						"description": "更新指定的会话令牌",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/refresh-token",
+							"body": {
+								"name": "AI_1A2B3C4D5E6F_A"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/refresh-token 响应",
+						"description": "返回POST /api/ad/v3/refresh-token的响应数据",
+						"value": {
+							"name": "AI_1A2B3C4D5E6F_A",
+							"client_name": "Web_Console_7.0.5",
+							"user_name": "admin",
+							"role_name": "admin",
+							"source_address": "192.168.100.12",
+							"timeout": 600,
+							"create_timestamp": 1520534455,
+							"access_timestamp": 1520535129,
+							"expired_timestamp": 1520535729
+						}
 					}
 				}
 			},

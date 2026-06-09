@@ -62,6 +62,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_ospfv3_neighbors_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get ospfv3-neighbors table",
+						"description": "获取OSPFV3邻居信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/ospfv3-neighbors"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/ospfv3-neighbors 响应",
+						"description": "返回GET /api/ad/v3/stat/net/ospfv3-neighbors的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"route_id": "192.200.200.22",
+									"priority": 10,
+									"state": "Full/Backup",
+									"timeout": "38.730s",
+									"local_interface": "eth1/192.200.200.117"
+								}
+							]
+						}
+					}
 				}
 			}
 		}

@@ -51,6 +51,80 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_notice_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get WebUI notice",
+						"description": "获取设备状态如授权状态、密码状态等相关通知",
+						"value": {
+							"method": "GET",
+							"path": "/cgi/notice"
+						}
+					},
+					"response": {
+						"summary": "GET /cgi/notice 响应",
+						"description": "返回GET /cgi/notice的响应数据",
+						"value": {
+							"licence_basic_sn_inspection": {
+								"result": "ACTIVE",
+								"type": "VLS",
+								"client": "Example Company Inc.",
+								"trial_available": "ENABLE",
+								"base_countdown_day": "example_string",
+								"illegal_reason": "NO_ERROR",
+								"disable_reason": "ILLEGAL__REASON__NO_ERROR",
+								"illegal_authorized_countdown_day": "example_string",
+								"update_expire": "example_string"
+							},
+							"licence_software_update_sn_inspection": {
+								"result": "VALID",
+								"type": "VLS",
+								"soft_countdown_day": "example_string",
+								"software_update_expire": "20181231"
+							},
+							"ssl_certificate_inspection": {
+								"result": "VALID",
+								"certificate_expire_soon": [
+									"ebank_ecdsa_cert"
+								],
+								"certificate_expired": [
+									"ebank_rsa_cert"
+								]
+							},
+							"certificate_expired": true,
+							"passwd": {
+								"result": "SECURE",
+								"user": "example_string"
+							},
+							"platform_file_inspection": {
+								"result": "VALID",
+								"msg": "example_string"
+							},
+							"ca_certificate_inspection": {
+								"result": "VALID",
+								"certificate_expire_soon": [
+									"ebank_ecdsa_cert"
+								],
+								"certificate_expired": [
+									"ebank_rsa_cert"
+								]
+							},
+							"user_weak_password_inspection": {
+								"result": "WEAK",
+								"patients": [
+									"admin"
+								],
+								"force": "ENABLE"
+							},
+							"privacy_inspection": {
+								"result": "INITIAL"
+							},
+							"ssd_health_inspection": {
+								"result": "NORMAL",
+								"estimated_lifetime_day": 36000
+							}
+						}
+					}
 				}
 			}
 		}

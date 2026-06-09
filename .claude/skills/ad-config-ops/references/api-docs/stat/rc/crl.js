@@ -62,6 +62,44 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_crl_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all crl",
+						"description": "获取所有证书吊销列表详情",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/rc/crl/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/rc/crl/ 响应",
+						"description": "返回GET /api/ad/v3/stat/rc/crl/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "abc.com_crl",
+									"description": "example_string",
+									"update": {
+										"last_time": 0,
+										"result": "NONE",
+										"description": "example_string"
+									},
+									"crl": {
+										"file_size_byte": 0,
+										"crl_entry_count": 0
+									}
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -91,6 +129,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_crl_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific crl",
+						"description": "获取指定证书吊销列表详情",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/rc/crl/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/rc/crl/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/rc/crl/{name}的响应数据",
+						"value": {
+							"name": "abc.com_crl",
+							"description": "example_string",
+							"update": {
+								"last_time": 0,
+								"result": "NONE",
+								"description": "example_string"
+							},
+							"crl": {
+								"file_size_byte": 0,
+								"crl_entry_count": 0
+							}
+						}
 					}
 				}
 			}

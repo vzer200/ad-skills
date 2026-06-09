@@ -65,6 +65,58 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_data_center_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all data-center statistics",
+						"description": "查询数据中心统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/data-center/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/data-center/ 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/data-center/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "local_dc",
+									"site": "LOCAL",
+									"health": "NORMAL",
+									"vip_pool": {
+										"local": "NORMAL",
+										"global": "NORMAL"
+									},
+									"failure_reason": "",
+									"alert_events": [
+										{
+											"type": "VIRTUAL-SERVICE",
+											"level": "NORMAL",
+											"name": "http_8080",
+											"message": "All Node Unavailable."
+										}
+									],
+									"local_device": [
+										{
+											"name": "dc1_ad2",
+											"virtual_services": [
+												"vs_portal_80"
+											]
+										}
+									],
+									"query": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -97,6 +149,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_data_center_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific data-center statistics",
+						"description": "查询指定数据中心的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/data-center/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/data-center/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/data-center/{name}的响应数据",
+						"value": {
+							"name": "local_dc",
+							"site": "LOCAL",
+							"health": "NORMAL",
+							"vip_pool": {
+								"local": "NORMAL",
+								"global": "NORMAL"
+							},
+							"failure_reason": "",
+							"alert_events": [
+								{
+									"type": "VIRTUAL-SERVICE",
+									"level": "NORMAL",
+									"name": "http_8080",
+									"message": "All Node Unavailable."
+								}
+							],
+							"local_device": [
+								{
+									"name": "dc1_ad2",
+									"virtual_services": [
+										"vs_portal_80"
+									]
+								}
+							],
+							"query": null
+						}
 					}
 				}
 			}
@@ -141,6 +234,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific data-center statistics",
+						"description": "查询指定数据中心的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/data-center/{name}/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/data-center/{name}/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/data-center/{name}/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
 					}
 				}
 			}

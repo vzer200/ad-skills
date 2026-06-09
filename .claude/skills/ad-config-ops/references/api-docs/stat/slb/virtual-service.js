@@ -65,6 +65,82 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_virtual_service_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all virtual-service statistics",
+						"description": "获取所有虚拟服务状态信息\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-service/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-service/ 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-service/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "",
+									"description": "example_string",
+									"icon": "web_flag_icon",
+									"state": "ENABLE",
+									"service": null,
+									"health": "NORMAL",
+									"failure_reason": "",
+									"pool": {
+										"total": 0,
+										"health": {
+											"normal": [
+												"example_string"
+											],
+											"failure": [
+												"example_string"
+											],
+											"busy": [
+												"example_string"
+											],
+											"alert": [
+												"example_string"
+											]
+										}
+									},
+									"connection": null,
+									"connection_established": null,
+									"connection_rate": null,
+									"ssl_connection_rate": null,
+									"client_connection": null,
+									"server_connection": null,
+									"pool_connection_usage": null,
+									"pool_connection_rate": null,
+									"maximum_connection": null,
+									"total_connection": null,
+									"http_request_rate": null,
+									"total_http_request": null,
+									"http_cache_hit": null,
+									"http_cache_used": null,
+									"http_cache_response_data": null,
+									"http_compression_saving_ratio": null,
+									"http_compression_data_reduction": null,
+									"upstream_throughput": null,
+									"downstream_throughput": null,
+									"general_throughput": null,
+									"upstream_data": null,
+									"downstream_data": null,
+									"upstream_packet": null,
+									"downstream_packet": null,
+									"netns": "netns名称"
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -97,6 +173,94 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_virtual_service_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-service statistics",
+						"description": "获取指定虚拟服务状态信息\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-service/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-service/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-service/{name}的响应数据",
+						"value": {
+							"name": "",
+							"description": "example_string",
+							"icon": "web_flag_icon",
+							"state": "ENABLE",
+							"service": null,
+							"vips": [
+								"10.0.1.83"
+							],
+							"vports": [
+								"80-88"
+							],
+							"health": "NORMAL",
+							"failure_reason": "",
+							"pool": {
+								"total": 0,
+								"health": {
+									"normal": [
+										"example_string"
+									],
+									"failure": [
+										"example_string"
+									],
+									"busy": [
+										"example_string"
+									],
+									"alert": [
+										"example_string"
+									]
+								}
+							},
+							"pre_rule_essential": [
+								{
+									"name": "host_www.abc.com",
+									"pool": "example_string",
+									"health": "NORMAL",
+									"connection": null,
+									"connection_rate": null,
+									"hit_rate": null,
+									"hit": null
+								}
+							],
+							"pool_essential": {
+								"name": "host_www.abc.com",
+								"health": "NORMAL",
+								"connection": null,
+								"connection_rate": null
+							},
+							"connection": null,
+							"connection_established": null,
+							"connection_rate": null,
+							"ssl_connection_rate": null,
+							"client_connection": null,
+							"server_connection": null,
+							"pool_connection_usage": null,
+							"pool_connection_rate": null,
+							"maximum_connection": null,
+							"total_connection": null,
+							"http_request_rate": null,
+							"total_http_request": null,
+							"http_cache_hit": null,
+							"http_cache_used": null,
+							"http_cache_response_data": null,
+							"http_compression_saving_ratio": null,
+							"http_compression_data_reduction": null,
+							"upstream_throughput": null,
+							"downstream_throughput": null,
+							"general_throughput": null,
+							"upstream_data": null,
+							"downstream_data": null,
+							"upstream_packet": null,
+							"downstream_packet": null,
+							"netns": "netns名称"
+						}
 					}
 				}
 			}
@@ -139,6 +303,82 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_virtual_service_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get many virtual-service statistics",
+						"description": "获取多个虚拟服务状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-service-names/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-service-names/ 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-service-names/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "",
+									"description": "example_string",
+									"icon": "web_flag_icon",
+									"state": "ENABLE",
+									"service": null,
+									"health": "NORMAL",
+									"failure_reason": "",
+									"pool": {
+										"total": 0,
+										"health": {
+											"normal": [
+												"example_string"
+											],
+											"failure": [
+												"example_string"
+											],
+											"busy": [
+												"example_string"
+											],
+											"alert": [
+												"example_string"
+											]
+										}
+									},
+									"connection": null,
+									"connection_established": null,
+									"connection_rate": null,
+									"ssl_connection_rate": null,
+									"client_connection": null,
+									"server_connection": null,
+									"pool_connection_usage": null,
+									"pool_connection_rate": null,
+									"maximum_connection": null,
+									"total_connection": null,
+									"http_request_rate": null,
+									"total_http_request": null,
+									"http_cache_hit": null,
+									"http_cache_used": null,
+									"http_cache_response_data": null,
+									"http_compression_saving_ratio": null,
+									"http_compression_data_reduction": null,
+									"upstream_throughput": null,
+									"downstream_throughput": null,
+									"general_throughput": null,
+									"upstream_data": null,
+									"downstream_data": null,
+									"upstream_packet": null,
+									"downstream_packet": null,
+									"netns": "netns名称"
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -172,6 +412,28 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_virtual_service_ddos"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-service statistics",
+						"description": "获取指定虚拟服务ddos信息\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-service/{name}/ddos"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-service/{name}/ddos 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-service/{name}/ddos的响应数据",
+						"value": {
+							"attack_sources": [
+								{
+									"address": "example_string",
+									"times": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -204,6 +466,42 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_virtual_service_ddos_log_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-service statistics",
+						"description": "获取指定虚拟服务ddos-log信息\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-service/{name}/ddos-log"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-service/{name}/ddos-log 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-service/{name}/ddos-log的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"serial": 1,
+									"timestamp": 0,
+									"virtual_service": "vs_http_80",
+									"source_address": "10.2.1.34",
+									"attack_type": "Flood",
+									"detail": "",
+									"target_url": "200.200.144.1/",
+									"count": 6123,
+									"action": "WARN-AND-BLOCK"
+								}
+							]
+						}
 					}
 				}
 			}
@@ -241,6 +539,33 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-service statistics",
+						"description": "获取指定虚拟服务信息\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-service/{name}/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-service/{name}/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-service/{name}/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -277,6 +602,39 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend_multiple_items"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-service statistics combine-items",
+						"description": "获取指定虚拟服务多个数据点的历史数据\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-service/{name}/combine-items"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-service/{name}/combine-items 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-service/{name}/combine-items的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"timestamp": 0,
+							"items": [
+								{
+									"item": "example_string",
+									"feature": "DISABLE",
+									"unit": "BIT-PER-SECOND",
+									"values": [
+										0
+									],
+									"additional_data": [
+										null
+									]
+								}
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -303,6 +661,63 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_virtual_service_summary_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-service statistics",
+						"description": "获取虚拟服务概览情况",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-service-summary"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-service-summary 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-service-summary的响应数据",
+						"value": {
+							"virtual_service_count": {
+								"total": 0,
+								"state": {
+									"enable": 0,
+									"disable": 0
+								},
+								"health": {
+									"normal": 0,
+									"failure": 0,
+									"alert": 0
+								}
+							},
+							"pool_count": {
+								"total": 0,
+								"health": {
+									"normal": 0,
+									"failure": 0,
+									"busy": 0,
+									"alert": 0
+								}
+							},
+							"connection": null,
+							"connection_established": null,
+							"connection_rate": null,
+							"ssl_connection_rate": null,
+							"client_connection": null,
+							"server_connection": null,
+							"pool_connection_usage": null,
+							"pool_connection_rate": null,
+							"maximum_connection": null,
+							"total_connection": null,
+							"http_request_rate": null,
+							"total_http_request": null,
+							"http_cache_hit": null,
+							"http_cache_used": null,
+							"http_cache_response_data": null,
+							"http_compression_saving_ratio": null,
+							"http_compression_data_reduction": null,
+							"upstream_throughput": null,
+							"downstream_throughput": null,
+							"general_throughput": null
+						}
 					}
 				}
 			}
@@ -334,6 +749,28 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_virtual_service_ddos"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get virtual-service summary statistics",
+						"description": "获取ddos服务概览情况",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-service-summary/ddos"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-service-summary/ddos 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-service-summary/ddos的响应数据",
+						"value": {
+							"attack_sources": [
+								{
+									"address": "example_string",
+									"times": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -363,6 +800,42 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_virtual_service_ddos_log_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get virtual-service summary statistics",
+						"description": "获取ddos-log服务概况",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-service-summary/ddos-log"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-service-summary/ddos-log 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-service-summary/ddos-log的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"serial": 1,
+									"timestamp": 0,
+									"virtual_service": "vs_http_80",
+									"source_address": "10.2.1.34",
+									"attack_type": "Flood",
+									"detail": "",
+									"target_url": "200.200.144.1/",
+									"count": 6123,
+									"action": "WARN-AND-BLOCK"
+								}
+							]
+						}
 					}
 				}
 			}
@@ -397,6 +870,33 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-service statistics",
+						"description": "获取虚拟服务概览情况",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-service-summary/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-service-summary/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-service-summary/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -429,6 +929,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend_multiple_items"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-service statistics combine-items",
+						"description": "获取虚拟服务趋势值",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/virtual-service-summary/combine-items"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/virtual-service-summary/combine-items 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/virtual-service-summary/combine-items的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"timestamp": 0,
+							"items": [
+								{
+									"item": "example_string",
+									"feature": "DISABLE",
+									"unit": "BIT-PER-SECOND",
+									"values": [
+										0
+									],
+									"additional_data": [
+										null
+									]
+								}
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
 					}
 				}
 			}
@@ -622,7 +1155,7 @@ module.exports ={
 				},
 				"service": {
 					"description": "虚拟服务类型",
-					"$ref": "/api/slb/virtual-service.yaml#/definitions/config.service_type"
+					"$ref": "/api/{common}.yaml#/definitions/config.service_type"
 				},
 				"health": {
 					"description": "健康状态（NORMAL-正常/FAILURE-故障/ALERT-告警）",
@@ -814,7 +1347,7 @@ module.exports ={
 				},
 				"service": {
 					"description": "虚拟服务类型",
-					"$ref": "/api/slb/virtual-service.yaml#/definitions/config.service_type"
+					"$ref": "/api/{common}.yaml#/definitions/config.service_type"
 				},
 				"vips": {
 					"type": "array",

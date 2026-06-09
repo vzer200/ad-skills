@@ -65,6 +65,84 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_client_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all ssl-client",
+						"description": "查看当前已有的ssl卸载策略配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/ssl-client/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/ssl-client/ 响应",
+						"description": "返回GET /api/ad/v3/slb/ssl-client/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "ebank.test.com_ssl_offload",
+									"description": "example_string",
+									"service": "SSL-OFFLOAD-HTTPS",
+									"certificate_ecdsa": "www_test_com",
+									"certificate_rsa": "www_test_com",
+									"certificate_gm_sign": "www_test_com",
+									"certificate_gm_encrypt": "www_test_com",
+									"protocols": [
+										"SSLV3"
+									],
+									"protocol_disabled_policy": "DENY",
+									"protocol_disabled_http_response": "302_redirect",
+									"cipher_suites": [
+										"TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+									],
+									"signature_algorithms": {
+										"state": "DEFAULT",
+										"signature_algorithms_list": [
+											"SHA256RSA"
+										]
+									},
+									"sni": "bank.abc.com",
+									"session_resume": {
+										"state": "ENABLE",
+										"number": 2000,
+										"timeout": 1800
+									},
+									"session_ticket": "ENABLE",
+									"peer_auth_state": "DISABLE",
+									"peer_auth_certificate": "REQUIRED",
+									"peer_auth_url": "ALL",
+									"peer_auth_url_rules": [
+										{
+											"url_pattern_wildcard": "/ebank*",
+											"url_pattern_case_sensitive": "DISABLE",
+											"action": "AUTH"
+										}
+									],
+									"peer_auth_chain_depth": 9,
+									"peer_auth_ca": "ca_cert",
+									"peer_auth_crls": [
+										"crl_web_1"
+									],
+									"peer_auth_fail_rules": [
+										{
+											"reason": "CERT_HAS_EXPIRED",
+											"action": "DENY",
+											"http_response": "302_redirect"
+										}
+									],
+									"ems_state": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +160,117 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_client_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ssl-client",
+						"description": "新建一个ssl卸载策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/ssl-client/",
+							"body": {
+								"name": "AI_ebank.test.com_ssl_offload_A",
+								"service": "SSL-OFFLOAD-HTTPS",
+								"protocols": [
+									"TLS1.2",
+									"TLS1.3"
+								],
+								"protocol_disabled_policy": "DENY",
+								"cipher_suites": [
+									"TLS1.3_AES_128_GCM_SHA256",
+									"TLS1.3_AES_256_GCM_SHA384",
+									"TLS1.3_CHACHA20_POLY1305_SHA256",
+									"TLS1.3_AES_128_CCM_SHA256",
+									"TLS1.3_AES_128_CCM_8_SHA256",
+									"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+									"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+									"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+									"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+									"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+									"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+									"TLS_RSA_WITH_AES_128_GCM_SHA256",
+									"TLS_RSA_WITH_AES_256_GCM_SHA384",
+									"TLS_RSA_WITH_AES_128_CBC_SHA256",
+									"TLS_RSA_WITH_AES_256_CBC_SHA256"
+								],
+								"session_ticket": "ENABLE",
+								"peer_auth_state": "DISABLE",
+								"peer_auth_certificate": "REQUIRED",
+								"peer_auth_url": "ALL",
+								"peer_auth_url_rules": [
+									{
+										"url_pattern_wildcard": "*",
+										"action": "NO-AUTH"
+									}
+								],
+								"peer_auth_chain_depth": 9,
+								"peer_auth_fail_rules": [
+									{
+										"reason": "DEFAULT",
+										"action": "DENY"
+									}
+								],
+								"ems_state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/ssl-client/ 响应",
+						"description": "返回POST /api/ad/v3/slb/ssl-client/的响应数据",
+						"value": {
+							"name": "AI_ebank.test.com_ssl_offload_A",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"certificate_ecdsa": "www_test_com",
+							"certificate_rsa": "www_test_com",
+							"certificate_gm_sign": "www_test_com",
+							"certificate_gm_encrypt": "www_test_com",
+							"protocols": [
+								"SSLV3"
+							],
+							"protocol_disabled_policy": "DENY",
+							"protocol_disabled_http_response": "302_redirect",
+							"cipher_suites": [
+								"TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+							],
+							"signature_algorithms": {
+								"state": "DEFAULT",
+								"signature_algorithms_list": [
+									"SHA256RSA"
+								]
+							},
+							"sni": "bank.abc.com",
+							"session_resume": {
+								"state": "ENABLE",
+								"number": 2000,
+								"timeout": 1800
+							},
+							"session_ticket": "ENABLE",
+							"peer_auth_state": "DISABLE",
+							"peer_auth_certificate": "REQUIRED",
+							"peer_auth_url": "ALL",
+							"peer_auth_url_rules": [
+								{
+									"url_pattern_wildcard": "/ebank*",
+									"url_pattern_case_sensitive": "DISABLE",
+									"action": "AUTH"
+								}
+							],
+							"peer_auth_chain_depth": 9,
+							"peer_auth_ca": "ca_cert",
+							"peer_auth_crls": [
+								"crl_web_1"
+							],
+							"peer_auth_fail_rules": [
+								{
+									"reason": "CERT_HAS_EXPIRED",
+									"action": "DENY",
+									"http_response": "302_redirect"
+								}
+							],
+							"ems_state": "ENABLE"
+						}
 					}
 				}
 			},
@@ -130,6 +319,73 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_client_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific ssl-client",
+						"description": "查看指定的ssl卸载策略配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/ssl-client/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/ssl-client/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/ssl-client/{name}的响应数据",
+						"value": {
+							"name": "ebank.test.com_ssl_offload",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"certificate_ecdsa": "www_test_com",
+							"certificate_rsa": "www_test_com",
+							"certificate_gm_sign": "www_test_com",
+							"certificate_gm_encrypt": "www_test_com",
+							"protocols": [
+								"SSLV3"
+							],
+							"protocol_disabled_policy": "DENY",
+							"protocol_disabled_http_response": "302_redirect",
+							"cipher_suites": [
+								"TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+							],
+							"signature_algorithms": {
+								"state": "DEFAULT",
+								"signature_algorithms_list": [
+									"SHA256RSA"
+								]
+							},
+							"sni": "bank.abc.com",
+							"session_resume": {
+								"state": "ENABLE",
+								"number": 2000,
+								"timeout": 1800
+							},
+							"session_ticket": "ENABLE",
+							"peer_auth_state": "DISABLE",
+							"peer_auth_certificate": "REQUIRED",
+							"peer_auth_url": "ALL",
+							"peer_auth_url_rules": [
+								{
+									"url_pattern_wildcard": "/ebank*",
+									"url_pattern_case_sensitive": "DISABLE",
+									"action": "AUTH"
+								}
+							],
+							"peer_auth_chain_depth": 9,
+							"peer_auth_ca": "ca_cert",
+							"peer_auth_crls": [
+								"crl_web_1"
+							],
+							"peer_auth_fail_rules": [
+								{
+									"reason": "CERT_HAS_EXPIRED",
+									"action": "DENY",
+									"http_response": "302_redirect"
+								}
+							],
+							"ems_state": "ENABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +405,117 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_client_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ssl-client",
+						"description": "新建指定的ssl卸载策略配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/ssl-client/{name}",
+							"body": {
+								"name": "AI_ebank.test.com_ssl_offload_B",
+								"service": "SSL-OFFLOAD-HTTPS",
+								"protocols": [
+									"TLS1.2",
+									"TLS1.3"
+								],
+								"protocol_disabled_policy": "DENY",
+								"cipher_suites": [
+									"TLS1.3_AES_128_GCM_SHA256",
+									"TLS1.3_AES_256_GCM_SHA384",
+									"TLS1.3_CHACHA20_POLY1305_SHA256",
+									"TLS1.3_AES_128_CCM_SHA256",
+									"TLS1.3_AES_128_CCM_8_SHA256",
+									"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+									"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+									"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+									"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+									"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+									"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+									"TLS_RSA_WITH_AES_128_GCM_SHA256",
+									"TLS_RSA_WITH_AES_256_GCM_SHA384",
+									"TLS_RSA_WITH_AES_128_CBC_SHA256",
+									"TLS_RSA_WITH_AES_256_CBC_SHA256"
+								],
+								"session_ticket": "ENABLE",
+								"peer_auth_state": "DISABLE",
+								"peer_auth_certificate": "REQUIRED",
+								"peer_auth_url": "ALL",
+								"peer_auth_url_rules": [
+									{
+										"url_pattern_wildcard": "*",
+										"action": "NO-AUTH"
+									}
+								],
+								"peer_auth_chain_depth": 9,
+								"peer_auth_fail_rules": [
+									{
+										"reason": "DEFAULT",
+										"action": "DENY"
+									}
+								],
+								"ems_state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/ssl-client/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/ssl-client/{name}的响应数据",
+						"value": {
+							"name": "AI_ebank.test.com_ssl_offload_B",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"certificate_ecdsa": "www_test_com",
+							"certificate_rsa": "www_test_com",
+							"certificate_gm_sign": "www_test_com",
+							"certificate_gm_encrypt": "www_test_com",
+							"protocols": [
+								"SSLV3"
+							],
+							"protocol_disabled_policy": "DENY",
+							"protocol_disabled_http_response": "302_redirect",
+							"cipher_suites": [
+								"TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+							],
+							"signature_algorithms": {
+								"state": "DEFAULT",
+								"signature_algorithms_list": [
+									"SHA256RSA"
+								]
+							},
+							"sni": "bank.abc.com",
+							"session_resume": {
+								"state": "ENABLE",
+								"number": 2000,
+								"timeout": 1800
+							},
+							"session_ticket": "ENABLE",
+							"peer_auth_state": "DISABLE",
+							"peer_auth_certificate": "REQUIRED",
+							"peer_auth_url": "ALL",
+							"peer_auth_url_rules": [
+								{
+									"url_pattern_wildcard": "/ebank*",
+									"url_pattern_case_sensitive": "DISABLE",
+									"action": "AUTH"
+								}
+							],
+							"peer_auth_chain_depth": 9,
+							"peer_auth_ca": "ca_cert",
+							"peer_auth_crls": [
+								"crl_web_1"
+							],
+							"peer_auth_fail_rules": [
+								{
+									"reason": "CERT_HAS_EXPIRED",
+									"action": "DENY",
+									"http_response": "302_redirect"
+								}
+							],
+							"ems_state": "ENABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +533,117 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_client_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific ssl-client",
+						"description": "修改指定的ssl卸载策略配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/ssl-client/{name}",
+							"body": {
+								"name": "ebank.test.com_ssl_offload",
+								"service": "SSL-OFFLOAD-HTTPS",
+								"protocols": [
+									"TLS1.2",
+									"TLS1.3"
+								],
+								"protocol_disabled_policy": "DENY",
+								"cipher_suites": [
+									"TLS1.3_AES_128_GCM_SHA256",
+									"TLS1.3_AES_256_GCM_SHA384",
+									"TLS1.3_CHACHA20_POLY1305_SHA256",
+									"TLS1.3_AES_128_CCM_SHA256",
+									"TLS1.3_AES_128_CCM_8_SHA256",
+									"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+									"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+									"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+									"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+									"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+									"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+									"TLS_RSA_WITH_AES_128_GCM_SHA256",
+									"TLS_RSA_WITH_AES_256_GCM_SHA384",
+									"TLS_RSA_WITH_AES_128_CBC_SHA256",
+									"TLS_RSA_WITH_AES_256_CBC_SHA256"
+								],
+								"session_ticket": "ENABLE",
+								"peer_auth_state": "DISABLE",
+								"peer_auth_certificate": "REQUIRED",
+								"peer_auth_url": "ALL",
+								"peer_auth_url_rules": [
+									{
+										"url_pattern_wildcard": "*",
+										"action": "NO-AUTH"
+									}
+								],
+								"peer_auth_chain_depth": 9,
+								"peer_auth_fail_rules": [
+									{
+										"reason": "DEFAULT",
+										"action": "DENY"
+									}
+								],
+								"ems_state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/ssl-client/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/ssl-client/{name}的响应数据",
+						"value": {
+							"name": "ebank.test.com_ssl_offload",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"certificate_ecdsa": "www_test_com",
+							"certificate_rsa": "www_test_com",
+							"certificate_gm_sign": "www_test_com",
+							"certificate_gm_encrypt": "www_test_com",
+							"protocols": [
+								"SSLV3"
+							],
+							"protocol_disabled_policy": "DENY",
+							"protocol_disabled_http_response": "302_redirect",
+							"cipher_suites": [
+								"TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+							],
+							"signature_algorithms": {
+								"state": "DEFAULT",
+								"signature_algorithms_list": [
+									"SHA256RSA"
+								]
+							},
+							"sni": "bank.abc.com",
+							"session_resume": {
+								"state": "ENABLE",
+								"number": 2000,
+								"timeout": 1800
+							},
+							"session_ticket": "ENABLE",
+							"peer_auth_state": "DISABLE",
+							"peer_auth_certificate": "REQUIRED",
+							"peer_auth_url": "ALL",
+							"peer_auth_url_rules": [
+								{
+									"url_pattern_wildcard": "/ebank*",
+									"url_pattern_case_sensitive": "DISABLE",
+									"action": "AUTH"
+								}
+							],
+							"peer_auth_chain_depth": 9,
+							"peer_auth_ca": "ca_cert",
+							"peer_auth_crls": [
+								"crl_web_1"
+							],
+							"peer_auth_fail_rules": [
+								{
+									"reason": "CERT_HAS_EXPIRED",
+									"action": "DENY",
+									"http_response": "302_redirect"
+								}
+							],
+							"ems_state": "ENABLE"
+						}
 					}
 				}
 			},
@@ -185,6 +663,117 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_client_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific ssl-client",
+						"description": "修改指定的ssl卸载策略配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/ssl-client/{name}",
+							"body": {
+								"name": "ebank.test.com_ssl_offload",
+								"service": "SSL-OFFLOAD-HTTPS",
+								"protocols": [
+									"TLS1.2",
+									"TLS1.3"
+								],
+								"protocol_disabled_policy": "DENY",
+								"cipher_suites": [
+									"TLS1.3_AES_128_GCM_SHA256",
+									"TLS1.3_AES_256_GCM_SHA384",
+									"TLS1.3_CHACHA20_POLY1305_SHA256",
+									"TLS1.3_AES_128_CCM_SHA256",
+									"TLS1.3_AES_128_CCM_8_SHA256",
+									"TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+									"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+									"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+									"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+									"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+									"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+									"TLS_RSA_WITH_AES_128_GCM_SHA256",
+									"TLS_RSA_WITH_AES_256_GCM_SHA384",
+									"TLS_RSA_WITH_AES_128_CBC_SHA256",
+									"TLS_RSA_WITH_AES_256_CBC_SHA256"
+								],
+								"session_ticket": "ENABLE",
+								"peer_auth_state": "DISABLE",
+								"peer_auth_certificate": "REQUIRED",
+								"peer_auth_url": "ALL",
+								"peer_auth_url_rules": [
+									{
+										"url_pattern_wildcard": "*",
+										"action": "NO-AUTH"
+									}
+								],
+								"peer_auth_chain_depth": 9,
+								"peer_auth_fail_rules": [
+									{
+										"reason": "DEFAULT",
+										"action": "DENY"
+									}
+								],
+								"ems_state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/ssl-client/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/ssl-client/{name}的响应数据",
+						"value": {
+							"name": "ebank.test.com_ssl_offload",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"certificate_ecdsa": "www_test_com",
+							"certificate_rsa": "www_test_com",
+							"certificate_gm_sign": "www_test_com",
+							"certificate_gm_encrypt": "www_test_com",
+							"protocols": [
+								"SSLV3"
+							],
+							"protocol_disabled_policy": "DENY",
+							"protocol_disabled_http_response": "302_redirect",
+							"cipher_suites": [
+								"TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+							],
+							"signature_algorithms": {
+								"state": "DEFAULT",
+								"signature_algorithms_list": [
+									"SHA256RSA"
+								]
+							},
+							"sni": "bank.abc.com",
+							"session_resume": {
+								"state": "ENABLE",
+								"number": 2000,
+								"timeout": 1800
+							},
+							"session_ticket": "ENABLE",
+							"peer_auth_state": "DISABLE",
+							"peer_auth_certificate": "REQUIRED",
+							"peer_auth_url": "ALL",
+							"peer_auth_url_rules": [
+								{
+									"url_pattern_wildcard": "/ebank*",
+									"url_pattern_case_sensitive": "DISABLE",
+									"action": "AUTH"
+								}
+							],
+							"peer_auth_chain_depth": 9,
+							"peer_auth_ca": "ca_cert",
+							"peer_auth_crls": [
+								"crl_web_1"
+							],
+							"peer_auth_fail_rules": [
+								{
+									"reason": "CERT_HAS_EXPIRED",
+									"action": "DENY",
+									"http_response": "302_redirect"
+								}
+							],
+							"ems_state": "ENABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +786,73 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_client_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific ssl-client",
+						"description": "删除指定的ssl卸载策略配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/ssl-client/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/ssl-client/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/ssl-client/{name}的响应数据",
+						"value": {
+							"name": "ebank.test.com_ssl_offload",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"certificate_ecdsa": "www_test_com",
+							"certificate_rsa": "www_test_com",
+							"certificate_gm_sign": "www_test_com",
+							"certificate_gm_encrypt": "www_test_com",
+							"protocols": [
+								"SSLV3"
+							],
+							"protocol_disabled_policy": "DENY",
+							"protocol_disabled_http_response": "302_redirect",
+							"cipher_suites": [
+								"TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+							],
+							"signature_algorithms": {
+								"state": "DEFAULT",
+								"signature_algorithms_list": [
+									"SHA256RSA"
+								]
+							},
+							"sni": "bank.abc.com",
+							"session_resume": {
+								"state": "ENABLE",
+								"number": 2000,
+								"timeout": 1800
+							},
+							"session_ticket": "ENABLE",
+							"peer_auth_state": "DISABLE",
+							"peer_auth_certificate": "REQUIRED",
+							"peer_auth_url": "ALL",
+							"peer_auth_url_rules": [
+								{
+									"url_pattern_wildcard": "/ebank*",
+									"url_pattern_case_sensitive": "DISABLE",
+									"action": "AUTH"
+								}
+							],
+							"peer_auth_chain_depth": 9,
+							"peer_auth_ca": "ca_cert",
+							"peer_auth_crls": [
+								"crl_web_1"
+							],
+							"peer_auth_fail_rules": [
+								{
+									"reason": "CERT_HAS_EXPIRED",
+									"action": "DENY",
+									"http_response": "302_redirect"
+								}
+							],
+							"ems_state": "ENABLE"
+						}
 					}
 				}
 			}
@@ -375,9 +1031,6 @@ module.exports ={
 					"minItems": 1,
 					"maxItems": 6,
 					"default": [
-						"SSLV3",
-						"TLS1.0",
-						"TLS1.1",
 						"TLS1.2",
 						"TLS1.3"
 					]
@@ -424,7 +1077,80 @@ module.exports ={
 						"TLS1_TXT_ECDHE_SM2_WITH_SM4_128_CBC_SM3"
 					],
 					"minItems": 1,
-					"maxItems": 38
+					"maxItems": 40
+				},
+				"signature_algorithms": {
+					"type": "object",
+					"description": "签名算法",
+					"properties": {
+						"state": {
+							"type": "string",
+							"description": "签名算法指定或默认",
+							"__format__description__": "合法输入为SPECIFIED(指定)和DEFAULT(默认)",
+							"title": "签名算法状态",
+							"enum": [
+								"SPECIFIED",
+								"DEFAULT"
+							],
+							"default": "DEFAULT",
+							"example": "DEFAULT"
+						},
+						"signature_algorithms_list": {
+							"type": "array",
+							"description": "签名算法集合",
+							"title": "签名算法集合",
+							"items": {
+								"type": "string",
+								"description": "单个签名算法",
+								"enum": [
+									"SHA256RSA",
+									"SHA384RSA",
+									"SHA512RSA",
+									"SHA224RSA",
+									"SHA1RSA",
+									"ECDSA_SECP256R1_SHA256",
+									"ECDSA_SECP384R1_SHA384",
+									"ECDSA_SECP521R1_SHA512",
+									"SHA224ECDSA",
+									"SHA1ECDSA",
+									"ED25519",
+									"ED448",
+									"RSA_PSS_RSAE_SHA256",
+									"RSA_PSS_RSAE_SHA384",
+									"RSA_PSS_RSAE_SHA512",
+									"RSA_PSS_PSS_SHA256",
+									"RSA_PSS_PSS_SHA384",
+									"RSA_PSS_PSS_SHA512",
+									"SM2_SM3"
+								]
+							},
+							"default": [
+								"SHA256RSA",
+								"SHA384RSA",
+								"SHA512RSA",
+								"SHA224RSA",
+								"SHA1RSA",
+								"ECDSA_SECP256R1_SHA256",
+								"ECDSA_SECP384R1_SHA384",
+								"ECDSA_SECP521R1_SHA512",
+								"SHA224ECDSA",
+								"SHA1ECDSA",
+								"ED25519",
+								"ED448",
+								"RSA_PSS_RSAE_SHA256",
+								"RSA_PSS_RSAE_SHA384",
+								"RSA_PSS_RSAE_SHA512",
+								"RSA_PSS_PSS_SHA256",
+								"RSA_PSS_PSS_SHA384",
+								"RSA_PSS_PSS_SHA512",
+								"SM2_SM3"
+							],
+							"minItems": 1,
+							"maxItems": 19,
+							"uniqueItems": true,
+							"__validate__depend__on__": "signature_algorithms.state === 'SPECIFIED'"
+						}
+					}
 				},
 				"sni": {
 					"description": "可选参数;指定SNI备用名称",
@@ -599,6 +1325,7 @@ module.exports ={
 									"CERT_HAS_EXPIRED",
 									"CERT_CHAIN_TOO_LONG",
 									"CERTIFICATE_REVOKED",
+									"CERT_INVALID_PURPOSE",
 									"CERT_IS_NOT_TRUSTED",
 									"X509_V_ERR_UNHANDLED_CRITICAL_EXTENSION",
 									"X509_V_ERR_NO_CERTIFICATE",
@@ -632,6 +1359,16 @@ module.exports ={
 						}
 					],
 					"maxItems": 8
+				},
+				"ems_state": {
+					"type": "string",
+					"description": "拓展主密钥启用或禁用",
+					"enum": [
+						"ENABLE",
+						"DISABLE"
+					],
+					"default": "ENABLE",
+					"example": "ENABLE"
 				}
 			}
 		},
@@ -675,7 +1412,9 @@ module.exports ={
 				"TLS1.3_AES_128_CCM_SHA256",
 				"TLS1.3_AES_128_CCM_8_SHA256",
 				"TLS1_TXT_ECC_SM2_WITH_SM4_128_CBC_SM3",
-				"TLS1_TXT_ECDHE_SM2_WITH_SM4_128_CBC_SM3"
+				"TLS1_TXT_ECDHE_SM2_WITH_SM4_128_CBC_SM3",
+				"TLS1_TXT_ECDHE_SM2_WITH_SM4_128_GCM_SM3",
+				"TLS1_TXT_ECC_SM2_WITH_SM4_128_GCM_SM3"
 			]
 		}
 	}

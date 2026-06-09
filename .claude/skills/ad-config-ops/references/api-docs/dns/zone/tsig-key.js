@@ -65,6 +65,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tsig_key_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all tsig-key",
+						"description": "查看TSIG密钥配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/tsig-key/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/ 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "tsigkey-1",
+									"algorithm": "HMAC-SHA256",
+									"key": "example_string"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +112,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_tsig_key_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new tsig-key",
+						"description": "创建一个TSIG密钥",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/tsig-key/",
+							"body": {
+								"name": "AI_tsigkey-1_A",
+								"algorithm": "HMAC-SHA256",
+								"key": "example_string"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/ 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/的响应数据",
+						"value": {
+							"name": "AI_tsigkey-1_A",
+							"algorithm": "HMAC-SHA256",
+							"key": "example_string"
+						}
 					}
 				}
 			},
@@ -140,6 +194,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tsig_key_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "generate tsig-key key",
+						"description": "生成一个TSIG密钥",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/debug/dns/zone/{dns_config_area}/tsig-key/generate",
+							"body": {
+								"name": "AI_tsigkey-1_A",
+								"algorithm": "HMAC-SHA256",
+								"key": "example_string"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/debug/dns/zone/{dns_config_area}/tsig-key/generate 响应",
+						"description": "返回POST /api/ad/v4/debug/dns/zone/{dns_config_area}/tsig-key/generate的响应数据",
+						"value": {
+							"name": "AI_tsigkey-1_A",
+							"algorithm": "HMAC-SHA256",
+							"key": "example_string"
+						}
+					}
 				}
 			}
 		},
@@ -173,6 +251,25 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tsig_key_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific tsig-key",
+						"description": "查看指定已有的TSIG密钥",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name}的响应数据",
+						"value": {
+							"name": "tsigkey-1",
+							"algorithm": "HMAC-SHA256",
+							"key": "example_string"
+						}
+					}
 				}
 			},
 			"post": {
@@ -192,6 +289,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tsig_key_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new tsig-key",
+						"description": "修改指定已有的TSIG密钥",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name}",
+							"body": {
+								"name": "AI_tsigkey-1_B",
+								"algorithm": "HMAC-SHA256",
+								"key": "example_string"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name}的响应数据",
+						"value": {
+							"name": "AI_tsigkey-1_B",
+							"algorithm": "HMAC-SHA256",
+							"key": "example_string"
+						}
+					}
 				}
 			},
 			"put": {
@@ -209,6 +330,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_tsig_key_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific tsig-key",
+						"description": "修改指定已有的TSIG密钥",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name}",
+							"body": {
+								"name": "tsigkey-1",
+								"algorithm": "HMAC-SHA256",
+								"key": "example_string"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name}的响应数据",
+						"value": {
+							"name": "tsigkey-1",
+							"algorithm": "HMAC-SHA256",
+							"key": "example_string"
+						}
 					}
 				}
 			},
@@ -228,6 +373,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_tsig_key_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific tsig-key",
+						"description": "增量修改指定已有的TSIG密钥",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name}",
+							"body": {
+								"name": "tsigkey-1",
+								"algorithm": "HMAC-SHA256",
+								"key": "example_string"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name}的响应数据",
+						"value": {
+							"name": "tsigkey-1",
+							"algorithm": "HMAC-SHA256",
+							"key": "example_string"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -240,6 +409,25 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_tsig_key_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific tsig-key",
+						"description": "删除指定已有的TSIG密钥",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/zone/{dns_config_area}/tsig-key/{name}的响应数据",
+						"value": {
+							"name": "tsigkey-1",
+							"algorithm": "HMAC-SHA256",
+							"key": "example_string"
+						}
 					}
 				}
 			}

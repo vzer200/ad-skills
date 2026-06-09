@@ -62,6 +62,44 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ospfv3_interface_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all ospfv3-interface",
+						"description": "获取ospfv3接口配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/ospfv3-interface/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/ospfv3-interface/ 响应",
+						"description": "返回GET /api/ad/v3/net/ospfv3-interface/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "Lan_1",
+									"description": "example_string",
+									"link": "Lan_1",
+									"hello_interval": 10,
+									"retransmit_interval": 5,
+									"dead_interval": 40,
+									"transmit_delay": 1,
+									"priority": 1,
+									"cost": 10,
+									"instance_id": 0,
+									"area_id": "6.6.6.6"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +117,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ospfv3_interface_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ospfv3-interface",
+						"description": "新建ospfv3接口配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/ospfv3-interface/",
+							"body": {
+								"name": "AI_Lan_1_A",
+								"link": "Lan_1",
+								"hello_interval": 10,
+								"retransmit_interval": 5,
+								"dead_interval": 40,
+								"transmit_delay": 1,
+								"priority": 1,
+								"cost": 10,
+								"instance_id": 0,
+								"area_id": "6.6.6.6"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/ospfv3-interface/ 响应",
+						"description": "返回POST /api/ad/v3/net/ospfv3-interface/的响应数据",
+						"value": {
+							"name": "AI_Lan_1_A",
+							"description": "example_string",
+							"link": "Lan_1",
+							"hello_interval": 10,
+							"retransmit_interval": 5,
+							"dead_interval": 40,
+							"transmit_delay": 1,
+							"priority": 1,
+							"cost": 10,
+							"instance_id": 0,
+							"area_id": "6.6.6.6"
+						}
 					}
 				}
 			},
@@ -98,6 +175,56 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ospfv3_interface_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify ospfv3-interface",
+						"description": "修改ospfv3接口配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/ospfv3-interface/",
+							"body": {
+								"name": "Lan_1",
+								"link": "Lan_1",
+								"hello_interval": 10,
+								"retransmit_interval": 5,
+								"dead_interval": 40,
+								"transmit_delay": 1,
+								"priority": 1,
+								"cost": 10,
+								"instance_id": 0,
+								"area_id": "6.6.6.6"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/ospfv3-interface/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/ospfv3-interface/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "Lan_1",
+									"description": "example_string",
+									"link": "Lan_1",
+									"hello_interval": 10,
+									"retransmit_interval": 5,
+									"dead_interval": 40,
+									"transmit_delay": 1,
+									"priority": 1,
+									"cost": 10,
+									"instance_id": 0,
+									"area_id": "6.6.6.6"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -151,6 +278,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ospfv3_interface_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific ospfv3-interface",
+						"description": "获取ospfv3接口配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/ospfv3-interface/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/ospfv3-interface/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/ospfv3-interface/{name}的响应数据",
+						"value": {
+							"name": "Lan_1",
+							"description": "example_string",
+							"link": "Lan_1",
+							"hello_interval": 10,
+							"retransmit_interval": 5,
+							"dead_interval": 40,
+							"transmit_delay": 1,
+							"priority": 1,
+							"cost": 10,
+							"instance_id": 0,
+							"area_id": "6.6.6.6"
+						}
+					}
 				}
 			},
 			"post": {
@@ -170,6 +324,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ospfv3_interface_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ospfv3-interface",
+						"description": "新建ospfv3接口配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/ospfv3-interface/{name}",
+							"body": {
+								"name": "AI_Lan_1_B",
+								"link": "Lan_1",
+								"hello_interval": 10,
+								"retransmit_interval": 5,
+								"dead_interval": 40,
+								"transmit_delay": 1,
+								"priority": 1,
+								"cost": 10,
+								"instance_id": 0,
+								"area_id": "6.6.6.6"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/ospfv3-interface/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/ospfv3-interface/{name}的响应数据",
+						"value": {
+							"name": "AI_Lan_1_B",
+							"description": "example_string",
+							"link": "Lan_1",
+							"hello_interval": 10,
+							"retransmit_interval": 5,
+							"dead_interval": 40,
+							"transmit_delay": 1,
+							"priority": 1,
+							"cost": 10,
+							"instance_id": 0,
+							"area_id": "6.6.6.6"
+						}
+					}
 				}
 			},
 			"put": {
@@ -187,6 +380,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ospfv3_interface_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific ospfv3-interface",
+						"description": "修改ospfv3接口配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/ospfv3-interface/{name}",
+							"body": {
+								"name": "Lan_1",
+								"link": "Lan_1",
+								"hello_interval": 10,
+								"retransmit_interval": 5,
+								"dead_interval": 40,
+								"transmit_delay": 1,
+								"priority": 1,
+								"cost": 10,
+								"instance_id": 0,
+								"area_id": "6.6.6.6"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/ospfv3-interface/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/ospfv3-interface/{name}的响应数据",
+						"value": {
+							"name": "Lan_1",
+							"description": "example_string",
+							"link": "Lan_1",
+							"hello_interval": 10,
+							"retransmit_interval": 5,
+							"dead_interval": 40,
+							"transmit_delay": 1,
+							"priority": 1,
+							"cost": 10,
+							"instance_id": 0,
+							"area_id": "6.6.6.6"
+						}
 					}
 				}
 			},
@@ -206,6 +438,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ospfv3_interface_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific ospfv3-interface",
+						"description": "修改ospfv3接口配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/ospfv3-interface/{name}",
+							"body": {
+								"name": "Lan_1",
+								"link": "Lan_1",
+								"hello_interval": 10,
+								"retransmit_interval": 5,
+								"dead_interval": 40,
+								"transmit_delay": 1,
+								"priority": 1,
+								"cost": 10,
+								"instance_id": 0,
+								"area_id": "6.6.6.6"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/ospfv3-interface/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/ospfv3-interface/{name}的响应数据",
+						"value": {
+							"name": "Lan_1",
+							"description": "example_string",
+							"link": "Lan_1",
+							"hello_interval": 10,
+							"retransmit_interval": 5,
+							"dead_interval": 40,
+							"transmit_delay": 1,
+							"priority": 1,
+							"cost": 10,
+							"instance_id": 0,
+							"area_id": "6.6.6.6"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -218,6 +489,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ospfv3_interface_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific ospfv3-interface",
+						"description": "删除ospfv3接口配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/ospfv3-interface/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/ospfv3-interface/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/ospfv3-interface/{name}的响应数据",
+						"value": {
+							"name": "Lan_1",
+							"description": "example_string",
+							"link": "Lan_1",
+							"hello_interval": 10,
+							"retransmit_interval": 5,
+							"dead_interval": 40,
+							"transmit_delay": 1,
+							"priority": 1,
+							"cost": 10,
+							"instance_id": 0,
+							"area_id": "6.6.6.6"
+						}
 					}
 				}
 			}

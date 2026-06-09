@@ -62,6 +62,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_lldp_neighbors_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all lldp-neighbors table",
+						"description": "获取LLDP邻居信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/lldp-neighbors"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/lldp-neighbors 响应",
+						"description": "返回GET /api/ad/v3/stat/net/lldp-neighbors的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"device": "eth2",
+									"system_name": "localhost",
+									"chassis_id": "fe:fc:fe:7a:75:b1",
+									"system_descr": "sangfor_ad_os",
+									"mgmt_ips": "10.82.77.7",
+									"port_id": "fe:fc:fe:7a:75:b1",
+									"port_descr": "eth0",
+									"ttl": 120
+								}
+							]
+						}
+					}
 				}
 			}
 		}

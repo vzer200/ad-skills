@@ -62,6 +62,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_service_chain_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-chain statistics",
+						"description": "查看服务链状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/service-chain"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/service-chain 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/service-chain的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "chain_1",
+									"description": "example_string",
+									"health": "NORMAL",
+									"health_reason": "example_string"
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -92,6 +123,26 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_service_chain_detail"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-chain statistics",
+						"description": "查看指定服务链状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/service-chain/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/service-chain/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/service-chain/{name}的响应数据",
+						"value": {
+							"name": "chain_1",
+							"description": "example_string",
+							"health": "NORMAL",
+							"health_reason": "example_string"
+						}
+					}
 				}
 			}
 		},
@@ -118,6 +169,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_service_chain_summary"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-chain statistics",
+						"description": "查看服务链概览信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/service-chain-summary"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/service-chain-summary 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/service-chain-summary的响应数据",
+						"value": {
+							"service_chain_count": {
+								"total": 0,
+								"health": {
+									"normal": 0,
+									"failure": 0,
+									"alert": 0
+								}
+							}
+						}
 					}
 				}
 			}

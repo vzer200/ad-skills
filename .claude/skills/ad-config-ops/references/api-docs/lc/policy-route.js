@@ -62,6 +62,69 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_policy_route_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all policy-route",
+						"description": "查看智能路由配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/policy-route/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/policy-route/ 响应",
+						"description": "返回GET /api/ad/v3/lc/policy-route/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "game_telecom_rule",
+									"description": "example_string",
+									"default": "NON-DEFAULT",
+									"position": 1,
+									"type": "IPV4",
+									"state": "ENABLE",
+									"inbound_link": [
+										"WAN_1"
+									],
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"destination_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}",
+										"ref_isp_address_group": "{isp_address_group}",
+										"ref_domain_group": "foreign_domain_group",
+										"application_classification": [
+											"GAME"
+										]
+									},
+									"protocol": "ALL",
+									"protocol_number": 6,
+									"source_ports": "0",
+									"destination_ports": "0",
+									"tos": "0",
+									"schedule_links": [
+										"example_string"
+									],
+									"schedule_policy": "WEIGHTED-LEAST-FLOW",
+									"busy_protect": "DISABLE",
+									"schedule_failure_policy": "NEXT-ROUTE",
+									"time_plan": "NONE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +142,72 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_policy_route_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new policy-route",
+						"description": "新建智能路由配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/lc/policy-route/",
+							"body": {
+								"name": "AI_game_telecom_rule_A",
+								"default": "NON-DEFAULT",
+								"type": "IPV4",
+								"state": "ENABLE",
+								"protocol": "ALL",
+								"source_ports": "0",
+								"destination_ports": "0",
+								"tos": "0",
+								"schedule_policy": "WEIGHTED-LEAST-FLOW",
+								"busy_protect": "DISABLE",
+								"schedule_failure_policy": "NEXT-ROUTE",
+								"time_plan": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/lc/policy-route/ 响应",
+						"description": "返回POST /api/ad/v3/lc/policy-route/的响应数据",
+						"value": {
+							"name": "AI_game_telecom_rule_A",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"position": 1,
+							"type": "IPV4",
+							"state": "ENABLE",
+							"inbound_link": [
+								"WAN_1"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_domain_group": "foreign_domain_group",
+								"application_classification": [
+									"GAME"
+								]
+							},
+							"protocol": "ALL",
+							"protocol_number": 6,
+							"source_ports": "0",
+							"destination_ports": "0",
+							"tos": "0",
+							"schedule_links": [
+								"example_string"
+							],
+							"schedule_policy": "WEIGHTED-LEAST-FLOW",
+							"busy_protect": "DISABLE",
+							"schedule_failure_policy": "NEXT-ROUTE",
+							"time_plan": "NONE"
+						}
 					}
 				}
 			},
@@ -98,6 +227,83 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_policy_route_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify policy-route",
+						"description": "更新智能路由配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/lc/policy-route/",
+							"body": {
+								"name": "game_telecom_rule",
+								"default": "NON-DEFAULT",
+								"type": "IPV4",
+								"state": "ENABLE",
+								"protocol": "ALL",
+								"source_ports": "0",
+								"destination_ports": "0",
+								"tos": "0",
+								"schedule_policy": "WEIGHTED-LEAST-FLOW",
+								"busy_protect": "DISABLE",
+								"schedule_failure_policy": "NEXT-ROUTE",
+								"time_plan": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/lc/policy-route/ 响应",
+						"description": "返回PATCH /api/ad/v3/lc/policy-route/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "game_telecom_rule",
+									"description": "example_string",
+									"default": "NON-DEFAULT",
+									"position": 1,
+									"type": "IPV4",
+									"state": "ENABLE",
+									"inbound_link": [
+										"WAN_1"
+									],
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"destination_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}",
+										"ref_isp_address_group": "{isp_address_group}",
+										"ref_domain_group": "foreign_domain_group",
+										"application_classification": [
+											"GAME"
+										]
+									},
+									"protocol": "ALL",
+									"protocol_number": 6,
+									"source_ports": "0",
+									"destination_ports": "0",
+									"tos": "0",
+									"schedule_links": [
+										"example_string"
+									],
+									"schedule_policy": "WEIGHTED-LEAST-FLOW",
+									"busy_protect": "DISABLE",
+									"schedule_failure_policy": "NEXT-ROUTE",
+									"time_plan": "NONE"
+								}
+							]
+						}
 					}
 				}
 			}
@@ -129,6 +335,58 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_policy_route_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific policy-route",
+						"description": "查看智能路由配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/policy-route/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/policy-route/{name} 响应",
+						"description": "返回GET /api/ad/v3/lc/policy-route/{name}的响应数据",
+						"value": {
+							"name": "game_telecom_rule",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"position": 1,
+							"type": "IPV4",
+							"state": "ENABLE",
+							"inbound_link": [
+								"WAN_1"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_domain_group": "foreign_domain_group",
+								"application_classification": [
+									"GAME"
+								]
+							},
+							"protocol": "ALL",
+							"protocol_number": 6,
+							"source_ports": "0",
+							"destination_ports": "0",
+							"tos": "0",
+							"schedule_links": [
+								"example_string"
+							],
+							"schedule_policy": "WEIGHTED-LEAST-FLOW",
+							"busy_protect": "DISABLE",
+							"schedule_failure_policy": "NEXT-ROUTE",
+							"time_plan": "NONE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -148,6 +406,72 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_policy_route_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new policy-route",
+						"description": "新建智能路由配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/lc/policy-route/{name}",
+							"body": {
+								"name": "AI_game_telecom_rule_B",
+								"default": "NON-DEFAULT",
+								"type": "IPV4",
+								"state": "ENABLE",
+								"protocol": "ALL",
+								"source_ports": "0",
+								"destination_ports": "0",
+								"tos": "0",
+								"schedule_policy": "WEIGHTED-LEAST-FLOW",
+								"busy_protect": "DISABLE",
+								"schedule_failure_policy": "NEXT-ROUTE",
+								"time_plan": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/lc/policy-route/{name} 响应",
+						"description": "返回POST /api/ad/v3/lc/policy-route/{name}的响应数据",
+						"value": {
+							"name": "AI_game_telecom_rule_B",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"position": 1,
+							"type": "IPV4",
+							"state": "ENABLE",
+							"inbound_link": [
+								"WAN_1"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_domain_group": "foreign_domain_group",
+								"application_classification": [
+									"GAME"
+								]
+							},
+							"protocol": "ALL",
+							"protocol_number": 6,
+							"source_ports": "0",
+							"destination_ports": "0",
+							"tos": "0",
+							"schedule_links": [
+								"example_string"
+							],
+							"schedule_policy": "WEIGHTED-LEAST-FLOW",
+							"busy_protect": "DISABLE",
+							"schedule_failure_policy": "NEXT-ROUTE",
+							"time_plan": "NONE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -165,6 +489,72 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_policy_route_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific policy-route",
+						"description": "更新智能路由配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/lc/policy-route/{name}",
+							"body": {
+								"name": "game_telecom_rule",
+								"default": "NON-DEFAULT",
+								"type": "IPV4",
+								"state": "ENABLE",
+								"protocol": "ALL",
+								"source_ports": "0",
+								"destination_ports": "0",
+								"tos": "0",
+								"schedule_policy": "WEIGHTED-LEAST-FLOW",
+								"busy_protect": "DISABLE",
+								"schedule_failure_policy": "NEXT-ROUTE",
+								"time_plan": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/lc/policy-route/{name} 响应",
+						"description": "返回PUT /api/ad/v3/lc/policy-route/{name}的响应数据",
+						"value": {
+							"name": "game_telecom_rule",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"position": 1,
+							"type": "IPV4",
+							"state": "ENABLE",
+							"inbound_link": [
+								"WAN_1"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_domain_group": "foreign_domain_group",
+								"application_classification": [
+									"GAME"
+								]
+							},
+							"protocol": "ALL",
+							"protocol_number": 6,
+							"source_ports": "0",
+							"destination_ports": "0",
+							"tos": "0",
+							"schedule_links": [
+								"example_string"
+							],
+							"schedule_policy": "WEIGHTED-LEAST-FLOW",
+							"busy_protect": "DISABLE",
+							"schedule_failure_policy": "NEXT-ROUTE",
+							"time_plan": "NONE"
+						}
 					}
 				}
 			},
@@ -184,6 +574,72 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_policy_route_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific policy-route",
+						"description": "更新智能路由配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/lc/policy-route/{name}",
+							"body": {
+								"name": "game_telecom_rule",
+								"default": "NON-DEFAULT",
+								"type": "IPV4",
+								"state": "ENABLE",
+								"protocol": "ALL",
+								"source_ports": "0",
+								"destination_ports": "0",
+								"tos": "0",
+								"schedule_policy": "WEIGHTED-LEAST-FLOW",
+								"busy_protect": "DISABLE",
+								"schedule_failure_policy": "NEXT-ROUTE",
+								"time_plan": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/lc/policy-route/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/lc/policy-route/{name}的响应数据",
+						"value": {
+							"name": "game_telecom_rule",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"position": 1,
+							"type": "IPV4",
+							"state": "ENABLE",
+							"inbound_link": [
+								"WAN_1"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_domain_group": "foreign_domain_group",
+								"application_classification": [
+									"GAME"
+								]
+							},
+							"protocol": "ALL",
+							"protocol_number": 6,
+							"source_ports": "0",
+							"destination_ports": "0",
+							"tos": "0",
+							"schedule_links": [
+								"example_string"
+							],
+							"schedule_policy": "WEIGHTED-LEAST-FLOW",
+							"busy_protect": "DISABLE",
+							"schedule_failure_policy": "NEXT-ROUTE",
+							"time_plan": "NONE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -196,6 +652,58 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_policy_route_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific policy-route",
+						"description": "删除智能路由配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/lc/policy-route/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/lc/policy-route/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/lc/policy-route/{name}的响应数据",
+						"value": {
+							"name": "game_telecom_rule",
+							"description": "example_string",
+							"default": "NON-DEFAULT",
+							"position": 1,
+							"type": "IPV4",
+							"state": "ENABLE",
+							"inbound_link": [
+								"WAN_1"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_domain_group": "foreign_domain_group",
+								"application_classification": [
+									"GAME"
+								]
+							},
+							"protocol": "ALL",
+							"protocol_number": 6,
+							"source_ports": "0",
+							"destination_ports": "0",
+							"tos": "0",
+							"schedule_links": [
+								"example_string"
+							],
+							"schedule_policy": "WEIGHTED-LEAST-FLOW",
+							"busy_protect": "DISABLE",
+							"schedule_failure_policy": "NEXT-ROUTE",
+							"time_plan": "NONE"
+						}
 					}
 				}
 			}

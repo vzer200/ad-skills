@@ -45,7 +45,25 @@ module.exports ={
 					{
 						"$ref": "#/parameters/NTP-DEBUG"
 					}
-				]
+				],
+				"x-examples": {
+					"request": {
+						"summary": "ntp",
+						"description": "立即同步NTP时间",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/ntp",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/ntp 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/ntp的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

@@ -49,7 +49,24 @@ module.exports ={
 				],
 				"summary": "resume node on temporary failure or disable status",
 				"description": "恢复节点列表",
-				"operationId": "resume_node"
+				"operationId": "resume_node",
+				"x-examples": {
+					"request": {
+						"summary": "resume node on temporary failure or disable status",
+						"description": "恢复节点列表",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/slb/pool/{pool_name}/resume"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/slb/pool/{pool_name}/resume 响应",
+						"description": "返回POST /api/ad/v3/debug/slb/pool/{pool_name}/resume的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

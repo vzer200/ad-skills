@@ -62,6 +62,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_dnat_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dnat",
+						"description": "获取DNAT统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/dnat/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/dnat/ 响应",
+						"description": "返回GET /api/ad/v3/stat/net/dnat/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "dnat_wan",
+									"hit": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -91,6 +120,24 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_dnat_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dnat",
+						"description": "获取指定DNAT统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/dnat/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/dnat/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/net/dnat/{name}的响应数据",
+						"value": {
+							"name": "dnat_wan",
+							"hit": null
+						}
 					}
 				}
 			}

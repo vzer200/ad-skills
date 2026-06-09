@@ -51,6 +51,24 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_time_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get time",
+						"description": "获取当前系统时间",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/time"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/time 响应",
+						"description": "返回GET /api/ad/v3/sys/time的响应数据",
+						"value": {
+							"system_time": "2017-08-11 12:30:05",
+							"set_time": "2018-01-01 12:00:00"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +87,27 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_time_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "reset time",
+						"description": "修改当前系统时间",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/time",
+							"body": {
+								"set_time": "2018-01-01 12:00:00"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/time 响应",
+						"description": "返回PUT /api/ad/v3/sys/time的响应数据",
+						"value": {
+							"system_time": "2017-08-11 12:30:05",
+							"set_time": "2018-01-01 12:00:00"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +125,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_time_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify time",
+						"description": "修改当前系统时间",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/time",
+							"body": {
+								"set_time": "2018-01-01 12:00:00"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/time 响应",
+						"description": "返回PATCH /api/ad/v3/sys/time的响应数据",
+						"value": {
+							"system_time": "2017-08-11 12:30:05",
+							"set_time": "2018-01-01 12:00:00"
+						}
 					}
 				}
 			},

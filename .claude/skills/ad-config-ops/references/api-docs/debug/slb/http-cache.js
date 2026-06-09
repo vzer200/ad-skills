@@ -62,6 +62,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_http_cache_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "retrieve all http-cache",
+						"description": "查询虚拟服务所有HTTP缓存\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/http-cache/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/http-cache/ 响应",
+						"description": "返回GET /api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/http-cache/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"cache_id": 0,
+									"url": "/index.html",
+									"compression_status": "gzip",
+									"version": "HTTP/1.1",
+									"mime": "text/html",
+									"size_byte": 14321,
+									"expired_timestamp": 0,
+									"refresh_timestamp": 0,
+									"hit": null,
+									"netns": "default"
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -106,6 +143,27 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_cgi_file_resource_response"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "retrieve all http-cache",
+						"description": "查询虚拟服务具体HTTP缓存\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/http-cache/{cache_id}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/http-cache/{cache_id} 响应",
+						"description": "返回GET /api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/http-cache/{cache_id}的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
+					}
 				}
 			}
 		},
@@ -128,7 +186,24 @@ module.exports ={
 				],
 				"summary": "clear all http-cache",
 				"description": "清除虚拟服务HTTP缓存操作",
-				"operationId": "clear_http_cache_list"
+				"operationId": "clear_http_cache_list",
+				"x-examples": {
+					"request": {
+						"summary": "clear all http-cache",
+						"description": "清除虚拟服务HTTP缓存操作\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/http-cache/clear"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/http-cache/clear 响应",
+						"description": "返回POST /api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/http-cache/clear的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			}
 		}
 	},

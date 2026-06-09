@@ -14,6 +14,7 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from ad_ops_common import read_json, short_summary, skill_paths, tmp_file_path, update_artifacts, workdir_path
+from device_config import DeviceConfigError, normalize_base_url, resolve_device_connection
 from execute_plan import DEFAULT_REQUEST_TIMEOUT, configure_session, full_url
 from plan_operations import collect_path_parameters, find_operation, find_resource_path, materialize_path
 from render_bundle_template import indent_payload, yaml_scalar
@@ -32,7 +33,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="GET an existing AD object and render a full-field edit bundle YAML.")
     parser.add_argument("--skill-root", required=True, type=Path, help="AD-OPS skill root.")
     parser.add_argument("--schema", required=True, help="Schema name, for example config.virtual_service.")
-    parser.add_argument("--document", help="Optional document constraint, for example slb/virtual-service.js.")
+    parser.add_argument("--document", help="Optional document constraint, for example slb/virtual-service/http.js.")
     parser.add_argument("--name", required=True, help="Existing object name.")
     parser.add_argument("--action", choices=sorted(SUPPORTED_EDIT_ACTIONS), default="patch", help="Edit action.")
     parser.add_argument("--operation-id", help="Optional operation id in the generated bundle.")
@@ -43,10 +44,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         metavar="KEY=VALUE",
         help="Additional path parameter. Repeat when the resource path has parameters other than {name}.",
     )
-    parser.add_argument("--host", default=None, help="AD device host, host:port, or URL. Defaults to AD_HOST.")
-    parser.add_argument("--username", default=None, help="AD API username. Defaults to AD_USERNAME.")
-    parser.add_argument("--password", default=None, help="AD API password. Defaults to AD_PASSWORD.")
-    parser.add_argument("--token", default=None, help="Existing AD API token. Defaults to AD_TOKEN.")
+    parser.add_argument("--devices", type=Path, help="devices.json path for selecting a named device.")
+    parser.add_argument("--device", help="Device name or host selector in devices.json.")
+    parser.add_argument("--host", help="AD device host, host:port, or URL. Defaults to AD_HOST when no device is selected.")
+    parser.add_argument("--username", help="AD API username. Defaults to AD_USERNAME when no device is selected.")
+    parser.add_argument("--password", help="AD API password. Defaults to AD_PASSWORD when no device is selected.")
+    parser.add_argument("--token", help="Existing AD API token. Defaults to AD_TOKEN when no device is selected.")
     parser.add_argument("--out", type=Path, help="YAML output path. Defaults to TMP_FILE when set.")
     parser.add_argument("--workdir", type=Path, help="Artifact work directory. Defaults to AD_OPS_WORKDIR, then ./ad_ops_workdir.")
     parser.add_argument("--connect-timeout", type=float, default=DEFAULT_REQUEST_TIMEOUT[0], help="Connect timeout in seconds.")
@@ -67,9 +70,7 @@ def parse_key_value(items: list[str]) -> dict[str, str]:
 
 
 def base_url_from_host(host: str) -> str:
-    if host.startswith("http://") or host.startswith("https://"):
-        return host.rstrip("/")
-    return "https://" + host.rstrip("/")
+    return normalize_base_url(host)
 
 
 def resource_get_path(
@@ -169,22 +170,18 @@ def prepare_edit_bundle_template(
 
 
 def cli_auth(args: argparse.Namespace) -> dict[str, Any]:
-    import os
-
-    username = args.username if args.username is not None else os.environ.get("AD_USERNAME")
-    token = args.token if args.token is not None else os.environ.get("AD_TOKEN")
-    password = args.password if args.password is not None else os.environ.get("AD_PASSWORD")
-    if not token and username and password is None:
+    auth = resolve_device_connection(args)
+    password = auth.get("password")
+    if not auth.get("token") and auth.get("username") and password is None:
         password = getpass.getpass("AD password: ")
-    return {"username": username, "password": password, "token": token}
+    auth["password"] = password
+    return auth
 
 
-def cli_host(args: argparse.Namespace) -> str:
-    import os
-
-    host = args.host or os.environ.get("AD_HOST")
+def cli_base_url(auth: dict[str, Any]) -> str:
+    host = auth.get("host")
     if not host:
-        raise PrepareEditError("--host or AD_HOST is required")
+        raise PrepareEditError("--device/--devices or --host/AD_HOST is required")
     return base_url_from_host(host)
 
 
@@ -194,19 +191,23 @@ def main(argv: list[str] | None = None) -> int:
         paths = skill_paths(args.skill_root)
         index = read_json(paths.references / "api-index.json")
         session = requests.Session()
+        auth = cli_auth(args)
         output = prepare_edit_bundle_template(
             index=index,
             schema=args.schema,
             document=args.document,
             name=args.name,
             session=session,
-            base_url=cli_host(args),
-            auth=cli_auth(args),
+            base_url=cli_base_url(auth),
+            auth=auth,
             action=args.action,
             operation_id=args.operation_id,
             path_parameters=parse_key_value(args.path_param),
             timeout=(args.connect_timeout, args.read_timeout),
         )
+    except DeviceConfigError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
     except PrepareEditError as exc:
         print(str(exc), file=sys.stderr)
         return 2

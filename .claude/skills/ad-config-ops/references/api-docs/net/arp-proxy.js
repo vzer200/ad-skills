@@ -62,6 +62,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_arp_proxy_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all arp-proxy",
+						"description": "ARP代理配置获取",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/arp-proxy/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/arp-proxy/ 响应",
+						"description": "返回GET /api/ad/v3/net/arp-proxy/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vip_200.200.0.1",
+									"description": "example_string",
+									"state": "ENABLE",
+									"addresses": [
+										"200.200.0.1-200.200.0.10"
+									],
+									"links": [
+										"AUTO"
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +115,41 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_arp_proxy_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new arp-proxy",
+						"description": "新建ARP代理配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/arp-proxy/",
+							"body": {
+								"name": "AI_vip_200.200.0.1_A",
+								"state": "ENABLE",
+								"addresses": [
+									"200.200.0.1-200.200.0.10"
+								],
+								"links": [
+									"AUTO"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/arp-proxy/ 响应",
+						"description": "返回POST /api/ad/v3/net/arp-proxy/的响应数据",
+						"value": {
+							"name": "AI_vip_200.200.0.1_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"addresses": [
+								"200.200.0.1-200.200.0.10"
+							],
+							"links": [
+								"AUTO"
+							]
+						}
 					}
 				}
 			},
@@ -98,6 +169,52 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_arp_proxy_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify arp-proxy",
+						"description": "修改ARP代理配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/arp-proxy/",
+							"body": {
+								"name": "vip_200.200.0.1",
+								"state": "ENABLE",
+								"addresses": [
+									"200.200.0.1-200.200.0.10"
+								],
+								"links": [
+									"AUTO"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/arp-proxy/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/arp-proxy/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vip_200.200.0.1",
+									"description": "example_string",
+									"state": "ENABLE",
+									"addresses": [
+										"200.200.0.1-200.200.0.10"
+									],
+									"links": [
+										"AUTO"
+									]
+								}
+							]
+						}
 					}
 				}
 			},
@@ -151,6 +268,31 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_arp_proxy_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific arp-proxy",
+						"description": "获取ARP代理配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/arp-proxy/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/arp-proxy/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/arp-proxy/{name}的响应数据",
+						"value": {
+							"name": "vip_200.200.0.1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"addresses": [
+								"200.200.0.1-200.200.0.10"
+							],
+							"links": [
+								"AUTO"
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -170,6 +312,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_arp_proxy_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new arp-proxy",
+						"description": "新建ARP代理配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/arp-proxy/{name}",
+							"body": {
+								"name": "AI_vip_200.200.0.1_B",
+								"state": "ENABLE",
+								"addresses": [
+									"200.200.0.1-200.200.0.10"
+								],
+								"links": [
+									"AUTO"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/arp-proxy/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/arp-proxy/{name}的响应数据",
+						"value": {
+							"name": "AI_vip_200.200.0.1_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"addresses": [
+								"200.200.0.1-200.200.0.10"
+							],
+							"links": [
+								"AUTO"
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -187,6 +364,41 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_arp_proxy_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific arp-proxy",
+						"description": "修改ARP代理配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/arp-proxy/{name}",
+							"body": {
+								"name": "vip_200.200.0.1",
+								"state": "ENABLE",
+								"addresses": [
+									"200.200.0.1-200.200.0.10"
+								],
+								"links": [
+									"AUTO"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/arp-proxy/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/arp-proxy/{name}的响应数据",
+						"value": {
+							"name": "vip_200.200.0.1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"addresses": [
+								"200.200.0.1-200.200.0.10"
+							],
+							"links": [
+								"AUTO"
+							]
+						}
 					}
 				}
 			},
@@ -206,6 +418,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_arp_proxy_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific arp-proxy",
+						"description": "修改ARP代理配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/arp-proxy/{name}",
+							"body": {
+								"name": "vip_200.200.0.1",
+								"state": "ENABLE",
+								"addresses": [
+									"200.200.0.1-200.200.0.10"
+								],
+								"links": [
+									"AUTO"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/arp-proxy/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/arp-proxy/{name}的响应数据",
+						"value": {
+							"name": "vip_200.200.0.1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"addresses": [
+								"200.200.0.1-200.200.0.10"
+							],
+							"links": [
+								"AUTO"
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -218,6 +465,31 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_arp_proxy_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific arp-proxy",
+						"description": "删除ARP代理配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/arp-proxy/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/arp-proxy/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/arp-proxy/{name}的响应数据",
+						"value": {
+							"name": "vip_200.200.0.1",
+							"description": "example_string",
+							"state": "ENABLE",
+							"addresses": [
+								"200.200.0.1-200.200.0.10"
+							],
+							"links": [
+								"AUTO"
+							]
+						}
 					}
 				}
 			}

@@ -65,6 +65,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_project_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all project",
+						"description": "查看已有的项目配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/project/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/project/ 响应",
+						"description": "返回GET /api/ad/v3/sys/project/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "myproject",
+									"description": "this is description",
+									"vlan_range": [
+										"2-88"
+									],
+									"vxlan_range": [
+										"2-88"
+									],
+									"flat_state": "ENABLE",
+									"netns_limit": 6,
+									"new_conns_limit": 6,
+									"cur_conns_limit": 6,
+									"throughput_limit": 6
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +122,40 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_project_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new project",
+						"description": "新建项目配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/project/",
+							"body": {
+								"name": "AI_myproject_A",
+								"description": "this is description",
+								"flat_state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/project/ 响应",
+						"description": "返回POST /api/ad/v3/sys/project/的响应数据",
+						"value": {
+							"name": "AI_myproject_A",
+							"description": "this is description",
+							"vlan_range": [
+								"2-88"
+							],
+							"vxlan_range": [
+								"2-88"
+							],
+							"flat_state": "ENABLE",
+							"netns_limit": 6,
+							"new_conns_limit": 6,
+							"cur_conns_limit": 6,
+							"throughput_limit": 6
+						}
 					}
 				}
 			},
@@ -127,6 +201,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_project_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific project",
+						"description": "查看指定的项目配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/project/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/project/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/project/{name}的响应数据",
+						"value": {
+							"name": "myproject",
+							"description": "this is description",
+							"vlan_range": [
+								"2-88"
+							],
+							"vxlan_range": [
+								"2-88"
+							],
+							"flat_state": "ENABLE",
+							"netns_limit": 6,
+							"new_conns_limit": 6,
+							"cur_conns_limit": 6,
+							"throughput_limit": 6
+						}
+					}
 				}
 			},
 			"post": {
@@ -146,6 +249,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_project_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new project",
+						"description": "新建指定的项目配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/project/{name}",
+							"body": {
+								"name": "AI_myproject_B",
+								"description": "this is description",
+								"flat_state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/project/{name} 响应",
+						"description": "返回POST /api/ad/v3/sys/project/{name}的响应数据",
+						"value": {
+							"name": "AI_myproject_B",
+							"description": "this is description",
+							"vlan_range": [
+								"2-88"
+							],
+							"vxlan_range": [
+								"2-88"
+							],
+							"flat_state": "ENABLE",
+							"netns_limit": 6,
+							"new_conns_limit": 6,
+							"cur_conns_limit": 6,
+							"throughput_limit": 6
+						}
+					}
 				}
 			},
 			"put": {
@@ -163,6 +300,40 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_project_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific project",
+						"description": "修改指定的项目配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/project/{name}",
+							"body": {
+								"name": "myproject",
+								"description": "this is description",
+								"flat_state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/project/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/project/{name}的响应数据",
+						"value": {
+							"name": "myproject",
+							"description": "this is description",
+							"vlan_range": [
+								"2-88"
+							],
+							"vxlan_range": [
+								"2-88"
+							],
+							"flat_state": "ENABLE",
+							"netns_limit": 6,
+							"new_conns_limit": 6,
+							"cur_conns_limit": 6,
+							"throughput_limit": 6
+						}
 					}
 				}
 			},
@@ -182,6 +353,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_project_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific project",
+						"description": "修改指定的项目配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/project/{name}",
+							"body": {
+								"name": "myproject",
+								"description": "this is description",
+								"flat_state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/project/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/project/{name}的响应数据",
+						"value": {
+							"name": "myproject",
+							"description": "this is description",
+							"vlan_range": [
+								"2-88"
+							],
+							"vxlan_range": [
+								"2-88"
+							],
+							"flat_state": "ENABLE",
+							"netns_limit": 6,
+							"new_conns_limit": 6,
+							"cur_conns_limit": 6,
+							"throughput_limit": 6
+						}
+					}
 				}
 			},
 			"delete": {
@@ -194,6 +399,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_project_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific project",
+						"description": "删除指定的项目配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/project/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/project/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/project/{name}的响应数据",
+						"value": {
+							"name": "myproject",
+							"description": "this is description",
+							"vlan_range": [
+								"2-88"
+							],
+							"vxlan_range": [
+								"2-88"
+							],
+							"flat_state": "ENABLE",
+							"netns_limit": 6,
+							"new_conns_limit": 6,
+							"cur_conns_limit": 6,
+							"throughput_limit": 6
+						}
 					}
 				}
 			}

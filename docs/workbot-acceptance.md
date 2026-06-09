@@ -32,7 +32,17 @@ The automation runs tests, validates skills, runs a config-delivery smoke test, 
 
 Default WorkBot pacing waits 2 seconds after the stop button disappears before sending the next prompt.
 
-By default the one-click runner creates a temporary digital employee named `AD验收临时-*` and switches the conversation to that employee before upload/install. This keeps acceptance runs out of the polluted default employee history. The runner deletes older `AD验收临时-*` employees first and refuses to create a new one if the account would still exceed the 5-employee limit. Pass `-NoFreshAgent` only when intentionally debugging the current default employee conversation.
+For init-only runs, use the lightweight wrapper below. It packages `dist/ad-skills-workbot.zip`, creates a fresh temporary digital employee, sends the initialization prompt, uploads the zip, and runs only the install gate:
+
+```powershell
+$env:WORKBOT_USER = "<operator-provided username>"
+$env:WORKBOT_PASSWORD = "<operator-provided password>"
+.\tools\init_workbot_agent.ps1
+```
+
+Pass `-SkipPackage` when reusing an already-built zip, or `-Headless` when a visible browser is not needed.
+
+The one-click initialization runner always creates a fresh temporary digital employee and switches the conversation to that employee before upload/install. This keeps initialization runs out of polluted employee history. The runner deletes older employees that match the chosen prefix first, then creates a new one, and refuses to continue if the account would still exceed the 5-employee limit.
 
 Every temporary employee is created through the same WorkBot API used by the web UI (`/workbot/api/v1/agents`): `description` is the UI's 身份设定 field and `profile` is the UI's 行为准则 field. The runner reads the employee back after creation and verifies both fields before switching to it. After switching, it sends the required initialization prompt and verifies tool-call evidence before uploading AD skills:
 
@@ -83,13 +93,13 @@ The source `devices.json` stores direct `user` and `password` fields for each de
 After attaching the AD skills zip, use this short install prompt:
 
 ```text
-请安装我刚上传的 AD skills 包，并确认 5 个 skill 都可用。
+请安装我刚上传的 AD skills 包，并确认 6 个 skill 都可用。
 ```
 
 Pass criteria:
 
 - WorkBot uses tool calls to unzip/install the uploaded package and inspect the installed files.
-- The final answer confirms `ad-check-analysis`, `ad-config-ops`, `ad-connect`, `ad-ops`, and `ad-perception`.
+- The final answer confirms `ad-check-analysis`, `ad-config-ops`, `ad-connect`, `ad-ops`, `ad-perception`, and `sangforad-cli`.
 - Each installed skill is verified by a tool call that checks `SKILL.md`; scripts directories are verified where expected.
 
 ## Interactive Follow-Up Rule
@@ -331,13 +341,13 @@ Pass criteria:
 
 ## Requirement 3: Perception Analysis
 
-R3 is perception/trend/log analysis, not a plain current-state query. R2 already covers current device status and hardware/resource values through `overview.py hardware`. To avoid routing ambiguity, the fixed R3 mainline only keeps the two clearest user tasks: log analysis and specified-VS traffic trend analysis.
+R3 is perception/trend/log analysis, not a plain current-state query. R2 already covers current device status and hardware/resource values through `overview.py hardware`. To avoid routing ambiguity, the fixed R3 mainline keeps explicit resource state trend analysis through device trend APIs, plus log analysis. Specified-VS traffic trend analysis is now an optional direct device-trend API case with an HTML artifact.
 
 Fixed mainline prompts:
 
 | Case | Prompt | Expected command |
 | --- | --- | --- |
-| `r3-traffic-vs` | `对 AD2 设备的 test 虚拟服务进行流量趋势分析。` | `collector.py collect --collect-only` then `perception.py traffic --vs test --require-db` |
+| `r3-state` | `对 AD1 设备在 2026年6月2日10点20分到12点00分的资源状态趋势进行分析` | `perception.py state --trend last-day --from-time "2026-06-02 10:20:00" --to-time "2026-06-02 12:00:00" --html-out /opt/agent/data/outputs/ad-state-trend-AD1-20260602-1020-1200.html` |
 | `r3-logs` | `对 AD2 设备的日志进行分析。` | `perception.py logs --levels ALERT,ERROR --limit 20` |
 | `r3-logs-5d` | `对 AD2 设备近 5 天的日志进行分析。` | `perception.py logs --days 5 --levels ALERT,ERROR --limit 20` |
 | `r3-logs-address-conflict` | `对 AD2 设备近 24 小时的地址冲突类型日志进行分析。` | `perception.py logs --levels ALERT,ERROR --limit 20 --log-type address-conflict` |
@@ -348,6 +358,10 @@ Optional single-dimension prompts, not part of the fixed mainline gate:
 
 ```text
 对 AD1 设备的流量趋势进行分析。
+```
+
+```text
+对 AD2 设备的 test 虚拟服务进行流量趋势分析。
 ```
 
 ```text
@@ -368,8 +382,8 @@ Expected tool calls:
 
 ```text
 connect.py
-collector.py collect --collect-only
-perception.py traffic --vs test --days 7 --require-db
+perception.py state --trend last-day --from-time "2026-06-02 10:20:00" --to-time "2026-06-02 12:00:00" --html-out /opt/agent/data/outputs/ad-state-trend-AD1-20260602-1020-1200.html
+perception.py traffic --vs test --trend last-hour --html-out /opt/agent/data/outputs/ad-traffic-trend-AD2-test-last-hour.html
 perception.py logs --levels ALERT,ERROR --limit 20
 perception.py logs --levels ALERT,ERROR --limit 20 --log-type address-conflict
 ```
@@ -378,8 +392,9 @@ Pass criteria:
 
 - `connect.py` validates the requested target from `devices.json`, including AD 内网设备资源 reachability/auth evidence.
 - The final conclusion is backed by `perception.py` output.
-- The VS traffic trend prompt uses AD2/192.168.8.31 `test`, must run `collector.py collect --collect-only` first, then call `perception.py traffic --vs test --days 7 --require-db`. It must prove a database query path and must not answer from realtime API fallback or model memory.
-- VS traffic trend output must not include a `风险` column, arrows such as `↓`, or subjective severity words such as `轻微/明显/严重/显著`; show the change as a direct ratio such as `下降 79.9%` or `上升 12.3%`.
+- The state trend prompt must choose the smallest rolling device trend window that covers the requested fixed range: a range still wholly inside the last hour uses `last-hour` and must not be widened to `last-day` just because it is on today's date; a range outside the last hour but wholly inside the last 24 hours uses `last-day`; a range outside the last 24 hours but wholly inside the last month uses `last-month`. A one-hour range from two days ago must use `last-month`. This fixed sample is inside the last 24 hours, so it must call `perception.py state --trend last-day --from-time "2026-06-02 10:20:00" --to-time "2026-06-02 12:00:00" --html-out /opt/agent/data/outputs/ad-state-trend-AD1-20260602-1020-1200.html` after `connect.py` and must not run `collector.py` or require a SQLite history database. The HTML artifact must be generated in WorkBot's downloadable outputs directory. Same-day artifacts use `{YYYYMMDD}-{HHMM}-{HHMM}`; cross-day artifacts include both dates as `{startYYYYMMDD}-{startHHMM}-{endYYYYMMDD}-{endHHMM}`.
+- State trend uses device APIs for CPU, memory, and new-connection rate. Supported ranges are `last-hour`, `last-day`, and `last-month`; on the tested AD API they return roughly 60 points at 60 seconds, 1440 seconds, and 44640 seconds respectively, and the script then clips points to the requested fixed range.
+- Specified-VS traffic trend analysis must also use device trend APIs directly. It must call `perception.py traffic --vs test --trend last-hour --html-out /opt/agent/data/outputs/ad-traffic-trend-AD2-test-last-hour.html` for the fixed sample, must not run `collector.py`, and must not use `--require-db` or depend on SQLite history. The HTML artifact must include visible data points and per-sample time labels.
 - R3 visible output must preserve the `perception.py` markdown block instead of rewriting conclusions; do not add phrases such as `小结`, `三项核心指标`, `大幅偏离`, `连接数约为基线`, `当前值为 0`, or `降至 0` unless they are emitted by the script itself.
 - The log prompt must call `perception.py logs`, default to recent 24 hours, query both `ALERT` and `ERROR` across all modules, and cap visible output to the newest 20 rows sorted by time descending. Do not add `--modules` unless the user explicitly names an AD log module such as APPD/SYS/ALARM.
 - A semantic log type is not a module. The address-conflict log prompt must use `--log-type address-conflict`, must not use `--modules`, and the script filters the returned service-log rows by address/IP/VIP/port + conflict semantics.
@@ -390,6 +405,7 @@ Pass criteria:
 - R2/R3 boundary: `设备状态/硬件状态/资源状态查询` belongs to R2; R3 only owns prompts that explicitly ask for analysis, trend, log, conflict, or perception.
 - No root cause, anomaly, or trend is invented outside script stdout.
 - Acceptance prompts must not include parameter-fill follow-ups for R3.
+- Specified-VS traffic trend analysis must not answer from model memory. It should use `perception.py traffic` with the requested `--vs`, direct device trend API data, and an HTML artifact; collector-backed SQLite mode is legacy-only and not part of WorkBot default acceptance.
 - Address conflict is a specialty/optional R3 case, not a fixed mainline case. Its acceptance checks are: real `connect.py` call first, real `perception.py conflict` call second, visible output uses the R3 template, the conclusion mirrors script fields `vs_overlaps` and `pool_overlaps`, and if the device has no conflict the answer must say no conflict found rather than inventing one. A positive conflict finding requires controlled device data or a fixture; the live mainline should not require a conflict to exist.
 
 ## Requirement 4: Config Generation
@@ -398,12 +414,12 @@ Requirement 4 is a general configuration-generation workflow. The minimum suppor
 
 R4 acceptance covers create, patch/update, delete, rollback, and real-device API verification for the SLB resources in the supported WorkBot prompt matrix. This is not an exhaustive test of every SLB object exposed by the device API documentation. If a new SLB resource type is added to WorkBot prompts, it must be added to the YAML fixture, plan/script generation path, real-device verifier, and R2/R4 interaction checks.
 
-Requirement 4 is always staged. Prompt-to-YAML is a mandatory first flow and must not be replaced by parameter follow-up questions. Stage A prompts must name the target AD device. If the prompt is incomplete or ambiguous, WorkBot generates a YAML template with blanks and stops for manual completion. A completed YAML then enters the second flow: plan/script generation, same-name resource GET preflight against the target device, and a user choice between script-only output or delivery verification.
+Requirement 4 is always staged. Prompt-to-YAML is a mandatory first flow and must not be replaced by parameter follow-up questions. Stage A prompts must name the target AD device. If the prompt is incomplete or ambiguous, WorkBot generates a YAML template with blanks and stops for manual completion. A completed YAML then enters the second flow. Non-CLI API script mode runs plan/script generation and same-name resource GET preflight, then directly presents script deliverables. CLI mode is selected by `命令行`, `CLI`, `sfcli`, or `apply.sfcli` wording in the YAML-complete reply; it runs read-only AD API preflight and publishes only `apply.sfcli` and `rollback.sfcli`, without executing CLI commands or publishing `apply.py` / `rollback_apply.py`.
 
 Fixed Stage A mainline prompts:
 
 ```text
-在 AD1 上帮我创建虚拟服务，引用节点池、前置策略和 http 优化策略。
+在 AD1 上帮我创建虚拟服务、节点池、前置策略和 http 优化策略。
 ```
 
 ```text
@@ -411,11 +427,11 @@ Fixed Stage A mainline prompts:
 ```
 
 ```text
-在 AD1 上帮我创建一个 HTTP 虚拟服务，引用节点池和 http 优化策略。
+在 AD1 上帮我创建一个 HTTP 虚拟服务、节点池和 http 优化策略。
 ```
 
 ```text
-在 AD1 上帮我创建虚拟服务，引用节点池和前置策略。
+在 AD1 上帮我创建虚拟服务、节点池和前置策略。
 ```
 
 Extended suite Stage A prompts, not part of the fixed R4 gate:
@@ -430,16 +446,16 @@ Extended suite Stage A prompts, not part of the fixed R4 gate:
 
 The collision/audit prompt is treated as a read-only YAML preflight, not as a create Stage A prompt. The operator uploads the completed YAML, then asks the collision question. WorkBot must run `plan-and-render`, `summarize-plan`, and `preflight-slb-plan`, must not run `apply-slb-plan`, and must still answer with the compact `配置结论 / 产出物 / 下一步` template.
 
-Human downloads WorkBot's YAML artifact, fills the required fields, uploads the completed YAML, then replies:
+Human downloads WorkBot's YAML artifact, fills the required fields, uploads the completed YAML, then replies for API script mode:
 
 ```text
 我写完了 YAML。
 ```
 
-Script-only choice:
+For CLI command-script mode, the YAML-complete reply is:
 
 ```text
-直接给出脚本。
+我写完了 YAML，生成命令行脚本。
 ```
 
 Delivery choice:
@@ -466,8 +482,9 @@ YAML pass criteria:
 - WorkBot does not invent missing fields and does not ask detailed parameter questions in chat.
 - The first answer uses the target device from the prompt, produces or requests completion of a YAML template, then stops.
 - Stage A must be backed by a real tool call that creates `adops-bundle.yml`; a text-only parameter request is a failure.
-- Manual completion happens by uploading a YAML file; the follow-up prompt is only `我写完了 YAML。`.
-- After YAML completion, WorkBot generates the plan, runs GET preflight on every create target and every referenced-existing SLB resource, and asks whether to `真实下发` or `直接给出脚本`.
+- Manual completion happens by uploading a YAML file. API script mode uses only `我写完了 YAML。`; CLI command-script mode uses `我写完了 YAML，生成命令行脚本。`.
+- After YAML completion in script mode, WorkBot generates the plan, runs GET preflight on every create target and every referenced-existing SLB resource, mirrors `adops-bundle.yml`, `apply.py`, and `rollback_apply.py` into outputs, and directly explains the dry-run/apply/rollback script commands.
+- After YAML completion in CLI command-script mode, WorkBot builds the CLI plan with `render_cli.py --bundle --plan-out --plan-only`, runs `connect.py` and read-only `preflight-slb-plan`, then renders and mirrors `apply.sfcli` and `rollback.sfcli`. It must not run `plan-and-render`, `summarize-plan`, `apply-slb-plan`, `rollback-and-verify`, or `--execute`.
 - For resources that have a create operation in YAML, HTTP 404 is normal and means the resource will be created. For resources that are only referenced as existing objects, HTTP 404 is a blocker and requires a corrected YAML.
 - If same-name resources exist, WorkBot reuses the existing device resources, omits those create operations from the effective plan, and tells the user which resources were reused.
 - For audit-only prompts such as `检查这份 VS 配置会不会撞现网`, WorkBot must use the YAML plan preflight flow and must not replace it with `verify_slb_resource.py`.
@@ -484,8 +501,8 @@ Visible-output template criteria:
 - Audit-only answers use the same compact headings, explain the collision/preflight result in `配置结论`, list at least the YAML under `产出物`, and state that no device mutation was performed.
 - Stage A `产出物` lists only the YAML template artifact.
 - Stage A must not expand YAML fields in the visible answer. The answer should not list field tables, placeholders, examples, or optional-field explanations; the downloadable YAML carries those details.
-- After YAML completion, script-only, delivery, and rollback answers must list `adops-bundle.yml`, `apply.py`, and `rollback_apply.py` prominently under `产出物`; a run fails if any of the three deliverables is missing from the visible answer.
-- Tool evidence must prove the artifacts were actually generated. Stage A must show evidence for `adops-bundle.yml`; after YAML completion and every later R4 answer must show evidence for `adops-bundle.yml`, `apply.py`, and `rollback_apply.py` through tool stdout/artifact output or visible file links. The script workflow mirrors these three user deliverables into WorkBot outputs when `/opt/agent/data/outputs` is available; a run fails if the visible answer lists paths but WorkBot has no generation/output evidence for the files.
+- After YAML completion, API script, delivery, and rollback answers must list `adops-bundle.yml`, `apply.py`, and `rollback_apply.py` prominently under `产出物`; a run fails if any of the three deliverables is missing from the visible answer. CLI command-script answers list `apply.sfcli` and `rollback.sfcli` instead, plus a compact read-only preflight result.
+- Tool evidence must prove the artifacts were actually generated. Stage A must show evidence for `adops-bundle.yml`; API script mode and every later API R4 answer must show evidence for `adops-bundle.yml`, `apply.py`, and `rollback_apply.py`. CLI mode must show evidence for `apply.sfcli`, `rollback.sfcli`, and successful read-only preflight. The script workflows mirror their user deliverables into WorkBot outputs when `/opt/agent/data/outputs` is available; a run fails if the visible answer lists paths but WorkBot has no generation/output evidence for the files.
 - User-visible R4 output must not include long internal sections such as `操作计划`, `计划摘要`, `执行摘要`, or `安全确认`.
 - User-visible R4 output must not list internal files such as `adops-batch.json`, `adops-effective-plan.json`, `adops-post-apply.json`, `adops-post-rollback.json`, or `adops-rollback-compare.json` unless the user explicitly asks for troubleshooting details.
 
@@ -500,6 +517,8 @@ ad_ops_flow.py summarize-plan
 ad_ops_flow.py preflight-slb-plan
 ad_ops_flow.py apply-slb-plan
 ad_ops_flow.py rollback-and-verify
+render_cli.py --bundle --plan-out --plan-only
+render_cli.py --plan --preflight --rollback-out
 ```
 
 Expected plan summaries by case:
@@ -553,3 +572,22 @@ Stability target:
 
 - Development gate: each short-prompt case passes 3 consecutive runs.
 - Release gate: each short-prompt case passes 10 consecutive runs with the same tool sequence and output template.
+
+## R4 Base YAML Templates
+
+These templates are manual-upload starting points. They do not replace the short fixed prompts; use the prompt first, upload the filled YAML, then send the normal YAML completion reply.
+
+| Template | Path | Acceptance expectation |
+| --- | --- | --- |
+| Internet HTTP business create | `docs/r4-yaml-templates/internet-http-business-create.yml` | The plan renders five create operations: SNAT address set, L7 TCP profile, XFF HTTP profile, node pool, and HTTP virtual service. The HTTP virtual service links the pool, TCP profile, HTTP profile, and the new SNAT address set through `snat: SNAT-POOL` / `snat_pool`. |
+| Pool node priority update | `docs/r4-yaml-templates/pool-node-priority-update.yml` | The plan renders one PATCH operation on `slb/pool/{name}`. Operators should preserve the full current `nodes` list from device readback and only change the target node's `priority_level`. |
+
+Suggested short prompts:
+
+```text
+在 AD1 上帮我新建互联网 HTTP 业务。
+我写完了 YAML。
+
+在 AD1 上帮我修改节点池中节点的优先级。
+我写完了 YAML。
+```

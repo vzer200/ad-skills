@@ -65,6 +65,56 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_imported_certificate_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all ssl-certificate-imported-certificate",
+						"description": "获取证书导入配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/imported-certificate/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/imported-certificate/ 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/imported-certificate/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.abc.com_cert",
+									"description": "example_string",
+									"type": "IMPORTED-CERTIFICATE",
+									"subject": {
+										"cn": "example_string",
+										"c": "example_string",
+										"ou": "example_string",
+										"o": "example_string",
+										"l": "example_string",
+										"st": "example_string",
+										"email": "example_string"
+									},
+									"public_key_algorithm": "RSA",
+									"public_key_length": 256,
+									"signature_algorithm": "SHA256",
+									"validity_not_before": "example_string",
+									"validity_not_after": "example_string",
+									"password": "example_string",
+									"encrypted_password": "example_string",
+									"certificate_chains": [
+										"example_item"
+									],
+									"project": "common"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +132,53 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_imported_certificate_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ssl-certificate-imported-certificate",
+						"description": "新建证书导入配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/ssl-certificate/imported-certificate/",
+							"body": {
+								"name": "AI_www.abc.com_cert_A",
+								"type": "IMPORTED-CERTIFICATE",
+								"cert_type": "ONE_CERT",
+								"certificate_chains": [
+									"example_item"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/ssl-certificate/imported-certificate/ 响应",
+						"description": "返回POST /api/ad/v3/rc/ssl-certificate/imported-certificate/的响应数据",
+						"value": {
+							"name": "AI_www.abc.com_cert_A",
+							"description": "example_string",
+							"type": "IMPORTED-CERTIFICATE",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 256,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
 					}
 				}
 			},
@@ -101,6 +198,60 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_imported_certificate_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify ssl-certificate-imported-certificate",
+						"description": "修改证书导入配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/ssl-certificate/imported-certificate/",
+							"body": {
+								"name": "www.abc.com_cert",
+								"project": "common"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/ssl-certificate/imported-certificate/ 响应",
+						"description": "返回PATCH /api/ad/v3/rc/ssl-certificate/imported-certificate/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.abc.com_cert",
+									"description": "example_string",
+									"type": "IMPORTED-CERTIFICATE",
+									"subject": {
+										"cn": "example_string",
+										"c": "example_string",
+										"ou": "example_string",
+										"o": "example_string",
+										"l": "example_string",
+										"st": "example_string",
+										"email": "example_string"
+									},
+									"public_key_algorithm": "RSA",
+									"public_key_length": 256,
+									"signature_algorithm": "SHA256",
+									"validity_not_before": "example_string",
+									"validity_not_after": "example_string",
+									"password": "example_string",
+									"encrypted_password": "example_string",
+									"certificate_chains": [
+										"example_item"
+									],
+									"project": "common"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -153,6 +304,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_imported_certificate_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific ssl-certificate-imported-certificate",
+						"description": "获取证书导入配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/imported-certificate/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/imported-certificate/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/imported-certificate/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "IMPORTED-CERTIFICATE",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 256,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
+					}
 				}
 			},
 			"post": {
@@ -172,6 +362,53 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_imported_certificate_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ssl-certificate-imported-certificate",
+						"description": "新建证书导入配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/ssl-certificate/imported-certificate/{name}",
+							"body": {
+								"name": "AI_www.abc.com_cert_B",
+								"type": "IMPORTED-CERTIFICATE",
+								"cert_type": "ONE_CERT",
+								"certificate_chains": [
+									"example_item"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/ssl-certificate/imported-certificate/{name} 响应",
+						"description": "返回POST /api/ad/v3/rc/ssl-certificate/imported-certificate/{name}的响应数据",
+						"value": {
+							"name": "AI_www.abc.com_cert_B",
+							"description": "example_string",
+							"type": "IMPORTED-CERTIFICATE",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 256,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
+					}
 				}
 			},
 			"put": {
@@ -189,6 +426,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_imported_certificate_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific ssl-certificate-imported-certificate",
+						"description": "修改证书导入配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/rc/ssl-certificate/imported-certificate/{name}",
+							"body": {
+								"name": "www.abc.com_cert",
+								"project": "common"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/rc/ssl-certificate/imported-certificate/{name} 响应",
+						"description": "返回PUT /api/ad/v3/rc/ssl-certificate/imported-certificate/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "IMPORTED-CERTIFICATE",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 256,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
 					}
 				}
 			},
@@ -208,6 +488,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_imported_certificate_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific ssl-certificate-imported-certificate",
+						"description": "修改证书导入配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/ssl-certificate/imported-certificate/{name}",
+							"body": {
+								"name": "www.abc.com_cert",
+								"project": "common"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/ssl-certificate/imported-certificate/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/rc/ssl-certificate/imported-certificate/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "IMPORTED-CERTIFICATE",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 256,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -220,6 +543,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_imported_certificate_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific ssl-certificate-imported-certificate",
+						"description": "删除证书导入配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/rc/ssl-certificate/imported-certificate/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/rc/ssl-certificate/imported-certificate/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/rc/ssl-certificate/imported-certificate/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "IMPORTED-CERTIFICATE",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 256,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
 					}
 				}
 			}
@@ -253,6 +615,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_cgi_file_resource_response"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "import specific ssl-certificate-imported-certificate certificate file",
+						"description": "查看导入的证书详情",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/imported-certificate/{name}/certificate"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/imported-certificate/{name}/certificate 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/imported-certificate/{name}/certificate的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
 					}
 				}
 			}

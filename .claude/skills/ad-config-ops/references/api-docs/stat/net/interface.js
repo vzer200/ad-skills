@@ -62,6 +62,43 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_interface_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all interface statistics",
+						"description": "获取网口信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/interface"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/interface 响应",
+						"description": "返回GET /api/ad/v3/stat/net/interface的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "eth1",
+									"cable": "PLUG-IN",
+									"upstream_data": null,
+									"downstream_data": null,
+									"upstream_packet": null,
+									"downstream_packet": null,
+									"upstream_error_packet": null,
+									"downstream_error_packet": null,
+									"upstream_drop_packet": null,
+									"downstream_drop_packet": null
+								}
+							]
+						}
+					}
 				}
 			}
 		}

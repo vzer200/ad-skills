@@ -51,6 +51,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_proxy_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get proxy",
+						"description": "查看当前已有的代理设置配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/proxy"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/proxy 响应",
+						"description": "返回GET /api/ad/v3/sys/proxy的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"address": "8.1.2.5",
+							"port": 80,
+							"authentication": "DISABLE",
+							"username": "user1",
+							"password": "",
+							"encrypted_password": "A1B2C3D4",
+							"pk_password": ""
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +93,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_proxy_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace proxy",
+						"description": "修改代理设置配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/proxy",
+							"body": {
+								"state": "ENABLE",
+								"port": 80,
+								"authentication": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/proxy 响应",
+						"description": "返回PUT /api/ad/v3/sys/proxy的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"address": "8.1.2.5",
+							"port": 80,
+							"authentication": "DISABLE",
+							"username": "user1",
+							"password": "",
+							"encrypted_password": "A1B2C3D4",
+							"pk_password": ""
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +139,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_proxy_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify proxy",
+						"description": "修改代理设置配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/proxy",
+							"body": {
+								"state": "ENABLE",
+								"port": 80,
+								"authentication": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/proxy 响应",
+						"description": "返回PATCH /api/ad/v3/sys/proxy的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"address": "8.1.2.5",
+							"port": 80,
+							"authentication": "DISABLE",
+							"username": "user1",
+							"password": "",
+							"encrypted_password": "A1B2C3D4",
+							"pk_password": ""
+						}
 					}
 				}
 			},
@@ -161,6 +243,7 @@ module.exports ={
 					"type": "integer",
 					"maximum": 65535,
 					"minimum": 1,
+					"default": 80,
 					"example": 8080
 				},
 				"authentication": {

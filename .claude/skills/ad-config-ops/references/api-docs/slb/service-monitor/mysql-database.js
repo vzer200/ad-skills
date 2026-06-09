@@ -65,6 +65,59 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_mysql_database_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-mysql-database",
+						"description": "查看当前已有的监视器（MYSQL）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/mysql-database/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/mysql-database/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/mysql-database/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "MYSQL-DATABASE",
+									"timeout": 91,
+									"interval": 30,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"host": "*",
+									"port": 0,
+									"debug_mode": "DISABLE",
+									"username": "root",
+									"password": "",
+									"pk_password": "A1B2C3D4",
+									"encrypted_password": "A1B2C3D4",
+									"database": "",
+									"mysql_detect_method": "QUERY-RESULT",
+									"query_string": "select * from account_table;",
+									"query_result": {
+										"position_row": 1,
+										"position_column": 1,
+										"result_match": ""
+									},
+									"sync_status": {
+										"check_replication_timeout": "DISABLE",
+										"replication_timeout": 0
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +135,60 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_mysql_database_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-mysql-database",
+						"description": "新建一个监视器（MYSQL）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/mysql-database/",
+							"body": {
+								"name": "AI_http_mysql_database_A",
+								"type": "MYSQL-DATABASE",
+								"timeout": 91,
+								"interval": 30,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"mysql_detect_method": "QUERY-RESULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/mysql-database/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/mysql-database/的响应数据",
+						"value": {
+							"name": "AI_http_mysql_database_A",
+							"description": "example_string",
+							"type": "MYSQL-DATABASE",
+							"timeout": 91,
+							"interval": 30,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"username": "root",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"database": "",
+							"mysql_detect_method": "QUERY-RESULT",
+							"query_string": "select * from account_table;",
+							"query_result": {
+								"position_row": 1,
+								"position_column": 1,
+								"result_match": ""
+							},
+							"sync_status": {
+								"check_replication_timeout": "DISABLE",
+								"replication_timeout": 0
+							}
+						}
 					}
 				}
 			},
@@ -130,6 +237,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_mysql_database_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-mysql-database",
+						"description": "查看指定的监视器（MYSQL）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/mysql-database/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/mysql-database/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/mysql-database/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "MYSQL-DATABASE",
+							"timeout": 91,
+							"interval": 30,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"username": "root",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"database": "",
+							"mysql_detect_method": "QUERY-RESULT",
+							"query_string": "select * from account_table;",
+							"query_result": {
+								"position_row": 1,
+								"position_column": 1,
+								"result_match": ""
+							},
+							"sync_status": {
+								"check_replication_timeout": "DISABLE",
+								"replication_timeout": 0
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +298,60 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_mysql_database_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-mysql-database",
+						"description": "新建指定的监视器（MYSQL）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/mysql-database/{name}",
+							"body": {
+								"name": "AI_http_mysql_database_B",
+								"type": "MYSQL-DATABASE",
+								"timeout": 91,
+								"interval": 30,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"mysql_detect_method": "QUERY-RESULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/mysql-database/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/mysql-database/{name}的响应数据",
+						"value": {
+							"name": "AI_http_mysql_database_B",
+							"description": "example_string",
+							"type": "MYSQL-DATABASE",
+							"timeout": 91,
+							"interval": 30,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"username": "root",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"database": "",
+							"mysql_detect_method": "QUERY-RESULT",
+							"query_string": "select * from account_table;",
+							"query_result": {
+								"position_row": 1,
+								"position_column": 1,
+								"result_match": ""
+							},
+							"sync_status": {
+								"check_replication_timeout": "DISABLE",
+								"replication_timeout": 0
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +369,60 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_mysql_database_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-mysql-database",
+						"description": "修改指定的监视器（MYSQL）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/mysql-database/{name}",
+							"body": {
+								"name": "http",
+								"type": "MYSQL-DATABASE",
+								"timeout": 91,
+								"interval": 30,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"mysql_detect_method": "QUERY-RESULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/mysql-database/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/mysql-database/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "MYSQL-DATABASE",
+							"timeout": 91,
+							"interval": 30,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"username": "root",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"database": "",
+							"mysql_detect_method": "QUERY-RESULT",
+							"query_string": "select * from account_table;",
+							"query_result": {
+								"position_row": 1,
+								"position_column": 1,
+								"result_match": ""
+							},
+							"sync_status": {
+								"check_replication_timeout": "DISABLE",
+								"replication_timeout": 0
+							}
+						}
 					}
 				}
 			},
@@ -185,6 +442,60 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_mysql_database_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-mysql-database",
+						"description": "修改指定的监视器（MYSQL）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/mysql-database/{name}",
+							"body": {
+								"name": "http",
+								"type": "MYSQL-DATABASE",
+								"timeout": 91,
+								"interval": 30,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"mysql_detect_method": "QUERY-RESULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/mysql-database/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/mysql-database/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "MYSQL-DATABASE",
+							"timeout": 91,
+							"interval": 30,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"username": "root",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"database": "",
+							"mysql_detect_method": "QUERY-RESULT",
+							"query_string": "select * from account_table;",
+							"query_result": {
+								"position_row": 1,
+								"position_column": 1,
+								"result_match": ""
+							},
+							"sync_status": {
+								"check_replication_timeout": "DISABLE",
+								"replication_timeout": 0
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +508,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_mysql_database_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-mysql-database",
+						"description": "删除指定的监视器（MYSQL）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/mysql-database/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/mysql-database/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/mysql-database/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "MYSQL-DATABASE",
+							"timeout": 91,
+							"interval": 30,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"username": "root",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"database": "",
+							"mysql_detect_method": "QUERY-RESULT",
+							"query_string": "select * from account_table;",
+							"query_result": {
+								"position_row": 1,
+								"position_column": 1,
+								"result_match": ""
+							},
+							"sync_status": {
+								"check_replication_timeout": "DISABLE",
+								"replication_timeout": 0
+							}
+						}
 					}
 				}
 			}

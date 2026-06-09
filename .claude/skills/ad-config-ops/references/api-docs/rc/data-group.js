@@ -62,6 +62,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_data_group_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all data-group",
+						"description": "获取数据组配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/data-group/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/data-group/ 响应",
+						"description": "返回GET /api/ad/v3/rc/data-group/的响应数据",
+						"value": {
+							"maximum_items": 500,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "data_group",
+									"description": "example_string",
+									"type": "DG_STRING",
+									"data": [
+										{
+											"key": "example_string",
+											"value": "example_string"
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +115,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_data_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new data-group",
+						"description": "新建数据组配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/data-group/",
+							"body": {
+								"name": "AI_data_group_A",
+								"type": "DG_STRING"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/data-group/ 响应",
+						"description": "返回POST /api/ad/v3/rc/data-group/的响应数据",
+						"value": {
+							"name": "AI_data_group_A",
+							"description": "example_string",
+							"type": "DG_STRING",
+							"data": [
+								{
+									"key": "example_string",
+									"value": "example_string"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -98,6 +163,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_data_group_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify data-group",
+						"description": "修改数据组配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/data-group/",
+							"body": {
+								"name": "data_group",
+								"type": "DG_STRING"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/data-group/ 响应",
+						"description": "返回PATCH /api/ad/v3/rc/data-group/的响应数据",
+						"value": {
+							"maximum_items": 500,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "data_group",
+									"description": "example_string",
+									"type": "DG_STRING",
+									"data": [
+										{
+											"key": "example_string",
+											"value": "example_string"
+										}
+									]
+								}
+							]
+						}
 					}
 				}
 			},
@@ -147,6 +252,31 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_data_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific data-group",
+						"description": "获取数据组配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/data-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/data-group/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/data-group/{name}的响应数据",
+						"value": {
+							"name": "data_group",
+							"description": "example_string",
+							"type": "DG_STRING",
+							"data": [
+								{
+									"key": "example_string",
+									"value": "example_string"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -166,6 +296,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_data_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new isp-address-group",
+						"description": "新建数据组配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/data-group/{name}",
+							"body": {
+								"name": "AI_data_group_B",
+								"type": "DG_STRING"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/data-group/{name} 响应",
+						"description": "返回POST /api/ad/v3/rc/data-group/{name}的响应数据",
+						"value": {
+							"name": "AI_data_group_B",
+							"description": "example_string",
+							"type": "DG_STRING",
+							"data": [
+								{
+									"key": "example_string",
+									"value": "example_string"
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -183,6 +342,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_data_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific data-group",
+						"description": "修改数据组配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/rc/data-group/{name}",
+							"body": {
+								"name": "data_group",
+								"type": "DG_STRING"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/rc/data-group/{name} 响应",
+						"description": "返回PUT /api/ad/v3/rc/data-group/{name}的响应数据",
+						"value": {
+							"name": "data_group",
+							"description": "example_string",
+							"type": "DG_STRING",
+							"data": [
+								{
+									"key": "example_string",
+									"value": "example_string"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -202,6 +390,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_data_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific data-group",
+						"description": "修改数据组配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/data-group/{name}",
+							"body": {
+								"name": "data_group",
+								"type": "DG_STRING"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/data-group/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/rc/data-group/{name}的响应数据",
+						"value": {
+							"name": "data_group",
+							"description": "example_string",
+							"type": "DG_STRING",
+							"data": [
+								{
+									"key": "example_string",
+									"value": "example_string"
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -214,6 +431,31 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_data_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific data-group",
+						"description": "删除数据组配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/rc/data-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/rc/data-group/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/rc/data-group/{name}的响应数据",
+						"value": {
+							"name": "data_group",
+							"description": "example_string",
+							"type": "DG_STRING",
+							"data": [
+								{
+									"key": "example_string",
+									"value": "example_string"
+								}
+							]
+						}
 					}
 				}
 			}

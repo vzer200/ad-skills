@@ -65,6 +65,52 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_ldap_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-ldap",
+						"description": "查看当前已有的监视器（LDAP）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/ldap/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/ldap/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/ldap/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "LDAP",
+									"timeout": 31,
+									"interval": 10,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"host": "*",
+									"port": 0,
+									"debug_mode": "DISABLE",
+									"username": "admin",
+									"password": "",
+									"pk_password": "A1B2C3D4",
+									"encrypted_password": "A1B2C3D4",
+									"base_dn": "",
+									"search_filter": "",
+									"secure": "NONE",
+									"mandatory_attributes": "DISABLE",
+									"chase_referrals": "ENABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +128,55 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_ldap_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-ldap",
+						"description": "新建一个监视器（LDAP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/ldap/",
+							"body": {
+								"name": "AI_http_ldap_A",
+								"type": "LDAP",
+								"timeout": 31,
+								"interval": 10,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"secure": "NONE",
+								"mandatory_attributes": "DISABLE",
+								"chase_referrals": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/ldap/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/ldap/的响应数据",
+						"value": {
+							"name": "AI_http_ldap_A",
+							"description": "example_string",
+							"type": "LDAP",
+							"timeout": 31,
+							"interval": 10,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"username": "admin",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"base_dn": "",
+							"search_filter": "",
+							"secure": "NONE",
+							"mandatory_attributes": "DISABLE",
+							"chase_referrals": "ENABLE"
+						}
 					}
 				}
 			},
@@ -130,6 +225,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_ldap_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-ldap",
+						"description": "查看指定的监视器（LDAP）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/ldap/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/ldap/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/ldap/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "LDAP",
+							"timeout": 31,
+							"interval": 10,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"username": "admin",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"base_dn": "",
+							"search_filter": "",
+							"secure": "NONE",
+							"mandatory_attributes": "DISABLE",
+							"chase_referrals": "ENABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +279,55 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_ldap_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-ldap",
+						"description": "新建指定的监视器（LDAP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/ldap/{name}",
+							"body": {
+								"name": "AI_http_ldap_B",
+								"type": "LDAP",
+								"timeout": 31,
+								"interval": 10,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"secure": "NONE",
+								"mandatory_attributes": "DISABLE",
+								"chase_referrals": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/ldap/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/ldap/{name}的响应数据",
+						"value": {
+							"name": "AI_http_ldap_B",
+							"description": "example_string",
+							"type": "LDAP",
+							"timeout": 31,
+							"interval": 10,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"username": "admin",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"base_dn": "",
+							"search_filter": "",
+							"secure": "NONE",
+							"mandatory_attributes": "DISABLE",
+							"chase_referrals": "ENABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +345,55 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_ldap_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-ldap",
+						"description": "修改指定的监视器（LDAP）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/ldap/{name}",
+							"body": {
+								"name": "http",
+								"type": "LDAP",
+								"timeout": 31,
+								"interval": 10,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"secure": "NONE",
+								"mandatory_attributes": "DISABLE",
+								"chase_referrals": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/ldap/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/ldap/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "LDAP",
+							"timeout": 31,
+							"interval": 10,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"username": "admin",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"base_dn": "",
+							"search_filter": "",
+							"secure": "NONE",
+							"mandatory_attributes": "DISABLE",
+							"chase_referrals": "ENABLE"
+						}
 					}
 				}
 			},
@@ -185,6 +413,55 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_ldap_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-ldap",
+						"description": "修改指定的监视器（LDAP）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/ldap/{name}",
+							"body": {
+								"name": "http",
+								"type": "LDAP",
+								"timeout": 31,
+								"interval": 10,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"secure": "NONE",
+								"mandatory_attributes": "DISABLE",
+								"chase_referrals": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/ldap/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/ldap/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "LDAP",
+							"timeout": 31,
+							"interval": 10,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"username": "admin",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"base_dn": "",
+							"search_filter": "",
+							"secure": "NONE",
+							"mandatory_attributes": "DISABLE",
+							"chase_referrals": "ENABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +474,41 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_ldap_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-ldap",
+						"description": "删除指定的监视器（LDAP）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/ldap/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/ldap/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/ldap/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "LDAP",
+							"timeout": 31,
+							"interval": 10,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"username": "admin",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"base_dn": "",
+							"search_filter": "",
+							"secure": "NONE",
+							"mandatory_attributes": "DISABLE",
+							"chase_referrals": "ENABLE"
+						}
 					}
 				}
 			}

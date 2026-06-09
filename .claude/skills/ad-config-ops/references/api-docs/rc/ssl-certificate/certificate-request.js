@@ -65,6 +65,57 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_certificate_request_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all ssl-certificate-certificate-request",
+						"description": "获取证书请求",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/certificate-request/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/certificate-request/ 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/certificate-request/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.abc.com_cert",
+									"description": "example_string",
+									"type": "CERTIFICATE-REQUEST",
+									"subject": {
+										"cn": "example_string",
+										"c": "example_string",
+										"ou": "example_string",
+										"o": "example_string",
+										"l": "example_string",
+										"st": "example_string",
+										"email": "example_string"
+									},
+									"public_key_algorithm": "RSA",
+									"public_key_length": 2048,
+									"signature_algorithm": "SHA256",
+									"validity_time_year": 5,
+									"password": "example_string",
+									"pk_password": "example_string",
+									"encrypted_password": "example_string",
+									"certificate_request_pem": "example_string",
+									"certificate_chains": [
+										"example_item"
+									],
+									"project": "common"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +133,58 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_certificate_request_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ssl-certificate-certificate-request",
+						"description": "新建证书请求",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/ssl-certificate/certificate-request/",
+							"body": {
+								"name": "AI_www.abc.com_cert_A",
+								"type": "CERTIFICATE-REQUEST",
+								"subject": {
+									"cn": "example_string"
+								},
+								"public_key_algorithm": "RSA",
+								"public_key_length": 2048,
+								"signature_algorithm": "SHA256",
+								"validity_time_year": 5,
+								"import_cert_type": "SM2_SINGLE_CERT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/ssl-certificate/certificate-request/ 响应",
+						"description": "返回POST /api/ad/v3/rc/ssl-certificate/certificate-request/的响应数据",
+						"value": {
+							"name": "AI_www.abc.com_cert_A",
+							"description": "example_string",
+							"type": "CERTIFICATE-REQUEST",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_time_year": 5,
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_request_pem": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
 					}
 				}
 			},
@@ -101,6 +204,60 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_certificate_request_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify ssl-certificate-certificate-request",
+						"description": "修改证书请求",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/ssl-certificate/certificate-request/",
+							"body": {
+								"name": "www.abc.com_cert"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/ssl-certificate/certificate-request/ 响应",
+						"description": "返回PATCH /api/ad/v3/rc/ssl-certificate/certificate-request/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.abc.com_cert",
+									"description": "example_string",
+									"type": "CERTIFICATE-REQUEST",
+									"subject": {
+										"cn": "example_string",
+										"c": "example_string",
+										"ou": "example_string",
+										"o": "example_string",
+										"l": "example_string",
+										"st": "example_string",
+										"email": "example_string"
+									},
+									"public_key_algorithm": "RSA",
+									"public_key_length": 2048,
+									"signature_algorithm": "SHA256",
+									"validity_time_year": 5,
+									"password": "example_string",
+									"pk_password": "example_string",
+									"encrypted_password": "example_string",
+									"certificate_request_pem": "example_string",
+									"certificate_chains": [
+										"example_item"
+									],
+									"project": "common"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -153,6 +310,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_certificate_request_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific ssl-certificate-certificate-request",
+						"description": "获取证书请求",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/certificate-request/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/certificate-request/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/certificate-request/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "CERTIFICATE-REQUEST",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_time_year": 5,
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_request_pem": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
+					}
 				}
 			},
 			"post": {
@@ -172,6 +369,58 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_certificate_request_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ssl-certificate-certificate-request",
+						"description": "新建证书请求",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/ssl-certificate/certificate-request/{name}",
+							"body": {
+								"name": "AI_www.abc.com_cert_B",
+								"type": "CERTIFICATE-REQUEST",
+								"subject": {
+									"cn": "example_string"
+								},
+								"public_key_algorithm": "RSA",
+								"public_key_length": 2048,
+								"signature_algorithm": "SHA256",
+								"validity_time_year": 5,
+								"import_cert_type": "SM2_SINGLE_CERT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/ssl-certificate/certificate-request/{name} 响应",
+						"description": "返回POST /api/ad/v3/rc/ssl-certificate/certificate-request/{name}的响应数据",
+						"value": {
+							"name": "AI_www.abc.com_cert_B",
+							"description": "example_string",
+							"type": "CERTIFICATE-REQUEST",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_time_year": 5,
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_request_pem": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
+					}
 				}
 			},
 			"put": {
@@ -189,6 +438,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_certificate_request_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific ssl-certificate-certificate-request",
+						"description": "修改证书请求",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/rc/ssl-certificate/certificate-request/{name}",
+							"body": {
+								"name": "www.abc.com_cert"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/rc/ssl-certificate/certificate-request/{name} 响应",
+						"description": "返回PUT /api/ad/v3/rc/ssl-certificate/certificate-request/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "CERTIFICATE-REQUEST",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_time_year": 5,
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_request_pem": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
 					}
 				}
 			},
@@ -208,6 +500,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_certificate_request_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific ssl-certificate-certificate-request",
+						"description": "修改证书请求",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/ssl-certificate/certificate-request/{name}",
+							"body": {
+								"name": "www.abc.com_cert"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/ssl-certificate/certificate-request/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/rc/ssl-certificate/certificate-request/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "CERTIFICATE-REQUEST",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_time_year": 5,
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_request_pem": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -220,6 +555,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ssl_certificate_certificate_request_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific ssl-certificate-certificate-request",
+						"description": "删除证书请求",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/rc/ssl-certificate/certificate-request/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/rc/ssl-certificate/certificate-request/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/rc/ssl-certificate/certificate-request/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"type": "CERTIFICATE-REQUEST",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 2048,
+							"signature_algorithm": "SHA256",
+							"validity_time_year": 5,
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_request_pem": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
 					}
 				}
 			}
@@ -254,6 +629,27 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_cgi_file_resource_response"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "export specific ssl-certificate-certificate-request file",
+						"description": "导出证书请求",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/certificate-request/{name}/request"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/certificate-request/{name}/request 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/certificate-request/{name}/request的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
+					}
 				}
 			}
 		},
@@ -287,6 +683,27 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_cgi_file_resource_response"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "export specific ssl-certificate-certificate-request certificate file",
+						"description": "获取证书请求对应证书",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ssl-certificate/certificate-request/{name}/certificate"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ssl-certificate/certificate-request/{name}/certificate 响应",
+						"description": "返回GET /api/ad/v3/rc/ssl-certificate/certificate-request/{name}/certificate的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
+					}
 				}
 			},
 			"post": {
@@ -304,6 +721,52 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/rc/ssl-certificate/imported-certificate.yaml#/responses/operation_config_ssl_certificate_imported_certificate_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "additional ssl-certificate-certificate-request certificate",
+						"description": "从证书请求新建证书",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/ssl-certificate/certificate-request/{name}/certificate",
+							"body": {
+								"certificate_chains": [
+									{
+										"certificate_token": "example_string"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/ssl-certificate/certificate-request/{name}/certificate 响应",
+						"description": "返回POST /api/ad/v3/rc/ssl-certificate/certificate-request/{name}/certificate的响应数据",
+						"value": {
+							"name": "AI_www.abc.com_cert_B",
+							"description": "example_string",
+							"type": "IMPORTED-CERTIFICATE",
+							"subject": {
+								"cn": "example_string",
+								"c": "example_string",
+								"ou": "example_string",
+								"o": "example_string",
+								"l": "example_string",
+								"st": "example_string",
+								"email": "example_string"
+							},
+							"public_key_algorithm": "RSA",
+							"public_key_length": 256,
+							"signature_algorithm": "SHA256",
+							"validity_not_before": "example_string",
+							"validity_not_after": "example_string",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"certificate_chains": [
+								"example_item"
+							],
+							"project": "common"
+						}
 					}
 				}
 			}
@@ -537,7 +1000,8 @@ module.exports ={
 						"SHA1",
 						"SM3",
 						"SHA384",
-						"SHA512"
+						"SHA512",
+						"SHA224"
 					],
 					"default": "SHA256"
 				},
@@ -710,7 +1174,11 @@ module.exports ={
 					"description": "可选参数；指定签名算法。",
 					"enum": [
 						"SHA256",
-						"SHA1"
+						"SHA1",
+						"SM3",
+						"SHA384",
+						"SHA512",
+						"SHA224"
 					],
 					"default": "SHA256"
 				},
@@ -796,6 +1264,25 @@ module.exports ={
 				"name": {
 					"description": "证书名字",
 					"type": "string"
+				},
+				"scep_ca": {
+					"description": "scep_ca",
+					"type": "object",
+					"properties": {
+						"ip": {
+							"description": "地址",
+							"type": "string",
+							"example": "10.8.55.1"
+						},
+						"port": {
+							"description": "端口",
+							"type": "integer",
+							"maximum": 65535,
+							"minimum": 0,
+							"default": 0,
+							"example": 80
+						}
+					}
 				}
 			}
 		},

@@ -40,7 +40,24 @@ module.exports ={
 				],
 				"summary": "interface-reset",
 				"description": "重置网口统计数据",
-				"operationId": "interface_reset"
+				"operationId": "interface_reset",
+				"x-examples": {
+					"request": {
+						"summary": "interface-reset",
+						"description": "重置网口统计数据",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/net/interface/reset"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/net/interface/reset 响应",
+						"description": "返回POST /api/ad/v3/debug/net/interface/reset的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			}
 		}
 	}

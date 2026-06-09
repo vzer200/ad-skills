@@ -62,6 +62,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_snat_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all snat",
+						"description": "获取SNAT统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/snat/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/snat/ 响应",
+						"description": "返回GET /api/ad/v3/stat/net/snat/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "snat_wan",
+									"hit": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -91,6 +120,24 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_snat_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific snat",
+						"description": "获取指定SNAT统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/net/snat/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/net/snat/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/net/snat/{name}的响应数据",
+						"value": {
+							"name": "snat_wan",
+							"hit": null
+						}
 					}
 				}
 			}

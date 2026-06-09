@@ -65,6 +65,64 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_rewrite_response_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all http-rewrite-response",
+						"description": "查看HTTP改写策略（应答改写）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/http-rewrite/response/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/http-rewrite/response/ 响应",
+						"description": "返回GET /api/ad/v3/slb/http-rewrite/response/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "url-sched",
+									"description": "example_string",
+									"type": "REWRITE-RESPONSE",
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"http_request_method": "ALL",
+									"http_request_version": "ALL",
+									"http_response_version": "ALL",
+									"http_request_uri_rule": null,
+									"http_request_header_rules": [
+										"example_item"
+									],
+									"http_response_state_code": null,
+									"http_response_header_rules": [
+										"example_item"
+									],
+									"action": "INSERT-HTTP-HEADER",
+									"header_operation": {
+										"header": "X-FORWARDED-FOR",
+										"pattern": "",
+										"replace": "${client_ip}"
+									},
+									"body_operation": {
+										"pattern": "http://www.testA.com",
+										"replace": "https://www.testB.com"
+									},
+									"http_response": "200_OK",
+									"rewrite_encode": "PLAIN"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +140,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_rewrite_response_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new http-rewrite-response",
+						"description": "新建HTTP改写策略（应答改写）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/http-rewrite/response/",
+							"body": {
+								"name": "AI_url-sched_A",
+								"type": "REWRITE-RESPONSE",
+								"http_request_method": "ALL",
+								"http_request_version": "ALL",
+								"http_response_version": "ALL",
+								"action": "INSERT-HTTP-HEADER",
+								"rewrite_encode": "PLAIN",
+								"header_operation": {
+									"header": "X-REWRITE",
+									"replace": "True"
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/http-rewrite/response/ 响应",
+						"description": "返回POST /api/ad/v3/slb/http-rewrite/response/的响应数据",
+						"value": {
+							"name": "AI_url-sched_A",
+							"description": "example_string",
+							"type": "REWRITE-RESPONSE",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"http_request_method": "ALL",
+							"http_request_version": "ALL",
+							"http_response_version": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"http_response_state_code": null,
+							"http_response_header_rules": [
+								"example_item"
+							],
+							"action": "INSERT-HTTP-HEADER",
+							"header_operation": {
+								"header": "X-FORWARDED-FOR",
+								"pattern": "",
+								"replace": "${client_ip}"
+							},
+							"body_operation": {
+								"pattern": "http://www.testA.com",
+								"replace": "https://www.testB.com"
+							},
+							"http_response": "200_OK",
+							"rewrite_encode": "PLAIN"
+						}
 					}
 				}
 			},
@@ -134,6 +252,53 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_rewrite_response_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific http-rewrite-response",
+						"description": "查看指定的HTTP改写策略（应答改写）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/http-rewrite/response/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/http-rewrite/response/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/http-rewrite/response/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"type": "REWRITE-RESPONSE",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"http_request_method": "ALL",
+							"http_request_version": "ALL",
+							"http_response_version": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"http_response_state_code": null,
+							"http_response_header_rules": [
+								"example_item"
+							],
+							"action": "INSERT-HTTP-HEADER",
+							"header_operation": {
+								"header": "X-FORWARDED-FOR",
+								"pattern": "",
+								"replace": "${client_ip}"
+							},
+							"body_operation": {
+								"pattern": "http://www.testA.com",
+								"replace": "https://www.testB.com"
+							},
+							"http_response": "200_OK",
+							"rewrite_encode": "PLAIN"
+						}
+					}
 				}
 			},
 			"post": {
@@ -151,6 +316,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_rewrite_response_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new http-rewrite-response",
+						"description": "新建指定的HTTP改写策略（应答改写）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/http-rewrite/response/{name}",
+							"body": {
+								"name": "AI_url-sched_B",
+								"type": "REWRITE-RESPONSE",
+								"http_request_method": "ALL",
+								"http_request_version": "ALL",
+								"http_response_version": "ALL",
+								"action": "INSERT-HTTP-HEADER",
+								"rewrite_encode": "PLAIN",
+								"header_operation": {
+									"header": "X-REWRITE",
+									"replace": "True"
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/http-rewrite/response/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/http-rewrite/response/{name}的响应数据",
+						"value": {
+							"name": "AI_url-sched_B",
+							"description": "example_string",
+							"type": "REWRITE-RESPONSE",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"http_request_method": "ALL",
+							"http_request_version": "ALL",
+							"http_response_version": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"http_response_state_code": null,
+							"http_response_header_rules": [
+								"example_item"
+							],
+							"action": "INSERT-HTTP-HEADER",
+							"header_operation": {
+								"header": "X-FORWARDED-FOR",
+								"pattern": "",
+								"replace": "${client_ip}"
+							},
+							"body_operation": {
+								"pattern": "http://www.testA.com",
+								"replace": "https://www.testB.com"
+							},
+							"http_response": "200_OK",
+							"rewrite_encode": "PLAIN"
+						}
 					}
 				}
 			},
@@ -170,6 +395,66 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_rewrite_response_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific http-rewrite-response",
+						"description": "修改指定的HTTP改写策略（应答改写）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/http-rewrite/response/{name}",
+							"body": {
+								"name": "url-sched",
+								"type": "REWRITE-RESPONSE",
+								"http_request_method": "ALL",
+								"http_request_version": "ALL",
+								"http_response_version": "ALL",
+								"action": "INSERT-HTTP-HEADER",
+								"rewrite_encode": "PLAIN",
+								"header_operation": {
+									"header": "X-REWRITE",
+									"replace": "True"
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/http-rewrite/response/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/http-rewrite/response/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"type": "REWRITE-RESPONSE",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"http_request_method": "ALL",
+							"http_request_version": "ALL",
+							"http_response_version": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"http_response_state_code": null,
+							"http_response_header_rules": [
+								"example_item"
+							],
+							"action": "INSERT-HTTP-HEADER",
+							"header_operation": {
+								"header": "X-FORWARDED-FOR",
+								"pattern": "",
+								"replace": "${client_ip}"
+							},
+							"body_operation": {
+								"pattern": "http://www.testA.com",
+								"replace": "https://www.testB.com"
+							},
+							"http_response": "200_OK",
+							"rewrite_encode": "PLAIN"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -188,6 +473,66 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_http_rewrite_response_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific http-rewrite-response",
+						"description": "修改指定的HTTP改写策略（应答改写）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/http-rewrite/response/{name}",
+							"body": {
+								"name": "url-sched",
+								"type": "REWRITE-RESPONSE",
+								"http_request_method": "ALL",
+								"http_request_version": "ALL",
+								"http_response_version": "ALL",
+								"action": "INSERT-HTTP-HEADER",
+								"rewrite_encode": "PLAIN",
+								"header_operation": {
+									"header": "X-REWRITE",
+									"replace": "True"
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/http-rewrite/response/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/http-rewrite/response/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"type": "REWRITE-RESPONSE",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"http_request_method": "ALL",
+							"http_request_version": "ALL",
+							"http_response_version": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"http_response_state_code": null,
+							"http_response_header_rules": [
+								"example_item"
+							],
+							"action": "INSERT-HTTP-HEADER",
+							"header_operation": {
+								"header": "X-FORWARDED-FOR",
+								"pattern": "",
+								"replace": "${client_ip}"
+							},
+							"body_operation": {
+								"pattern": "http://www.testA.com",
+								"replace": "https://www.testB.com"
+							},
+							"http_response": "200_OK",
+							"rewrite_encode": "PLAIN"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -200,6 +545,53 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_http_rewrite_response_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific http-rewrite-response",
+						"description": "删除指定的HTTP改写策略（应答改写）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/http-rewrite/response/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/http-rewrite/response/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/http-rewrite/response/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"type": "REWRITE-RESPONSE",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"http_request_method": "ALL",
+							"http_request_version": "ALL",
+							"http_response_version": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"http_response_state_code": null,
+							"http_response_header_rules": [
+								"example_item"
+							],
+							"action": "INSERT-HTTP-HEADER",
+							"header_operation": {
+								"header": "X-FORWARDED-FOR",
+								"pattern": "",
+								"replace": "${client_ip}"
+							},
+							"body_operation": {
+								"pattern": "http://www.testA.com",
+								"replace": "https://www.testB.com"
+							},
+							"http_response": "200_OK",
+							"rewrite_encode": "PLAIN"
+						}
 					}
 				}
 			}
@@ -428,7 +820,7 @@ module.exports ={
 						"replace": {
 							"description": "可选参数；头部（插入/删除/改写）的内容",
 							"type": "string",
-							"maxLength": 255,
+							"maxLength": 4096,
 							"example": "${client_ip}"
 						}
 					}
@@ -450,7 +842,7 @@ module.exports ={
 						"replace": {
 							"description": "可选参数；实体改写内容",
 							"type": "string",
-							"maxLength": 255,
+							"maxLength": 4096,
 							"example": "https://www.testB.com"
 						}
 					}

@@ -62,6 +62,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_local_device_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all local-device statistics on data-center",
+						"description": "查询指定数据中心local-device的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/ 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "dc1_ad2",
+									"virtual_service": {
+										"total": 2,
+										"health": {
+											"normal": [
+												"vs_portal_80"
+											],
+											"failure": [
+												"example_string"
+											]
+										}
+									}
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -94,6 +133,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_local_device_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific local-device statistics on data-center",
+						"description": "查询local-device的e内某服务设备的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}的响应数据",
+						"value": {
+							"name": "dc1_ad2",
+							"virtual_service": {
+								"total": 2,
+								"health": {
+									"normal": [
+										"vs_portal_80"
+									],
+									"failure": [
+										"example_string"
+									]
+								}
+							}
+						}
 					}
 				}
 			}
@@ -133,6 +200,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific local-device statistics on data-center",
+						"description": "查询local-device内某服务设备的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
 					}
 				}
 			}
@@ -178,6 +272,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_local_device_virtual_service_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all local-device statistics on data-center",
+						"description": "查询local-device内某服务设备的虚拟服务的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/virtual-service/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/virtual-service/ 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/virtual-service/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vs_http_8080",
+									"health": "NORMAL",
+									"failure_reason": "",
+									"addresses": [
+										"200.200.0.87"
+									],
+									"port": 8080,
+									"protocol": "TCP",
+									"vip_ports": [
+										{
+											"address": "200.200.0.87",
+											"port": 8080,
+											"protocol": "TCP"
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -213,6 +349,37 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_local_device_virtual_service_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-service statistics on data-center",
+						"description": "查询local-device内某服务设备的某个虚拟服务的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/virtual-service/{virtual_service_name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/virtual-service/{virtual_service_name} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/virtual-service/{virtual_service_name}的响应数据",
+						"value": {
+							"name": "vs_http_8080",
+							"health": "NORMAL",
+							"failure_reason": "",
+							"addresses": [
+								"200.200.0.87"
+							],
+							"port": 8080,
+							"protocol": "TCP",
+							"vip_ports": [
+								{
+									"address": "200.200.0.87",
+									"port": 8080,
+									"protocol": "TCP"
+								}
+							]
+						}
 					}
 				}
 			}
@@ -255,6 +422,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-service statistics on data-center",
+						"description": "查询local-device内某服务设备的某个虚拟服务的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/virtual-service/{virtual_service_name}/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/virtual-service/{virtual_service_name}/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/data-center/{data_center_name}/local-device/{local_device_name}/virtual-service/{virtual_service_name}/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
 					}
 				}
 			}

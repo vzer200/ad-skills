@@ -73,6 +73,116 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_all_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-record-all",
+						"description": "查看所有记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/all/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/all/ 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/all/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"state": "ENABLE",
+									"domain": "example_string",
+									"zone": "com",
+									"generate_ptr_record": "DISABLE",
+									"ttl": 60,
+									"type": "A",
+									"a_records": [
+										{
+											"address": "192.168.1.7",
+											"ttl": 60
+										}
+									],
+									"cname_records": "example_string",
+									"mx_records": [
+										{
+											"host": "example_string",
+											"priority": 1,
+											"ttl": 60
+										}
+									],
+									"ns_records": [
+										{
+											"domain": "ns1.www.baidu.com"
+										}
+									],
+									"ptr_records": [
+										{
+											"domain": "example_string",
+											"ttl": 60
+										}
+									],
+									"srv_records": [
+										{
+											"address": "192.168.1.212",
+											"port": 0,
+											"priority": 1,
+											"weight": 10,
+											"ttl": 60
+										}
+									],
+									"txt_records": [
+										"example_string"
+									],
+									"aaaa_records": [
+										{
+											"address": "2001:503:ba3e::2:30",
+											"ttl": 60
+										}
+									],
+									"ds_records": [
+										{
+											"key_tag": 0,
+											"algorithm": 0,
+											"digest_type": 0,
+											"digest": "example_string"
+										}
+									],
+									"naptr_records": [
+										{
+											"order": 1,
+											"priority": 1,
+											"flags": "example_string",
+											"service": "example_string",
+											"regular_expression": "example_string",
+											"replacement": "example_string"
+										}
+									],
+									"caa_records": [
+										{
+											"flags": 0,
+											"tag": "ISSUE",
+											"value": "example_string"
+										}
+									],
+									"hinfo_records": [
+										{
+											"cpu": "example_string",
+											"os": "example_string"
+										}
+									],
+									"dname_records": "example_string"
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

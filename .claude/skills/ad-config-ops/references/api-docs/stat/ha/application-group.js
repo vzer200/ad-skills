@@ -59,6 +59,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_application_group_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all application-group statistics",
+						"description": "获取应用组统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/ha/application-group/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/ha/application-group/ 响应",
+						"description": "返回GET /api/ad/v3/stat/ha/application-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "",
+									"active_member": "example_string",
+									"standby_member": "example_string",
+									"session_sync": "PROCESSING",
+									"last_failover": {
+										"time": 0,
+										"detail": "example_string"
+									}
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -88,6 +123,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_application_group_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific application-group statistics",
+						"description": "获取某个应用组统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/ha/application-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/ha/application-group/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/ha/application-group/{name}的响应数据",
+						"value": {
+							"name": "",
+							"active_member": "example_string",
+							"standby_member": "example_string",
+							"session_sync": "PROCESSING",
+							"last_failover": {
+								"time": 0,
+								"detail": "example_string"
+							}
+						}
 					}
 				}
 			}

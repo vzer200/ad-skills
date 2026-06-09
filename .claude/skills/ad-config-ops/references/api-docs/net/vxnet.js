@@ -65,6 +65,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vxnet_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all vxnet",
+						"description": "获取vxnet配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/vxnet/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/vxnet/ 响应",
+						"description": "返回GET /api/ad/v3/net/vxnet/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "myvxnet",
+									"description": "myvxnet belongs to someone",
+									"vteps_ip": [
+										"23.2.2.2"
+									],
+									"vteps_port": 4789,
+									"vxlan_domain": 0
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +116,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vxnet_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new vxnet",
+						"description": "新建vxnet配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/vxnet/",
+							"body": {
+								"name": "AI_myvxnet_A",
+								"vteps_port": 4789,
+								"vxlan_domain": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/vxnet/ 响应",
+						"description": "返回POST /api/ad/v3/net/vxnet/的响应数据",
+						"value": {
+							"name": "AI_myvxnet_A",
+							"description": "myvxnet belongs to someone",
+							"vteps_ip": [
+								"23.2.2.2"
+							],
+							"vteps_port": 4789,
+							"vxlan_domain": 0
+						}
 					}
 				}
 			},
@@ -101,6 +163,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vxnet_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify vxnet",
+						"description": "修改vxnet配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/vxnet/",
+							"body": {
+								"name": "myvxnet",
+								"vteps_port": 4789,
+								"vxlan_domain": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/vxnet/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/vxnet/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "myvxnet",
+									"description": "myvxnet belongs to someone",
+									"vteps_ip": [
+										"23.2.2.2"
+									],
+									"vteps_port": 4789,
+									"vxlan_domain": 0
+								}
+							]
+						}
 					}
 				}
 			}
@@ -132,6 +233,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vxnet_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific vxnet",
+						"description": "修改vxnet配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/vxnet/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/vxnet/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/vxnet/{name}的响应数据",
+						"value": {
+							"name": "myvxnet",
+							"description": "myvxnet belongs to someone",
+							"vteps_ip": [
+								"23.2.2.2"
+							],
+							"vteps_port": 4789,
+							"vxlan_domain": 0
+						}
+					}
 				}
 			},
 			"post": {
@@ -151,6 +275,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vxnet_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new vxnet",
+						"description": "新建vxnet配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/vxnet/{name}",
+							"body": {
+								"name": "AI_myvxnet_B",
+								"vteps_port": 4789,
+								"vxlan_domain": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/vxnet/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/vxnet/{name}的响应数据",
+						"value": {
+							"name": "AI_myvxnet_B",
+							"description": "myvxnet belongs to someone",
+							"vteps_ip": [
+								"23.2.2.2"
+							],
+							"vteps_port": 4789,
+							"vxlan_domain": 0
+						}
+					}
 				}
 			},
 			"put": {
@@ -168,6 +320,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vxnet_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific vxnet",
+						"description": "修改vxnet配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/vxnet/{name}",
+							"body": {
+								"name": "myvxnet",
+								"vteps_port": 4789,
+								"vxlan_domain": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/vxnet/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/vxnet/{name}的响应数据",
+						"value": {
+							"name": "myvxnet",
+							"description": "myvxnet belongs to someone",
+							"vteps_ip": [
+								"23.2.2.2"
+							],
+							"vteps_port": 4789,
+							"vxlan_domain": 0
+						}
 					}
 				}
 			},
@@ -187,6 +367,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_vxnet_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific vxnet",
+						"description": "修改vxnet配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/vxnet/{name}",
+							"body": {
+								"name": "myvxnet",
+								"vteps_port": 4789,
+								"vxlan_domain": 0
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/vxnet/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/vxnet/{name}的响应数据",
+						"value": {
+							"name": "myvxnet",
+							"description": "myvxnet belongs to someone",
+							"vteps_ip": [
+								"23.2.2.2"
+							],
+							"vteps_port": 4789,
+							"vxlan_domain": 0
+						}
+					}
 				}
 			},
 			"delete": {
@@ -199,6 +407,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_vxnet_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific vxnet",
+						"description": "删除vxnet配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/vxnet/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/vxnet/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/vxnet/{name}的响应数据",
+						"value": {
+							"name": "myvxnet",
+							"description": "myvxnet belongs to someone",
+							"vteps_ip": [
+								"23.2.2.2"
+							],
+							"vteps_port": 4789,
+							"vxlan_domain": 0
+						}
 					}
 				}
 			}

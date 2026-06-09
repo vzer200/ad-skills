@@ -51,6 +51,150 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_syslog_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get syslog",
+						"description": "查看当前已有的系统syslog设置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/syslog"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/syslog 响应",
+						"description": "返回GET /api/ad/v3/sys/syslog的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"servers": [
+								{
+									"address": "10.1.1.1",
+									"port": 514,
+									"language_type": "LANGUAGE_ZH_CN",
+									"message_encode": "UTF8",
+									"network": "AUTO"
+								}
+							],
+							"message_encode": "UTF8",
+							"information_log_facility": "NONE",
+							"alarm_log_facility": "NONE",
+							"error_log_facility": "NONE",
+							"ssl_log_facility": "NONE",
+							"operation_log_facility": "NONE",
+							"http_log_facility": "NONE",
+							"nat_log_facility": "NONE",
+							"ipro_log_facility": "NONE",
+							"dns_log_facility": "NONE",
+							"information_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"alarm_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"error_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"ssl_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"operation_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"http_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"dns_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"nat_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"ipro_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +213,163 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_syslog_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace syslog",
+						"description": "修改系统syslog设置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/syslog",
+							"body": {
+								"state": "ENABLE",
+								"message_encode": "UTF8",
+								"information_log_facility": "NONE",
+								"alarm_log_facility": "NONE",
+								"error_log_facility": "NONE",
+								"ssl_log_facility": "NONE",
+								"operation_log_facility": "NONE",
+								"http_log_facility": "NONE",
+								"nat_log_facility": "NONE",
+								"ipro_log_facility": "NONE",
+								"dns_log_facility": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/syslog 响应",
+						"description": "返回PUT /api/ad/v3/sys/syslog的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"servers": [
+								{
+									"address": "10.1.1.1",
+									"port": 514,
+									"language_type": "LANGUAGE_ZH_CN",
+									"message_encode": "UTF8",
+									"network": "AUTO"
+								}
+							],
+							"message_encode": "UTF8",
+							"information_log_facility": "NONE",
+							"alarm_log_facility": "NONE",
+							"error_log_facility": "NONE",
+							"ssl_log_facility": "NONE",
+							"operation_log_facility": "NONE",
+							"http_log_facility": "NONE",
+							"nat_log_facility": "NONE",
+							"ipro_log_facility": "NONE",
+							"dns_log_facility": "NONE",
+							"information_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"alarm_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"error_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"ssl_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"operation_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"http_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"dns_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"nat_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"ipro_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							}
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +387,163 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_syslog_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify syslog",
+						"description": "修改系统syslog设置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/syslog",
+							"body": {
+								"state": "ENABLE",
+								"message_encode": "UTF8",
+								"information_log_facility": "NONE",
+								"alarm_log_facility": "NONE",
+								"error_log_facility": "NONE",
+								"ssl_log_facility": "NONE",
+								"operation_log_facility": "NONE",
+								"http_log_facility": "NONE",
+								"nat_log_facility": "NONE",
+								"ipro_log_facility": "NONE",
+								"dns_log_facility": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/syslog 响应",
+						"description": "返回PATCH /api/ad/v3/sys/syslog的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"servers": [
+								{
+									"address": "10.1.1.1",
+									"port": 514,
+									"language_type": "LANGUAGE_ZH_CN",
+									"message_encode": "UTF8",
+									"network": "AUTO"
+								}
+							],
+							"message_encode": "UTF8",
+							"information_log_facility": "NONE",
+							"alarm_log_facility": "NONE",
+							"error_log_facility": "NONE",
+							"ssl_log_facility": "NONE",
+							"operation_log_facility": "NONE",
+							"http_log_facility": "NONE",
+							"nat_log_facility": "NONE",
+							"ipro_log_facility": "NONE",
+							"dns_log_facility": "NONE",
+							"information_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"alarm_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"error_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"ssl_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"operation_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"http_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"dns_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"nat_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							},
+							"ipro_log_module": {
+								"system_config": "ENABLE",
+								"servers": [
+									{
+										"address": "10.1.1.1",
+										"port": 514,
+										"language_type": "LANGUAGE_ZH_CN",
+										"message_encode": "UTF8",
+										"network": "AUTO"
+									}
+								]
+							}
+						}
 					}
 				}
 			},
@@ -209,7 +667,7 @@ module.exports ={
 							"address"
 						]
 					},
-					"maxItems": 5
+					"maxItems": 16
 				},
 				"message_encode": {
 					"description": "可选参数；日志编码格式（ascii/utf8/gbk/gb2312），默认为utf8",
@@ -377,6 +835,762 @@ module.exports ={
 					],
 					"default": "NONE",
 					"example": "NONE"
+				},
+				"information_log_module": {
+					"description": "信息日志模块设置",
+					"title": "信息日志模块设置",
+					"type": "object",
+					"properties": {
+						"system_config": {
+							"description": "是否跟随系统配置",
+							"__format__description__": "合法输入为: ENABLE、DISABLE",
+							"title": "是否跟随系统配置",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "ENABLE",
+							"example": "ENABLE"
+						},
+						"servers": {
+							"description": "服务器",
+							"type": "array",
+							"items": {
+								"description": "服务器ip、端口",
+								"type": "object",
+								"properties": {
+									"address": {
+										"description": "服务器ip",
+										"title": "服务器ip",
+										"type": "string",
+										"example": "10.1.1.1"
+									},
+									"port": {
+										"description": "服务器端口",
+										"title": "服务器端口",
+										"type": "integer",
+										"default": 514,
+										"maximum": 65535,
+										"minimum": 1,
+										"example": 514
+									},
+									"language_type": {
+										"description": "日志语言",
+										"title": "日志语言",
+										"type": "string",
+										"enum": [
+											"LANGUAGE_ZH_CN",
+											"LANGUAGE_EN_US"
+										],
+										"default": "LANGUAGE_ZH_CN",
+										"example": "LANGUAGE_ZH_CN"
+									},
+									"message_encode": {
+										"description": "日志编码格式",
+										"title": "日志编码格式",
+										"type": "string",
+										"enum": [
+											"ASCII",
+											"UTF8",
+											"GBK",
+											"GB2312"
+										],
+										"default": "UTF8",
+										"example": "UTF8"
+									},
+									"network": {
+										"description": "选择的网络",
+										"title": "选择的网络",
+										"type": "string",
+										"enum": [
+											"MANAGE_NET",
+											"SERVICE_NET",
+											"AUTO"
+										],
+										"default": "AUTO",
+										"example": "AUTO"
+									}
+								},
+								"required": [
+									"address"
+								]
+							},
+							"maxItems": 16
+						}
+					}
+				},
+				"alarm_log_module": {
+					"description": "告警日志模块设置",
+					"title": "告警日志模块设置",
+					"type": "object",
+					"properties": {
+						"system_config": {
+							"description": "是否跟随系统配置",
+							"__format__description__": "合法输入为: ENABLE、DISABLE",
+							"title": "是否跟随系统配置",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "ENABLE",
+							"example": "ENABLE"
+						},
+						"servers": {
+							"description": "服务器",
+							"type": "array",
+							"items": {
+								"description": "服务器ip、端口",
+								"type": "object",
+								"properties": {
+									"address": {
+										"description": "服务器ip",
+										"title": "服务器ip",
+										"type": "string",
+										"example": "10.1.1.1"
+									},
+									"port": {
+										"description": "服务器端口",
+										"title": "服务器端口",
+										"type": "integer",
+										"default": 514,
+										"maximum": 65535,
+										"minimum": 1,
+										"example": 514
+									},
+									"language_type": {
+										"description": "日志语言",
+										"title": "日志语言",
+										"type": "string",
+										"enum": [
+											"LANGUAGE_ZH_CN",
+											"LANGUAGE_EN_US"
+										],
+										"default": "LANGUAGE_ZH_CN",
+										"example": "LANGUAGE_ZH_CN"
+									},
+									"message_encode": {
+										"description": "日志编码格式",
+										"title": "日志编码格式",
+										"type": "string",
+										"enum": [
+											"ASCII",
+											"UTF8",
+											"GBK",
+											"GB2312"
+										],
+										"default": "UTF8",
+										"example": "UTF8"
+									},
+									"network": {
+										"description": "选择的网络",
+										"title": "选择的网络",
+										"type": "string",
+										"enum": [
+											"MANAGE_NET",
+											"SERVICE_NET",
+											"AUTO"
+										],
+										"default": "AUTO",
+										"example": "AUTO"
+									}
+								},
+								"required": [
+									"address"
+								]
+							},
+							"maxItems": 16
+						}
+					}
+				},
+				"error_log_module": {
+					"description": "错误日志模块设置",
+					"title": "错误日志模块设置",
+					"type": "object",
+					"properties": {
+						"system_config": {
+							"description": "是否跟随系统配置",
+							"__format__description__": "合法输入为: ENABLE、DISABLE",
+							"title": "是否跟随系统配置",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "ENABLE",
+							"example": "ENABLE"
+						},
+						"servers": {
+							"description": "服务器",
+							"type": "array",
+							"items": {
+								"description": "服务器ip、端口",
+								"type": "object",
+								"properties": {
+									"address": {
+										"description": "服务器ip",
+										"title": "服务器ip",
+										"type": "string",
+										"example": "10.1.1.1"
+									},
+									"port": {
+										"description": "服务器端口",
+										"title": "服务器端口",
+										"type": "integer",
+										"default": 514,
+										"maximum": 65535,
+										"minimum": 1,
+										"example": 514
+									},
+									"language_type": {
+										"description": "日志语言",
+										"title": "日志语言",
+										"type": "string",
+										"enum": [
+											"LANGUAGE_ZH_CN",
+											"LANGUAGE_EN_US"
+										],
+										"default": "LANGUAGE_ZH_CN",
+										"example": "LANGUAGE_ZH_CN"
+									},
+									"message_encode": {
+										"description": "日志编码格式",
+										"title": "日志编码格式",
+										"type": "string",
+										"enum": [
+											"ASCII",
+											"UTF8",
+											"GBK",
+											"GB2312"
+										],
+										"default": "UTF8",
+										"example": "UTF8"
+									},
+									"network": {
+										"description": "选择的网络",
+										"title": "选择的网络",
+										"type": "string",
+										"enum": [
+											"MANAGE_NET",
+											"SERVICE_NET",
+											"AUTO"
+										],
+										"default": "AUTO",
+										"example": "AUTO"
+									}
+								},
+								"required": [
+									"address"
+								]
+							},
+							"maxItems": 16
+						}
+					}
+				},
+				"ssl_log_module": {
+					"description": "SSL日志模块设置",
+					"title": "SSL日志模块设置",
+					"type": "object",
+					"properties": {
+						"system_config": {
+							"description": "是否跟随系统配置",
+							"__format__description__": "合法输入为: ENABLE、DISABLE",
+							"title": "是否跟随系统配置",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "ENABLE",
+							"example": "ENABLE"
+						},
+						"servers": {
+							"description": "服务器",
+							"type": "array",
+							"items": {
+								"description": "服务器ip、端口",
+								"type": "object",
+								"properties": {
+									"address": {
+										"description": "服务器ip",
+										"title": "服务器ip",
+										"type": "string",
+										"example": "10.1.1.1"
+									},
+									"port": {
+										"description": "服务器端口",
+										"title": "服务器端口",
+										"type": "integer",
+										"default": 514,
+										"maximum": 65535,
+										"minimum": 1,
+										"example": 514
+									},
+									"language_type": {
+										"description": "日志语言",
+										"title": "日志语言",
+										"type": "string",
+										"enum": [
+											"LANGUAGE_ZH_CN",
+											"LANGUAGE_EN_US"
+										],
+										"default": "LANGUAGE_ZH_CN",
+										"example": "LANGUAGE_ZH_CN"
+									},
+									"message_encode": {
+										"description": "日志编码格式",
+										"title": "日志编码格式",
+										"type": "string",
+										"enum": [
+											"ASCII",
+											"UTF8",
+											"GBK",
+											"GB2312"
+										],
+										"default": "UTF8",
+										"example": "UTF8"
+									},
+									"network": {
+										"description": "选择的网络",
+										"title": "选择的网络",
+										"type": "string",
+										"enum": [
+											"MANAGE_NET",
+											"SERVICE_NET",
+											"AUTO"
+										],
+										"default": "AUTO",
+										"example": "AUTO"
+									}
+								},
+								"required": [
+									"address"
+								]
+							},
+							"maxItems": 16
+						}
+					}
+				},
+				"operation_log_module": {
+					"description": "管理日志模块设置",
+					"title": "管理日志模块设置",
+					"type": "object",
+					"properties": {
+						"system_config": {
+							"description": "是否跟随系统配置",
+							"__format__description__": "合法输入为: ENABLE、DISABLE",
+							"title": "是否跟随系统配置",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "ENABLE",
+							"example": "ENABLE"
+						},
+						"servers": {
+							"description": "服务器",
+							"type": "array",
+							"items": {
+								"description": "服务器ip、端口",
+								"type": "object",
+								"properties": {
+									"address": {
+										"description": "服务器ip",
+										"title": "服务器ip",
+										"type": "string",
+										"example": "10.1.1.1"
+									},
+									"port": {
+										"description": "服务器端口",
+										"title": "服务器端口",
+										"type": "integer",
+										"default": 514,
+										"maximum": 65535,
+										"minimum": 1,
+										"example": 514
+									},
+									"language_type": {
+										"description": "日志语言",
+										"title": "日志语言",
+										"type": "string",
+										"enum": [
+											"LANGUAGE_ZH_CN",
+											"LANGUAGE_EN_US"
+										],
+										"default": "LANGUAGE_ZH_CN",
+										"example": "LANGUAGE_ZH_CN"
+									},
+									"message_encode": {
+										"description": "日志编码格式",
+										"title": "日志编码格式",
+										"type": "string",
+										"enum": [
+											"ASCII",
+											"UTF8",
+											"GBK",
+											"GB2312"
+										],
+										"default": "UTF8",
+										"example": "UTF8"
+									},
+									"network": {
+										"description": "选择的网络",
+										"title": "选择的网络",
+										"type": "string",
+										"enum": [
+											"MANAGE_NET",
+											"SERVICE_NET",
+											"AUTO"
+										],
+										"default": "AUTO",
+										"example": "AUTO"
+									}
+								},
+								"required": [
+									"address"
+								]
+							},
+							"maxItems": 16
+						}
+					}
+				},
+				"http_log_module": {
+					"description": "HTTP日志模块设置",
+					"title": "HTTP日志模块设置",
+					"type": "object",
+					"properties": {
+						"system_config": {
+							"description": "是否跟随系统配置",
+							"__format__description__": "合法输入为: ENABLE、DISABLE",
+							"title": "是否跟随系统配置",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "ENABLE",
+							"example": "ENABLE"
+						},
+						"servers": {
+							"description": "服务器",
+							"type": "array",
+							"items": {
+								"description": "服务器ip、端口",
+								"type": "object",
+								"properties": {
+									"address": {
+										"description": "服务器ip",
+										"title": "服务器ip",
+										"type": "string",
+										"example": "10.1.1.1"
+									},
+									"port": {
+										"description": "服务器端口",
+										"title": "服务器端口",
+										"type": "integer",
+										"default": 514,
+										"maximum": 65535,
+										"minimum": 1,
+										"example": 514
+									},
+									"language_type": {
+										"description": "日志语言",
+										"title": "日志语言",
+										"type": "string",
+										"enum": [
+											"LANGUAGE_ZH_CN",
+											"LANGUAGE_EN_US"
+										],
+										"default": "LANGUAGE_ZH_CN",
+										"example": "LANGUAGE_ZH_CN"
+									},
+									"message_encode": {
+										"description": "日志编码格式",
+										"title": "日志编码格式",
+										"type": "string",
+										"enum": [
+											"ASCII",
+											"UTF8",
+											"GBK",
+											"GB2312"
+										],
+										"default": "UTF8",
+										"example": "UTF8"
+									},
+									"network": {
+										"description": "选择的网络",
+										"title": "选择的网络",
+										"type": "string",
+										"enum": [
+											"MANAGE_NET",
+											"SERVICE_NET",
+											"AUTO"
+										],
+										"default": "AUTO",
+										"example": "AUTO"
+									}
+								},
+								"required": [
+									"address"
+								]
+							},
+							"maxItems": 16
+						}
+					}
+				},
+				"dns_log_module": {
+					"description": "DNS日志模块设置",
+					"title": "DNS日志模块设置",
+					"type": "object",
+					"properties": {
+						"system_config": {
+							"description": "是否跟随系统配置",
+							"__format__description__": "合法输入为: ENABLE、DISABLE",
+							"title": "是否跟随系统配置",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "ENABLE",
+							"example": "ENABLE"
+						},
+						"servers": {
+							"description": "服务器",
+							"type": "array",
+							"items": {
+								"description": "服务器ip、端口",
+								"type": "object",
+								"properties": {
+									"address": {
+										"description": "服务器ip",
+										"title": "服务器ip",
+										"type": "string",
+										"example": "10.1.1.1"
+									},
+									"port": {
+										"description": "服务器端口",
+										"title": "服务器端口",
+										"type": "integer",
+										"default": 514,
+										"maximum": 65535,
+										"minimum": 1,
+										"example": 514
+									},
+									"language_type": {
+										"description": "日志语言",
+										"title": "日志语言",
+										"type": "string",
+										"enum": [
+											"LANGUAGE_ZH_CN",
+											"LANGUAGE_EN_US"
+										],
+										"default": "LANGUAGE_ZH_CN",
+										"example": "LANGUAGE_ZH_CN"
+									},
+									"message_encode": {
+										"description": "日志编码格式",
+										"title": "日志编码格式",
+										"type": "string",
+										"enum": [
+											"ASCII",
+											"UTF8",
+											"GBK",
+											"GB2312"
+										],
+										"default": "UTF8",
+										"example": "UTF8"
+									},
+									"network": {
+										"description": "选择的网络",
+										"title": "DNS日志模块选择的网络",
+										"type": "string",
+										"enum": [
+											"MANAGE_NET",
+											"SERVICE_NET",
+											"AUTO"
+										],
+										"default": "AUTO",
+										"example": "AUTO"
+									}
+								},
+								"required": [
+									"address"
+								]
+							},
+							"maxItems": 16
+						}
+					}
+				},
+				"nat_log_module": {
+					"description": "NAT日志模块设置",
+					"title": "NAT日志模块设置",
+					"type": "object",
+					"properties": {
+						"system_config": {
+							"description": "是否跟随系统配置",
+							"__format__description__": "合法输入为: ENABLE、DISABLE",
+							"title": "是否跟随系统配置",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "ENABLE",
+							"example": "ENABLE"
+						},
+						"servers": {
+							"description": "服务器",
+							"type": "array",
+							"items": {
+								"description": "服务器ip、端口",
+								"type": "object",
+								"properties": {
+									"address": {
+										"description": "服务器ip",
+										"title": "服务器ip",
+										"type": "string",
+										"example": "10.1.1.1"
+									},
+									"port": {
+										"description": "服务器端口",
+										"title": "服务器端口",
+										"type": "integer",
+										"default": 514,
+										"maximum": 65535,
+										"minimum": 1,
+										"example": 514
+									},
+									"language_type": {
+										"description": "日志语言",
+										"title": "日志语言",
+										"type": "string",
+										"enum": [
+											"LANGUAGE_ZH_CN",
+											"LANGUAGE_EN_US"
+										],
+										"default": "LANGUAGE_ZH_CN",
+										"example": "LANGUAGE_ZH_CN"
+									},
+									"message_encode": {
+										"description": "日志编码格式",
+										"title": "日志编码格式",
+										"type": "string",
+										"enum": [
+											"ASCII",
+											"UTF8",
+											"GBK",
+											"GB2312"
+										],
+										"default": "UTF8",
+										"example": "UTF8"
+									},
+									"network": {
+										"description": "选择的网络",
+										"title": "选择的网络",
+										"type": "string",
+										"enum": [
+											"MANAGE_NET",
+											"SERVICE_NET",
+											"AUTO"
+										],
+										"default": "AUTO",
+										"example": "AUTO"
+									}
+								},
+								"required": [
+									"address"
+								]
+							},
+							"maxItems": 16
+						}
+					}
+				},
+				"ipro_log_module": {
+					"description": "IPRO日志模块设置",
+					"title": "IPRO日志模块设置",
+					"type": "object",
+					"properties": {
+						"system_config": {
+							"description": "是否跟随系统配置",
+							"__format__description__": "合法输入为: ENABLE、DISABLE",
+							"title": "是否跟随系统配置",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "ENABLE",
+							"example": "ENABLE"
+						},
+						"servers": {
+							"description": "服务器",
+							"type": "array",
+							"items": {
+								"description": "服务器ip、端口",
+								"type": "object",
+								"properties": {
+									"address": {
+										"description": "服务器ip",
+										"title": "服务器ip",
+										"type": "string",
+										"example": "10.1.1.1"
+									},
+									"port": {
+										"description": "服务器端口",
+										"title": "服务器端口",
+										"type": "integer",
+										"default": 514,
+										"maximum": 65535,
+										"minimum": 1,
+										"example": 514
+									},
+									"language_type": {
+										"description": "日志语言",
+										"title": "日志语言",
+										"type": "string",
+										"enum": [
+											"LANGUAGE_ZH_CN",
+											"LANGUAGE_EN_US"
+										],
+										"default": "LANGUAGE_ZH_CN",
+										"example": "LANGUAGE_ZH_CN"
+									},
+									"message_encode": {
+										"description": "日志编码格式",
+										"title": "日志编码格式",
+										"type": "string",
+										"enum": [
+											"ASCII",
+											"UTF8",
+											"GBK",
+											"GB2312"
+										],
+										"default": "UTF8",
+										"example": "UTF8"
+									},
+									"network": {
+										"description": "选择的网络",
+										"title": "选择的网络",
+										"type": "string",
+										"enum": [
+											"MANAGE_NET",
+											"SERVICE_NET",
+											"AUTO"
+										],
+										"default": "AUTO",
+										"example": "AUTO"
+									}
+								},
+								"required": [
+									"address"
+								]
+							},
+							"maxItems": 16
+						}
+					}
 				}
 			}
 		}

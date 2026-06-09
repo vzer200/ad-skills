@@ -65,6 +65,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_static_route_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all static-route",
+						"description": "获取静态路由配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/static-route/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/static-route/ 响应",
+						"description": "返回GET /api/ad/v3/net/static-route/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "intranet",
+									"description": "example_string",
+									"state": "ENABLE",
+									"subnet": "192.168.0.0/16",
+									"next_hop_type": "GATEWAY",
+									"pool_name": "example_string",
+									"gateway": "192.168.1.1",
+									"cluster_gateways": [
+										{
+											"gateway": "192.168.1.1",
+											"associated_member": "{member}"
+										}
+									],
+									"priority": 10,
+									"redistribute": "DISABLE",
+									"monitor_detect": "DISABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +125,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_static_route_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new static-route",
+						"description": "新建静态路由配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/static-route/",
+							"body": {
+								"name": "AI_intranet_A",
+								"state": "ENABLE",
+								"subnet": "192.168.0.0/16",
+								"next_hop_type": "GATEWAY",
+								"priority": 10,
+								"redistribute": "DISABLE",
+								"monitor_detect": "DISABLE",
+								"gateway": "192.168.1.1"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/static-route/ 响应",
+						"description": "返回POST /api/ad/v3/net/static-route/的响应数据",
+						"value": {
+							"name": "AI_intranet_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"subnet": "192.168.0.0/16",
+							"next_hop_type": "GATEWAY",
+							"pool_name": "example_string",
+							"gateway": "192.168.1.1",
+							"cluster_gateways": [
+								{
+									"gateway": "192.168.1.1",
+									"associated_member": "{member}"
+								}
+							],
+							"priority": 10,
+							"redistribute": "DISABLE",
+							"monitor_detect": "DISABLE"
+						}
 					}
 				}
 			},
@@ -101,6 +186,59 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_static_route_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify static-route",
+						"description": "修改静态路由配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/static-route/",
+							"body": {
+								"name": "intranet",
+								"state": "ENABLE",
+								"subnet": "192.168.0.0/16",
+								"next_hop_type": "GATEWAY",
+								"priority": 10,
+								"redistribute": "DISABLE",
+								"monitor_detect": "DISABLE",
+								"gateway": "192.168.1.1"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/static-route/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/static-route/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "intranet",
+									"description": "example_string",
+									"state": "ENABLE",
+									"subnet": "192.168.0.0/16",
+									"next_hop_type": "GATEWAY",
+									"pool_name": "example_string",
+									"gateway": "192.168.1.1",
+									"cluster_gateways": [
+										{
+											"gateway": "192.168.1.1",
+											"associated_member": "{member}"
+										}
+									],
+									"priority": 10,
+									"redistribute": "DISABLE",
+									"monitor_detect": "DISABLE"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -157,6 +295,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_static_route_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific static-route",
+						"description": "获取静态路由配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/static-route/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/static-route/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/static-route/{name}的响应数据",
+						"value": {
+							"name": "intranet",
+							"description": "example_string",
+							"state": "ENABLE",
+							"subnet": "192.168.0.0/16",
+							"next_hop_type": "GATEWAY",
+							"pool_name": "example_string",
+							"gateway": "192.168.1.1",
+							"cluster_gateways": [
+								{
+									"gateway": "192.168.1.1",
+									"associated_member": "{member}"
+								}
+							],
+							"priority": 10,
+							"redistribute": "DISABLE",
+							"monitor_detect": "DISABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -176,6 +346,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_static_route_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new static-route",
+						"description": "新建静态路由配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/static-route/{name}",
+							"body": {
+								"name": "AI_intranet_B",
+								"state": "ENABLE",
+								"subnet": "192.168.0.0/16",
+								"next_hop_type": "GATEWAY",
+								"priority": 10,
+								"redistribute": "DISABLE",
+								"monitor_detect": "DISABLE",
+								"gateway": "192.168.1.1"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/static-route/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/static-route/{name}的响应数据",
+						"value": {
+							"name": "AI_intranet_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"subnet": "192.168.0.0/16",
+							"next_hop_type": "GATEWAY",
+							"pool_name": "example_string",
+							"gateway": "192.168.1.1",
+							"cluster_gateways": [
+								{
+									"gateway": "192.168.1.1",
+									"associated_member": "{member}"
+								}
+							],
+							"priority": 10,
+							"redistribute": "DISABLE",
+							"monitor_detect": "DISABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -193,6 +405,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_static_route_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific static-route",
+						"description": "修改静态路由配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/static-route/{name}",
+							"body": {
+								"name": "intranet",
+								"state": "ENABLE",
+								"subnet": "192.168.0.0/16",
+								"next_hop_type": "GATEWAY",
+								"priority": 10,
+								"redistribute": "DISABLE",
+								"monitor_detect": "DISABLE",
+								"gateway": "192.168.1.1"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/static-route/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/static-route/{name}的响应数据",
+						"value": {
+							"name": "intranet",
+							"description": "example_string",
+							"state": "ENABLE",
+							"subnet": "192.168.0.0/16",
+							"next_hop_type": "GATEWAY",
+							"pool_name": "example_string",
+							"gateway": "192.168.1.1",
+							"cluster_gateways": [
+								{
+									"gateway": "192.168.1.1",
+									"associated_member": "{member}"
+								}
+							],
+							"priority": 10,
+							"redistribute": "DISABLE",
+							"monitor_detect": "DISABLE"
+						}
 					}
 				}
 			},
@@ -212,6 +466,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_static_route_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific static-route",
+						"description": "修改静态路由配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/static-route/{name}",
+							"body": {
+								"name": "intranet",
+								"state": "ENABLE",
+								"subnet": "192.168.0.0/16",
+								"next_hop_type": "GATEWAY",
+								"priority": 10,
+								"redistribute": "DISABLE",
+								"monitor_detect": "DISABLE",
+								"gateway": "192.168.1.1"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/static-route/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/static-route/{name}的响应数据",
+						"value": {
+							"name": "intranet",
+							"description": "example_string",
+							"state": "ENABLE",
+							"subnet": "192.168.0.0/16",
+							"next_hop_type": "GATEWAY",
+							"pool_name": "example_string",
+							"gateway": "192.168.1.1",
+							"cluster_gateways": [
+								{
+									"gateway": "192.168.1.1",
+									"associated_member": "{member}"
+								}
+							],
+							"priority": 10,
+							"redistribute": "DISABLE",
+							"monitor_detect": "DISABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -224,6 +520,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_static_route_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific static-route",
+						"description": "删除静态路由配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/static-route/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/static-route/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/static-route/{name}的响应数据",
+						"value": {
+							"name": "intranet",
+							"description": "example_string",
+							"state": "ENABLE",
+							"subnet": "192.168.0.0/16",
+							"next_hop_type": "GATEWAY",
+							"pool_name": "example_string",
+							"gateway": "192.168.1.1",
+							"cluster_gateways": [
+								{
+									"gateway": "192.168.1.1",
+									"associated_member": "{member}"
+								}
+							],
+							"priority": 10,
+							"redistribute": "DISABLE",
+							"monitor_detect": "DISABLE"
+						}
 					}
 				}
 			}

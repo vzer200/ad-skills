@@ -56,6 +56,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_version"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get version info",
+						"description": "获取当前版本信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/version"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/version 响应",
+						"description": "返回GET /api/ad/v3/version的响应数据",
+						"value": {
+							"system": "7.0.5",
+							"api": "v3",
+							"compatible": [
+								"v2"
+							],
+							"package": "BUILD20180730",
+							"modules": [
+								"GCS_PRODUCT1.2.0"
+							],
+							"patch_tags": [
+								"Custom-built (1 10-10-10 10:10:10)-i-abc(101010101010)-xyz-AD-2010101001"
+							]
+						}
+					}
 				}
 			}
 		}

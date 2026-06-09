@@ -62,6 +62,66 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_active_standby"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all active-standby statistics",
+						"description": "获取双机运行状态",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/ha/active-standby"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/ha/active-standby 响应",
+						"description": "返回GET /api/ad/v3/stat/ha/active-standby的响应数据",
+						"value": {
+							"local": {
+								"host_name": "ad.sangfor.com-1",
+								"status": "ACTIVE",
+								"health": "NORMAL",
+								"failure_reason": "",
+								"ha": "FAILURE",
+								"ha_alternate": "NORMAL",
+								"traffic": {
+									"health": "NORMAL",
+									"failure_reason": ""
+								},
+								"last_failover": {
+									"time": 0,
+									"detail": "example_string"
+								},
+								"session_synchronize": "COMPLETED",
+								"configure_synchronize": "COMPLETED",
+								"last_configure_synchronize": {
+									"time": 0,
+									"detail": "example_string"
+								}
+							},
+							"peer": {
+								"host_name": "ad.sangfor.com-1",
+								"status": "ACTIVE",
+								"health": "NORMAL",
+								"failure_reason": "",
+								"ha": "FAILURE",
+								"ha_alternate": "NORMAL",
+								"traffic": {
+									"health": "NORMAL",
+									"failure_reason": ""
+								},
+								"last_failover": {
+									"time": 0,
+									"detail": "example_string"
+								},
+								"session_synchronize": "COMPLETED",
+								"configure_synchronize": "COMPLETED",
+								"last_configure_synchronize": {
+									"time": 0,
+									"detail": "example_string"
+								}
+							}
+						}
+					}
 				}
 			}
 		}

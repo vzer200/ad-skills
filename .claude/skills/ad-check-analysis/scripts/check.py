@@ -361,198 +361,105 @@ def wait_and_download(
 # 优化建议映射表
 # ---------------------------------------------------------------------------
 
-_SUGGESTION_MAP = {
-    "ADMIN_ROLE_CHECK": "管理员角色配置异常，建议确认管理账号角色是否完整，并按最小权限原则修正角色授权",
-    "DEVICE_SAFE_CHECK": "设备安全检查未开启，建议开启设备安全检查并复核高危配置项",
-    "DNS_DETECT_CHECK": "DNS 代理配置需要确认，建议核对当前业务是否依赖 DNS 代理，避免误开放代理能力",
-    "DNAT_CHECK": "存在 DNAT 映射规则，建议确认公网映射是否仍在使用，并清理无业务归属的规则",
-    "HEARTBEAT_CHECK": "心跳状态异常，建议检查双机/集群心跳链路、心跳接口和对端设备状态",
-    "STATIC_IP_CHECK": "存在静态 IP 配置，建议核对地址规划，避免与动态分配或业务地址冲突",
-    "CLUSTER_STATE_CHECK": "集群状态未处于正常状态，建议确认当前是否为预期单机模式；如应为集群，请检查集群链路和成员状态",
-    "VIRTUAL_MAC_CHECK": "虚拟 MAC 状态异常，建议确认集群/双机场景下虚拟 MAC 是否启用并同步正常",
-    "DUAL_STATE_CHECK": "双机状态异常，建议检查主备关系、同步状态和心跳连通性",
-    "POOL_PERSIST_CHECK": "节点池持久化配置需要确认，建议核对关键业务是否需要会话保持或连接保持",
-    "STATIC_ROUTE_CHECK": "静态路由健康检查存在异常，建议检查下一跳可达性、路由绑定接口和探测目标",
-    "POOL_HEALTH_CHECK": "节点池健康检查存在异常，建议检查节点池成员状态、健康检查配置和后端服务可达性",
-    "RS_LEVEL_CHECK": "节点级别检查未通过，建议确认节点优先级、权重和实际承载策略是否符合预期",
-    "APP_GROUP_CHECK": "应用组状态异常，建议检查应用组成员、关联虚拟服务和集群同步状态",
-    "DNS_SERVER_STATE_CHECK": "DNS 服务健康状态异常，建议检查 DNS 服务进程、监听地址和解析测试结果",
-    "LINK_HEALTH_CHECK": "链路健康检查存在异常，建议检查链路探测目标、运营商线路和出口连通性",
-    "STATIC_PROXIMITY_CHECK": "静态就近性检查未通过，建议核对就近性策略、地址库和调度结果",
-    "DNS64_CHECK": "DNS64 配置需要确认，建议核对 IPv6/IPv4 转换业务是否需要该能力",
-    "POLICY_ROUTE_CHECK": "检测到新增策略路由，建议确认变更来源和业务归属，避免异常流量绕行",
-    "MANAGE_IP_CHECK": "管理 IP 状态不一致，建议检查集群成员管理地址配置和同步状态",
-    "SNMP_TRAPS_CHECK": "SNMP Trap 告警未开启，建议按监控规范配置 Trap 服务器并验证告警送达",
-    "DNS_REFLECT_CHECK": "DNS 前置策略配置需要确认，建议检查策略命中范围和业务影响",
-    "DNS_SERVER_CHECK": "DNS 服务配置异常，建议确认 DNS 服务是否应启用，并检查监听和解析配置",
-    "DNAT_PORT_CHECK": "DNAT 端口/协议配置需要确认，建议核对映射端口是否仍有业务使用",
-    "SESSION_SYNC_CHECK": "会话同步状态异常，建议检查双机/集群会话同步开关、链路和成员状态",
-    "MAIL_WARN_CHECK": "邮件告警未开启，建议配置告警收件人和 SMTP 服务器并发送测试邮件",
-    "VIP_POOL_CHECK": "虚拟 IP 池存在异常地址，建议检查地址池可用性、冲突地址和关联业务",
-    "PROXY_POLICY_CHECK": "代理策略检查未通过，建议核对代理策略范围、启用状态和业务需求",
-    "DNS_MAP_PS_CHECK": "DNS 映射持久化配置需要确认，建议检查持久化策略是否符合业务访问预期",
-    "WAN_BANDWIDTH_CHECK": "WAN 带宽配置需要确认，建议核对带宽限制是否与线路能力和业务策略一致",
-    "FAULT_SWITCH_CHECK": "故障切换配置需要确认，建议检查切换策略、触发条件和演练结果",
-    "SYSLOG_CHECK": "Syslog 未开启，建议配置日志服务器并验证设备日志可正常外送",
-    "AUTO_UPDATE_CHECK": "自动更新未开启，建议确认是否按运维规范启用更新或建立人工补丁检查机制",
-    "CPU_CHECK": "CPU 使用率偏高，建议检查是否存在异常进程或考虑扩容",
-    "MEMORY_CHECK": "内存使用率偏高，建议检查是否存在内存泄漏或考虑扩容",
-    "LOG_CHECK": "检测到错误日志，建议优先查看最近时间段错误日志，定位是否存在服务异常或配置变更失败",
-    "DEVICE_RUN_TIME": "设备运行时间未正常获取，建议确认基础状态采集是否正常",
-    "DEVICE_FILE_CHECK": "设备文件检查异常，建议检查临时文件、异常残留文件和磁盘目录权限",
-    "DISK_CHECK": "磁盘信息缺失或使用率异常，建议检查磁盘采集状态、清理日志或扩容磁盘",
-    "FAN_STATE_CHECK": "风扇状态异常，建议检查硬件并及时更换故障风扇",
-    "POWER_STATE_CHECK": "电源状态异常，建议检查电源模块并安排维护",
-    "NIC_STATE_CHECK": "网口状态异常，建议检查物理链路和网卡状态",
-    "CORE_PROCESS_CHECK": "核心进程缺失，建议检查服务状态并重启相关服务",
-    "KERNEL_LOG_CHECK": "内核日志存在异常，建议排查内核错误日志",
-    "REMOTE_MAINTAIN_CHECK": "远程维护未开启，建议确认是否需要开启远程维护通道，并按安全要求限制访问来源",
-    "BLACK_BOX_CHECK": "黑盒日志状态异常，建议检查黑盒日志采集和存储状态",
-    "DMESG_DATA_CHECK": "启动日志存在异常信息，建议检查内核启动日志并确认是否影响设备稳定性",
-    "SPEED_CARD_CHECK": "加速卡状态异常，建议检查加速卡驱动、硬件状态和业务加速能力",
-    "BIOS_VERSION_CHECK": "BIOS 状态需要确认，建议核对当前 BIOS 版本和厂商推荐版本",
-    "WARN_LOG_CHECK": "告警日志状态异常，建议查看设备告警中心并确认是否存在未处理告警",
-    "COREDUMP_INFO_CHECK": "Core 文件状态异常，建议收集 Core 文件并排查相关服务崩溃原因",
-    "NIC_HEALTH_CHECK": "网卡健康状态异常，建议检查网卡驱动、链路质量和硬件告警",
-    "SNAT_SPORT_EXHAUSTION_CHECK": "SNAT 源端口存在耗尽风险，建议检查连接数、SNAT 地址池和端口复用配置",
-    "WEAK_PASSWORD_CHECK": "存在弱密码账户，建议修改为强密码",
-    "SSH_API_CHECK": "SSH 权限未正确配置，建议检查并加固 SSH 访问控制",
-    "SSL_POLICY_CHECK": "SSL 策略存在不安全算法或协议，建议禁用旧版本",
-    "OPEN_PORT_CHECK": "存在风险端口开放，建议关闭不必要的端口",
-    "DEVICE_CONNECTION_CHECK": "设备网口连接异常，建议检查物理链路",
-    "CONFIG_ID_CONFLICT_CHECK": "配置 ID 存在冲突，建议排查并修正配置",
-    "CRASH_LOG_CHECK": "存在崩溃日志，建议排查系统稳定性问题",
-    "PATCH_INFO_CHECK": "未检测到补丁信息，建议确认当前版本是否已包含最新安全修复，并按变更流程评估补丁升级",
-    "REPORT_CHECK": "报表服务状态异常，建议检查报表服务进程、磁盘空间和服务日志",
-    "IP_LIMIT_CHECK": "管理登录 IP 限制未启用，建议开启管理来源限制，仅允许可信运维网段登录",
-    "MEMORY_LEAK_CHECK": "共享内存/信号量异常，可能存在内存泄漏",
+# API check metadata crawled from GET /debug/sys/offline-check?type=rule.
+# Keep this table aligned with the device rule definitions; derived maps below
+# intentionally use API descriptions instead of hand-written explanations.
+_API_CHECK_METADATA = {
+    'APP_VERSION_CHECK': {"name": '推荐软件版本检测', "description": '检查当前版本和推荐版本的差距，并给出当前推荐的版本，推动产品升级'},
+    'ADMIN_ROLE_CHECK': {"name": '新增管理员账号检测', "description": '除管理员账号外，是否还存在多余的管理员账号，保障不能存在无用账号，或者测试账号之类的，只保留有明确使用人和使用场景的账号'},
+    'HEARTBEAT_ERROR_CHECK': {"name": '心跳口故障检测检查', "description": '检测当前场景下，设备是否启用心跳口故障检测'},
+    'DEVICE_SAFE_CHECK': {"name": '设备安全隐患检测', "description": '检测设备是否存在安全隐患'},
+    'DNS_DETECT_CHECK': {"name": 'DNS服务器监视域名检测', "description": '检测当前设备的DNS代理是否配置了监视域名；前提：DNS代理开启'},
+    'DNAT_CHECK': {"name": '目的地址转换IP配置检测', "description": '检测当前设备目的地址转换的IP地址是否配置在链路上或者配置了相应的arp代理'},
+    'HEARTBEAT_CHECK': {"name": '心跳口检测', "description": '检测当前场景下，设备的备份心跳口选择是否是管理口'},
+    'STATIC_IP_CHECK': {"name": '接口静态IP检测', "description": '检测集群模式下集群内设备的链路是否都配置了静态IP'},
+    'CLUSTER_STATE_CHECK': {"name": '集群状态检测', "description": '检测当前场景下，集群健康状态、本机同步状态'},
+    'DNS_PROXY_CHECK': {"name": 'DNS代理功能检测', "description": '检测当前设备是否启用DNS代理'},
+    'VIRTUAL_MAC_CHECK': {"name": 'MAC同步(虚拟MAC)检测', "description": '检测当前场景下，双机是否启用MAC同步或集群是否配置虚拟mac；双机时前提是开启会话同步'},
+    'DUAL_STATE_CHECK': {"name": '双机状态检测', "description": '检测当前两台组建双机的AD设备状态是否正常，包括：本端对端业务状态、本端同步状态'},
+    'POOL_PERSIST_CHECK': {"name": '节点池会话保持检测', "description": '检测当前设备的节点池是否启用会话保持功能'},
+    'STATIC_ROUTE_CHECK': {"name": '静态路由检测', "description": '检测当前设备的静态路由是否启用健康检查。如果配置了，检测当前设备的静态路由是否在线'},
+    'POOL_HEALTH_CHECK': {"name": '节点池健康检测', "description": '检测当前设备的节点池是否配置了合理的健康检查（不能只配置ping或者没有配置），并且检测当前设备的节点池是否在线（在线的前提是配置了合理的健康检查）'},
+    'RS_LEVEL_CHECK': {"name": '监视器级别检测', "description": '检测双机场景下，设备是否启用监视器级别检测；前提：故障切换'},
+    'APP_GROUP_CHECK': {"name": '应用组关联内容检测', "description": '应用组关联内容是否合理（SNAT地址与对应的浮动IP是否在同一个关联组，或SNAT地址配了arp代理； 虚拟服务是否与其SNAT地址对应的浮动IP在同一个关联组，或这些地址配了arp代理）'},
+    'DNS_SERVER_STATE_CHECK': {"name": 'DNS服务器状态检测', "description": '检测当前设备链路负载-DNS代理的DNS服务器是否正常在线； 前提是DNS代理开启且配置了监视域名'},
+    'LINK_HEALTH_CHECK': {"name": '链路健康检测', "description": '检测当前设备的链路是否配置了健康检查，包括：掉电检查，监视器健康检查，如果配置了，检测当前设备的链路状态是否正常'},
+    'STATIC_PROXIMITY_CHECK': {"name": '静态就近性规则检测', "description": '如果DNS映射或虚拟IP池配置的调度策略为静态就近性，检测是否配置静态就近性规则'},
+    'DNS64_CHECK': {"name": 'DNS64检测', "description": '检测当前设备是否启用DNS64的相关功能，前提是DNS代理开启'},
+    'POLICY_ROUTE_CHECK': {"name": '智能路由检测', "description": '检测当前设备是否新增智能路由选路策略'},
+    'MANAGE_IP_CHECK': {"name": '管理口IP地址检测', "description": '要求主备机的管理口地址不一致；前提是备份心跳口都是管理口'},
+    'SNMP_TRAPS_CHECK': {"name": 'SNMP Traps告警检测', "description": '检测当前场景下，设备是否启用SNMP Traps告警功能，而且存在已启用的Traps服务器'},
+    'DNS_REFLECT_CHECK': {"name": 'DNS映射功能状态检测', "description": '检测当前设备的DNS映射是否是启用状态'},
+    'DNS_SERVER_CHECK': {"name": 'DNS服务器检测', "description": '检测当前设备是否启用全局负载的DNS服务器功能'},
+    'DNAT_PORT_CHECK': {"name": '目的地址转换端口配置检测', "description": '检测当前设备目的地址转换的端口是否为0到0/协议条件是否为ALL'},
+    'SESSION_SYNC_CHECK': {"name": '会话同步检测', "description": '检测双机或集群下，设备是否启用会话同步'},
+    'MAIL_WARN_CHECK': {"name": '邮件告警检测', "description": '检测当前场景下，设备是否启用邮件告警功能'},
+    'VIP_POOL_CHECK': {"name": '虚拟IP池检测', "description": '检测当前设备的虚拟IP池是否正常在线。注：前提是配置了健康检查'},
+    'PROXY_POLICY_CHECK': {"name": '优先代理策略检测', "description": '检测当前设备是否启用优先代理策略 注：配置了优先代理策略，并且全局配置是否启用了优先代理策略'},
+    'DNS_MAP_PS_CHECK': {"name": 'DNS映射会话保持检测', "description": '检测当前设备是否启用DNS映射的会话保持'},
+    'WAN_BANDWIDTH_CHECK': {"name": 'WAN属性链路带宽设置检查', "description": '检测当前设备的WAN属性链路，上下行带宽设置是否为默认配置'},
+    'FAULT_SWITCH_CHECK': {"name": '故障切换', "description": '检测双机或集群下，设备是否启用故障切换'},
+    'SYSLOG_CHECK': {"name": 'syslog设置检测', "description": '检测当前场景下，设备是否启用syslog设置'},
+    'AUTO_UPDATE_CHECK': {"name": '自动更新能力检测', "description": '检查设备是否具备连接升级服务器的条件，同时自身已开启自动更新功能'},
+    'CPU_CHECK': {"name": 'CPU检测', "description": '过去一周cpu占用率是否异常； 检查24小时内黑盒日志中，CPU sys>90%，iowait>90%，soft>90%的状态'},
+    'LOG_CHECK': {"name": '错误日志检测', "description": '检查当前设备过去一月内是否出现错误日志'},
+    'DEVICE_RUN_TIME': {"name": '设备运行时间', "description": '检测当前设备持续运行时间'},
+    'DEVICE_FILE_CHECK': {"name": '设备文件检查', "description": '是否存在文件描述符泄漏的风险'},
+    'NIC_STATE_CHECK': {"name": '网卡状态检测', "description": '检测当前设备网口一秒内丢包错包率是否超过10%； 检查ethtool -d 寄存器值是否全为 0xFFFFFFFF/ 0x00000000； 展示设备网卡信息'},
+    'CORE_PROCESS_CHECK': {"name": '核心进程检测', "description": '核心进程及其开启状况， 当前缺少的核心进程'},
+    'KERNEL_LOG_CHECK': {"name": '设备kernel日志', "description": 'kernel log中是否存在堆栈信息'},
+    'REMOTE_MAINTAIN_CHECK': {"name": '远程维护检测', "description": '检查当前设备是否开启了WAN属性接口的远程维护'},
+    'BLACK_BOX_CHECK': {"name": '黑匣子检测', "description": '黑匣子是否正常记录'},
+    'DMESG_DATA_CHECK': {"name": '设备黑匣子dmesg数据', "description": '检测24小时内黑盒Dmesg日志中，是否存在： [/O error; hard resetting link; Temperature above threshold; PCIe Bus Error AER: Corrected (Fatal) error; AER:Uncorrected (Fatal) error'},
+    'DISK_CHECK': {"name": '硬盘检测', "description": '检测用户磁盘各分区读写情况'},
+    'CRASH_LOG_CHECK': {"name": '宕机日志检测', "description": '检测当前设备是否存在宕机情况'},
+    'MEMORY_CHECK': {"name": '内存检测', "description": 'snmp进程内存； 过去一周内存占用率是否异常； 最近两天内是否内存过载'},
+    'SPEED_CARD_CHECK': {"name": '加速卡状态检测', "description": '检测当前设备加速卡状态'},
+    'FAN_STATE_CHECK': {"name": '风扇状态检测', "description": '检测当前设备风扇状态'},
+    'POWER_STATE_CHECK': {"name": '电源状态检测', "description": '检测当前设备电源状态'},
+    'BIOS_VERSION_CHECK': {"name": 'BIOS固件版本检测', "description": '此异常需要对您当前产品的BIOS固件进行升级操作，消除当前产品运行中存在的风险'},
+    'WARN_LOG_CHECK': {"name": '开启告警日志检测', "description": '设备e-mail告警、snmp traps告警和syslog告警日志至少有一项开启，则正常'},
+    'MEMORY_LEAK_CHECK': {"name": '共享内存和信号量泄露检测', "description": '此异常需要您升级到6.6R1及以上正式版本，消除当前产品运行中存在的风险'},
+    'DEVICE_CONNECTION_CHECK': {"name": '设备连接数检测', "description": '检测当前设备新建和并发连接数'},
+    'COREDUMP_INFO_CHECK': {"name": '设备堆栈信息', "description": '检测当前设备是否core dump'},
+    'CONFIG_ID_CONFLICT_CHECK': {"name": '配置id冲突检测', "description": '检查当前设备的某些配置是否出现了id冲突'},
+    'NIC_HEALTH_CHECK': {"name": '网卡交换芯片的健康状态检测', "description": '检测82599网卡和I350网卡交换芯片的健康状态'},
+    'SNAT_SPORT_EXHAUSTION_CHECK': {"name": 'SNAT源端口枯竭告警检测', "description": '检查当前设备在一周以内是否出现了SNAT源端口枯竭告警'},
+    'SSH_API_CHECK': {"name": 'SSH与API权限检测', "description": '检查当前设备的用户角色是否开启了API或SSH权限。'},
+    'PATCH_INFO_CHECK': {"name": '关键补丁修复检测', "description": '检测产品自身安全性加固的补丁，或部分较大影响的稳定性补丁包'},
+    'REPORT_CHECK': {"name": '报表稳定性检测', "description": '检测当前设备最近一周的报表进程占用cpu是否异常'},
+    'WEAK_PASSWORD_CHECK': {"name": '管理员弱密码检测', "description": '管理员账号是否有长时间未修改过密码的账号，是否有弱密码的账号。同时密码不允许出现sangfor、sinfor等关键词。'},
+    'SSL_POLICY_CHECK': {"name": 'SSL策略检测', "description": '检测当前设备的SSL加密/卸载是否启用不安全的协议/不安全算法'},
+    'IP_LIMIT_CHECK': {"name": '登录IP限制检测', "description": '是否设置了管理员登录设备IP段，只允许接入产品的细化地址段'},
+    'OPEN_PORT_CHECK': {"name": '默认开放端口检测', "description": '如果检查到默认端口，会提示用户按需关闭。'},
 }
 
+_SUGGESTION_MAP = {
+    key: meta["description"]
+    for key, meta in _API_CHECK_METADATA.items()
+    if meta.get("description")
+}
 
 def _suggestion_for_check(check_key: str, check_name: str, result: Dict[str, Any]) -> str:
     suggestion = _SUGGESTION_MAP.get(check_key)
     if suggestion:
         return suggestion
+    description = str(result.get("description") or "").strip()
+    if description:
+        return description
     return f"{check_name} 未达到预期状态，建议结合详情列查看当前状态，并在设备对应配置页核对业务影响后处理"
 
 _CHECK_LABELS = {
-    "APP_VERSION_CHECK": "应用版本检查",
-    "ADMIN_ROLE_CHECK": "管理员角色检查",
-    "DEVICE_SAFE_CHECK": "设备安全状态检查",
-    "DNS_DETECT_CHECK": "DNS 探测配置检查",
-    "DNAT_CHECK": "DNAT 配置检查",
-    "HEARTBEAT_CHECK": "心跳状态检查",
-    "STATIC_IP_CHECK": "静态 IP 配置检查",
-    "CLUSTER_STATE_CHECK": "集群状态检查",
-    "VIRTUAL_MAC_CHECK": "虚拟 MAC 检查",
-    "DUAL_STATE_CHECK": "双机状态检查",
-    "POOL_PERSIST_CHECK": "节点池会话保持检查",
-    "STATIC_ROUTE_CHECK": "静态路由检查",
-    "POOL_HEALTH_CHECK": "节点池健康检查",
-    "RS_LEVEL_CHECK": "真实服务器状态检查",
-    "APP_GROUP_CHECK": "应用组状态检查",
-    "DNS_SERVER_STATE_CHECK": "DNS 服务状态检查",
-    "LINK_HEALTH_CHECK": "链路健康检查",
-    "STATIC_PROXIMITY_CHECK": "静态就近性检查",
-    "DNS64_CHECK": "DNS64 配置检查",
-    "POLICY_ROUTE_CHECK": "策略路由检查",
-    "MANAGE_IP_CHECK": "管理 IP 检查",
-    "SNMP_TRAPS_CHECK": "SNMP Trap 检查",
-    "DNS_REFLECT_CHECK": "DNS 反射配置检查",
-    "DNS_SERVER_CHECK": "DNS 服务器检查",
-    "DNAT_PORT_CHECK": "DNAT 端口检查",
-    "SESSION_SYNC_CHECK": "会话同步检查",
-    "MAIL_WARN_CHECK": "邮件告警检查",
-    "VIP_POOL_CHECK": "虚拟服务和节点池绑定检查",
-    "PROXY_POLICY_CHECK": "代理策略检查",
-    "DNS_MAP_PS_CHECK": "DNS 映射策略检查",
-    "WAN_BANDWIDTH_CHECK": "出口带宽检查",
-    "FAULT_SWITCH_CHECK": "故障切换检查",
-    "SYSLOG_CHECK": "Syslog 配置检查",
-    "AUTO_UPDATE_CHECK": "自动更新检查",
-    "CPU_CHECK": "CPU 使用率检查",
-    "LOG_CHECK": "日志状态检查",
-    "DEVICE_RUN_TIME": "设备运行时间检查",
-    "DEVICE_FILE_CHECK": "设备文件检查",
-    "NIC_STATE_CHECK": "网卡状态检查",
-    "CORE_PROCESS_CHECK": "核心进程检查",
-    "KERNEL_LOG_CHECK": "内核日志检查",
-    "REMOTE_MAINTAIN_CHECK": "远程维护检查",
-    "BLACK_BOX_CHECK": "黑匣子日志检查",
-    "DMESG_DATA_CHECK": "内核启动日志检查",
-    "DISK_CHECK": "磁盘使用率检查",
-    "CRASH_LOG_CHECK": "崩溃日志检查",
-    "MEMORY_CHECK": "内存使用率检查",
-    "SPEED_CARD_CHECK": "加速卡状态检查",
-    "FAN_STATE_CHECK": "风扇状态检查",
-    "POWER_STATE_CHECK": "电源状态检查",
-    "BIOS_VERSION_CHECK": "BIOS 版本检查",
-    "WARN_LOG_CHECK": "告警日志检查",
-    "MEMORY_LEAK_CHECK": "内存泄漏风险检查",
-    "DEVICE_CONNECTION_CHECK": "设备连接检查",
-    "COREDUMP_INFO_CHECK": "Core Dump 检查",
-    "CONFIG_ID_CONFLICT_CHECK": "配置 ID 冲突检查",
-    "NIC_HEALTH_CHECK": "网卡健康检查",
-    "SNAT_SPORT_EXHAUSTION_CHECK": "SNAT 源端口耗尽检查",
-    "SSH_API_CHECK": "SSH/API 访问控制检查",
-    "PATCH_INFO_CHECK": "补丁信息检查",
-    "REPORT_CHECK": "报表任务检查",
-    "WEAK_PASSWORD_CHECK": "弱密码检查",
-    "SSL_POLICY_CHECK": "SSL 安全策略检查",
-    "IP_LIMIT_CHECK": "管理登录 IP 限制检查",
-    "OPEN_PORT_CHECK": "开放端口检查",
+    key: meta["name"]
+    for key, meta in _API_CHECK_METADATA.items()
+    if meta.get("name")
 }
-
 
 _CHECK_DESCRIPTIONS = {
-    "APP_VERSION_CHECK": "应用版本检查用于确认当前 AD 应用版本是否已正确采集。",
-    "ADMIN_ROLE_CHECK": "管理员角色检查用于确认管理账号角色配置是否完整。",
-    "DEVICE_SAFE_CHECK": "设备安全状态检查用于确认设备安全检查功能是否开启。",
-    "DNS_DETECT_CHECK": "DNS 探测配置检查用于确认 DNS 代理和探测相关配置是否符合预期。",
-    "DNAT_CHECK": "DNAT 配置检查用于确认 DNAT 映射规则是否存在潜在风险。",
-    "HEARTBEAT_CHECK": "心跳状态检查用于确认双机或集群心跳链路是否正常。",
-    "STATIC_IP_CHECK": "静态 IP 配置检查用于确认静态地址配置是否存在规划风险。",
-    "DNS64_CHECK": "DNS64 检查用于确认 DNS64 功能是否按需开启。",
-    "POLICY_ROUTE_CHECK": "策略路由检查用于确认策略路由变更是否存在异常。",
-    "SNMP_ALARM_CHECK": "SNMP Trap 告警检查用于确认告警通知是否开启。",
-    "DNS_PRE_RULE_CHECK": "DNS 前置策略检查用于确认 DNS 前置策略配置是否符合预期。",
-    "DNS_SERVER_CHECK": "DNS 服务器检查用于确认 DNS 服务配置是否符合预期。",
-    "EMAIL_ALARM_CHECK": "邮件告警检查用于确认邮件告警通知是否开启。",
-    "PROXY_POLICY_CHECK": "代理策略检查用于确认代理策略配置是否存在风险。",
-    "SYSLOG_CHECK": "Syslog 检查用于确认日志外发配置是否开启。",
-    "AUTO_UPDATE_CHECK": "自动更新检查用于确认自动更新功能是否开启。",
-    "CPU_CHECK": "CPU 使用率检查用于确认巡检期间 CPU 使用率是否处于正常范围。",
-    "LOG_CHECK": "日志状态检查用于确认设备错误日志数量是否异常。",
-    "RUNNING_TIME_CHECK": "设备运行时间检查用于确认设备运行时长是否正常。",
-    "FILE_CHECK": "设备文件检查用于确认设备关键文件是否存在异常。",
-    "NIC_STATE_CHECK": "网卡状态检查用于确认物理网卡链路和状态是否正常。",
-    "CORE_PROCESS_CHECK": "核心进程检查用于确认设备核心进程是否正常运行。",
-    "KERNEL_LOG_CHECK": "内核日志检查用于确认内核日志中是否存在错误。",
-    "REMOTE_MT_CHECK": "远程维护检查用于确认远程维护功能状态是否符合要求。",
-    "BLACKBOX_LOG_CHECK": "黑匣子日志检查用于确认黑盒日志中是否存在异常。",
-    "KERNEL_BOOT_LOG_CHECK": "内核启动日志检查用于确认启动日志中是否存在异常。",
-    "DISK_CHECK": "磁盘使用率检查用于确认磁盘空间和采集状态是否正常。",
-    "CRASH_LOG_CHECK": "崩溃日志检查用于确认设备是否产生崩溃日志。",
-    "MEMORY_CHECK": "内存使用率检查用于确认巡检期间内存使用率是否处于正常范围。",
-    "SPEED_CARD_CHECK": "加速卡状态检查用于确认 SSL/压缩等硬件加速卡是否正常工作。",
-    "FAN_STATE_CHECK": "风扇状态检查用于确认风扇模块是否处于正常状态。",
-    "POWER_STATE_CHECK": "电源状态检查用于确认电源模块是否处于正常状态。",
-    "BIOS_VERSION_CHECK": "BIOS 版本检查用于确认 BIOS 版本是否需要关注。",
-    "ALARM_LOG_CHECK": "告警日志检查用于确认当前告警日志数量是否异常。",
-    "MEMORY_LEAK_CHECK": "内存泄漏风险检查用于确认共享内存和信号量是否存在异常。",
-    "DEVICE_CONNECTION_CHECK": "设备连接检查用于确认设备管理网口连通性是否正常。",
-    "CONFIG_ID_CONFLICT_CHECK": "配置 ID 冲突检查用于确认配置对象 ID 是否存在冲突。",
-    "NIC_HEALTH_CHECK": "网卡健康检查用于确认网卡健康状态是否正常。",
-    "SNAT_SPORT_EXHAUSTION_CHECK": "SNAT 源端口耗尽检查用于确认 SNAT 源端口是否存在耗尽风险。",
-    "SSH_API_CHECK": "SSH/API 访问控制检查用于确认 SSH 和 API 访问控制是否开启。",
-    "PATCH_INFO_CHECK": "补丁信息检查用于确认设备补丁信息是否可用。",
-    "REPORT_CHECK": "报表任务检查用于确认报表服务状态是否正常。",
-    "WEAK_PASSWORD_CHECK": "弱密码检查用于确认是否存在弱密码账号。",
-    "SSL_POLICY_CHECK": "SSL 安全策略检查用于确认是否启用了不安全算法或协议。",
-    "IP_LIMIT_CHECK": "管理登录 IP 限制检查用于确认管理登录来源限制是否开启。",
-    "OPEN_PORT_CHECK": "开放端口检查用于确认是否存在不必要的风险端口开放。",
+    key: meta["description"]
+    for key, meta in _API_CHECK_METADATA.items()
+    if meta.get("description")
 }
-
 
 def check_label(key: str) -> str:
     """Return a user-facing Chinese label for a check id."""
@@ -567,8 +474,10 @@ def check_description(key: str) -> str:
 _CHECK_SOURCE_FIELDS = {
     "APP_VERSION_CHECK": ["ad_appversion"],
     "ADMIN_ROLE_CHECK": ["admin"],
+    "HEARTBEAT_ERROR_CHECK": [],
     "DEVICE_SAFE_CHECK": ["security_check_state"],
-    "DNS_DETECT_CHECK": ["dns_proxy_enabled"],
+    "DNS_DETECT_CHECK": ["dns_proxy_detect_domain"],
+    "DNS_PROXY_CHECK": ["dns_proxy_enabled"],
     "DNAT_CHECK": ["dnat_dst_ip2net_if"],
     "HEARTBEAT_CHECK": ["heartbeat_state"],
     "STATIC_IP_CHECK": ["static_ip_config"],
@@ -618,7 +527,7 @@ _CHECK_SOURCE_FIELDS = {
     "BIOS_VERSION_CHECK": ["bios_update_state"],
     "WARN_LOG_CHECK": ["alarms_enabled"],
     "MEMORY_LEAK_CHECK": ["shm_sem_state"],
-    "DEVICE_CONNECTION_CHECK": ["base_eth_info"],
+    "DEVICE_CONNECTION_CHECK": ["conntrack_count", "conntrack_new_count", "base_conntrack"],
     "COREDUMP_INFO_CHECK": ["base_no_core"],
     "CONFIG_ID_CONFLICT_CHECK": ["id_conflict_list"],
     "NIC_HEALTH_CHECK": ["I350_nic_state", "82599_nic_state"],
@@ -632,10 +541,117 @@ _CHECK_SOURCE_FIELDS = {
     "OPEN_PORT_CHECK": ["dangerous_port"],
 }
 
+_FEATURE_CHECKS = (
+    "APP_VERSION_CHECK", "ADMIN_ROLE_CHECK", "HEARTBEAT_ERROR_CHECK",
+    "DEVICE_SAFE_CHECK", "DNS_DETECT_CHECK", "DNS_PROXY_CHECK", "DNAT_CHECK",
+    "HEARTBEAT_CHECK", "STATIC_IP_CHECK", "CLUSTER_STATE_CHECK",
+    "VIRTUAL_MAC_CHECK", "DUAL_STATE_CHECK", "POOL_PERSIST_CHECK",
+    "STATIC_ROUTE_CHECK", "POOL_HEALTH_CHECK", "RS_LEVEL_CHECK",
+    "APP_GROUP_CHECK", "DNS_SERVER_STATE_CHECK", "LINK_HEALTH_CHECK",
+    "STATIC_PROXIMITY_CHECK", "DNS64_CHECK", "POLICY_ROUTE_CHECK",
+    "MANAGE_IP_CHECK", "SNMP_TRAPS_CHECK", "DNS_REFLECT_CHECK",
+    "DNS_SERVER_CHECK", "DNAT_PORT_CHECK", "SESSION_SYNC_CHECK",
+    "MAIL_WARN_CHECK", "VIP_POOL_CHECK", "PROXY_POLICY_CHECK",
+    "DNS_MAP_PS_CHECK", "WAN_BANDWIDTH_CHECK", "FAULT_SWITCH_CHECK",
+    "SYSLOG_CHECK",
+)
+
+_HEALTH_CHECKS = (
+    "AUTO_UPDATE_CHECK", "CPU_CHECK", "LOG_CHECK",
+    "DEVICE_RUN_TIME", "DEVICE_FILE_CHECK", "NIC_STATE_CHECK",
+    "CORE_PROCESS_CHECK", "KERNEL_LOG_CHECK", "REMOTE_MAINTAIN_CHECK",
+    "BLACK_BOX_CHECK", "DMESG_DATA_CHECK", "DISK_CHECK",
+    "CRASH_LOG_CHECK", "MEMORY_CHECK", "SPEED_CARD_CHECK",
+    "FAN_STATE_CHECK", "POWER_STATE_CHECK", "BIOS_VERSION_CHECK",
+    "WARN_LOG_CHECK", "MEMORY_LEAK_CHECK", "DEVICE_CONNECTION_CHECK",
+    "COREDUMP_INFO_CHECK", "CONFIG_ID_CONFLICT_CHECK", "NIC_HEALTH_CHECK",
+    "SNAT_SPORT_EXHAUSTION_CHECK",
+)
+
+_SECURE_CHECKS = (
+    "SSH_API_CHECK", "PATCH_INFO_CHECK", "REPORT_CHECK",
+    "WEAK_PASSWORD_CHECK", "SSL_POLICY_CHECK", "IP_LIMIT_CHECK",
+    "OPEN_PORT_CHECK",
+)
+
+_STANDARD_FEATURE_CHECKS = (
+    "APP_VERSION_CHECK", "ADMIN_ROLE_CHECK", "DEVICE_SAFE_CHECK",
+)
+_STANDARD_HEALTH_CHECKS = tuple(
+    check_id for check_id in _HEALTH_CHECKS if check_id != "COREDUMP_INFO_CHECK"
+)
+_MISSING_REPORT_FIELD_DETAIL = "设备巡检报告未返回该检查字段，当前无法判断。"
+
+
+def _expected_checks_for_scene(scene: str) -> Tuple[str, ...]:
+    normalized = str(scene or "").strip()
+    if "全量" in normalized:
+        return _FEATURE_CHECKS + _HEALTH_CHECKS + _SECURE_CHECKS
+    if "安全" in normalized:
+        return _SECURE_CHECKS
+    if "标准" in normalized:
+        return _STANDARD_FEATURE_CHECKS + _STANDARD_HEALTH_CHECKS + _SECURE_CHECKS
+    return ()
+
+
+def _clean_text(value: Any) -> str:
+    text = "" if value is None else str(value).strip()
+    return text
+
+
+def _collect_native_check_metadata(data: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
+    """Collect raw API rule metadata keyed by every available check identifier."""
+    metadata: Dict[str, Dict[str, str]] = {}
+
+    def add(identifier: Any, name: Any = "", description: Any = "") -> None:
+        key = _clean_text(identifier)
+        if not key:
+            return
+        item = metadata.setdefault(key, {})
+        label = _clean_text(name)
+        desc = _clean_text(description)
+        if label and not item.get("name"):
+            item["name"] = label
+        if desc and not item.get("description"):
+            item["description"] = desc
+
+    def maybe_add_rule(value: Dict[str, Any]) -> None:
+        name = value.get("name") or value.get("label") or value.get("title")
+        description = value.get("description") or value.get("desc")
+        identifiers = [
+            value.get("enumerate"),
+            value.get("rule_id"),
+            value.get("id"),
+            value.get("field"),
+            value.get("key"),
+            value.get("check"),
+        ]
+        if any(_clean_text(identifier) for identifier in identifiers):
+            for identifier in identifiers:
+                add(identifier, name, description)
+
+    def walk(value: Any) -> None:
+        if isinstance(value, dict):
+            maybe_add_rule(value)
+            for child in value.values():
+                if isinstance(child, (dict, list)):
+                    walk(child)
+        elif isinstance(value, list):
+            for child in value:
+                if isinstance(child, (dict, list)):
+                    walk(child)
+
+    walk(data)
+    return metadata
+
 
 def _collect_native_descriptions(data: Dict[str, Any]) -> Dict[str, str]:
     """Collect raw API description text keyed by native field/check names."""
-    descriptions: Dict[str, str] = {}
+    descriptions: Dict[str, str] = {
+        key: item["description"]
+        for key, item in _collect_native_check_metadata(data).items()
+        if item.get("description")
+    }
 
     def add(key: Any, value: Any) -> None:
         if not key or value is None:
@@ -732,7 +748,7 @@ def _not_applicable_detail(value: Any, reason: str) -> str:
     return f"{reason}；设备返回：{text}" if text else reason
 
 
-def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
+def analyze(data: Dict[str, Any], scene: str = "") -> Dict[str, Any]:
     """
     根据 ad.json 内容进行结构化分析。
     严格按 ad.json 中实际存在的字段分析，不依赖场景定义。
@@ -756,6 +772,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         }
     check_results = {}
     data_keys = set(data.keys())  # ad.json 中实际存在的字段集合
+    native_metadata = _collect_native_check_metadata(data)
     native_descriptions = _collect_native_descriptions(data)
 
     def has(*keys: str) -> bool:
@@ -764,9 +781,19 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
 
     def native_description(name: str) -> str:
         for key in [name, *_CHECK_SOURCE_FIELDS.get(name, [])]:
+            meta_desc = native_metadata.get(key, {}).get("description")
+            if meta_desc:
+                return meta_desc
             desc = native_descriptions.get(key)
             if desc:
                 return desc
+        return ""
+
+    def native_label(name: str) -> str:
+        for key in [name, *_CHECK_SOURCE_FIELDS.get(name, [])]:
+            label = native_metadata.get(key, {}).get("name")
+            if label:
+                return label
         return ""
 
     def check(name: str, status: str, value: str = "", detail: str = "") -> None:
@@ -775,7 +802,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
             "status": status,
             "value": str(value),
             "detail": detail,
-            "description": native_description(name) or check_description(name),
+            "description": check_description(name),
         }
 
     # ─────────────────────────────────────────────────────────────────────
@@ -801,10 +828,17 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
               "pass" if sec_state else "fail",
               "安全检查已开启" if sec_state else "设备安全检查未开启")
 
-    if has("dns_proxy_enabled"):
+    if has("dns_proxy_detect_domain"):
         # 5. DNS_DETECT_CHECK
-        dns_proxy = data.get("dns_proxy_enabled", False)
+        detect_domain = data.get("dns_proxy_detect_domain", False)
         check("DNS_DETECT_CHECK",
+              "pass" if detect_domain else "warn",
+              f"dns_proxy_detect_domain={detect_domain}")
+
+    if has("dns_proxy_enabled"):
+        # DNS_PROXY_CHECK
+        dns_proxy = data.get("dns_proxy_enabled", False)
+        check("DNS_PROXY_CHECK",
               "pass" if not dns_proxy else "warn",
               f"dns_proxy_enabled={dns_proxy}")
 
@@ -1034,6 +1068,17 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
               "pass" if cpu_max < 90 else ("warn" if cpu_max < 95 else "fail"),
               f"max={cpu_max}%")
 
+    if has("conntrack_count", "conntrack_new_count"):
+        # base_conntrack
+        conntrack_count = _to_int(data.get("conntrack_count"))
+        conntrack_new_count = _to_int(data.get("conntrack_new_count"))
+        conntrack_over = conntrack_count is not None and conntrack_count > 100000
+        new_over = conntrack_new_count is not None and conntrack_new_count > 10000
+        status = "warn" if conntrack_over or new_over else "pass"
+        current = conntrack_count if conntrack_count is not None else "-"
+        new_current = conntrack_new_count if conntrack_new_count is not None else "-"
+        check("DEVICE_CONNECTION_CHECK", status, f"连接跟踪数 {current}，新建连接数 {new_current}")
+
     if has("base_log_error_exist"):
         # 38. LOG_CHECK
         le = data.get("base_log_error_exist", -1)
@@ -1153,12 +1198,6 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
               "pass" if leak else "fail",
               f"shm_sem_state={leak}", detail="共享内存/信号量异常" if not leak else "")
 
-    if has("base_eth_info"):
-        # 56. DEVICE_CONNECTION_CHECK
-        eth_info = data.get("base_eth_info", "")
-        conn_status, conn_detail = _connection_check_status_and_detail(eth_info)
-        check("DEVICE_CONNECTION_CHECK", conn_status, conn_detail)
-
     if has("base_no_core"):
         # 57. COREDUMP_INFO_CHECK
         nc = data.get("base_no_core", -1)
@@ -1245,10 +1284,14 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
               "pass" if not dp else "warn",
               f"{len(dp)} 个风险端口: {', '.join(str(p) for p in dp[:3])}" if dp else "无")
 
+    for expected_check in _expected_checks_for_scene(scene):
+        if expected_check not in check_results:
+            check(expected_check, "not_applicable", "", _MISSING_REPORT_FIELD_DETAIL)
+
     # ── 诊断：检测 ad.json 中存在但未被映射的字段 ─────────────────────
     _checked_fields = {
         # 功能巡检
-        "ad_appversion", "admin", "security_check_state", "dns_proxy_enabled",
+        "ad_appversion", "admin", "security_check_state", "dns_proxy_detect_domain", "dns_proxy_enabled",
         "dnat_dst_ip2net_if", "heartbeat_state", "static_ip_config",
         "cluster_state", "cluster_virtual_mac", "ms_state", "node_pool_persist",
         "static_route_health_check", "node_pool_health_check_detect",
@@ -1261,6 +1304,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
         "wan_max_bandwidth", "cluster_fault_switch_enabled", "syslog_enabled",
         # 健康巡检
         "auto_update", "base_cpu_usage", "base_cpu_mpstat",
+        "conntrack_count", "conntrack_new_count",
         "base_log_error_exist", "base_running_time", "base_file_ds",
         "base_eth_abnormal", "base_core_process_lack", "base_kernel_log",
         "remote_mt", "base_blackbox_state", "base_blackbox_dmesg", "disk_info",
@@ -1289,33 +1333,10 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     total = pass_count + fail_count + warn_count
     score = round((pass_count + warn_count * 0.5) / total * 100) if total else 0
 
-    # ── 自动分类：根据检查项名称归入功能/健康/安全 ─────────────────────
-    FEATURE_PREFIXES = (
-        "APP_", "ADMIN_", "HEARTBEAT_", "DEVICE_SAFE_", "DNS_DETECT_",
-        "DNAT_", "HEARTBEAT_", "STATIC_IP_", "CLUSTER_", "DNS_PROXY_",
-        "VIRTUAL_MAC_", "DUAL_STATE_", "POOL_", "STATIC_ROUTE_",
-        "RS_LEVEL_", "APP_GROUP_", "DNS_SERVER_STATE_", "LINK_HEALTH_",
-        "STATIC_PROXIMITY_", "DNS64_", "POLICY_ROUTE_", "MANAGE_IP_",
-        "SNMP_TRAPS_", "DNS_REFLECT_", "DNS_SERVER_", "SESSION_SYNC_",
-        "MAIL_WARN_", "VIP_POOL_", "PROXY_POLICY_", "DNS_MAP_",
-        "WAN_BANDWIDTH_", "FAULT_SWITCH_", "SYSLOG_",
-    )
-    HEALTH_PREFIXES = (
-        "AUTO_UPDATE_", "CPU_", "LOG_", "DEVICE_RUN_", "DEVICE_FILE_",
-        "NIC_STATE_", "CORE_PROCESS_", "KERNEL_LOG_", "REMOTE_MAINTAIN_",
-        "BLACK_BOX_", "DMESG_", "DISK_", "CRASH_LOG_", "MEMORY_",
-        "SPEED_CARD_", "FAN_", "POWER_", "BIOS_", "WARN_LOG_",
-        "DEVICE_CONNECTION_", "COREDUMP_", "CONFIG_ID_", "NIC_HEALTH_",
-        "SNAT_SPORT_",
-    )
-    SECURE_PREFIXES = (
-        "SSH_", "PATCH_", "REPORT_", "WEAK_PASSWORD_", "SSL_",
-        "IP_LIMIT_", "OPEN_PORT_",
-    )
-
-    feature_keys = [k for k in check_results if any(k.startswith(p) for p in FEATURE_PREFIXES)]
-    health_keys = [k for k in check_results if any(k.startswith(p) for p in HEALTH_PREFIXES)]
-    secure_keys = [k for k in check_results if any(k.startswith(p) for p in SECURE_PREFIXES)]
+    # ── 显式分类：按巡检定义归入功能/健康/安全 ───────────────────────
+    feature_keys = [k for k in _FEATURE_CHECKS if k in check_results]
+    health_keys = [k for k in _HEALTH_CHECKS if k in check_results]
+    secure_keys = [k for k in _SECURE_CHECKS if k in check_results]
     # 未匹配的归入功能巡检
     categorized = set(feature_keys + health_keys + secure_keys)
     uncategorized = [k for k in check_results if k not in categorized]
@@ -1341,7 +1362,7 @@ def analyze(data: Dict[str, Any]) -> Dict[str, Any]:
     suggestions = []
     for key, result in check_results.items():
         if result["status"] in ("fail", "warn"):
-            check_name = check_label(key)
+            check_name = result.get("name") or check_label(key)
             entry = {
                 "check": key,
                 "check_name": check_name,
@@ -1611,12 +1632,8 @@ def render_markdown(
         for k in all_keys:
             if k in results:
                 r = results[k]
-                check_name = r.get("name") or check_label(k)
-                description = r.get("description") or check_description(k)
-                if r.get("status") == "not_applicable":
-                    reason = _user_detail(r.get("detail") or r.get("value") or "")
-                    if reason and reason not in description:
-                        description = f"{description}（{reason}）"
+                check_name = check_label(k)
+                description = check_description(k)
                 rows.append(
                     f"| {_table_cell(check_name)} | {_table_cell(description)} | "
                     f"{_table_cell(status_label(r['status']))} |"
@@ -1992,7 +2009,7 @@ def _check_one(client: Any, scene: str = "标准巡检", force: bool = False, wo
     # Analyze
     with open(meta["ad_json_path"], encoding="utf-8") as f:
         data = json.load(f)
-    analysis = analyze(data)
+    analysis = analyze(data, scene=meta.get("scene", ""))
     report = render_markdown(analysis, meta)
 
     return {
@@ -2028,7 +2045,7 @@ def _wait_one(
         meta["device_name"] = device_name
     with open(meta["ad_json_path"], encoding="utf-8") as f:
         data = json.load(f)
-    analysis = analyze(data)
+    analysis = analyze(data, scene=meta.get("scene", ""))
     fallback_total = len(analysis.get("check_results", {}))
     progress_text = meta.get("progress_text", "") or _load_progress_text(work_dir)
     if fallback_total and not _progress_text_has_count(progress_text):
@@ -2397,7 +2414,7 @@ def main() -> None:
         with open(ad_path, encoding="utf-8") as f:
             data = json.load(f)
 
-        analysis = analyze(data)
+        analysis = analyze(data, scene=meta.get("scene", ""))
         report = render_markdown(analysis, meta)
         print(report)
 

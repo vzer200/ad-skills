@@ -62,6 +62,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_partition_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all partition",
+						"description": "查看已有的磁盘分区",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/partition/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/partition/ 响应",
+						"description": "返回GET /api/ad/v3/sys/partition/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"available_space": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "ad7.0.8",
+									"description": "base partition",
+									"specification": "min",
+									"software_image": "ad7.0.8"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +114,29 @@ module.exports ={
 					},
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new partition",
+						"description": "新建磁盘分区",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/partition/",
+							"body": {
+								"name": "AI_ad7.0.8_A"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/partition/ 响应",
+						"description": "返回POST /api/ad/v3/sys/partition/的响应数据",
+						"value": {
+							"name": "AI_ad7.0.8_A",
+							"description": "base partition",
+							"specification": "min",
+							"software_image": "ad7.0.8"
+						}
 					}
 				}
 			},
@@ -135,6 +190,26 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_partition_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific partition",
+						"description": "查看指定的磁盘分区",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/partition/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/partition/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/partition/{name}的响应数据",
+						"value": {
+							"name": "ad7.0.8",
+							"description": "base partition",
+							"specification": "min",
+							"software_image": "ad7.0.8"
+						}
+					}
 				}
 			},
 			"put": {
@@ -156,6 +231,31 @@ module.exports ={
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific partition",
+						"description": "修改指定的磁盘分区",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/partition/{name}",
+							"body": {
+								"name": "ad7.0.8",
+								"specification": "min",
+								"software_image": "ad7.0.8"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/partition/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/partition/{name}的响应数据",
+						"value": {
+							"name": "ad7.0.8",
+							"description": "base partition",
+							"specification": "min",
+							"software_image": "ad7.0.8"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -174,6 +274,31 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_partition_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific partition",
+						"description": "修改指定的磁盘分区",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/partition/{name}",
+							"body": {
+								"name": "ad7.0.8",
+								"specification": "min",
+								"software_image": "ad7.0.8"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/partition/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/partition/{name}的响应数据",
+						"value": {
+							"name": "ad7.0.8",
+							"description": "base partition",
+							"specification": "min",
+							"software_image": "ad7.0.8"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +316,26 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_partition_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific partition",
+						"description": "删除指定的磁盘分区",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/partition/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/partition/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/partition/{name}的响应数据",
+						"value": {
+							"name": "ad7.0.8",
+							"description": "base partition",
+							"specification": "min",
+							"software_image": "ad7.0.8"
+						}
 					}
 				}
 			}
@@ -230,6 +375,31 @@ module.exports ={
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "reinstall specific partition",
+						"description": "重新安装指定的磁盘分区",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/partition/{name}/reinstall",
+							"body": {
+								"name": "AI_ad7.0.8_B",
+								"software_image": "ad7.0.8_customize.iso",
+								"specification": "Minimum"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/partition/{name}/reinstall 响应",
+						"description": "返回POST /api/ad/v3/sys/partition/{name}/reinstall的响应数据",
+						"value": {
+							"name": "AI_ad7.0.8_B",
+							"description": "base partition",
+							"specification": "min",
+							"software_image": "ad7.0.8"
+						}
+					}
 				}
 			}
 		},
@@ -262,6 +432,27 @@ module.exports ={
 					},
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "export log from specific partition",
+						"description": "导出指定的磁盘分区日志",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/partition/{name}/export-log"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/partition/{name}/export-log 响应",
+						"description": "返回POST /api/ad/v3/sys/partition/{name}/export-log的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
 					}
 				}
 			}

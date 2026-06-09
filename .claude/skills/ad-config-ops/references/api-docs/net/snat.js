@@ -62,6 +62,67 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snat_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all snat",
+						"description": "获取SNAT源地址转换配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/snat/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/snat/ 响应",
+						"description": "返回GET /api/ad/v3/net/snat/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "snat_wan",
+									"description": "example_string",
+									"position": 1,
+									"state": "ENABLE",
+									"type": "IPV4",
+									"inbound_links": [
+										"ALL"
+									],
+									"outbound_links": [
+										"WAN_1"
+									],
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"destination_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "example_string"
+									},
+									"protocol": "ALL",
+									"protocol_number": 0,
+									"source_port": "ALL",
+									"destination_port": "ALL",
+									"snat_process": {
+										"translated_address": {
+											"type": "OUTBOUND-LINK-IP",
+											"address": "192.168.1.1/24",
+											"ref_custom_address_group": "{custom_address_group}"
+										},
+										"policy": "HASH-SRCIP-AND-DSTIP",
+										"source_port": "PRESERVE"
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +140,72 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snat_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new snat",
+						"description": "新建SNAT源地址转换配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/snat/",
+							"body": {
+								"name": "AI_snat_wan_A",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"protocol": "ALL",
+								"protocol_number": 0,
+								"source_port": "ALL",
+								"destination_port": "ALL",
+								"snat_process": {
+									"translated_address": {
+										"type": "OUTBOUND-LINK-IP"
+									},
+									"policy": "HASH-SRCIP-AND-DSTIP",
+									"source_port": "PRESERVE"
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/snat/ 响应",
+						"description": "返回POST /api/ad/v3/net/snat/的响应数据",
+						"value": {
+							"name": "AI_snat_wan_A",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"type": "IPV4",
+							"inbound_links": [
+								"ALL"
+							],
+							"outbound_links": [
+								"WAN_1"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"protocol": "ALL",
+							"protocol_number": 0,
+							"source_port": "ALL",
+							"destination_port": "ALL",
+							"snat_process": {
+								"translated_address": {
+									"type": "OUTBOUND-LINK-IP",
+									"address": "192.168.1.1/24",
+									"ref_custom_address_group": "{custom_address_group}"
+								},
+								"policy": "HASH-SRCIP-AND-DSTIP",
+								"source_port": "PRESERVE"
+							}
+						}
 					}
 				}
 			},
@@ -98,6 +225,83 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snat_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify snat",
+						"description": "修改SNAT源地址转换配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/snat/",
+							"body": {
+								"name": "snat_wan",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"protocol": "ALL",
+								"protocol_number": 0,
+								"source_port": "ALL",
+								"destination_port": "ALL",
+								"snat_process": {
+									"translated_address": {
+										"type": "OUTBOUND-LINK-IP"
+									},
+									"policy": "HASH-SRCIP-AND-DSTIP",
+									"source_port": "PRESERVE"
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/snat/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/snat/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "snat_wan",
+									"description": "example_string",
+									"position": 1,
+									"state": "ENABLE",
+									"type": "IPV4",
+									"inbound_links": [
+										"ALL"
+									],
+									"outbound_links": [
+										"WAN_1"
+									],
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"destination_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "example_string"
+									},
+									"protocol": "ALL",
+									"protocol_number": 0,
+									"source_port": "ALL",
+									"destination_port": "ALL",
+									"snat_process": {
+										"translated_address": {
+											"type": "OUTBOUND-LINK-IP",
+											"address": "192.168.1.1/24",
+											"ref_custom_address_group": "{custom_address_group}"
+										},
+										"policy": "HASH-SRCIP-AND-DSTIP",
+										"source_port": "PRESERVE"
+									}
+								}
+							]
+						}
 					}
 				}
 			},
@@ -151,6 +355,56 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snat_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific snat",
+						"description": "获取SNAT源地址转换配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/snat/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/snat/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/snat/{name}的响应数据",
+						"value": {
+							"name": "snat_wan",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"type": "IPV4",
+							"inbound_links": [
+								"ALL"
+							],
+							"outbound_links": [
+								"WAN_1"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"protocol": "ALL",
+							"protocol_number": 0,
+							"source_port": "ALL",
+							"destination_port": "ALL",
+							"snat_process": {
+								"translated_address": {
+									"type": "OUTBOUND-LINK-IP",
+									"address": "192.168.1.1/24",
+									"ref_custom_address_group": "{custom_address_group}"
+								},
+								"policy": "HASH-SRCIP-AND-DSTIP",
+								"source_port": "PRESERVE"
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -170,6 +424,72 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snat_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new snat",
+						"description": "新建SNAT源地址转换配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/snat/{name}",
+							"body": {
+								"name": "AI_snat_wan_B",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"protocol": "ALL",
+								"protocol_number": 0,
+								"source_port": "ALL",
+								"destination_port": "ALL",
+								"snat_process": {
+									"translated_address": {
+										"type": "OUTBOUND-LINK-IP"
+									},
+									"policy": "HASH-SRCIP-AND-DSTIP",
+									"source_port": "PRESERVE"
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/snat/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/snat/{name}的响应数据",
+						"value": {
+							"name": "AI_snat_wan_B",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"type": "IPV4",
+							"inbound_links": [
+								"ALL"
+							],
+							"outbound_links": [
+								"WAN_1"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"protocol": "ALL",
+							"protocol_number": 0,
+							"source_port": "ALL",
+							"destination_port": "ALL",
+							"snat_process": {
+								"translated_address": {
+									"type": "OUTBOUND-LINK-IP",
+									"address": "192.168.1.1/24",
+									"ref_custom_address_group": "{custom_address_group}"
+								},
+								"policy": "HASH-SRCIP-AND-DSTIP",
+								"source_port": "PRESERVE"
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -187,6 +507,72 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snat_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific snat",
+						"description": "修改SNAT源地址转换配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/snat/{name}",
+							"body": {
+								"name": "snat_wan",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"protocol": "ALL",
+								"protocol_number": 0,
+								"source_port": "ALL",
+								"destination_port": "ALL",
+								"snat_process": {
+									"translated_address": {
+										"type": "OUTBOUND-LINK-IP"
+									},
+									"policy": "HASH-SRCIP-AND-DSTIP",
+									"source_port": "PRESERVE"
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/snat/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/snat/{name}的响应数据",
+						"value": {
+							"name": "snat_wan",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"type": "IPV4",
+							"inbound_links": [
+								"ALL"
+							],
+							"outbound_links": [
+								"WAN_1"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"protocol": "ALL",
+							"protocol_number": 0,
+							"source_port": "ALL",
+							"destination_port": "ALL",
+							"snat_process": {
+								"translated_address": {
+									"type": "OUTBOUND-LINK-IP",
+									"address": "192.168.1.1/24",
+									"ref_custom_address_group": "{custom_address_group}"
+								},
+								"policy": "HASH-SRCIP-AND-DSTIP",
+								"source_port": "PRESERVE"
+							}
+						}
 					}
 				}
 			},
@@ -206,6 +592,72 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snat_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific snat",
+						"description": "修改SNAT源地址转换配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/snat/{name}",
+							"body": {
+								"name": "snat_wan",
+								"state": "ENABLE",
+								"type": "IPV4",
+								"protocol": "ALL",
+								"protocol_number": 0,
+								"source_port": "ALL",
+								"destination_port": "ALL",
+								"snat_process": {
+									"translated_address": {
+										"type": "OUTBOUND-LINK-IP"
+									},
+									"policy": "HASH-SRCIP-AND-DSTIP",
+									"source_port": "PRESERVE"
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/snat/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/snat/{name}的响应数据",
+						"value": {
+							"name": "snat_wan",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"type": "IPV4",
+							"inbound_links": [
+								"ALL"
+							],
+							"outbound_links": [
+								"WAN_1"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"protocol": "ALL",
+							"protocol_number": 0,
+							"source_port": "ALL",
+							"destination_port": "ALL",
+							"snat_process": {
+								"translated_address": {
+									"type": "OUTBOUND-LINK-IP",
+									"address": "192.168.1.1/24",
+									"ref_custom_address_group": "{custom_address_group}"
+								},
+								"policy": "HASH-SRCIP-AND-DSTIP",
+								"source_port": "PRESERVE"
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -218,6 +670,56 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snat_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific snat",
+						"description": "删除SNAT源地址转换配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/snat/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/snat/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/snat/{name}的响应数据",
+						"value": {
+							"name": "snat_wan",
+							"description": "example_string",
+							"position": 1,
+							"state": "ENABLE",
+							"type": "IPV4",
+							"inbound_links": [
+								"ALL"
+							],
+							"outbound_links": [
+								"WAN_1"
+							],
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "example_string"
+							},
+							"protocol": "ALL",
+							"protocol_number": 0,
+							"source_port": "ALL",
+							"destination_port": "ALL",
+							"snat_process": {
+								"translated_address": {
+									"type": "OUTBOUND-LINK-IP",
+									"address": "192.168.1.1/24",
+									"ref_custom_address_group": "{custom_address_group}"
+								},
+								"policy": "HASH-SRCIP-AND-DSTIP",
+								"source_port": "PRESERVE"
+							}
+						}
 					}
 				}
 			}

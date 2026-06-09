@@ -65,6 +65,52 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_tcp_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-connect-tcp",
+						"description": "查看当前已有的监视器（CONNECT-TCP）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/connect-tcp/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/connect-tcp/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/connect-tcp/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "CONNECT-TCP",
+									"timeout": 16,
+									"interval": 5,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"host": "*",
+									"port": 0,
+									"debug_mode": "DISABLE",
+									"gateway_detect": "DISABLE",
+									"send_content": "GET / HTTP/1.1",
+									"receive_cache_size": 5120,
+									"receive_content_match": "200",
+									"reverse_result": "DISABLE",
+									"node_disable_receive_content_match": "200",
+									"node_disable_reverse_result": "DISABLE",
+									"send_content_before_disconnect": "example_string",
+									"hexadecimal_mode": "DISABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +128,57 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_tcp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-connect-tcp",
+						"description": "新建一个监视器（CONNECT-TCP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/connect-tcp/",
+							"body": {
+								"name": "AI_http_connect_tcp_A",
+								"type": "CONNECT-TCP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"receive_cache_size": 5120,
+								"reverse_result": "DISABLE",
+								"node_disable_reverse_result": "DISABLE",
+								"hexadecimal_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/connect-tcp/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/connect-tcp/的响应数据",
+						"value": {
+							"name": "AI_http_connect_tcp_A",
+							"description": "example_string",
+							"type": "CONNECT-TCP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE"
+						}
 					}
 				}
 			},

@@ -59,6 +59,27 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_application_group_switch_result"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "switch a application-group",
+						"description": "切换应用组主备",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/ha/application-group/{name}/switch",
+							"body": {
+								"target_member": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/ha/application-group/{name}/switch 响应",
+						"description": "返回POST /api/ad/v3/debug/ha/application-group/{name}/switch的响应数据",
+						"value": {
+							"original": null,
+							"current": null
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

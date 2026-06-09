@@ -45,7 +45,24 @@ module.exports ={
 					{
 						"$ref": "#/parameters/module"
 					}
-				]
+				],
+				"x-examples": {
+					"request": {
+						"summary": "update feature",
+						"description": "执行系统更新操作",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/update/{module}"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/update/{module} 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/update/{module}的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

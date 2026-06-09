@@ -48,6 +48,31 @@ module.exports ={
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "generate pdf report by report-task",
+						"description": "生成定制报表",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/report-task/{name}/generator",
+							"body": {
+								"from": "20180110",
+								"to": "20180210"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/report-task/{name}/generator 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/report-task/{name}/generator的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

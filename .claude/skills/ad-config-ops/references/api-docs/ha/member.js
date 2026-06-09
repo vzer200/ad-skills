@@ -62,6 +62,56 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_member_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all member",
+						"description": "获取集群全部成员",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/ha/member/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/ha/member/ 响应",
+						"description": "返回GET /api/ad/v3/ha/member/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "ad_2",
+									"description": "example_string",
+									"state": "ENABLE",
+									"ha": {
+										"interface": {
+											"type": "VLAN",
+											"interface": "bond-134"
+										},
+										"address": "10.0.1.2/24",
+										"gateway": "10.0.1.100"
+									},
+									"alternate_ha": {
+										"interface": {
+											"type": "VLAN",
+											"interface": "bond-134"
+										},
+										"address": "200.0.0.2/24",
+										"gateway": "200.0.0.100"
+									},
+									"username": "admin",
+									"password": "admin",
+									"pk_password": "example_string",
+									"weight_in_diff_platform": 1
+								}
+							]
+						}
+					}
 				}
 			},
 			"patch": {
@@ -80,6 +130,61 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_member_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify member",
+						"description": "修改集群成员配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/ha/member/",
+							"body": {
+								"name": "ad_2",
+								"state": "ENABLE",
+								"weight_in_diff_platform": 1
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/ha/member/ 响应",
+						"description": "返回PATCH /api/ad/v3/ha/member/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "ad_2",
+									"description": "example_string",
+									"state": "ENABLE",
+									"ha": {
+										"interface": {
+											"type": "VLAN",
+											"interface": "bond-134"
+										},
+										"address": "10.0.1.2/24",
+										"gateway": "10.0.1.100"
+									},
+									"alternate_ha": {
+										"interface": {
+											"type": "VLAN",
+											"interface": "bond-134"
+										},
+										"address": "200.0.0.2/24",
+										"gateway": "200.0.0.100"
+									},
+									"username": "admin",
+									"password": "admin",
+									"pk_password": "example_string",
+									"weight_in_diff_platform": 1
+								}
+							]
+						}
 					}
 				}
 			}
@@ -111,6 +216,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_member_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific member",
+						"description": "获取指定集群成员配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/ha/member/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/ha/member/{name} 响应",
+						"description": "返回GET /api/ad/v3/ha/member/{name}的响应数据",
+						"value": {
+							"name": "ad_2",
+							"description": "example_string",
+							"state": "ENABLE",
+							"ha": {
+								"interface": {
+									"type": "VLAN",
+									"interface": "bond-134"
+								},
+								"address": "10.0.1.2/24",
+								"gateway": "10.0.1.100"
+							},
+							"alternate_ha": {
+								"interface": {
+									"type": "VLAN",
+									"interface": "bond-134"
+								},
+								"address": "200.0.0.2/24",
+								"gateway": "200.0.0.100"
+							},
+							"username": "admin",
+							"password": "admin",
+							"pk_password": "example_string",
+							"weight_in_diff_platform": 1
+						}
+					}
 				}
 			},
 			"patch": {
@@ -129,6 +273,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_member_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "修改指定集群成员配置",
+						"description": "The PATCH method updates specific properties of one config.",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/ha/member/{name}",
+							"body": {
+								"name": "ad_2",
+								"state": "ENABLE",
+								"weight_in_diff_platform": 1
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/ha/member/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/ha/member/{name}的响应数据",
+						"value": {
+							"name": "ad_2",
+							"description": "example_string",
+							"state": "ENABLE",
+							"ha": {
+								"interface": {
+									"type": "VLAN",
+									"interface": "bond-134"
+								},
+								"address": "10.0.1.2/24",
+								"gateway": "10.0.1.100"
+							},
+							"alternate_ha": {
+								"interface": {
+									"type": "VLAN",
+									"interface": "bond-134"
+								},
+								"address": "200.0.0.2/24",
+								"gateway": "200.0.0.100"
+							},
+							"username": "admin",
+							"password": "admin",
+							"pk_password": "example_string",
+							"weight_in_diff_platform": 1
+						}
+					}
 				}
 			},
 			"delete": {
@@ -146,6 +334,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_member_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "删除指定集群成员配置",
+						"description": "DELETE /api/ad/v3/ha/member/{name}",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/ha/member/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/ha/member/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/ha/member/{name}的响应数据",
+						"value": {
+							"name": "ad_2",
+							"description": "example_string",
+							"state": "ENABLE",
+							"ha": {
+								"interface": {
+									"type": "VLAN",
+									"interface": "bond-134"
+								},
+								"address": "10.0.1.2/24",
+								"gateway": "10.0.1.100"
+							},
+							"alternate_ha": {
+								"interface": {
+									"type": "VLAN",
+									"interface": "bond-134"
+								},
+								"address": "200.0.0.2/24",
+								"gateway": "200.0.0.100"
+							},
+							"username": "admin",
+							"password": "admin",
+							"pk_password": "example_string",
+							"weight_in_diff_platform": 1
+						}
 					}
 				}
 			},

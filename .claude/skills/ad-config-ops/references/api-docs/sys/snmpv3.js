@@ -62,6 +62,53 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snmpv3_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all snmpv3",
+						"description": "查看已有的SNMP（V3）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/snmpv3/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/snmpv3/ 响应",
+						"description": "返回GET /api/ad/v3/sys/snmpv3/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "snmp3_admin",
+									"description": "example_string",
+									"state": "ENABLE",
+									"username": "admin",
+									"privileges": "GET",
+									"authentication": {
+										"state": "ENABLE",
+										"algorithm": "SHA",
+										"password": "",
+										"pk_password": "",
+										"encrypted_password": "A1B2C3D4"
+									},
+									"encrypt": {
+										"state": "ENABLE",
+										"algorithm": "AES",
+										"password": "",
+										"pk_password": "",
+										"encrypted_password": "A1B2C3D4",
+										"reuse_authentication_password": "DISABLE"
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +126,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snmpv3_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new snmpv3",
+						"description": "新建SNMP（V3）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/snmpv3/",
+							"body": {
+								"name": "AI_snmp3_admin_A",
+								"state": "ENABLE",
+								"username": "admin",
+								"privileges": "GET"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/snmpv3/ 响应",
+						"description": "返回POST /api/ad/v3/sys/snmpv3/的响应数据",
+						"value": {
+							"name": "AI_snmp3_admin_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"username": "admin",
+							"privileges": "GET",
+							"authentication": {
+								"state": "ENABLE",
+								"algorithm": "SHA",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"encrypt": {
+								"state": "ENABLE",
+								"algorithm": "AES",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4",
+								"reuse_authentication_password": "DISABLE"
+							}
+						}
 					}
 				}
 			},
@@ -128,6 +217,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snmpv3_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific snmpv3",
+						"description": "查看指定的SNMP（V3）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/snmpv3/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/snmpv3/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/snmpv3/{name}的响应数据",
+						"value": {
+							"name": "snmp3_admin",
+							"description": "example_string",
+							"state": "ENABLE",
+							"username": "admin",
+							"privileges": "GET",
+							"authentication": {
+								"state": "ENABLE",
+								"algorithm": "SHA",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"encrypt": {
+								"state": "ENABLE",
+								"algorithm": "AES",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4",
+								"reuse_authentication_password": "DISABLE"
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -147,6 +272,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snmpv3_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new snmpv3",
+						"description": "新建指定的SNMP（V3）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/sys/snmpv3/{name}",
+							"body": {
+								"name": "AI_snmp3_admin_B",
+								"state": "ENABLE",
+								"username": "admin",
+								"privileges": "GET"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/sys/snmpv3/{name} 响应",
+						"description": "返回POST /api/ad/v3/sys/snmpv3/{name}的响应数据",
+						"value": {
+							"name": "AI_snmp3_admin_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"username": "admin",
+							"privileges": "GET",
+							"authentication": {
+								"state": "ENABLE",
+								"algorithm": "SHA",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"encrypt": {
+								"state": "ENABLE",
+								"algorithm": "AES",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4",
+								"reuse_authentication_password": "DISABLE"
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -164,6 +331,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snmpv3_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific snmpv3",
+						"description": "修改指定的SNMP（V3）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/snmpv3/{name}",
+							"body": {
+								"name": "snmp3_admin",
+								"state": "ENABLE",
+								"username": "admin",
+								"privileges": "GET"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/snmpv3/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/snmpv3/{name}的响应数据",
+						"value": {
+							"name": "snmp3_admin",
+							"description": "example_string",
+							"state": "ENABLE",
+							"username": "admin",
+							"privileges": "GET",
+							"authentication": {
+								"state": "ENABLE",
+								"algorithm": "SHA",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"encrypt": {
+								"state": "ENABLE",
+								"algorithm": "AES",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4",
+								"reuse_authentication_password": "DISABLE"
+							}
+						}
 					}
 				}
 			},
@@ -183,6 +392,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_snmpv3_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific snmpv3",
+						"description": "修改指定的SNMP（V3）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/snmpv3/{name}",
+							"body": {
+								"name": "snmp3_admin",
+								"state": "ENABLE",
+								"username": "admin",
+								"privileges": "GET"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/snmpv3/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/snmpv3/{name}的响应数据",
+						"value": {
+							"name": "snmp3_admin",
+							"description": "example_string",
+							"state": "ENABLE",
+							"username": "admin",
+							"privileges": "GET",
+							"authentication": {
+								"state": "ENABLE",
+								"algorithm": "SHA",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"encrypt": {
+								"state": "ENABLE",
+								"algorithm": "AES",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4",
+								"reuse_authentication_password": "DISABLE"
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -195,6 +446,42 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_snmpv3_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific snmpv3",
+						"description": "删除指定的SNMP（V3）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/sys/snmpv3/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/sys/snmpv3/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/sys/snmpv3/{name}的响应数据",
+						"value": {
+							"name": "snmp3_admin",
+							"description": "example_string",
+							"state": "ENABLE",
+							"username": "admin",
+							"privileges": "GET",
+							"authentication": {
+								"state": "ENABLE",
+								"algorithm": "SHA",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"encrypt": {
+								"state": "ENABLE",
+								"algorithm": "AES",
+								"password": "",
+								"pk_password": "",
+								"encrypted_password": "A1B2C3D4",
+								"reuse_authentication_password": "DISABLE"
+							}
+						}
 					}
 				}
 			}
@@ -352,8 +639,7 @@ module.exports ={
 							"description": "可选参数；认证密码，当启用认证时，password和encrypted_password必须选填一个",
 							"passwdDesc": "authentication password",
 							"type": "string",
-							"minLength": 8,
-							"maxLength": 64,
+							"minLength": 1,
 							"example": ""
 						},
 						"pk_password": {
@@ -399,8 +685,7 @@ module.exports ={
 							"description": "可选参数；加密密码，当启用加密时，password和encrypted_password只能选填一个",
 							"passwdDesc": "encrypt password",
 							"type": "string",
-							"minLength": 8,
-							"maxLength": 64,
+							"minLength": 1,
 							"example": ""
 						},
 						"pk_password": {

@@ -51,6 +51,25 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_alert_trap_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get alert-trap",
+						"description": "查看当前已有的SNMP Traps告警配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/alert-trap"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/alert-trap 响应",
+						"description": "返回GET /api/ad/v3/sys/alert-trap的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"event": null,
+							"interval": 21600
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +88,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_alert_trap_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace alert-trap",
+						"description": "修改SNMP Traps告警配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/alert-trap",
+							"body": {
+								"state": "ENABLE",
+								"interval": 21600
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/alert-trap 响应",
+						"description": "返回PUT /api/ad/v3/sys/alert-trap的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"event": null,
+							"interval": 21600
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +128,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_alert_trap_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify alert-trap",
+						"description": "修改SNMP Traps告警配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/alert-trap",
+							"body": {
+								"state": "ENABLE",
+								"interval": 21600
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/alert-trap 响应",
+						"description": "返回PATCH /api/ad/v3/sys/alert-trap的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"event": null,
+							"interval": 21600
+						}
 					}
 				}
 			},

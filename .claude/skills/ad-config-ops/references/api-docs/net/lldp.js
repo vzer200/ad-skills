@@ -51,6 +51,26 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_lldp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get lldp",
+						"description": "查看lldp全局配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/lldp"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/lldp 响应",
+						"description": "返回GET /api/ad/v3/net/lldp的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"tx_interval": 30,
+							"tx_hold": 4,
+							"max_neighbors": 32
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +89,32 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_lldp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace lldp",
+						"description": "替换lldp全局配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/lldp",
+							"body": {
+								"state": "ENABLE",
+								"tx_interval": 30,
+								"tx_hold": 4,
+								"max_neighbors": 32
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/lldp 响应",
+						"description": "返回PUT /api/ad/v3/net/lldp的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"tx_interval": 30,
+							"tx_hold": 4,
+							"max_neighbors": 32
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +132,32 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_lldp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify lldp",
+						"description": "修改lldp全局配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/lldp",
+							"body": {
+								"state": "ENABLE",
+								"tx_interval": 30,
+								"tx_hold": 4,
+								"max_neighbors": 32
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/lldp 响应",
+						"description": "返回PATCH /api/ad/v3/net/lldp的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"tx_interval": 30,
+							"tx_hold": 4,
+							"max_neighbors": 32
+						}
 					}
 				}
 			},

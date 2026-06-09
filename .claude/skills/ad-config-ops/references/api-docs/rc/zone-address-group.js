@@ -62,6 +62,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_zone_address_group_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all zone-address-group",
+						"description": "获取地域地址集",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/zone-address-group/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/zone-address-group/ 响应",
+						"description": "返回GET /api/ad/v3/rc/zone-address-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "northeastern_zone",
+									"description": "example_string",
+									"addresses": [
+										"192.168.1.100-192.168.1.200"
+									],
+									"addresses_ipv6": [
+										"2001::100-2001::1000"
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +114,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_zone_address_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new zone-address-group",
+						"description": "新建地域地址集",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/zone-address-group/",
+							"body": {
+								"name": "AI_northeastern_zone_A"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/zone-address-group/ 响应",
+						"description": "返回POST /api/ad/v3/rc/zone-address-group/的响应数据",
+						"value": {
+							"name": "AI_northeastern_zone_A",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							]
+						}
 					}
 				}
 			},
@@ -98,6 +160,44 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_zone_address_group_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify zone-address-group",
+						"description": "修改地域地址集",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/zone-address-group/",
+							"body": {
+								"name": "northeastern_zone"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/zone-address-group/ 响应",
+						"description": "返回PATCH /api/ad/v3/rc/zone-address-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "northeastern_zone",
+									"description": "example_string",
+									"addresses": [
+										"192.168.1.100-192.168.1.200"
+									],
+									"addresses_ipv6": [
+										"2001::100-2001::1000"
+									]
+								}
+							]
+						}
 					}
 				}
 			}
@@ -129,6 +229,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_zone_address_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific zone-address-group",
+						"description": "获取地域地址集",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/zone-address-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/zone-address-group/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/zone-address-group/{name}的响应数据",
+						"value": {
+							"name": "northeastern_zone",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -148,6 +272,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_zone_address_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new zone-address-group",
+						"description": "新建地域地址集",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/zone-address-group/{name}",
+							"body": {
+								"name": "AI_northeastern_zone_B"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/zone-address-group/{name} 响应",
+						"description": "返回POST /api/ad/v3/rc/zone-address-group/{name}的响应数据",
+						"value": {
+							"name": "AI_northeastern_zone_B",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -165,6 +316,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_zone_address_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific zone-address-group",
+						"description": "修改地域地址集",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/rc/zone-address-group/{name}",
+							"body": {
+								"name": "northeastern_zone"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/rc/zone-address-group/{name} 响应",
+						"description": "返回PUT /api/ad/v3/rc/zone-address-group/{name}的响应数据",
+						"value": {
+							"name": "northeastern_zone",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							]
+						}
 					}
 				}
 			},
@@ -184,6 +362,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_zone_address_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific zone-address-group",
+						"description": "修改地域地址集",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/zone-address-group/{name}",
+							"body": {
+								"name": "northeastern_zone"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/zone-address-group/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/rc/zone-address-group/{name}的响应数据",
+						"value": {
+							"name": "northeastern_zone",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -196,6 +401,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_zone_address_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific zone-address-group",
+						"description": "删除地域地址集",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/rc/zone-address-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/rc/zone-address-group/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/rc/zone-address-group/{name}的响应数据",
+						"value": {
+							"name": "northeastern_zone",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							]
+						}
 					}
 				}
 			}

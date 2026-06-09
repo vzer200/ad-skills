@@ -58,36 +58,29 @@ FAMILY_SPECS: dict[str, dict[str, Any]] = {
     },
 }
 
-
-VIRTUAL_SERVICE_OPTIONS: list[dict[str, Any]] = [
-    {"value": "IP", "label": "IP虚拟服务", "terms": ["IP虚拟服务"]},
-    {"value": "ANY", "label": "ANY虚拟服务", "terms": ["ANY虚拟服务", "任意协议虚拟服务"]},
-    {
-        "value": "TCP-FORWARD",
-        "label": "TCP-FORWARD（TCP转发虚拟服务、四层虚拟服务）",
-        "terms": ["TCP转发虚拟服务", "四层虚拟服务", "四层TCP虚拟服务"],
+FAMILY_SPECS["slb.virtual_service"] = {
+    "prefix": "slb/virtual-service/",
+    "terms": ["虚拟服务", "VIP服务", "负载均衡服务"],
+    "question": "你要创建哪种虚拟服务？",
+    "child_suffix": "虚拟服务",
+    "children": {
+        "ip": {"label": "IP虚拟服务", "terms": ["IP虚拟服务"]},
+        "any": {"label": "ANY虚拟服务", "terms": ["ANY虚拟服务", "任意协议虚拟服务"]},
+        "tcp-forward": {"label": "TCP-FORWARD虚拟服务", "terms": ["TCP-FORWARD虚拟服务", "TCP转发虚拟服务", "四层TCP虚拟服务"]},
+        "tcp-proxy": {"label": "TCP-PROXY虚拟服务", "terms": ["TCP-PROXY虚拟服务", "TCP代理虚拟服务", "七层TCP虚拟服务"]},
+        "udp-forward": {"label": "UDP-FORWARD虚拟服务", "terms": ["UDP-FORWARD虚拟服务", "UDP转发虚拟服务", "四层UDP虚拟服务"]},
+        "udp-proxy": {"label": "UDP-PROXY虚拟服务", "terms": ["UDP-PROXY虚拟服务", "UDP代理虚拟服务", "七层UDP虚拟服务"]},
+        "http": {"label": "HTTP虚拟服务", "terms": ["HTTP虚拟服务"]},
+        "ssl-offload": {"label": "SSL-OFFLOAD虚拟服务", "terms": ["SSL-OFFLOAD虚拟服务", "SSL卸载虚拟服务"]},
+        "ssl-offload-https": {"label": "SSL-OFFLOAD-HTTPS虚拟服务", "terms": ["SSL-OFFLOAD-HTTPS虚拟服务", "HTTPS虚拟服务"]},
+        "radius": {"label": "RADIUS虚拟服务", "terms": ["RADIUS虚拟服务"]},
+        "dns": {"label": "DNS虚拟服务", "terms": ["DNS虚拟服务"]},
+        "ftp": {"label": "FTP虚拟服务", "terms": ["FTP虚拟服务"]},
+        "sip-tcp": {"label": "SIP-TCP虚拟服务", "terms": ["SIP-TCP虚拟服务", "SIP TCP虚拟服务"]},
+        "sip-udp": {"label": "SIP-UDP虚拟服务", "terms": ["SIP-UDP虚拟服务", "SIP UDP虚拟服务"]},
+        "8583": {"label": "8583虚拟服务", "terms": ["8583虚拟服务"]},
     },
-    {
-        "value": "TCP-PROXY",
-        "label": "TCP-PROXY（七层TCP虚拟服务、TCP代理虚拟服务）",
-        "terms": ["七层TCP虚拟服务", "TCP代理虚拟服务", "TCP代理"],
-    },
-    {"value": "UDP-FORWARD", "label": "UDP转发虚拟服务", "terms": ["UDP转发虚拟服务", "四层UDP虚拟服务"]},
-    {"value": "UDP-PROXY", "label": "UDP代理虚拟服务", "terms": ["UDP代理虚拟服务", "七层UDP虚拟服务"]},
-    {"value": "HTTP", "label": "HTTP虚拟服务", "terms": ["HTTP虚拟服务"]},
-    {"value": "SSL-OFFLOAD", "label": "SSL卸载虚拟服务", "terms": ["SSL卸载虚拟服务"]},
-    {
-        "value": "SSL-OFFLOAD-HTTPS",
-        "label": "HTTPS虚拟服务",
-        "terms": ["HTTPS虚拟服务", "SSL卸载HTTPS虚拟服务"],
-    },
-    {"value": "RADIUS", "label": "RADIUS虚拟服务", "terms": ["RADIUS虚拟服务"]},
-    {"value": "DNS", "label": "DNS虚拟服务", "terms": ["DNS虚拟服务"]},
-    {"value": "FTP", "label": "FTP虚拟服务", "terms": ["FTP虚拟服务"]},
-    {"value": "SIP-TCP", "label": "SIP-TCP虚拟服务", "terms": ["SIP-TCP虚拟服务", "SIP TCP虚拟服务"]},
-    {"value": "SIP-UDP", "label": "SIP-UDP虚拟服务", "terms": ["SIP-UDP虚拟服务", "SIP UDP虚拟服务"]},
-    {"value": "8583", "label": "8583虚拟服务", "terms": ["8583虚拟服务"]},
-]
+}
 
 
 RESOURCE_EXACT_TERMS: dict[str, list[str]] = {
@@ -99,7 +92,7 @@ RESOURCE_EXACT_TERMS: dict[str, list[str]] = {
 }
 
 
-VARIANT_BACKED_RESOURCES = {"slb.virtual_service"}
+VARIANT_BACKED_RESOURCES: set[str] = set()
 
 
 def operation_key(method: str, path: str) -> str:
@@ -311,27 +304,6 @@ def _build_families(index: dict[str, Any], resources: dict[str, Any]) -> dict[st
     return families
 
 
-def _build_virtual_service_variant() -> dict[str, Any]:
-    return {
-        "id": "slb.virtual_service.service",
-        "resource": "slb.virtual_service",
-        "document": "slb/virtual-service.js",
-        "schema": "config.virtual_service",
-        "field": "service",
-        "ambiguous_terms": ["虚拟服务", "VIP服务", "负载均衡服务"],
-        "ambiguous_groups": [
-            {
-                "id": "tcp_virtual_service",
-                "terms": ["TCP虚拟服务"],
-                "options": ["TCP-FORWARD", "TCP-PROXY"],
-                "question": "你要创建哪种 TCP 虚拟服务？",
-            }
-        ],
-        "question": "你要创建哪种虚拟服务？",
-        "options": copy.deepcopy(VIRTUAL_SERVICE_OPTIONS),
-    }
-
-
 def build_generated_search_map(index: dict[str, Any]) -> dict[str, Any]:
     schema_names = _schema_names_by_document(index)
     operation_keys = _operations_by_document(index)
@@ -394,7 +366,7 @@ def build_generated_search_map(index: dict[str, Any]) -> dict[str, Any]:
         }
 
     families = _build_families(index, resources)
-    variant_families = {"slb.virtual_service.service": _build_virtual_service_variant()}
+    variant_families = {}
     _apply_generated_exact_terms(resources, variant_families)
 
     return {

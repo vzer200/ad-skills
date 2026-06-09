@@ -1,0 +1,17 @@
+{
+  "$schema": "docs/devices.schema.json",
+  "devices": [
+    {
+      "name": "AD1",
+      "host": "https://192.168.8.30",
+      "user": "admin",
+      "password": "root1234+"
+    },
+    {
+      "name": "AD2",
+      "host": "https://192.168.8.31",
+      "user": "admin",
+      "password": "root1234+"
+    }
+  ]
+}

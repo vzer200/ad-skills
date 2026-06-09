@@ -86,6 +86,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_operation_log_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "retrieve operation-log",
+						"description": "查看管理日志",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/log/operation-log/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/log/operation-log/ 响应",
+						"description": "返回GET /api/ad/v3/log/operation-log/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"operation_log_id": 0,
+									"date": "YYYY-MM-DD",
+									"time": "hh:mm:ss",
+									"accsee_type": "WEB-CONSOLE",
+									"source_address": "127.0.0.1",
+									"username": "admin",
+									"method": "PATCH",
+									"path": "/api/slb/virtual-service/vs_1",
+									"module": "HA",
+									"description": "Modify VIRTUAL-SERVICE: vs_http_8080",
+									"command": "modify slb virtual-service vs_http_8080 port [ 8080 ]",
+									"result": "FAILURE",
+									"detail": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -115,6 +155,27 @@ module.exports ={
 					},
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "export operation-log package",
+						"description": "归档管理日志",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/log/operation-log/package"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/log/operation-log/package 响应",
+						"description": "返回GET /api/ad/v3/log/operation-log/package的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
 					}
 				}
 			}

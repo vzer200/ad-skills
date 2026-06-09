@@ -51,6 +51,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_maintenance_mode_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get maintenance-mode",
+						"description": "查看当前已有的系统维护配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/maintenance-mode"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/maintenance-mode 响应",
+						"description": "返回GET /api/ad/v3/sys/maintenance-mode的响应数据",
+						"value": {
+							"console_service": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE"
+							},
+							"report_center": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE"
+							},
+							"snmp_svc": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE"
+							},
+							"ssh_console": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE"
+							},
+							"troubleshooting_port": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE",
+								"ssh_maintenance_port": 22345
+							},
+							"serial_port": {
+								"serial_port_timeout": 600
+							},
+							"zta_token_config": {
+								"zta_security_enable": "ENABLE",
+								"console_denied": "ENABLE",
+								"dataplane_denied": "ENABLE"
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +114,52 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_maintenance_mode_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace maintenance-mode",
+						"description": "修改系统维护配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/maintenance-mode",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/maintenance-mode 响应",
+						"description": "返回PUT /api/ad/v3/sys/maintenance-mode的响应数据",
+						"value": {
+							"console_service": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE"
+							},
+							"report_center": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE"
+							},
+							"snmp_svc": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE"
+							},
+							"ssh_console": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE"
+							},
+							"troubleshooting_port": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE",
+								"ssh_maintenance_port": 22345
+							},
+							"serial_port": {
+								"serial_port_timeout": 600
+							},
+							"zta_token_config": {
+								"zta_security_enable": "ENABLE",
+								"console_denied": "ENABLE",
+								"dataplane_denied": "ENABLE"
+							}
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +177,52 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_maintenance_mode_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify maintenance-mode",
+						"description": "修改系统维护配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/maintenance-mode",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/maintenance-mode 响应",
+						"description": "返回PATCH /api/ad/v3/sys/maintenance-mode的响应数据",
+						"value": {
+							"console_service": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE"
+							},
+							"report_center": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE"
+							},
+							"snmp_svc": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE"
+							},
+							"ssh_console": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE"
+							},
+							"troubleshooting_port": {
+								"lan_stat": "DISABLE",
+								"wan_stat": "DISABLE",
+								"ssh_maintenance_port": 22345
+							},
+							"serial_port": {
+								"serial_port_timeout": 600
+							},
+							"zta_token_config": {
+								"zta_security_enable": "ENABLE",
+								"console_denied": "ENABLE",
+								"dataplane_denied": "ENABLE"
+							}
+						}
 					}
 				}
 			},
@@ -144,8 +281,8 @@ module.exports ={
 								"ENABLE",
 								"DISABLE"
 							],
-							"default": "ENABLE",
-							"example": "ENABLE"
+							"default": "DISABLE",
+							"example": "DISABLE"
 						},
 						"wan_stat": {
 							"description": "WAN口远程维护开关",
@@ -157,10 +294,87 @@ module.exports ={
 							],
 							"default": "DISABLE",
 							"example": "DISABLE"
+						}
+					}
+				},
+				"report_center": {
+					"description": "web控制台远程维护配置",
+					"type": "object",
+					"properties": {
+						"lan_stat": {
+							"description": "LAN口远程维护开关",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
 						},
-						"expired_timestamp": {
-							"description": "WAN口远程维护开关定时关闭时间",
-							"type": "integer"
+						"wan_stat": {
+							"description": "WAN口远程维护开关",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE",
+								"TEMPORARY"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
+						}
+					}
+				},
+				"snmp_svc": {
+					"description": "web控制台远程维护配置",
+					"type": "object",
+					"properties": {
+						"lan_stat": {
+							"description": "LAN口远程维护开关",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
+						},
+						"wan_stat": {
+							"description": "WAN口远程维护开关",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE",
+								"TEMPORARY"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
+						}
+					}
+				},
+				"ssh_console": {
+					"description": "web控制台远程维护配置",
+					"type": "object",
+					"properties": {
+						"lan_stat": {
+							"description": "LAN口远程维护开关",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
+						},
+						"wan_stat": {
+							"description": "WAN口远程维护开关",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE",
+								"TEMPORARY"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
 						}
 					}
 				},
@@ -170,16 +384,6 @@ module.exports ={
 					"properties": {
 						"lan_stat": {
 							"description": "LAN口SSH后台维护开关",
-							"type": "string",
-							"enum": [
-								"ENABLE",
-								"DISABLE"
-							],
-							"default": "DISABLE",
-							"example": "DISABLE"
-						},
-						"management_stat": {
-							"description": "管理口SSH后台维护开关",
 							"type": "string",
 							"enum": [
 								"ENABLE",
@@ -200,20 +404,14 @@ module.exports ={
 							"default": "DISABLE",
 							"example": "DISABLE"
 						},
-						"expired_timestamp": {
-							"description": "WAN口SSH后台维护开关定时关闭时间",
-							"title": "过期时间",
-							"type": "integer",
-							"readOnly": true
-						},
 						"ssh_maintenance_port": {
 							"description": "SSH后台维护端口",
 							"title": "SSH后台维护端口",
 							"type": "integer",
-							"default": 22,
+							"default": 22345,
 							"maximum": 65535,
 							"minimum": 1,
-							"example": 22
+							"example": 22345
 						}
 					}
 				},

@@ -51,6 +51,24 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_static_route_monitor_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get static-route-monitor",
+						"description": "获取静态路由监视器配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/static-route-monitor"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/static-route-monitor 响应",
+						"description": "返回GET /api/ad/v3/net/static-route-monitor的响应数据",
+						"value": {
+							"arp_response_timeout": 16,
+							"arp_request_interval": 5
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +87,28 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_static_route_monitor_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace static-route-monitor",
+						"description": "修改静态路由监视器配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/static-route-monitor",
+							"body": {
+								"arp_response_timeout": 16,
+								"arp_request_interval": 5
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/static-route-monitor 响应",
+						"description": "返回PUT /api/ad/v3/net/static-route-monitor的响应数据",
+						"value": {
+							"arp_response_timeout": 16,
+							"arp_request_interval": 5
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +126,28 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_static_route_monitor_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify static-route-monitor",
+						"description": "修改静态路由监视器配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/static-route-monitor",
+							"body": {
+								"arp_response_timeout": 16,
+								"arp_request_interval": 5
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/static-route-monitor 响应",
+						"description": "返回PATCH /api/ad/v3/net/static-route-monitor的响应数据",
+						"value": {
+							"arp_response_timeout": 16,
+							"arp_request_interval": 5
+						}
 					}
 				}
 			},

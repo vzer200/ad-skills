@@ -62,6 +62,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_arp_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all arp",
+						"description": "获取ARP/ND防护配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/arp/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/arp/ 响应",
+						"description": "返回GET /api/ad/v3/net/arp/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "host_pc",
+									"description": "example_string",
+									"ip_address": "192.168.100.1",
+									"mac_address": "00:90:0b:11:22:33",
+									"link": "WAN_2"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +111,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_arp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new arp",
+						"description": "新增ARP/ND防护配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/arp/",
+							"body": {
+								"name": "AI_host_pc_A",
+								"ip_address": "192.168.100.1",
+								"mac_address": "00:90:0b:11:22:33",
+								"link": "WAN_2"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/arp/ 响应",
+						"description": "返回POST /api/ad/v3/net/arp/的响应数据",
+						"value": {
+							"name": "AI_host_pc_A",
+							"description": "example_string",
+							"ip_address": "192.168.100.1",
+							"mac_address": "00:90:0b:11:22:33",
+							"link": "WAN_2"
+						}
 					}
 				}
 			},
@@ -98,6 +157,44 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_arp_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify arp",
+						"description": "The PATCH method updates specific properties of one config.",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/arp/",
+							"body": {
+								"name": "host_pc",
+								"ip_address": "192.168.100.1",
+								"mac_address": "00:90:0b:11:22:33",
+								"link": "WAN_2"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/arp/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/arp/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "host_pc",
+									"description": "example_string",
+									"ip_address": "192.168.100.1",
+									"mac_address": "00:90:0b:11:22:33",
+									"link": "WAN_2"
+								}
+							]
+						}
 					}
 				}
 			}
@@ -131,6 +228,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_arp_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create batch of arp",
+						"description": "批量添加ARP/ND配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/arp-batch/",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/arp-batch/ 响应",
+						"description": "返回POST /api/ad/v3/net/arp-batch/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "host_pc",
+									"description": "example_string",
+									"ip_address": "192.168.100.1",
+									"mac_address": "00:90:0b:11:22:33",
+									"link": "WAN_2"
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -161,6 +291,27 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_arp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific arp",
+						"description": "获取ARP/ND防护配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/arp/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/arp/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/arp/{name}的响应数据",
+						"value": {
+							"name": "host_pc",
+							"description": "example_string",
+							"ip_address": "192.168.100.1",
+							"mac_address": "00:90:0b:11:22:33",
+							"link": "WAN_2"
+						}
+					}
 				}
 			},
 			"post": {
@@ -180,6 +331,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_arp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new arp",
+						"description": "新增ARP/ND防护配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/arp/{name}",
+							"body": {
+								"name": "AI_host_pc_B",
+								"ip_address": "192.168.100.1",
+								"mac_address": "00:90:0b:11:22:33",
+								"link": "WAN_2"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/arp/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/arp/{name}的响应数据",
+						"value": {
+							"name": "AI_host_pc_B",
+							"description": "example_string",
+							"ip_address": "192.168.100.1",
+							"mac_address": "00:90:0b:11:22:33",
+							"link": "WAN_2"
+						}
+					}
 				}
 			},
 			"put": {
@@ -198,6 +376,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_arp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific arp",
+						"description": "修改ARP/ND防护配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/arp/{name}",
+							"body": {
+								"name": "host_pc",
+								"ip_address": "192.168.100.1",
+								"mac_address": "00:90:0b:11:22:33",
+								"link": "WAN_2"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/arp/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/arp/{name}的响应数据",
+						"value": {
+							"name": "host_pc",
+							"description": "example_string",
+							"ip_address": "192.168.100.1",
+							"mac_address": "00:90:0b:11:22:33",
+							"link": "WAN_2"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -215,6 +420,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_arp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific arp",
+						"description": "修改ARP/ND防护配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/arp/{name}",
+							"body": {
+								"name": "host_pc",
+								"ip_address": "192.168.100.1",
+								"mac_address": "00:90:0b:11:22:33",
+								"link": "WAN_2"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/arp/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/arp/{name}的响应数据",
+						"value": {
+							"name": "host_pc",
+							"description": "example_string",
+							"ip_address": "192.168.100.1",
+							"mac_address": "00:90:0b:11:22:33",
+							"link": "WAN_2"
+						}
 					}
 				}
 			},
@@ -250,6 +482,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_arp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific arp",
+						"description": "删除ARP/ND防护配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/arp/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/arp/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/arp/{name}的响应数据",
+						"value": {
+							"name": "host_pc",
+							"description": "example_string",
+							"ip_address": "192.168.100.1",
+							"mac_address": "00:90:0b:11:22:33",
+							"link": "WAN_2"
+						}
 					}
 				}
 			}

@@ -42,7 +42,28 @@ module.exports ={
 					{
 						"$ref": "#/parameters/JSON-LOGOUT"
 					}
-				]
+				],
+				"x-examples": {
+					"request": {
+						"summary": "logout",
+						"description": "报表登出",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/report-logout",
+							"body": {
+								"username": "admin",
+								"source_ip": "1.1.1.1"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/report-logout 响应",
+						"description": "返回POST /api/ad/v3/report-logout的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			}
 		}
 	},

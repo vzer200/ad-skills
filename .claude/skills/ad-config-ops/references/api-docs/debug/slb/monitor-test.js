@@ -50,6 +50,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_monitor_test_get"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get monitor test result",
+						"description": "获取上一次监视器探测的结果",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/slb/service-monitor"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/slb/service-monitor 响应",
+						"description": "返回GET /api/ad/v3/debug/slb/service-monitor的响应数据",
+						"value": {
+							"monitor_err": [
+								{
+									"name": "example_string",
+									"state": "example_string",
+									"req_times": 0,
+									"is_running": true,
+									"rs_mon_fault_type": [
+										"example_string"
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -68,6 +95,25 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_monitor_test_post"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "monitor test",
+						"description": "发起监视器探测请求",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/slb/service-monitor",
+							"body": {
+								"monitor_name": "http",
+								"ip_addr": "10.0.1.234"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/slb/service-monitor 响应",
+						"description": "返回POST /api/ad/v3/debug/slb/service-monitor的响应数据",
+						"value": {}
+					}
 				}
 			},
 			"delete": {
@@ -80,6 +126,21 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_debug_monitor_test_delete"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete monitor test task",
+						"description": "删除监视器探测任务",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/debug/slb/service-monitor"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/debug/slb/service-monitor 响应",
+						"description": "返回DELETE /api/ad/v3/debug/slb/service-monitor的响应数据",
+						"value": {}
 					}
 				}
 			},

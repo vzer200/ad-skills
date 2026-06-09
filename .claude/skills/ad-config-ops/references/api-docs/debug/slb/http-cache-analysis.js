@@ -57,6 +57,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_http_cache_defect_analysis_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get http-cache defect-analysis result",
+						"description": "获取虚拟服务HTTP缓存缺失分析结果\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/slb/virtual-service/{name}/http-cache/defect-analysis"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/slb/virtual-service/{name}/http-cache/defect-analysis 响应",
+						"description": "返回GET /api/ad/v3/debug/slb/virtual-service/{name}/http-cache/defect-analysis的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"id": 1,
+									"url": "/mail/index.html",
+									"failure": 108,
+									"detail": "example_string"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -70,7 +101,30 @@ module.exports ={
 					{
 						"$ref": "#/parameters/HTTP-CACHE-ANALYSIS-DEBUG"
 					}
-				]
+				],
+				"x-examples": {
+					"request": {
+						"summary": "start http-cache defect-analysis",
+						"description": "启动虚拟服务HTTP缓存缺失分析任务\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/slb/virtual-service/{name}/http-cache/defect-analysis",
+							"body": {
+								"url_pattern": "*",
+								"vports": [
+									"80"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/slb/virtual-service/{name}/http-cache/defect-analysis 响应",
+						"description": "返回POST /api/ad/v3/debug/slb/virtual-service/{name}/http-cache/defect-analysis的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"delete": {
 				"tags": [
@@ -78,7 +132,22 @@ module.exports ={
 				],
 				"summary": "stop http-cache defect-analysis",
 				"description": "停止虚拟服务HTTP缓存缺失分析任务",
-				"operationId": "stop_http_cache_defect_analysis"
+				"operationId": "stop_http_cache_defect_analysis",
+				"x-examples": {
+					"request": {
+						"summary": "stop http-cache defect-analysis",
+						"description": "停止虚拟服务HTTP缓存缺失分析任务\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/debug/slb/virtual-service/{name}/http-cache/defect-analysis"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/debug/slb/virtual-service/{name}/http-cache/defect-analysis 响应",
+						"description": "返回DELETE /api/ad/v3/debug/slb/virtual-service/{name}/http-cache/defect-analysis的响应数据",
+						"value": {}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

@@ -59,6 +59,68 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_security_pool_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all security-pool statistics",
+						"description": "查看所有安全资源池状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/security-pool"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/security-pool 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/security-pool的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "",
+									"description": "example_string",
+									"health": "NORMAL",
+									"health_reason": "ALL_NODES_HAVE_NO_MONITOR",
+									"bypass": "DISABLE",
+									"type": "SECURITY",
+									"security_type": "WAF",
+									"security_node": {
+										"total": 0,
+										"state": {
+											"enable": [
+												"example_string"
+											],
+											"disable": [
+												"example_string"
+											],
+											"offline": [
+												"example_string"
+											]
+										},
+										"health": {
+											"normal": [
+												"example_string"
+											],
+											"failure": [
+												"example_string"
+											]
+										}
+									},
+									"connection": null,
+									"connection_established": null,
+									"connection_rate": null,
+									"upstream-throughput": null,
+									"downstream-throughput": null,
+									"general-throughput": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -85,6 +147,57 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_security_pool_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific security-pool statistics",
+						"description": "查看指定安全资源池状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/security-pool/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/security-pool/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/security-pool/{name}的响应数据",
+						"value": {
+							"name": "",
+							"description": "example_string",
+							"health": "NORMAL",
+							"health_reason": "ALL_NODES_HAVE_NO_MONITOR",
+							"bypass": "DISABLE",
+							"type": "SECURITY",
+							"security_type": "WAF",
+							"security_node": {
+								"total": 0,
+								"state": {
+									"enable": [
+										"example_string"
+									],
+									"disable": [
+										"example_string"
+									],
+									"offline": [
+										"example_string"
+									]
+								},
+								"health": {
+									"normal": [
+										"example_string"
+									],
+									"failure": [
+										"example_string"
+									]
+								}
+							},
+							"connection": null,
+							"connection_established": null,
+							"connection_rate": null,
+							"upstream-throughput": null,
+							"downstream-throughput": null,
+							"general-throughput": null
+						}
 					}
 				}
 			}
@@ -119,6 +232,33 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific security-pool statistics",
+						"description": "查看指定安全资源池某种类别的趋势状态信息，通过query参数tread指定时间范围，第二个路径参数item指定想要查看信息的类别，可选的有health/健康状态,connection/并发连接数,connection-rate/新建连接速率,upstream-throughput/上行吞吐速率,downstream-throughput/下行吞吐速率,general-throughput/总吞吐速率",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/security-pool/{name}/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/security-pool/{name}/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/security-pool/{name}/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -151,6 +291,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend_multiple"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get each security-pool statistics",
+						"description": "查看每个安全资源池某种类别的趋势状态信息，通过query参数tread指定时间范围，第二个路径参数item指定想要查看信息的类别，可选的有health/健康状态,connection/并发连接数,connection-rate/新建连接速率,upstream-throughput/上行吞吐速率,downstream-throughput/下行吞吐速率,general-throughput/总吞吐速率",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/security-pool-each/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/security-pool-each/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/security-pool-each/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"series": [
+								{
+									"name": "example_string",
+									"values": [
+										0
+									],
+									"additional_data": [
+										"example_item"
+									]
+								}
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
 					}
 				}
 			}
@@ -185,6 +357,35 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend_multiple_items_sslo"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific security-pool statistics",
+						"description": "查看指定安全资源池某些类别的趋势状态信息，通过query参数tread指定时间范围，query参数items指定想要查看信息的类别列表，可选的有health/健康状态,connection/并发连接数,connection-rate/新建连接速率,upstream-throughput/上行吞吐速率,downstream-throughput/下行吞吐速率,general-throughput/总吞吐速率",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/security-pool/{name}/combine-items"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/security-pool/{name}/combine-items 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/security-pool/{name}/combine-items的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"timestamp": 0,
+							"items": [
+								{
+									"name": "health",
+									"unit": "BIT-PER-SECOND",
+									"values": [
+										0
+									]
+								}
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -208,6 +409,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_security_pool_summary"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific security-pool statistics",
+						"description": "获取所有安全资源池的整体统计信息，通过query参数tread指定时间范围",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/security-pool-summary"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/security-pool-summary 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/security-pool-summary的响应数据",
+						"value": {
+							"security_pool_count": {
+								"total": 0,
+								"health": {
+									"normal": 0,
+									"failure": 0,
+									"alert": 0
+								}
+							},
+							"connection": null,
+							"connection_established": null,
+							"connection_rate": null,
+							"upstream-throughput": null,
+							"downstream-throughput": null,
+							"general-throughput": null
+						}
 					}
 				}
 			}
@@ -239,6 +470,35 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend_multiple_items_sslo"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific security-pool statistics",
+						"description": "获取所有安全资源池某个类别总的趋势状态信息，通过query参数tread指定时间范围，第二个路径参数item指定想要查看信息的类别，可选的connection/并发连接数,connection-rate/新建连接速率,upstream-throughput/上行吞吐速率,downstream-throughput/下行吞吐速率,general-throughput/总吞吐速率",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/security-pool-summary/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/security-pool-summary/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/security-pool-summary/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"timestamp": 0,
+							"items": [
+								{
+									"name": "health",
+									"unit": "BIT-PER-SECOND",
+									"values": [
+										0
+									]
+								}
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -268,6 +528,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend_multiple_items_sslo"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific security-pool statistics",
+						"description": "查看所有安全资源池某些类别总的趋势状态信息，通过query参数tread指定时间范围，query参数items指定想要查看信息的类别列表，可选的有connection/并发连接数,connection-rate/新建连接速率,upstream-throughput/上行吞吐速率,downstream-throughput/下行吞吐速率,general-throughput/总吞吐速率",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/security-pool-summary/combine-items"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/security-pool-summary/combine-items 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/security-pool-summary/combine-items的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"timestamp": 0,
+							"items": [
+								{
+									"name": "health",
+									"unit": "BIT-PER-SECOND",
+									"values": [
+										0
+									]
+								}
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
 					}
 				}
 			}

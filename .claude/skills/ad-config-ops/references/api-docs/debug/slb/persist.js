@@ -57,6 +57,27 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_persist"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "retrieve pool persist",
+						"description": "查询虚拟服务节点池会话保持\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/pool/{pool_name}/persist"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/pool/{pool_name}/persist 响应",
+						"description": "返回GET /api/ad/v3/debug/slb/virtual-service/{virtual_service_name}/pool/{pool_name}/persist的响应数据",
+						"value": {
+							"pool": "pool_web_portal_80",
+							"node": "10.0.1.2:8080",
+							"subnet": "200.200.100.0/24",
+							"timeout": 3549,
+							"netns": "default"
+						}
+					}
 				}
 			}
 		},
@@ -107,6 +128,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_slb_persist_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get slb persist",
+						"description": "查询虚拟服务会话保持记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/slb/persist/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/slb/persist/ 响应",
+						"description": "返回GET /api/ad/v3/debug/slb/persist/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"persist": "cookie-rewrite",
+									"type": "COOKIE",
+									"search_type": "PS_KEY",
+									"record_ip": "200.200.0.1",
+									"record_port": 8080,
+									"record_value": "10.86.15.2",
+									"destination_address": "200.200.0.1",
+									"destination_port": 8080,
+									"pool": "pool_web_portal_80",
+									"node_ip": "192.168.1.10",
+									"node_port": 8080,
+									"timeout": 24,
+									"application_group": 8080
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -132,7 +193,24 @@ module.exports ={
 				],
 				"summary": "clear slb persist",
 				"description": "清除虚拟服务会话保持记录",
-				"operationId": "clear_slb_persist"
+				"operationId": "clear_slb_persist",
+				"x-examples": {
+					"request": {
+						"summary": "clear slb persist",
+						"description": "清除虚拟服务会话保持记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/slb/persist/clear"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/slb/persist/clear 响应",
+						"description": "返回POST /api/ad/v3/debug/slb/persist/clear的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			}
 		}
 	},

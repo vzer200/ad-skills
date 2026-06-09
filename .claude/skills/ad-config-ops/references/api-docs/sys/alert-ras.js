@@ -51,6 +51,24 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_alert_ras_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get alert-ras",
+						"description": "查看当前已有的RAS告警配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/alert-ras"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/alert-ras 响应",
+						"description": "返回GET /api/ad/v3/sys/alert-ras的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"event": null
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +87,27 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_alert_ras_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace alert-ras",
+						"description": "修改RAS告警配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/alert-ras",
+							"body": {
+								"state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/alert-ras 响应",
+						"description": "返回PUT /api/ad/v3/sys/alert-ras的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"event": null
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +125,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_alert_ras_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify alert-ras",
+						"description": "修改RAS告警配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/alert-ras",
+							"body": {
+								"state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/alert-ras 响应",
+						"description": "返回PATCH /api/ad/v3/sys/alert-ras的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"event": null
+						}
 					}
 				}
 			},

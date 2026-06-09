@@ -51,6 +51,23 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_privacy_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get privacy",
+						"description": "查看当前已有的隐私政策配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/privacy"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/privacy 响应",
+						"description": "返回GET /api/ad/v3/sys/privacy的响应数据",
+						"value": {
+							"customer_experience_improvement_program": "ENABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +86,26 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_privacy_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace privacy",
+						"description": "修改隐私政策配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/privacy",
+							"body": {
+								"customer_experience_improvement_program": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/privacy 响应",
+						"description": "返回PUT /api/ad/v3/sys/privacy的响应数据",
+						"value": {
+							"customer_experience_improvement_program": "ENABLE"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +123,26 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_privacy_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify privacy",
+						"description": "修改隐私政策配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/privacy",
+							"body": {
+								"customer_experience_improvement_program": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/privacy 响应",
+						"description": "返回PATCH /api/ad/v3/sys/privacy的响应数据",
+						"value": {
+							"customer_experience_improvement_program": "ENABLE"
+						}
 					}
 				}
 			},

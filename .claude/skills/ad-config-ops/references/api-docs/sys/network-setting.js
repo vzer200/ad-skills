@@ -51,6 +51,71 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_network_setting_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get network-setting",
+						"description": "查看当前已有的网络参数配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/network-setting"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/network-setting 响应",
+						"description": "返回GET /api/ad/v3/sys/network-setting的响应数据",
+						"value": {
+							"route_forwarding": {
+								"wan_inbound_traffic": "DISABLE",
+								"symmetric_routing": "ENABLE",
+								"icmp_echo_reply": "ENABLE",
+								"icmp_ttl_equals_zero": "ENABLE",
+								"loose_initiation": "ENABLE"
+							},
+							"connection_setting": {
+								"statistical_method": "COMPLETED",
+								"throughput_statistic_method": "WAN_LINK_STATISTIC"
+							},
+							"tcp_protocol": {
+								"time_stamp": "DISABLE",
+								"nat_time_stamp": "PRESERVE",
+								"nat_seq_adjust": "DISABLE",
+								"nat_seq_local_adjust": "ENABLE",
+								"port_reuse": "ENABLE",
+								"time_stamp_seq_adjust": "ENABLE"
+							},
+							"performance_setting": {
+								"soft_distribution": "ENABLE",
+								"cross_numa_bond_opt_enable": "DISABLE",
+								"low_latency": "DISABLE",
+								"bond_dpu_opt_enable": "ENABLE"
+							},
+							"snat_port_exhaustion_warn_setting": {
+								"state": "ENABLE",
+								"threshold": 80,
+								"interval": 30
+							},
+							"dynamic_route": {
+								"default_route_learn_switch": "DISABLE",
+								"dynamic_route_backend_config_switch": "DISABLE",
+								"vip_route_delay_distribute_interval": 125,
+								"snat_route_delay_distribute_interval": 120
+							},
+							"alg": {
+								"ftp": "ENABLE",
+								"h323": "ENABLE",
+								"pptp": "ENABLE",
+								"sip": "ENABLE",
+								"tftp": "ENABLE"
+							},
+							"interface_setting": {
+								"hw_bypass_enable": "DISABLE"
+							},
+							"connection_optimize": {
+								"client_conn_keep_alive": "DISABLE"
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +134,72 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_network_setting_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace network-setting",
+						"description": "修改网络参数配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/network-setting",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/network-setting 响应",
+						"description": "返回PUT /api/ad/v3/sys/network-setting的响应数据",
+						"value": {
+							"route_forwarding": {
+								"wan_inbound_traffic": "DISABLE",
+								"symmetric_routing": "ENABLE",
+								"icmp_echo_reply": "ENABLE",
+								"icmp_ttl_equals_zero": "ENABLE",
+								"loose_initiation": "ENABLE"
+							},
+							"connection_setting": {
+								"statistical_method": "COMPLETED",
+								"throughput_statistic_method": "WAN_LINK_STATISTIC"
+							},
+							"tcp_protocol": {
+								"time_stamp": "DISABLE",
+								"nat_time_stamp": "PRESERVE",
+								"nat_seq_adjust": "DISABLE",
+								"nat_seq_local_adjust": "ENABLE",
+								"port_reuse": "ENABLE",
+								"time_stamp_seq_adjust": "ENABLE"
+							},
+							"performance_setting": {
+								"soft_distribution": "ENABLE",
+								"cross_numa_bond_opt_enable": "DISABLE",
+								"low_latency": "DISABLE",
+								"bond_dpu_opt_enable": "ENABLE"
+							},
+							"snat_port_exhaustion_warn_setting": {
+								"state": "ENABLE",
+								"threshold": 80,
+								"interval": 30
+							},
+							"dynamic_route": {
+								"default_route_learn_switch": "DISABLE",
+								"dynamic_route_backend_config_switch": "DISABLE",
+								"vip_route_delay_distribute_interval": 125,
+								"snat_route_delay_distribute_interval": 120
+							},
+							"alg": {
+								"ftp": "ENABLE",
+								"h323": "ENABLE",
+								"pptp": "ENABLE",
+								"sip": "ENABLE",
+								"tftp": "ENABLE"
+							},
+							"interface_setting": {
+								"hw_bypass_enable": "DISABLE"
+							},
+							"connection_optimize": {
+								"client_conn_keep_alive": "DISABLE"
+							}
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +217,72 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_network_setting_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify network-setting",
+						"description": "修改网络参数配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/network-setting",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/network-setting 响应",
+						"description": "返回PATCH /api/ad/v3/sys/network-setting的响应数据",
+						"value": {
+							"route_forwarding": {
+								"wan_inbound_traffic": "DISABLE",
+								"symmetric_routing": "ENABLE",
+								"icmp_echo_reply": "ENABLE",
+								"icmp_ttl_equals_zero": "ENABLE",
+								"loose_initiation": "ENABLE"
+							},
+							"connection_setting": {
+								"statistical_method": "COMPLETED",
+								"throughput_statistic_method": "WAN_LINK_STATISTIC"
+							},
+							"tcp_protocol": {
+								"time_stamp": "DISABLE",
+								"nat_time_stamp": "PRESERVE",
+								"nat_seq_adjust": "DISABLE",
+								"nat_seq_local_adjust": "ENABLE",
+								"port_reuse": "ENABLE",
+								"time_stamp_seq_adjust": "ENABLE"
+							},
+							"performance_setting": {
+								"soft_distribution": "ENABLE",
+								"cross_numa_bond_opt_enable": "DISABLE",
+								"low_latency": "DISABLE",
+								"bond_dpu_opt_enable": "ENABLE"
+							},
+							"snat_port_exhaustion_warn_setting": {
+								"state": "ENABLE",
+								"threshold": 80,
+								"interval": 30
+							},
+							"dynamic_route": {
+								"default_route_learn_switch": "DISABLE",
+								"dynamic_route_backend_config_switch": "DISABLE",
+								"vip_route_delay_distribute_interval": 125,
+								"snat_route_delay_distribute_interval": 120
+							},
+							"alg": {
+								"ftp": "ENABLE",
+								"h323": "ENABLE",
+								"pptp": "ENABLE",
+								"sip": "ENABLE",
+								"tftp": "ENABLE"
+							},
+							"interface_setting": {
+								"hw_bypass_enable": "DISABLE"
+							},
+							"connection_optimize": {
+								"client_conn_keep_alive": "DISABLE"
+							}
+						}
 					}
 				}
 			},
@@ -203,6 +400,16 @@ module.exports ={
 							],
 							"default": "COMPLETED",
 							"example": "COMPLETED"
+						},
+						"throughput_statistic_method": {
+							"description": "系统网络吞吐统计方式",
+							"type": "string",
+							"enum": [
+								"WAN_LINK_STATISTIC",
+								"ALL_LINK_STATISTIC"
+							],
+							"default": "WAN_LINK_STATISTIC",
+							"example": "WAN_LINK_STATISTIC"
 						}
 					},
 					"required": []
@@ -300,7 +507,7 @@ module.exports ={
 							"example": "ENABLE"
 						},
 						"low_latency": {
-							"description": "快速响应模式开关",
+							"description": "管数分离模式开关",
 							"type": "string",
 							"enum": [
 								"ENABLE",
@@ -308,9 +515,55 @@ module.exports ={
 							],
 							"default": "DISABLE",
 							"example": "DISABLE"
+						},
+						"bond_dpu_opt_enable": {
+							"description": "bond dpu优化开关",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "ENABLE",
+							"example": "DISABLE"
 						}
 					},
 					"required": []
+				},
+				"snat_port_exhaustion_warn_setting": {
+					"type": "object",
+					"description": "snat端口枯竭告警设置",
+					"required": [],
+					"properties": {
+						"state": {
+							"type": "string",
+							"description": "snat源端口枯竭告警开关",
+							"title": "snat源端口枯竭告警开关",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "ENABLE",
+							"example": "DISABLE"
+						},
+						"threshold": {
+							"type": "integer",
+							"description": "snat源端口枯竭告警阈值，最大100%，最小值50%",
+							"title": "snat源端口枯竭告警阈值",
+							"default": 80,
+							"maximum": 100,
+							"minimum": 50,
+							"example": 80
+						},
+						"interval": {
+							"type": "integer",
+							"description": "snat源端口枯竭告警间隔，最大值600s，最小值1s",
+							"title": "snat源端口枯竭告警间隔",
+							"default": 30,
+							"maximum": 600,
+							"minimum": 1,
+							"example": 30
+						}
+					}
 				},
 				"dynamic_route": {
 					"description": "动态路由设置",
@@ -327,6 +580,32 @@ module.exports ={
 							],
 							"default": "DISABLE",
 							"example": "DISABLE"
+						},
+						"dynamic_route_backend_config_switch": {
+							"description": "动态路由后台配置开关",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
+						},
+						"vip_route_delay_distribute_interval": {
+							"description": "虚拟IP路由注入延迟时长，最大值1200s，最小值10s",
+							"type": "integer",
+							"default": 125,
+							"maximum": 1200,
+							"minimum": 1,
+							"example": 125
+						},
+						"snat_route_delay_distribute_interval": {
+							"description": "SNAT地址集路由注入延迟时长，最大值1200s，最小值10s",
+							"type": "integer",
+							"default": 120,
+							"maximum": 1200,
+							"minimum": 1,
+							"example": 120
 						}
 					}
 				},
@@ -387,14 +666,29 @@ module.exports ={
 					},
 					"required": []
 				},
-				"snat_port_exhaustion_warn_setting": {
-					"description": "snat端口枯竭告警设置",
+				"interface_setting": {
+					"description": "网口配置",
 					"type": "object",
 					"properties": {
-						"state": {
-							"description": "snat源端口枯竭告警开关",
-							"__format__description__": "合法输入为ENABLE和DISABLE",
-							"title": "snat源端口枯竭告警开关",
+						"hw_bypass_enable": {
+							"description": "网口bypass",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"FORCE-ENABLE",
+								"DISABLE"
+							],
+							"default": "DISABLE",
+							"example": "DISABLE"
+						}
+					}
+				},
+				"connection_optimize": {
+					"description": "连接优化设置",
+					"type": "object",
+					"properties": {
+						"client_conn_keep_alive": {
+							"description": "客户端连接优化",
 							"type": "string",
 							"enum": [
 								"ENABLE",
@@ -402,26 +696,6 @@ module.exports ={
 							],
 							"default": "DISABLE",
 							"example": "DISABLE"
-						},
-						"threshold": {
-							"description": "snat源端口枯竭告警开关",
-							"__format__description__": "阈值百分比，最大100%，最小值1%",
-							"title": "snat源端口枯竭告警阈值",
-							"type": "integer",
-							"default": 80,
-							"example": 80,
-							"maximum": 100,
-							"minimum": 1
-						},
-						"interval": {
-							"description": "nat源端口枯竭告警间隔",
-							"__format__description__": "告警间隔，最大值600s，最小值1s",
-							"title": "nat源端口枯竭告警间隔",
-							"type": "integer",
-							"default": 30,
-							"example": 30,
-							"maximum": 600,
-							"minimum": 1
 						}
 					}
 				}

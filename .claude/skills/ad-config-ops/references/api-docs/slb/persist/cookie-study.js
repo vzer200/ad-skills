@@ -65,6 +65,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_study_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all persist-cookie-study",
+						"description": "查看已有会话保持（被动cookie）配置信息列表",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/persist/cookie-study/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/persist/cookie-study/ 响应",
+						"description": "返回GET /api/ad/v3/slb/persist/cookie-study/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "cookie_passive",
+									"description": "",
+									"type": "COOKIE-STUDY",
+									"cookie": "sangfor_ad",
+									"secure": "DISABLE",
+									"cookie_encryption": {
+										"state": "DISABLE",
+										"accept_plaintext": "ENABLE",
+										"password": "abcd1234",
+										"pk_password": "A1B2C3D4",
+										"encrypted_password": "A1B2C3D4"
+									},
+									"session_persist_synchronize": "ENABLE",
+									"timeout": 180,
+									"busy_protect": "ENABLE",
+									"record_scope": "POOL"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +125,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_study_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new persist-cookie-study",
+						"description": "新建会话保持（被动cookie）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/persist/cookie-study/",
+							"body": {
+								"name": "AI_cookie_passive_cookie_study_A",
+								"type": "COOKIE-STUDY",
+								"cookie": "sangfor_ad",
+								"secure": "DISABLE",
+								"session_persist_synchronize": "ENABLE",
+								"timeout": 180,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/persist/cookie-study/ 响应",
+						"description": "返回POST /api/ad/v3/slb/persist/cookie-study/的响应数据",
+						"value": {
+							"name": "AI_cookie_passive_cookie_study_A",
+							"description": "",
+							"type": "COOKIE-STUDY",
+							"cookie": "sangfor_ad",
+							"secure": "DISABLE",
+							"cookie_encryption": {
+								"state": "DISABLE",
+								"accept_plaintext": "ENABLE",
+								"password": "abcd1234",
+								"pk_password": "A1B2C3D4",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"session_persist_synchronize": "ENABLE",
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL"
+						}
 					}
 				}
 			},
@@ -130,6 +215,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_study_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific persist-cookie-study",
+						"description": "查看指定会话保持（被动cookie）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/persist/cookie-study/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/persist/cookie-study/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/persist/cookie-study/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "COOKIE-STUDY",
+							"cookie": "sangfor_ad",
+							"secure": "DISABLE",
+							"cookie_encryption": {
+								"state": "DISABLE",
+								"accept_plaintext": "ENABLE",
+								"password": "abcd1234",
+								"pk_password": "A1B2C3D4",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"session_persist_synchronize": "ENABLE",
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +266,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_study_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new persist-cookie-study",
+						"description": "新建会话保持（被动cookie）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/persist/cookie-study/{name}",
+							"body": {
+								"name": "AI_cookie_passive_cookie_study_B",
+								"type": "COOKIE-STUDY",
+								"cookie": "sangfor_ad",
+								"secure": "DISABLE",
+								"session_persist_synchronize": "ENABLE",
+								"timeout": 180,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/persist/cookie-study/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/persist/cookie-study/{name}的响应数据",
+						"value": {
+							"name": "AI_cookie_passive_cookie_study_B",
+							"description": "",
+							"type": "COOKIE-STUDY",
+							"cookie": "sangfor_ad",
+							"secure": "DISABLE",
+							"cookie_encryption": {
+								"state": "DISABLE",
+								"accept_plaintext": "ENABLE",
+								"password": "abcd1234",
+								"pk_password": "A1B2C3D4",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"session_persist_synchronize": "ENABLE",
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +325,48 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_study_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific persist-cookie-study",
+						"description": "修改指定会话保持（被动cookie）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/persist/cookie-study/{name}",
+							"body": {
+								"name": "cookie_passive",
+								"type": "COOKIE-STUDY",
+								"cookie": "sangfor_ad",
+								"secure": "DISABLE",
+								"session_persist_synchronize": "ENABLE",
+								"timeout": 180,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/persist/cookie-study/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/persist/cookie-study/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "COOKIE-STUDY",
+							"cookie": "sangfor_ad",
+							"secure": "DISABLE",
+							"cookie_encryption": {
+								"state": "DISABLE",
+								"accept_plaintext": "ENABLE",
+								"password": "abcd1234",
+								"pk_password": "A1B2C3D4",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"session_persist_synchronize": "ENABLE",
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL"
+						}
 					}
 				}
 			},
@@ -185,6 +386,48 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_study_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific persist-cookie-study",
+						"description": "修改指定会话保持（被动cookie）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/persist/cookie-study/{name}",
+							"body": {
+								"name": "cookie_passive",
+								"type": "COOKIE-STUDY",
+								"cookie": "sangfor_ad",
+								"secure": "DISABLE",
+								"session_persist_synchronize": "ENABLE",
+								"timeout": 180,
+								"busy_protect": "ENABLE",
+								"record_scope": "POOL"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/persist/cookie-study/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/persist/cookie-study/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "COOKIE-STUDY",
+							"cookie": "sangfor_ad",
+							"secure": "DISABLE",
+							"cookie_encryption": {
+								"state": "DISABLE",
+								"accept_plaintext": "ENABLE",
+								"password": "abcd1234",
+								"pk_password": "A1B2C3D4",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"session_persist_synchronize": "ENABLE",
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +440,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_persist_cookie_study_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific persist-cookie-study",
+						"description": "删除指定会话保持（被动cookie）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/persist/cookie-study/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/persist/cookie-study/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/persist/cookie-study/{name}的响应数据",
+						"value": {
+							"name": "cookie_passive",
+							"description": "",
+							"type": "COOKIE-STUDY",
+							"cookie": "sangfor_ad",
+							"secure": "DISABLE",
+							"cookie_encryption": {
+								"state": "DISABLE",
+								"accept_plaintext": "ENABLE",
+								"password": "abcd1234",
+								"pk_password": "A1B2C3D4",
+								"encrypted_password": "A1B2C3D4"
+							},
+							"session_persist_synchronize": "ENABLE",
+							"timeout": 180,
+							"busy_protect": "ENABLE",
+							"record_scope": "POOL"
+						}
 					}
 				}
 			}
@@ -382,7 +657,7 @@ module.exports ={
 					"example": "ENABLE"
 				},
 				"timeout": {
-					"description": "可选参数；设置会话保持超时时间。取值范围为[0,31536000],默认为86400",
+					"description": "可选参数；设置会话保持超时时间。取值范围为[0,31536000],默认为180",
 					"type": "integer",
 					"default": 180,
 					"maximum": 31536000,
@@ -390,7 +665,7 @@ module.exports ={
 					"example": 86400
 				},
 				"busy_protect": {
-					"description": "可选参数；指定繁忙保护的开关，disable表示禁用，enable表示启用；默认禁用。",
+					"description": "可选参数；指定繁忙保护的开关，disable表示禁用，enable表示启用；默认启用。",
 					"type": "string",
 					"enum": [
 						"ENABLE",

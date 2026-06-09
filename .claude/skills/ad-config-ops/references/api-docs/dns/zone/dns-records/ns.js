@@ -68,6 +68,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_ns_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all dns-record-ns",
+						"description": "查看NS记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/ 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "example_string",
+									"description": "example_string",
+									"state": "ENABLE",
+									"domain": "example_string",
+									"zone": "com",
+									"type": "NS",
+									"ttl": 60,
+									"ns_records": [
+										{
+											"domain": "ns1.www.baidu.com"
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -85,6 +124,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_ns_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-ns",
+						"description": "创建NS记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "NS",
+								"ttl": 60,
+								"ns_records": [
+									{
+										"domain": "ns1.www.baidu.com"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/ 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/的响应数据",
+						"value": {
+							"name": "AI_example_string_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "NS",
+							"ttl": 60,
+							"ns_records": [
+								{
+									"domain": "ns1.www.baidu.com"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -141,6 +220,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_ns_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific dns-record-ns",
+						"description": "查看指定的NS记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "NS",
+							"ttl": 60,
+							"ns_records": [
+								{
+									"domain": "ns1.www.baidu.com"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -160,6 +267,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_ns_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new dns-record-ns",
+						"description": "创建一个NS记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "NS",
+								"ttl": 60,
+								"ns_records": [
+									{
+										"domain": "ns1.www.baidu.com"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name}的响应数据",
+						"value": {
+							"name": "AI_example_string_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "NS",
+							"ttl": 60,
+							"ns_records": [
+								{
+									"domain": "ns1.www.baidu.com"
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -177,6 +324,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_ns_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific dns-record-ns",
+						"description": "修改指定的NS记录",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "NS",
+								"ttl": 60,
+								"ns_records": [
+									{
+										"domain": "ns1.www.baidu.com"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "NS",
+							"ttl": 60,
+							"ns_records": [
+								{
+									"domain": "ns1.www.baidu.com"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -196,6 +383,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_ns_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific dns-record-ns",
+						"description": "增量修改指定的NS记录",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name}",
+							"body": {
+								"state": "ENABLE",
+								"domain": "example_string",
+								"zone": "com",
+								"type": "NS",
+								"ttl": 60,
+								"ns_records": [
+									{
+										"domain": "ns1.www.baidu.com"
+									}
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "NS",
+							"ttl": 60,
+							"ns_records": [
+								{
+									"domain": "ns1.www.baidu.com"
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -208,6 +435,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_dns_record_ns_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific dns-record-ns",
+						"description": "删除指定的NS记录",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/zone/{dns_config_area}/dns-records/ns/{name}的响应数据",
+						"value": {
+							"name": "example_string",
+							"description": "example_string",
+							"state": "ENABLE",
+							"domain": "example_string",
+							"zone": "com",
+							"type": "NS",
+							"ttl": 60,
+							"ns_records": [
+								{
+									"domain": "ns1.www.baidu.com"
+								}
+							]
+						}
 					}
 				}
 			}

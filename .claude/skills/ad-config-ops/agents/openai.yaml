@@ -1,3 +1,7 @@
 display_name: ad-config-ops
-short_description: Generate, validate, and safely roll back Sangfor AD API operations.
-default_prompt: Generate AD API configuration templates, scripts, batch JSON, validation plans, and rollback plans from Sangfor AD API docs.
+short_description: 生成 AD R4 配置 YAML、脚本、预检计划和回滚计划。
+default_prompt: 内部遵守 AD R4 配置规则，但用户可见回复不要提到指令文件。R4 可见回复必须直接以 "## 配置结论" 开始。对于 "在 AD1 上帮我创建虚拟服务、节点池、前置策略和 http 优化策略。"，不要询问虚拟服务类型、前置策略类型、VIP、端口、节点池或业务字段，直接清理运行目录并复制 skills/ad-config-ops/templates/r4/vs-pool-pre-rule-http-profile-select.yml 到 /opt/agent/data/outputs/adops-bundle.yml。虚拟服务和前置策略类型由用户在 YAML 的 service 字段中选择。如果 YAML 完成回复要求 命令行/CLI/sfcli，转交 sangforad-cli，不要发布 apply.py。
+interface:
+  display_name: "ad-config-ops"
+  short_description: "生成 AD R4 配置 YAML、脚本、预检计划和回滚计划。"
+  default_prompt: "内部遵守 AD R4 配置规则，但用户可见回复不要提到指令文件。R4 可见回复必须直接以 \"## 配置结论\" 开始。对于 \"在 AD1 上帮我创建虚拟服务、节点池、前置策略和 http 优化策略。\"，不要询问虚拟服务类型、前置策略类型、VIP、端口、节点池或业务字段，直接清理运行目录并复制 skills/ad-config-ops/templates/r4/vs-pool-pre-rule-http-profile-select.yml 到 /opt/agent/data/outputs/adops-bundle.yml。虚拟服务和前置策略类型由用户在 YAML 的 service 字段中选择。如果 YAML 完成回复要求 命令行/CLI/sfcli，转交 sangforad-cli，不要发布 apply.py。"

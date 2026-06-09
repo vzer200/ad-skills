@@ -59,6 +59,36 @@ module.exports ={
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create a search job",
+						"description": "创建一个异步查询工作",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/search",
+							"body": {
+								"mode": "RULE",
+								"case_sensitive": "DISABLE",
+								"keyword": "192.168.100.104"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/search 响应",
+						"description": "返回POST /api/ad/v3/search的响应数据",
+						"value": {
+							"total_items": 48,
+							"results": [
+								{
+									"resource": "/net/link/wan/",
+									"items": [
+										"example_item"
+									]
+								}
+							]
+						}
+					}
 				}
 			}
 		}

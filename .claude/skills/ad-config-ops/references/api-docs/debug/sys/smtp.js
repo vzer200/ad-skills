@@ -50,6 +50,27 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_smtp_verify"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "smtp verify",
+						"description": "测试SMTP服务器",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/smtp/verify",
+							"body": {
+								"port": 25
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/smtp/verify 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/smtp/verify的响应数据",
+						"value": {
+							"result": "FAILED",
+							"description": "描述"
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

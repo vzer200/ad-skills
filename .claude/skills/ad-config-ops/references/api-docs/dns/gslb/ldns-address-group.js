@@ -65,6 +65,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ldns_address_group_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all ldns-address-group",
+						"description": "查看本地DNS集合配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/ 响应",
+						"description": "返回GET /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "abc.com",
+									"description": "example_string",
+									"addresses": [
+										"10.0.12.34"
+									],
+									"addresses_ipv6": [
+										"1::2"
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +117,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ldns_address_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ldns-address-group",
+						"description": "创建本地DNS集合配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/",
+							"body": {
+								"name": "AI_abc.com_A",
+								"addresses": [
+									"10.0.12.34"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/ 响应",
+						"description": "返回POST /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/的响应数据",
+						"value": {
+							"name": "AI_abc.com_A",
+							"description": "example_string",
+							"addresses": [
+								"10.0.12.34"
+							],
+							"addresses_ipv6": [
+								"1::2"
+							]
+						}
 					}
 				}
 			},
@@ -101,6 +166,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ldns_address_group_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify ldns-address-group",
+						"description": "增量修改本地DNS集合配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/",
+							"body": {
+								"name": "abc.com",
+								"addresses": [
+									"10.0.12.34"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/ 响应",
+						"description": "返回PATCH /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "abc.com",
+									"description": "example_string",
+									"addresses": [
+										"10.0.12.34"
+									],
+									"addresses_ipv6": [
+										"1::2"
+									]
+								}
+							]
+						}
 					}
 				}
 			}
@@ -135,6 +241,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ldns_address_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific ldns-address-group",
+						"description": "查看指定已有的本地DNS集合配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name}的响应数据",
+						"value": {
+							"name": "abc.com",
+							"description": "example_string",
+							"addresses": [
+								"10.0.12.34"
+							],
+							"addresses_ipv6": [
+								"1::2"
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -154,6 +284,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ldns_address_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ldns-address-group",
+						"description": "创建本地DNS集合配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name}",
+							"body": {
+								"name": "AI_abc.com_B",
+								"addresses": [
+									"10.0.12.34"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name}的响应数据",
+						"value": {
+							"name": "AI_abc.com_B",
+							"description": "example_string",
+							"addresses": [
+								"10.0.12.34"
+							],
+							"addresses_ipv6": [
+								"1::2"
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -171,6 +331,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ldns_address_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific ldns-address-group",
+						"description": "修改指定本地DNS集合配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name}",
+							"body": {
+								"name": "abc.com",
+								"addresses": [
+									"10.0.12.34"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name}的响应数据",
+						"value": {
+							"name": "abc.com",
+							"description": "example_string",
+							"addresses": [
+								"10.0.12.34"
+							],
+							"addresses_ipv6": [
+								"1::2"
+							]
+						}
 					}
 				}
 			},
@@ -190,6 +380,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ldns_address_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific ldns-address-group",
+						"description": "增量修改指定本地DNS集合配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name}",
+							"body": {
+								"name": "abc.com",
+								"addresses": [
+									"10.0.12.34"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name}的响应数据",
+						"value": {
+							"name": "abc.com",
+							"description": "example_string",
+							"addresses": [
+								"10.0.12.34"
+							],
+							"addresses_ipv6": [
+								"1::2"
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -202,6 +422,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ldns_address_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific ldns-address-group",
+						"description": "删除指定本地DNS集合配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/gslb/{dns_config_area}/ldns-address-group/{name}的响应数据",
+						"value": {
+							"name": "abc.com",
+							"description": "example_string",
+							"addresses": [
+								"10.0.12.34"
+							],
+							"addresses_ipv6": [
+								"1::2"
+							]
+						}
 					}
 				}
 			},

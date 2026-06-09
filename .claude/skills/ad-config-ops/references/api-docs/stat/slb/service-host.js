@@ -65,6 +65,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_service_host_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-host statistics",
+						"description": "获取业务主机状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/service-host/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/service-host/ 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/service-host/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "",
+									"description": "example_string",
+									"state": "ENABLE",
+									"service_host_health": "NORMAL",
+									"address": "192.168.1.101",
+									"associated_domain": "NONE",
+									"connection": null,
+									"connection_established": null,
+									"connection_rate": null,
+									"http_request_rate": null,
+									"upstream_throughput": null,
+									"downstream_throughput": null,
+									"general_throughput": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -88,6 +128,35 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_service_host_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-host statistics",
+						"description": "获取指定业务主机状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/service-host/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/service-host/{name} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/service-host/{name}的响应数据",
+						"value": {
+							"name": "",
+							"description": "example_string",
+							"state": "ENABLE",
+							"service_host_health": "NORMAL",
+							"address": "192.168.1.101",
+							"associated_domain": "NONE",
+							"connection": null,
+							"connection_established": null,
+							"connection_rate": null,
+							"http_request_rate": null,
+							"upstream_throughput": null,
+							"downstream_throughput": null,
+							"general_throughput": null
+						}
 					}
 				}
 			}

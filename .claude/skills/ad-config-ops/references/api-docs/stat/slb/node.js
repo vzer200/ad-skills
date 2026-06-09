@@ -68,6 +68,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_node_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all node statistics",
+						"description": "获取指定节点池的节点状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/pool/{pool_name}/nodes/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/pool/{pool_name}/nodes/ 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/pool/{pool_name}/nodes/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "",
+									"description": "example_string",
+									"state": "ENABLE",
+									"service_host_state": "ENABLE",
+									"health": "NORMAL",
+									"runtime_flag": "NONE",
+									"failure_reason": "",
+									"address": "192.168.1.101",
+									"port": 25,
+									"associated_domain": "NONE",
+									"connection": null,
+									"connection_established": null,
+									"connection_rate": null,
+									"http_request_rate": null,
+									"upstream_throughput": null,
+									"downstream_throughput": null,
+									"general_throughput": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -97,6 +141,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_node_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific node statistics",
+						"description": "获取指定节点池内的指定节点状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/pool/{pool_name}/nodes/{node_name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/pool/{pool_name}/nodes/{node_name} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/pool/{pool_name}/nodes/{node_name}的响应数据",
+						"value": {
+							"name": "",
+							"description": "example_string",
+							"state": "ENABLE",
+							"service_host_state": "ENABLE",
+							"health": "NORMAL",
+							"runtime_flag": "NONE",
+							"failure_reason": "",
+							"address": "192.168.1.101",
+							"port": 25,
+							"associated_domain": "NONE",
+							"connection": null,
+							"connection_established": null,
+							"connection_rate": null,
+							"http_request_rate": null,
+							"upstream_throughput": null,
+							"downstream_throughput": null,
+							"general_throughput": null
+						}
 					}
 				}
 			}
@@ -130,6 +207,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pool node statistics",
+						"description": "获取指定节点池内的指定节点状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/pool/{pool_name}/nodes/{node_name}/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/pool/{pool_name}/nodes/{node_name}/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/pool/{pool_name}/nodes/{node_name}/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
 					}
 				}
 			}

@@ -56,6 +56,12 @@ module.exports ={
 				},
 				{
 					"$ref": "#/parameters/session_id"
+				},
+				{
+					"$ref": "#/parameters/svr_srcaddr"
+				},
+				{
+					"$ref": "#/parameters/svr_srcport"
 				}
 			],
 			"get": {
@@ -79,6 +85,45 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_debug_session_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "retrieve session",
+						"description": "查询系统会话记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/net/session/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/net/session/ 响应",
+						"description": "返回GET /api/ad/v3/debug/net/session/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"client_source_address": "10.0.1.2",
+									"client_source_port": 11568,
+									"client_destination_address": "2.20.1.89",
+									"client_destination_port": 80,
+									"protocol": "tcp",
+									"server_source_address": "10.0.1.2",
+									"server_source_port": 11568,
+									"server_destination_address": "2.20.1.89",
+									"server_destination_port": 80,
+									"virtual_service": "2.20.1.89",
+									"timeout": 57,
+									"session_id": 102513
+								}
+							]
+						}
 					}
 				}
 			},
@@ -105,7 +150,24 @@ module.exports ={
 				],
 				"summary": "remove session",
 				"description": "清理系统会话记录",
-				"operationId": "remove_session"
+				"operationId": "remove_session",
+				"x-examples": {
+					"request": {
+						"summary": "remove session",
+						"description": "清理系统会话记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/net/session/clear"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/net/session/clear 响应",
+						"description": "返回POST /api/ad/v3/debug/net/session/clear的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{
@@ -150,6 +212,21 @@ module.exports ={
 		},
 		"dstport": {
 			"name": "dstport",
+			"in": "query",
+			"type": "string",
+			"required": false,
+			"example": "1000-1008",
+			"description": "可选参数；指定目的端口，可以为单个端口，端口范围"
+		},
+		"svr_srcaddr": {
+			"name": "svr_srcaddr",
+			"in": "query",
+			"type": "string",
+			"required": false,
+			"example": "192.168.100.234-192.168.100.255"
+		},
+		"svr_srcport": {
+			"name": "svr_srcport",
 			"in": "query",
 			"type": "string",
 			"required": false,
@@ -347,6 +424,16 @@ module.exports ={
 					"type": "integer",
 					"description": "可选参数；指定session_id",
 					"example": 102513
+				},
+				"svr_srcaddr": {
+					"type": "string",
+					"description": "可选参数；反向源IP地址，可以为单个IP地址，IP地址范围",
+					"example": "10.0.1.2-10.0.1.10"
+				},
+				"svr_srcport": {
+					"type": "string",
+					"description": "可选参数；反向源端口，可以为单个端口，端口范围",
+					"example": "11568-11570"
 				}
 			}
 		}

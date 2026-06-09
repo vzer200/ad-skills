@@ -48,6 +48,28 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_netns_status"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "netns-check",
+						"description": "检查netns状态",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/net/netns-check"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/net/netns-check 响应",
+						"description": "返回POST /api/ad/v3/debug/net/netns-check的响应数据",
+						"value": {
+							"netns_nonexists": [
+								"netns_A"
+							],
+							"netns_timeouts": [
+								"netns_A"
+							]
+						}
+					}
 				}
 			}
 		}

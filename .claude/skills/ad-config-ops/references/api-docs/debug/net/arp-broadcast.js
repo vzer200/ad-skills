@@ -40,7 +40,24 @@ module.exports ={
 				],
 				"summary": "arp-broadcast",
 				"description": "立即执行ARP广播",
-				"operationId": "arp_broadcast"
+				"operationId": "arp_broadcast",
+				"x-examples": {
+					"request": {
+						"summary": "arp-broadcast",
+						"description": "立即执行ARP广播",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/net/arp-broadcast"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/net/arp-broadcast 响应",
+						"description": "返回POST /api/ad/v3/debug/net/arp-broadcast的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

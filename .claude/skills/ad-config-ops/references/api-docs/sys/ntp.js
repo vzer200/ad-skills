@@ -51,6 +51,32 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ntp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get ntp",
+						"description": "查看当前已有的NTP配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/ntp"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/ntp 响应",
+						"description": "返回GET /api/ad/v3/sys/ntp的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"ntp_servers": [
+								{
+									"ntp": "time.nist.gov"
+								}
+							],
+							"ntp_preferred": "time.nist.gov",
+							"ntp_alternate": "",
+							"interval": 1800,
+							"network": "AUTO"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +95,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ntp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace ntp",
+						"description": "修改NTP配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/ntp",
+							"body": {
+								"state": "ENABLE",
+								"ntp_preferred": "time.nist.gov",
+								"ntp_alternate": "",
+								"interval": 1800,
+								"network": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/ntp 响应",
+						"description": "返回PUT /api/ad/v3/sys/ntp的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"ntp_servers": [
+								{
+									"ntp": "time.nist.gov"
+								}
+							],
+							"ntp_preferred": "time.nist.gov",
+							"ntp_alternate": "",
+							"interval": 1800,
+							"network": "AUTO"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +145,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ntp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify ntp",
+						"description": "修改NTP配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/ntp",
+							"body": {
+								"state": "ENABLE",
+								"ntp_preferred": "time.nist.gov",
+								"ntp_alternate": "",
+								"interval": 1800,
+								"network": "AUTO"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/ntp 响应",
+						"description": "返回PATCH /api/ad/v3/sys/ntp的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"ntp_servers": [
+								{
+									"ntp": "time.nist.gov"
+								}
+							],
+							"ntp_preferred": "time.nist.gov",
+							"ntp_alternate": "",
+							"interval": 1800,
+							"network": "AUTO"
+						}
 					}
 				}
 			},
@@ -143,8 +235,25 @@ module.exports ={
 					"default": "ENABLE",
 					"example": "ENABLE"
 				},
+				"ntp_servers": {
+					"description": "时间服务器列表",
+					"type": "array",
+					"items": {
+						"description": "服务器ip/域名地址",
+						"type": "object",
+						"properties": {
+							"ntp": {
+								"description": "时间服务器, 必须为IPv4、IPv6或者域名格式",
+								"type": "string",
+								"default": "time.nist.gov",
+								"example": "time.nist.gov"
+							}
+						}
+					},
+					"maxItems": 5
+				},
 				"ntp_preferred": {
-					"description": "时间服务器",
+					"description": "首选时间服务器",
 					"type": "string",
 					"default": "time.nist.gov",
 					"example": "time.nist.gov"

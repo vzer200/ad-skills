@@ -51,6 +51,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_offline_check_setting_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get offline-check",
+						"description": "查看当前已有巡检场景",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/offline-check/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/offline-check/{name} 响应",
+						"description": "返回GET /api/ad/v3/sys/offline-check/{name}的响应数据",
+						"value": {
+							"description": "example_string",
+							"feature_scene": {
+								"rule": [
+									"APP_VERSION_CHECK"
+								]
+							},
+							"health_scene": {
+								"rule": [
+									"AUTO_UPDATE_CHECK"
+								]
+							},
+							"name": "标准巡检场景",
+							"secure_scene": {
+								"rule": [
+									"SSH_API_CHECK"
+								]
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +102,42 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_offline_check_setting_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace offline-check",
+						"description": "修改巡检场景",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/offline-check/{name}",
+							"body": {
+								"name": "标准巡检场景"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/offline-check/{name} 响应",
+						"description": "返回PUT /api/ad/v3/sys/offline-check/{name}的响应数据",
+						"value": {
+							"description": "example_string",
+							"feature_scene": {
+								"rule": [
+									"APP_VERSION_CHECK"
+								]
+							},
+							"health_scene": {
+								"rule": [
+									"AUTO_UPDATE_CHECK"
+								]
+							},
+							"name": "标准巡检场景",
+							"secure_scene": {
+								"rule": [
+									"SSH_API_CHECK"
+								]
+							}
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +155,42 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_offline_check_setting_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify offline-check",
+						"description": "修改巡检场景",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/offline-check/{name}",
+							"body": {
+								"name": "标准巡检场景"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/offline-check/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/sys/offline-check/{name}的响应数据",
+						"value": {
+							"description": "example_string",
+							"feature_scene": {
+								"rule": [
+									"APP_VERSION_CHECK"
+								]
+							},
+							"health_scene": {
+								"rule": [
+									"AUTO_UPDATE_CHECK"
+								]
+							},
+							"name": "标准巡检场景",
+							"secure_scene": {
+								"rule": [
+									"SSH_API_CHECK"
+								]
+							}
+						}
 					}
 				}
 			},
@@ -218,7 +323,9 @@ module.exports ={
 									"MEMORY_LEAK_CHECK",
 									"DEVICE_CONNECTION_CHECK",
 									"COREDUMP_INFO_CHECK",
-									"CONFIG_ID_CONFLICT_CHECK"
+									"CONFIG_ID_CONFLICT_CHECK",
+									"NIC_HEALTH_CHECK",
+									"SNAT_SPORT_EXHAUSTION_CHECK"
 								],
 								"type": "string"
 							},

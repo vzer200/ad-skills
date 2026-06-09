@@ -62,6 +62,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_local_dns_defect_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "retrieve all local-dns",
+						"description": "获取LDBS缺失记录",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/dns/local-dns/defect/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/dns/local-dns/defect/ 响应",
+						"description": "返回GET /api/ad/v3/debug/dns/local-dns/defect/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"timestamp": 0,
+									"source_address": "8.15.2.64",
+									"zone_attribute": "KNOWN",
+									"isp_attribute": null
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -79,7 +110,24 @@ module.exports ={
 				],
 				"summary": "create job: clear local-dns-defect",
 				"description": "清空LDBS缺失记录",
-				"operationId": "clear_local_dns_defect"
+				"operationId": "clear_local_dns_defect",
+				"x-examples": {
+					"request": {
+						"summary": "create job: clear local-dns-defect",
+						"description": "清空LDBS缺失记录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/dns/local-dns/defect/clear"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/dns/local-dns/defect/clear 响应",
+						"description": "返回POST /api/ad/v3/debug/dns/local-dns/defect/clear的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

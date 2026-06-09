@@ -13,6 +13,7 @@ The core implementation lives under `.claude/skills/`. The model must only sched
   ad-connect/             connection and auth precheck
   ad-ops/                 ADClient, overview, config/status/cert/traffic queries
   ad-config-ops/          API-document driven config generation, apply, verify, rollback
+  sangforad-cli/          Sangfor AD CLI command script generation from validated plans
   ad-check-analysis/      standard and batch inspection workflows
   ad-perception/          traffic/state/conflict/log perception analysis
 ```
@@ -37,6 +38,7 @@ Device credentials are stored directly in `devices.json` for WorkBot packaging. 
 | `ad-connect` | `connect.py` | TCP/TLS reachability and Basic Auth precheck |
 | `ad-ops` | `ad_api.py`, `overview.py`, `multi_device.py` | VS/Pool/cert/device/traffic/status queries |
 | `ad-config-ops` | `lookup_api.py`, `render_template.py`, `ad_ops_flow.py`, `execute_plan.py`, `rollback.py` | API-document driven config generation, apply verification, and rollback |
+| `sangforad-cli` | `render_cli.py` | Sangfor AD CLI command script generation from AD-OPS plans or filled bundles |
 | `ad-check-analysis` | `check.py` | Standard and batch inspection: history, run, progress, wait |
 | `ad-perception` | `collector.py`, `perception.py` | Traffic anomaly, state threshold, IP:Port conflict, log correlation |
 

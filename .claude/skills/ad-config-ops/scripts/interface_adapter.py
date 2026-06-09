@@ -16,8 +16,8 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from ad_ops_common import require_workdir, short_summary, update_artifacts
+from device_config import DeviceConfigError, normalize_base_url, resolve_device_connection
 from execute_plan import ALL_PROPERTIES_PARAMS, DEFAULT_REQUEST_TIMEOUT, configure_session, full_url
-from prepare_edit_template import base_url_from_host
 
 
 DEFAULT_INTERFACE_ADAPTER_NAME = "adops-interface-adapter.json"
@@ -54,10 +54,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Query AD net interface-adapter candidates for interface fields.")
     parser.add_argument("--document", help="Resource document, for example net/link/lan.js.")
     parser.add_argument("--module", help="Interface adapter module, for example net/link/lan/interface.")
-    parser.add_argument("--host", default=os.environ.get("AD_HOST"), help="AD device host, host:port, or URL.")
-    parser.add_argument("--username", default=os.environ.get("AD_USERNAME"), help="AD API username.")
-    parser.add_argument("--password", default=os.environ.get("AD_PASSWORD"), help="AD API password.")
-    parser.add_argument("--token", default=os.environ.get("AD_TOKEN"), help="Existing AD API token.")
+    parser.add_argument("--devices", type=Path, help="devices.json path for selecting a named device.")
+    parser.add_argument("--device", help="Device name or host selector in devices.json.")
+    parser.add_argument("--host", help="AD device host, host:port, or URL. Defaults to AD_HOST when no device is selected.")
+    parser.add_argument("--username", help="AD API username. Defaults to AD_USERNAME when no device is selected.")
+    parser.add_argument("--password", help="AD API password. Defaults to AD_PASSWORD when no device is selected.")
+    parser.add_argument("--token", help="Existing AD API token. Defaults to AD_TOKEN when no device is selected.")
     parser.add_argument("--out", type=Path, help=f"Full result JSON output path. Defaults to workdir/{DEFAULT_INTERFACE_ADAPTER_NAME}.")
     parser.add_argument("--workdir", type=Path, help="Artifact work directory. Defaults to AD_OPS_WORKDIR, then ./ad_ops_workdir.")
     parser.add_argument("--limit", type=int, default=20, help="Maximum interfaces to include in the short stdout summary.")
@@ -177,24 +179,27 @@ def summarize_adapter_result(result: dict[str, Any], limit: int = 20) -> dict[st
 
 
 def cli_auth(args: argparse.Namespace) -> dict[str, Any]:
-    password = args.password
-    if not args.token and args.username and password is None:
+    auth = resolve_device_connection(args)
+    password = auth.get("password")
+    if not auth.get("token") and auth.get("username") and password is None:
         password = getpass.getpass("AD password: ")
-    return {"username": args.username, "password": password, "token": args.token}
+    auth["password"] = password
+    return auth
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
     try:
-        if not args.host:
-            raise InterfaceAdapterError("--host or AD_HOST is required")
+        auth = cli_auth(args)
+        if not auth.get("host"):
+            raise InterfaceAdapterError("--device/--devices or --host/AD_HOST is required")
         workdir = require_workdir(args.workdir)
         module = select_module(args.document, args.module)
         session = requests.Session()
         result = query_interface_adapter(
             session=session,
-            base_url=base_url_from_host(args.host),
-            auth=cli_auth(args),
+            base_url=normalize_base_url(auth["host"]),
+            auth=auth,
             module=module,
             timeout=(args.connect_timeout, args.read_timeout),
         )
@@ -214,6 +219,9 @@ def main(argv: list[str] | None = None) -> int:
                 end="",
             )
     except InterfaceAdapterError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    except DeviceConfigError as exc:
         print(str(exc), file=sys.stderr)
         return 2
     except Exception as exc:

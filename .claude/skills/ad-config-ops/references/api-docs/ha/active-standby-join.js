@@ -50,6 +50,91 @@ module.exports ={
 					"200": {
 						"$ref": "/api/ha/active-standby.yaml#/responses/operation_config_active_standby_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": " active-standby-join",
+						"description": "加入双机",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/ha/active-standby-join",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/ha/active-standby-join 响应",
+						"description": "返回POST /api/ad/v3/ha/active-standby-join的响应数据",
+						"value": {
+							"host_name": "dc-1",
+							"state": "ENABLE",
+							"heartbeat_timeout_ms": 5000,
+							"heartbeat_interval_ms": 100,
+							"ha": {
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"address": "10.0.1.2/30"
+							},
+							"alternate_ha": {
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"address": "200.0.0.2/30"
+							},
+							"brain_split_detect": {
+								"state": "DISABLE",
+								"link": "wan_1"
+							},
+							"session_synchronize": {
+								"state": "ENABLE",
+								"connection_state_synchronize": "DISABLE"
+							},
+							"mac_synchronize": {
+								"state": "DISABLE",
+								"links": [
+									"{WAN_1}"
+								]
+							},
+							"fault_detect": {
+								"state": "DISABLE",
+								"method": "FAULT-REQUIREMENT",
+								"link_fault_requirement": {
+									"objects": [
+										"wan_1"
+									],
+									"fault_object_count": 0
+								},
+								"link_fault_rules": [
+									[
+										"wan_1"
+									]
+								],
+								"health_level": {
+									"local": "LINK-MONITOR",
+									"peer": "LINK-MONITOR"
+								},
+								"link_monitor_reset_delay_minute": 5
+							},
+							"interface_linkage": "DISABLE",
+							"standby_interface_poweroff": {
+								"method": "NEVER",
+								"interfaces": [
+									"NET2"
+								],
+								"duration": 20
+							},
+							"standby_bridge_interface": "DISABLE",
+							"preempt_mode": "DISABLE",
+							"arp_linkage": {
+								"state": "DISABLE",
+								"link": "wan_1",
+								"ip_address": "1.1.1.1",
+								"broadcast_interval": 5
+							}
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

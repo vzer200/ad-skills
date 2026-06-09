@@ -64,6 +64,62 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all pre-rule",
+						"description": "GET /api/ad/v3/slb/pre-rule/all/",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/pre-rule/all/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/pre-rule/all/ 响应",
+						"description": "返回GET /api/ad/v3/slb/pre-rule/all/的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": null,
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"tcp_stream_rule": null,
+							"dns_query_rule": {
+								"type": "ALL",
+								"type_value": 1,
+								"domain": "*.test.com"
+							},
+							"http_request_method_rule": "ALL",
+							"http_request_version_rule": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"ssl_version_rule": "ALL",
+							"ssl_variable_rules": [
+								"example_item"
+							],
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "DISABLE",
+							"http_response": "200_OK",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE",
+							"sched_failure_http_response": "400_Not_Found",
+							"rewrite_requests": [],
+							"rewrite_responses": [],
+							"netns": "default",
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
+					}
 				}
 			}
 		},
@@ -96,6 +152,62 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pre-rule",
+						"description": "GET /api/ad/v3/slb/pre-rule/all/{name}",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/pre-rule/all/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/pre-rule/all/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/pre-rule/all/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": null,
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"tcp_stream_rule": null,
+							"dns_query_rule": {
+								"type": "ALL",
+								"type_value": 1,
+								"domain": "*.test.com"
+							},
+							"http_request_method_rule": "ALL",
+							"http_request_version_rule": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"ssl_version_rule": "ALL",
+							"ssl_variable_rules": [
+								"example_item"
+							],
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "DISABLE",
+							"http_response": "200_OK",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE",
+							"sched_failure_http_response": "400_Not_Found",
+							"rewrite_requests": [],
+							"rewrite_responses": [],
+							"netns": "default",
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
+					}
 				}
 			}
 		},
@@ -127,6 +239,73 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual service referenced pre-rule",
+						"description": "GET /api/ad/v3/slb/virtual-service/{virtual_service_name}/pre-rule/\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/virtual-service/{virtual_service_name}/pre-rule/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/virtual-service/{virtual_service_name}/pre-rule/ 响应",
+						"description": "返回GET /api/ad/v3/slb/virtual-service/{virtual_service_name}/pre-rule/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "url-sched",
+									"description": "example_string",
+									"service": null,
+									"source_address": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"destination_address": {
+										"type": "ALL",
+										"ref_isp_address_group": "{isp_address_group}",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"tcp_stream_rule": null,
+									"dns_query_rule": {
+										"type": "ALL",
+										"type_value": 1,
+										"domain": "*.test.com"
+									},
+									"http_request_method_rule": "ALL",
+									"http_request_version_rule": "ALL",
+									"http_request_uri_rule": null,
+									"http_request_header_rules": [
+										"example_item"
+									],
+									"ssl_version_rule": "ALL",
+									"ssl_variable_rules": [
+										"example_item"
+									],
+									"action": "SCHED-POOL",
+									"notify_status_to_vs": "DISABLE",
+									"http_response": "200_OK",
+									"sched_pool": "web_oa_80_pool",
+									"sched_failure": "NEXT-RULE",
+									"sched_failure_http_response": "400_Not_Found",
+									"rewrite_requests": [],
+									"rewrite_responses": [],
+									"netns": "default",
+									"inherit_vs_service_chain": "ENABLE",
+									"service_chain": "service_chain1_for_pre_rule"
+								}
+							]
+						}
 					}
 				}
 			}
@@ -162,6 +341,62 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pre-rule of virtual service",
+						"description": "GET /api/ad/v3/slb/virtual-service/{virtual_service_name}/pre-rule/{pre_rule_name}\n\n支持的虚拟服务类型：\n- 8583: 默认端口8583\n- HTTP: 默认端口80\n- TCP-PROXY: 默认端口8080\n- TCP-FORWARD: 默认端口8082\n- UDP-PROXY: 默认端口55\n- UDP-FORWARD: 默认端口56\n- SSL-OFFLOAD: 默认端口443\n- SSL-OFFLOAD-HTTPS: 默认端口444\n- IP: 默认端口1\n- ANY: 默认端口2\n- DNS: 默认端口53\n- FTP: 默认端口21\n- RADIUS: 默认端口1812\n- SIP-TCP: 默认端口5060\n- SIP-UDP: 默认端口5062\n",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/virtual-service/{virtual_service_name}/pre-rule/{pre_rule_name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/virtual-service/{virtual_service_name}/pre-rule/{pre_rule_name} 响应",
+						"description": "返回GET /api/ad/v3/slb/virtual-service/{virtual_service_name}/pre-rule/{pre_rule_name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": null,
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"destination_address": {
+								"type": "ALL",
+								"ref_isp_address_group": "{isp_address_group}",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"tcp_stream_rule": null,
+							"dns_query_rule": {
+								"type": "ALL",
+								"type_value": 1,
+								"domain": "*.test.com"
+							},
+							"http_request_method_rule": "ALL",
+							"http_request_version_rule": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"ssl_version_rule": "ALL",
+							"ssl_variable_rules": [
+								"example_item"
+							],
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "DISABLE",
+							"http_response": "200_OK",
+							"sched_pool": "web_oa_80_pool",
+							"sched_failure": "NEXT-RULE",
+							"sched_failure_http_response": "400_Not_Found",
+							"rewrite_requests": [],
+							"rewrite_responses": [],
+							"netns": "default",
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
 					}
 				}
 			}
@@ -276,7 +511,7 @@ module.exports ={
 					"type": "string"
 				},
 				"service": {
-					"$ref": "/api/slb/virtual-service.yaml#/definitions/config.service_type"
+					"$ref": "/api/{common}.yaml#/definitions/config.service_type"
 				},
 				"source_address": {
 					"type": "object",
@@ -480,7 +715,7 @@ module.exports ={
 				},
 				"service_chain": {
 					"type": "string",
-					"description": "指定当前前置策略的服务链，仅当inherit_vs_service_chain为DISBALE时生效",
+					"description": "指定当前前置策略的服务链，仅当inherit_vs_service_chain为DISABLE时生效",
 					"example": "service_chain1_for_pre_rule"
 				}
 			}

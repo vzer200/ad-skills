@@ -62,6 +62,58 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_time_plan_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all time-plan",
+						"description": "查看智能路由-时间计划配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/time-plan/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/time-plan/ 响应",
+						"description": "返回GET /api/ad/v3/lc/time-plan/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "working day",
+									"description": "",
+									"active_times": {
+										"monday": [
+											"07:30-11:30"
+										],
+										"tuesday": [
+											"07:30-11:30"
+										],
+										"wednesday": [
+											"07:30-11:30"
+										],
+										"thursday": [
+											"07:30-11:30"
+										],
+										"friday": [
+											"07:30-11:30"
+										],
+										"saturday": [
+											"07:30-11:30"
+										],
+										"sunday": [
+											"07:30-11:30"
+										]
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +131,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_time_plan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new time-plan",
+						"description": "新建智能路由-时间计划配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/lc/time-plan/",
+							"body": {
+								"name": "AI_working day_A",
+								"active_times": {}
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/lc/time-plan/ 响应",
+						"description": "返回POST /api/ad/v3/lc/time-plan/的响应数据",
+						"value": {
+							"name": "AI_working day_A",
+							"description": "",
+							"active_times": {
+								"monday": [
+									"07:30-11:30"
+								],
+								"tuesday": [
+									"07:30-11:30"
+								],
+								"wednesday": [
+									"07:30-11:30"
+								],
+								"thursday": [
+									"07:30-11:30"
+								],
+								"friday": [
+									"07:30-11:30"
+								],
+								"saturday": [
+									"07:30-11:30"
+								],
+								"sunday": [
+									"07:30-11:30"
+								]
+							}
+						}
 					}
 				}
 			},
@@ -124,6 +221,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_time_plan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific time-plan",
+						"description": "查看智能路由-时间计划配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/lc/time-plan/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/lc/time-plan/{name} 响应",
+						"description": "返回GET /api/ad/v3/lc/time-plan/{name}的响应数据",
+						"value": {
+							"name": "working day",
+							"description": "",
+							"active_times": {
+								"monday": [
+									"07:30-11:30"
+								],
+								"tuesday": [
+									"07:30-11:30"
+								],
+								"wednesday": [
+									"07:30-11:30"
+								],
+								"thursday": [
+									"07:30-11:30"
+								],
+								"friday": [
+									"07:30-11:30"
+								],
+								"saturday": [
+									"07:30-11:30"
+								],
+								"sunday": [
+									"07:30-11:30"
+								]
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -143,6 +281,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_time_plan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new time-plan",
+						"description": "新建智能路由-时间计划配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/lc/time-plan/{name}",
+							"body": {
+								"name": "AI_working day_B",
+								"active_times": {}
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/lc/time-plan/{name} 响应",
+						"description": "返回POST /api/ad/v3/lc/time-plan/{name}的响应数据",
+						"value": {
+							"name": "AI_working day_B",
+							"description": "",
+							"active_times": {
+								"monday": [
+									"07:30-11:30"
+								],
+								"tuesday": [
+									"07:30-11:30"
+								],
+								"wednesday": [
+									"07:30-11:30"
+								],
+								"thursday": [
+									"07:30-11:30"
+								],
+								"friday": [
+									"07:30-11:30"
+								],
+								"saturday": [
+									"07:30-11:30"
+								],
+								"sunday": [
+									"07:30-11:30"
+								]
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -160,6 +343,51 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_time_plan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific time-plan",
+						"description": "更新智能路由-时间计划配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/lc/time-plan/{name}",
+							"body": {
+								"name": "working day",
+								"active_times": {}
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/lc/time-plan/{name} 响应",
+						"description": "返回PUT /api/ad/v3/lc/time-plan/{name}的响应数据",
+						"value": {
+							"name": "working day",
+							"description": "",
+							"active_times": {
+								"monday": [
+									"07:30-11:30"
+								],
+								"tuesday": [
+									"07:30-11:30"
+								],
+								"wednesday": [
+									"07:30-11:30"
+								],
+								"thursday": [
+									"07:30-11:30"
+								],
+								"friday": [
+									"07:30-11:30"
+								],
+								"saturday": [
+									"07:30-11:30"
+								],
+								"sunday": [
+									"07:30-11:30"
+								]
+							}
+						}
 					}
 				}
 			},
@@ -179,6 +407,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_time_plan_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific time-plan",
+						"description": "更新智能路由-时间计划配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/lc/time-plan/{name}",
+							"body": {
+								"name": "working day",
+								"active_times": {}
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/lc/time-plan/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/lc/time-plan/{name}的响应数据",
+						"value": {
+							"name": "working day",
+							"description": "",
+							"active_times": {
+								"monday": [
+									"07:30-11:30"
+								],
+								"tuesday": [
+									"07:30-11:30"
+								],
+								"wednesday": [
+									"07:30-11:30"
+								],
+								"thursday": [
+									"07:30-11:30"
+								],
+								"friday": [
+									"07:30-11:30"
+								],
+								"saturday": [
+									"07:30-11:30"
+								],
+								"sunday": [
+									"07:30-11:30"
+								]
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -191,6 +464,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_time_plan_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific time-plan",
+						"description": "删除智能路由-时间计划配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/lc/time-plan/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/lc/time-plan/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/lc/time-plan/{name}的响应数据",
+						"value": {
+							"name": "working day",
+							"description": "",
+							"active_times": {
+								"monday": [
+									"07:30-11:30"
+								],
+								"tuesday": [
+									"07:30-11:30"
+								],
+								"wednesday": [
+									"07:30-11:30"
+								],
+								"thursday": [
+									"07:30-11:30"
+								],
+								"friday": [
+									"07:30-11:30"
+								],
+								"saturday": [
+									"07:30-11:30"
+								],
+								"sunday": [
+									"07:30-11:30"
+								]
+							}
+						}
 					}
 				}
 			}

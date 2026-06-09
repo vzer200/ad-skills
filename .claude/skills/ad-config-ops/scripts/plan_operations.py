@@ -60,7 +60,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Plan validated AD API operations from a filled YAML payload.")
     parser.add_argument("--skill-root", required=True, type=Path, help="AD-OPS skill root.")
     parser.add_argument("--schema", help="Schema name, for example config.virtual_service.")
-    parser.add_argument("--document", help="Optional document constraint, for example slb/virtual-service.js.")
+    parser.add_argument("--document", help="Optional document constraint, for example slb/virtual-service/http.js.")
     parser.add_argument("--action", choices=sorted(ACTION_METHODS), help="Operation action.")
     parser.add_argument("--input", type=Path, help="Filled YAML input.")
     parser.add_argument("--bundle", type=Path, help="Filled YAML bundle with an operations list.")
@@ -115,6 +115,32 @@ def iter_path_values(data: Any, path: str) -> list[tuple[str, Any]]:
     return walk(data, path.split("."), "")
 
 
+def set_iter_path_value(data: Any, path: str, value: Any) -> None:
+    current = data
+    parts = path.split(".") if path else []
+    for index, part in enumerate(parts):
+        match = re.fullmatch(r"(.+)\[(\d+)\]", part)
+        is_last = index == len(parts) - 1
+        if match:
+            key, raw_item_index = match.groups()
+            if not isinstance(current, dict) or key not in current or not isinstance(current[key], list):
+                return
+            item_index = int(raw_item_index)
+            if item_index >= len(current[key]):
+                return
+            if is_last:
+                current[key][item_index] = value
+                return
+            current = current[key][item_index]
+            continue
+        if not isinstance(current, dict) or part not in current:
+            return
+        if is_last:
+            current[part] = value
+            return
+        current = current[part]
+
+
 def validate_type(field: dict[str, Any], value: Any) -> None:
     expected = field.get("type")
     path = field.get("path", "<unknown>")
@@ -130,6 +156,17 @@ def validate_type(field: dict[str, Any], value: Any) -> None:
         raise PlanError(f"{path}: expected array")
     if expected == "object" and not isinstance(value, dict):
         raise PlanError(f"{path}: expected object")
+
+
+def normalize_enum_value(field: dict[str, Any], value: Any) -> Any:
+    enum = field.get("enum")
+    if not isinstance(enum, list) or not isinstance(value, str):
+        return value
+    lowered = value.strip().lower()
+    for item in enum:
+        if isinstance(item, str) and item.lower() == lowered:
+            return item
+    return value
 
 
 def validate_enum(field: dict[str, Any], value: Any) -> None:
@@ -194,7 +231,12 @@ def validate_array_items(
                     continue
                 child_value = item[child_name]
                 child_path = f"{path}[].{child_name}"
-                validate_field_value(item_field(child_path, child_schema), child_value)
+                child_field = item_field(child_path, child_schema)
+                normalized = normalize_enum_value(child_field, child_value)
+                if normalized != child_value:
+                    item[child_name] = normalized
+                    child_value = normalized
+                validate_field_value(child_field, child_value)
                 if (
                     child_schema.get("type") == "array"
                     and isinstance(child_schema.get("items"), dict)
@@ -251,6 +293,10 @@ def validate_payload(
         for value_path, value in iter_path_values(payload, field["path"]):
             value_field = dict(field)
             value_field["path"] = value_path
+            normalized = normalize_enum_value(value_field, value)
+            if normalized != value:
+                set_iter_path_value(payload, value_path, normalized)
+                value = normalized
             validate_field_value(value_field, value)
 
     if action != "delete" and schema and definitions:
@@ -260,6 +306,13 @@ def validate_payload(
 def remove_read_only(payload: dict[str, Any], resolved: dict[str, Any]) -> dict[str, Any]:
     read_only = {field_name(field["path"]) for field in resolved.get("fields", []) or [] if field.get("readOnly") is True}
     return {key: value for key, value in payload.items() if key not in read_only}
+
+
+def validate_known_top_level_fields(payload: dict[str, Any], resolved: dict[str, Any]) -> None:
+    allowed = schema_field_names(resolved) | {"name"}
+    unknown = sorted(key for key in payload if key not in allowed)
+    if unknown:
+        raise PlanError(f"unknown fields for selected schema: {', '.join(unknown)}")
 
 
 def normalize_empty_reserve(value: Any, label: str = "empty_reserve") -> set[str]:
@@ -394,6 +447,169 @@ def find_resource_path(index: dict[str, Any], schema: str, document: str | None,
     if "{name}" in base_path:
         return base_path
     return base_path.rstrip("/") + "/{name}"
+
+
+def normalize_resource_family(value: Any) -> str | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    normalized = value.strip().replace("\\", "/").rstrip("/")
+    if normalized.endswith(".js"):
+        normalized = normalized[:-3]
+    return normalized
+
+
+def document_family(document: Any) -> str | None:
+    normalized = normalize_resource_family(document)
+    if not normalized or "/" not in normalized:
+        return None
+    return normalized.rsplit("/", 1)[0]
+
+
+def definition_field(definition: dict[str, Any], field_name: str) -> dict[str, Any] | None:
+    for field in definition.get("properties", []) or []:
+        if field.get("name") == field_name:
+            return field
+    return None
+
+
+def canonical_enum_value(field: dict[str, Any], value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    enum = field.get("enum")
+    if not isinstance(enum, list):
+        return None
+    lowered = value.strip().lower()
+    for item in enum:
+        if isinstance(item, str) and item.lower() == lowered:
+            return item
+    return None
+
+
+def selector_token(value: Any) -> str | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    token = re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
+    return token or None
+
+
+def document_selector_token(document: str) -> str | None:
+    normalized = normalize_resource_family(document)
+    if not normalized:
+        return None
+    return selector_token(normalized.rsplit("/", 1)[-1])
+
+
+def select_variant_candidate(candidates: list[dict[str, str]]) -> dict[str, str] | None:
+    if len(candidates) == 1:
+        return candidates[0]
+    if not candidates:
+        return None
+    value_token = selector_token(candidates[0].get("value"))
+    if not value_token:
+        return None
+    exact = [candidate for candidate in candidates if document_selector_token(candidate["document"]) == value_token]
+    if len(exact) == 1:
+        return exact[0]
+    return None
+
+
+def non_list_definitions(index: dict[str, Any], document: str) -> list[dict[str, Any]]:
+    return [
+        definition
+        for definition in index.get("definitions", []) or []
+        if definition.get("document") == document
+        and isinstance(definition.get("name"), str)
+        and not str(definition.get("name")).endswith("_list")
+    ]
+
+
+def infer_schema_for_document(index: dict[str, Any], document: str) -> str:
+    candidates = non_list_definitions(index, document)
+    if len(candidates) == 1:
+        return str(candidates[0]["name"])
+    labels = ", ".join(str(candidate.get("name")) for candidate in candidates) or "<none>"
+    raise PlanError(f"cannot infer schema for document {document}; candidates: {labels}")
+
+
+def variant_candidates(
+    index: dict[str, Any],
+    schema_name: str | None,
+    resource_family: str,
+    variant_field: str,
+    variant_value: Any,
+) -> list[dict[str, str]]:
+    candidates: list[dict[str, str]] = []
+    family = normalize_resource_family(resource_family)
+    if not family:
+        raise PlanError("resource_family must be a non-empty string")
+    for definition in index.get("definitions", []) or []:
+        name = definition.get("name")
+        document = definition.get("document")
+        if not isinstance(name, str) or name.endswith("_list"):
+            continue
+        if schema_name and name != schema_name:
+            continue
+        if not isinstance(document, str) or document_family(document) != family:
+            continue
+        field = definition_field(definition, variant_field)
+        if not field:
+            continue
+        canonical = canonical_enum_value(field, variant_value)
+        if canonical is None:
+            continue
+        candidates.append({"schema": name, "document": document, "value": canonical})
+    candidates.sort(key=lambda item: (item["document"], item["schema"]))
+    return candidates
+
+
+def resolve_operation_selector(index: dict[str, Any], operation: dict[str, Any]) -> dict[str, Any]:
+    schema_name = operation.get("schema")
+    document = operation.get("document")
+    resource_family = operation.get("resource_family")
+    variant_field = operation.get("variant_field")
+    payload = operation.get("payload") or {}
+
+    if document and schema_name is None:
+        schema_name = infer_schema_for_document(index, document)
+
+    if document:
+        resolved = dict(operation)
+        resolved["schema"] = schema_name
+        resolved["document"] = document
+        return resolved
+
+    if resource_family or variant_field:
+        if not resource_family or not variant_field:
+            raise PlanError("resource_family and variant_field must be provided together")
+        if not isinstance(variant_field, str) or not variant_field:
+            raise PlanError("variant_field must be a non-empty string")
+        variant_value = payload.get(variant_field) if isinstance(payload, dict) else None
+        if not isinstance(payload, dict) or variant_field not in payload or variant_value is None or variant_value == "":
+            raise PlanError(f"missing variant field in payload: {variant_field}")
+        candidates = variant_candidates(index, schema_name, resource_family, variant_field, variant_value)
+        if not candidates:
+            scope = f" for schema {schema_name}" if schema_name else ""
+            raise PlanError(
+                f"no {resource_family} variant matches {variant_field}={variant_value!r}{scope}"
+            )
+        selected = select_variant_candidate(candidates)
+        if selected is None:
+            labels = ", ".join(f"{item['document']}#{item['schema']}" for item in candidates)
+            raise PlanError(
+                f"ambiguous {resource_family} variant for {variant_field}={variant_value!r}: {labels}"
+            )
+        resolved = dict(operation)
+        resolved["schema"] = selected["schema"]
+        resolved["document"] = selected["document"]
+        resolved["_selector_resolved"] = True
+        resolved_payload = dict(payload)
+        resolved_payload[variant_field] = selected["value"]
+        resolved["payload"] = resolved_payload
+        return resolved
+
+    if schema_name is None:
+        raise PlanError("missing schema")
+    return operation
 
 
 def path_parameter_names(path: str) -> list[str]:
@@ -532,6 +748,7 @@ def build_plan(
                 "id": operation_id,
                 "action": action,
                 "schema": schema,
+                "document": resolved.get("document"),
                 "method": str(operation["method"]).upper(),
                 "path": operation_path,
                 "resource_path": resource_path,
@@ -561,10 +778,13 @@ def build_validated_plan(
     payload: dict[str, Any],
     document: str | None = None,
     operation_id: str | None = None,
+    strict_unknown_fields: bool = False,
 ) -> dict[str, Any]:
     resolved = resolve_schema(index, schema_name, document)
     schema = find_definition(definitions, schema_name, resolved.get("document"))
     payload = remove_read_only(payload, resolved)
+    if strict_unknown_fields:
+        validate_known_top_level_fields(payload, resolved)
     validate_payload(payload, resolved, action, schema, definitions)
     return build_plan(index, schema_name, action, payload, resolved, operation_id)
 
@@ -584,13 +804,21 @@ def load_bundle(path: Path) -> list[dict[str, Any]]:
             continue
         schema_name = operation.get("schema")
         action = operation.get("action")
-        if not isinstance(schema_name, str) or not schema_name:
-            raise PlanError(f"operations[{index}]: missing schema")
+        if schema_name is not None and (not isinstance(schema_name, str) or not schema_name):
+            raise PlanError(f"operations[{index}]: schema must be a non-empty string")
         if not isinstance(action, str) or action not in ACTION_METHODS:
             raise PlanError(f"operations[{index}]: unsupported or missing action")
         document = operation.get("document")
         if document is not None and not isinstance(document, str):
             raise PlanError(f"operations[{index}]: document must be a string")
+        resource_family = operation.get("resource_family")
+        if resource_family is not None and (not isinstance(resource_family, str) or not resource_family):
+            raise PlanError(f"operations[{index}]: resource_family must be a non-empty string")
+        variant_field = operation.get("variant_field")
+        if variant_field is not None and (not isinstance(variant_field, str) or not variant_field):
+            raise PlanError(f"operations[{index}]: variant_field must be a non-empty string")
+        if schema_name is None and document is None and (resource_family is None or variant_field is None):
+            raise PlanError(f"operations[{index}]: missing schema")
         operation_id = operation.get("id")
         if operation_id is not None and (not isinstance(operation_id, str) or not operation_id):
             raise PlanError(f"operations[{index}]: id must be a non-empty string")
@@ -602,16 +830,27 @@ def load_bundle(path: Path) -> list[dict[str, Any]]:
             payload = prune_payload(payload, empty_reserve)
         except PlanError as exc:
             raise PlanError(f"operations[{index}]: {exc}") from exc
-        normalized.append(
-            {
-                "index": index,
-                "id": operation_id,
-                "action": action,
-                "schema": schema_name,
-                "document": document,
-                "payload": payload,
-            }
-        )
+        normalized_operation = {
+            "index": index,
+            "id": operation_id,
+            "action": action,
+            "schema": schema_name,
+            "document": document,
+            "payload": payload,
+        }
+        if resource_family is not None:
+            normalized_operation["resource_family"] = resource_family
+        if variant_field is not None:
+            normalized_operation["variant_field"] = variant_field
+        rollback = operation.get("rollback")
+        if rollback is not None:
+            if not isinstance(rollback, dict):
+                raise PlanError(f"operations[{index}]: rollback must be an object")
+            normalized_operation["rollback"] = rollback
+        for rollback_key in ("rollback_method", "rollback_path"):
+            if rollback_key in operation:
+                normalized_operation[rollback_key] = operation[rollback_key]
+        normalized.append(normalized_operation)
     if not normalized:
         raise PlanError("bundle YAML has no enabled operations")
     return normalized
@@ -625,7 +864,14 @@ def build_bundle_plan(
 ) -> dict[str, Any]:
     combined = {"version": 1, "operations": [], "verify": [], "rollback_policy": ROLLBACK_POLICY}
     seen_ids: set[str] = set()
-    for operation in sorted_by_dependency_order(load_bundle(bundle_path), resource_order):
+    resolved_operations = []
+    for operation in load_bundle(bundle_path):
+        label = operation.get("id") or f"operations[{operation['index']}]"
+        try:
+            resolved_operations.append(resolve_operation_selector(index, operation))
+        except PlanError as exc:
+            raise PlanError(f"{label}: {exc}") from exc
+    for operation in sorted_by_dependency_order(resolved_operations, resource_order):
         label = operation.get("id") or f"operations[{operation['index']}]"
         try:
             plan = build_validated_plan(
@@ -636,6 +882,7 @@ def build_bundle_plan(
                 operation["payload"],
                 operation.get("document"),
                 operation.get("id"),
+                strict_unknown_fields=bool(operation.get("_selector_resolved")),
             )
         except PlanError as exc:
             raise PlanError(f"{label}: {exc}") from exc

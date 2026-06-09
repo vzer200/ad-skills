@@ -62,6 +62,50 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_software_image_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all software-image",
+						"description": "获取镜像信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/software-image/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/software-image/ 响应",
+						"description": "返回GET /api/ad/v3/rc/software-image/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"maximum_size_mb": 102400,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "ad708_image.iso",
+									"description": "example_string",
+									"size_mb": 129872,
+									"last_modify": "20190530",
+									"compatibility": "COMPATIBLE",
+									"specifications": [
+										{
+											"title": "高",
+											"description": "满足更多数据存储需求",
+											"size_mb": 204800,
+											"standard": "ENABLE"
+										}
+									],
+									"software": "AD",
+									"version": "7.0.8",
+									"build": "20190530"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +123,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_software_image_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new software-image",
+						"description": "新建镜像",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/software-image/",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/software-image/ 响应",
+						"description": "返回POST /api/ad/v3/rc/software-image/的响应数据",
+						"value": {
+							"name": "AI_ad708_image.iso_A",
+							"description": "example_string",
+							"size_mb": 129872,
+							"last_modify": "20190530",
+							"compatibility": "COMPATIBLE",
+							"specifications": [
+								{
+									"title": "高",
+									"description": "满足更多数据存储需求",
+									"size_mb": 204800,
+									"standard": "ENABLE"
+								}
+							],
+							"software": "AD",
+							"version": "7.0.8",
+							"build": "20190530"
+						}
 					}
 				}
 			},
@@ -124,6 +201,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_software_image_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific software-image",
+						"description": "获取镜像信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/software-image/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/software-image/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/software-image/{name}的响应数据",
+						"value": {
+							"name": "ad708_image.iso",
+							"description": "example_string",
+							"size_mb": 129872,
+							"last_modify": "20190530",
+							"compatibility": "COMPATIBLE",
+							"specifications": [
+								{
+									"title": "高",
+									"description": "满足更多数据存储需求",
+									"size_mb": 204800,
+									"standard": "ENABLE"
+								}
+							],
+							"software": "AD",
+							"version": "7.0.8",
+							"build": "20190530"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -136,6 +245,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_software_image_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific software-image",
+						"description": "删除镜像",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/rc/software-image/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/rc/software-image/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/rc/software-image/{name}的响应数据",
+						"value": {
+							"name": "ad708_image.iso",
+							"description": "example_string",
+							"size_mb": 129872,
+							"last_modify": "20190530",
+							"compatibility": "COMPATIBLE",
+							"specifications": [
+								{
+									"title": "高",
+									"description": "满足更多数据存储需求",
+									"size_mb": 204800,
+									"standard": "ENABLE"
+								}
+							],
+							"software": "AD",
+							"version": "7.0.8",
+							"build": "20190530"
+						}
 					}
 				}
 			}

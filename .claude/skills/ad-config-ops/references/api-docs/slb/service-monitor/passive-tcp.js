@@ -65,6 +65,47 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_tcp_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-passive-tcp",
+						"description": "查看当前已有的监视器（TCP被动）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/passive-tcp/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/passive-tcp/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/passive-tcp/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "PASSIVE-TCP",
+									"debug_mode": "DISABLE",
+									"statistical_time": 10,
+									"statistical_object": "RST-PACKET",
+									"rst_packet_threshold": 100000,
+									"zero_window_percent": 40,
+									"action": "BUSY-PROTECT",
+									"busy_protect": {
+										"protect_time": 30,
+										"retry_times": 4,
+										"set_offline_when_protect_fail": "DISABLE"
+									}
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +123,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_tcp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-passive-tcp",
+						"description": "新建一个监视器（TCP被动）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/passive-tcp/",
+							"body": {
+								"name": "AI_http_passive_tcp_A",
+								"type": "PASSIVE-TCP",
+								"debug_mode": "DISABLE",
+								"statistical_time": 10,
+								"statistical_object": "RST-PACKET",
+								"rst_packet_threshold": 100000,
+								"zero_window_percent": 40,
+								"action": "BUSY-PROTECT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/passive-tcp/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/passive-tcp/的响应数据",
+						"value": {
+							"name": "AI_http_passive_tcp_A",
+							"description": "example_string",
+							"type": "PASSIVE-TCP",
+							"debug_mode": "DISABLE",
+							"statistical_time": 10,
+							"statistical_object": "RST-PACKET",
+							"rst_packet_threshold": 100000,
+							"zero_window_percent": 40,
+							"action": "BUSY-PROTECT",
+							"busy_protect": {
+								"protect_time": 30,
+								"retry_times": 4,
+								"set_offline_when_protect_fail": "DISABLE"
+							}
+						}
 					}
 				}
 			},
@@ -130,6 +211,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_tcp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-passive-tcp",
+						"description": "查看指定的监视器（TCP被动）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/passive-tcp/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/passive-tcp/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/passive-tcp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "PASSIVE-TCP",
+							"debug_mode": "DISABLE",
+							"statistical_time": 10,
+							"statistical_object": "RST-PACKET",
+							"rst_packet_threshold": 100000,
+							"zero_window_percent": 40,
+							"action": "BUSY-PROTECT",
+							"busy_protect": {
+								"protect_time": 30,
+								"retry_times": 4,
+								"set_offline_when_protect_fail": "DISABLE"
+							}
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +260,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_tcp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-passive-tcp",
+						"description": "新建指定的监视器（TCP被动）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/passive-tcp/{name}",
+							"body": {
+								"name": "AI_http_passive_tcp_B",
+								"type": "PASSIVE-TCP",
+								"debug_mode": "DISABLE",
+								"statistical_time": 10,
+								"statistical_object": "RST-PACKET",
+								"rst_packet_threshold": 100000,
+								"zero_window_percent": 40,
+								"action": "BUSY-PROTECT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/passive-tcp/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/passive-tcp/{name}的响应数据",
+						"value": {
+							"name": "AI_http_passive_tcp_B",
+							"description": "example_string",
+							"type": "PASSIVE-TCP",
+							"debug_mode": "DISABLE",
+							"statistical_time": 10,
+							"statistical_object": "RST-PACKET",
+							"rst_packet_threshold": 100000,
+							"zero_window_percent": 40,
+							"action": "BUSY-PROTECT",
+							"busy_protect": {
+								"protect_time": 30,
+								"retry_times": 4,
+								"set_offline_when_protect_fail": "DISABLE"
+							}
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +317,46 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_tcp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-passive-tcp",
+						"description": "修改指定的监视器（TCP被动）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/passive-tcp/{name}",
+							"body": {
+								"name": "http",
+								"type": "PASSIVE-TCP",
+								"debug_mode": "DISABLE",
+								"statistical_time": 10,
+								"statistical_object": "RST-PACKET",
+								"rst_packet_threshold": 100000,
+								"zero_window_percent": 40,
+								"action": "BUSY-PROTECT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/passive-tcp/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/passive-tcp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "PASSIVE-TCP",
+							"debug_mode": "DISABLE",
+							"statistical_time": 10,
+							"statistical_object": "RST-PACKET",
+							"rst_packet_threshold": 100000,
+							"zero_window_percent": 40,
+							"action": "BUSY-PROTECT",
+							"busy_protect": {
+								"protect_time": 30,
+								"retry_times": 4,
+								"set_offline_when_protect_fail": "DISABLE"
+							}
+						}
 					}
 				}
 			},
@@ -185,6 +376,46 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_tcp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-passive-tcp",
+						"description": "修改指定的监视器（TCP被动）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/passive-tcp/{name}",
+							"body": {
+								"name": "http",
+								"type": "PASSIVE-TCP",
+								"debug_mode": "DISABLE",
+								"statistical_time": 10,
+								"statistical_object": "RST-PACKET",
+								"rst_packet_threshold": 100000,
+								"zero_window_percent": 40,
+								"action": "BUSY-PROTECT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/passive-tcp/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/passive-tcp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "PASSIVE-TCP",
+							"debug_mode": "DISABLE",
+							"statistical_time": 10,
+							"statistical_object": "RST-PACKET",
+							"rst_packet_threshold": 100000,
+							"zero_window_percent": 40,
+							"action": "BUSY-PROTECT",
+							"busy_protect": {
+								"protect_time": 30,
+								"retry_times": 4,
+								"set_offline_when_protect_fail": "DISABLE"
+							}
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +428,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_passive_tcp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-passive-tcp",
+						"description": "删除指定的监视器（TCP被动）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/passive-tcp/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/passive-tcp/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/passive-tcp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "PASSIVE-TCP",
+							"debug_mode": "DISABLE",
+							"statistical_time": 10,
+							"statistical_object": "RST-PACKET",
+							"rst_packet_threshold": 100000,
+							"zero_window_percent": 40,
+							"action": "BUSY-PROTECT",
+							"busy_protect": {
+								"protect_time": 30,
+								"retry_times": 4,
+								"set_offline_when_protect_fail": "DISABLE"
+							}
+						}
 					}
 				}
 			}

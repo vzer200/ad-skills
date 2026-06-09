@@ -45,7 +45,27 @@ module.exports ={
 					{
 						"$ref": "#/parameters/rollback"
 					}
-				]
+				],
+				"x-examples": {
+					"request": {
+						"summary": "rollback",
+						"description": "执行系统回滚",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/sys/rollback",
+							"body": {
+								"username": "admin"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/sys/rollback 响应",
+						"description": "返回POST /api/ad/v3/debug/sys/rollback的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

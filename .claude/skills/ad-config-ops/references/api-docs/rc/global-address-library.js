@@ -62,6 +62,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_global_address_library_region_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all global-address-library region",
+						"description": "获取全球地址库配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/global-address-library/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/global-address-library/ 响应",
+						"description": "返回GET /api/ad/v3/rc/global-address-library/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "ASIA-PACIFIC",
+									"description": "example_string",
+									"addresses": [
+										"192.168.1.100-192.168.1.200"
+									]
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -94,6 +126,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_global_address_library_region_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific global-address-library region",
+						"description": "获取全球地址库配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/global-address-library/{region}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/global-address-library/{region} 响应",
+						"description": "返回GET /api/ad/v3/rc/global-address-library/{region}的响应数据",
+						"value": {
+							"name": "ASIA-PACIFIC",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							]
+						}
 					}
 				}
 			}
@@ -136,6 +189,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_global_address_library_country_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all global-address-library country",
+						"description": "获取全球地址库配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/global-address-library/{region}/countries/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/global-address-library/{region}/countries/ 响应",
+						"description": "返回GET /api/ad/v3/rc/global-address-library/{region}/countries/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "China",
+									"country_code_iso": "CN",
+									"addresses": [
+										"192.168.1.100-192.168.1.200"
+									]
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -171,6 +256,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_global_address_library_country_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific global-address-library country",
+						"description": "获取全球地址库配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/global-address-library/{region}/countries/{country}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/global-address-library/{region}/countries/{country} 响应",
+						"description": "返回GET /api/ad/v3/rc/global-address-library/{region}/countries/{country}的响应数据",
+						"value": {
+							"name": "China",
+							"country_code_iso": "CN",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							]
+						}
 					}
 				}
 			}
@@ -216,6 +322,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_global_address_library_city_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all global-address-library country",
+						"description": "获取全球地址库配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/global-address-library/{region}/countries/{country}/cities/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/global-address-library/{region}/countries/{country}/cities/ 响应",
+						"description": "返回GET /api/ad/v3/rc/global-address-library/{region}/countries/{country}/cities/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "Beijing",
+									"addresses": [
+										"192.168.1.100-192.168.1.200"
+									],
+									"description": "example_string"
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -254,6 +392,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_global_address_library_city_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific global-address-library city",
+						"description": "获取全球地址库配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/global-address-library/{region}/countries/{country}/cities/{city}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/global-address-library/{region}/countries/{country}/cities/{city} 响应",
+						"description": "返回GET /api/ad/v3/rc/global-address-library/{region}/countries/{country}/cities/{city}的响应数据",
+						"value": {
+							"name": "Beijing",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"description": "example_string"
+						}
 					}
 				}
 			}

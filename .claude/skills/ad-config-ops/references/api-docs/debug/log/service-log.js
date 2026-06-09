@@ -45,7 +45,25 @@ module.exports ={
 					{
 						"$ref": "/api/{common}.yaml#/parameters/VERIFY-OPERATOR"
 					}
-				]
+				],
+				"x-examples": {
+					"request": {
+						"summary": "clear service-log",
+						"description": "清除服务日志",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/log/service-log/clear",
+							"body": {}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/log/service-log/clear 响应",
+						"description": "返回POST /api/ad/v3/debug/log/service-log/clear的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

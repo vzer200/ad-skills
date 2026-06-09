@@ -65,6 +65,52 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ssl_offload_https_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all pre-rule",
+						"description": "查看当前已有的前置策略（HTTPS）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/pre-rule/ssl-offload-https/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/pre-rule/ssl-offload-https/ 响应",
+						"description": "返回GET /api/ad/v3/slb/pre-rule/ssl-offload-https/的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"http_request_method_rule": "ALL",
+							"http_request_version_rule": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"ssl_version_rule": "ALL",
+							"ssl_variable_rules": [
+								"example_item"
+							],
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"http_response": "200_OK",
+							"sched_pool": "web_oa_80_pool",
+							"url_location": "http://index.html",
+							"sched_failure": "NEXT-RULE",
+							"sched_failure_http_response": "400_Not_Found",
+							"rewrite_requests": [],
+							"rewrite_responses": [],
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +128,64 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ssl_offload_https_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new pre-rule",
+						"description": "新建一个前置策略（HTTPS）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/pre-rule/ssl-offload-https/",
+							"body": {
+								"name": "AI_url-sched_A",
+								"service": "SSL-OFFLOAD-HTTPS",
+								"http_request_method_rule": "ALL",
+								"http_request_version_rule": "ALL",
+								"ssl_version_rule": "ALL",
+								"action": "SCHED-POOL",
+								"notify_status_to_vs": "ENABLE",
+								"sched_failure": "NEXT-RULE",
+								"inherit_vs_service_chain": "ENABLE",
+								"sched_pool": "web_oa_80_pool"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/pre-rule/ssl-offload-https/ 响应",
+						"description": "返回POST /api/ad/v3/slb/pre-rule/ssl-offload-https/的响应数据",
+						"value": {
+							"name": "AI_url-sched_A",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"http_request_method_rule": "ALL",
+							"http_request_version_rule": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"ssl_version_rule": "ALL",
+							"ssl_variable_rules": [
+								"example_item"
+							],
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"http_response": "200_OK",
+							"sched_pool": "web_oa_80_pool",
+							"url_location": "http://index.html",
+							"sched_failure": "NEXT-RULE",
+							"sched_failure_http_response": "400_Not_Found",
+							"rewrite_requests": [],
+							"rewrite_responses": [],
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
 					}
 				}
 			},
@@ -130,6 +234,52 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ssl_offload_https_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific pre-rule",
+						"description": "查看指定的前置策略（HTTPS）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/pre-rule/ssl-offload-https/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/pre-rule/ssl-offload-https/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/pre-rule/ssl-offload-https/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"http_request_method_rule": "ALL",
+							"http_request_version_rule": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"ssl_version_rule": "ALL",
+							"ssl_variable_rules": [
+								"example_item"
+							],
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"http_response": "200_OK",
+							"sched_pool": "web_oa_80_pool",
+							"url_location": "http://index.html",
+							"sched_failure": "NEXT-RULE",
+							"sched_failure_http_response": "400_Not_Found",
+							"rewrite_requests": [],
+							"rewrite_responses": [],
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +299,64 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ssl_offload_https_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new pre-rule",
+						"description": "新建指定的前置策略（HTTPS）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/pre-rule/ssl-offload-https/{name}",
+							"body": {
+								"name": "AI_url-sched_B",
+								"service": "SSL-OFFLOAD-HTTPS",
+								"http_request_method_rule": "ALL",
+								"http_request_version_rule": "ALL",
+								"ssl_version_rule": "ALL",
+								"action": "SCHED-POOL",
+								"notify_status_to_vs": "ENABLE",
+								"sched_failure": "NEXT-RULE",
+								"inherit_vs_service_chain": "ENABLE",
+								"sched_pool": "web_oa_80_pool"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/pre-rule/ssl-offload-https/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/pre-rule/ssl-offload-https/{name}的响应数据",
+						"value": {
+							"name": "AI_url-sched_B",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"http_request_method_rule": "ALL",
+							"http_request_version_rule": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"ssl_version_rule": "ALL",
+							"ssl_variable_rules": [
+								"example_item"
+							],
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"http_response": "200_OK",
+							"sched_pool": "web_oa_80_pool",
+							"url_location": "http://index.html",
+							"sched_failure": "NEXT-RULE",
+							"sched_failure_http_response": "400_Not_Found",
+							"rewrite_requests": [],
+							"rewrite_responses": [],
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +374,64 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ssl_offload_https_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific pre-rule",
+						"description": "修改指定的前置策略（HTTPS）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/pre-rule/ssl-offload-https/{name}",
+							"body": {
+								"name": "url-sched",
+								"service": "SSL-OFFLOAD-HTTPS",
+								"http_request_method_rule": "ALL",
+								"http_request_version_rule": "ALL",
+								"ssl_version_rule": "ALL",
+								"action": "SCHED-POOL",
+								"notify_status_to_vs": "ENABLE",
+								"sched_failure": "NEXT-RULE",
+								"inherit_vs_service_chain": "ENABLE",
+								"sched_pool": "web_oa_80_pool"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/pre-rule/ssl-offload-https/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/pre-rule/ssl-offload-https/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"http_request_method_rule": "ALL",
+							"http_request_version_rule": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"ssl_version_rule": "ALL",
+							"ssl_variable_rules": [
+								"example_item"
+							],
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"http_response": "200_OK",
+							"sched_pool": "web_oa_80_pool",
+							"url_location": "http://index.html",
+							"sched_failure": "NEXT-RULE",
+							"sched_failure_http_response": "400_Not_Found",
+							"rewrite_requests": [],
+							"rewrite_responses": [],
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
 					}
 				}
 			},
@@ -185,6 +451,64 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ssl_offload_https_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific pre-rule",
+						"description": "修改指定的前置策略（HTTPS）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/pre-rule/ssl-offload-https/{name}",
+							"body": {
+								"name": "url-sched",
+								"service": "SSL-OFFLOAD-HTTPS",
+								"http_request_method_rule": "ALL",
+								"http_request_version_rule": "ALL",
+								"ssl_version_rule": "ALL",
+								"action": "SCHED-POOL",
+								"notify_status_to_vs": "ENABLE",
+								"sched_failure": "NEXT-RULE",
+								"inherit_vs_service_chain": "ENABLE",
+								"sched_pool": "web_oa_80_pool"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/pre-rule/ssl-offload-https/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/pre-rule/ssl-offload-https/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"http_request_method_rule": "ALL",
+							"http_request_version_rule": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"ssl_version_rule": "ALL",
+							"ssl_variable_rules": [
+								"example_item"
+							],
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"http_response": "200_OK",
+							"sched_pool": "web_oa_80_pool",
+							"url_location": "http://index.html",
+							"sched_failure": "NEXT-RULE",
+							"sched_failure_http_response": "400_Not_Found",
+							"rewrite_requests": [],
+							"rewrite_responses": [],
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +521,52 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_pre_rule_ssl_offload_https_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific pre-rule",
+						"description": "删除指定的前置策略（HTTPS）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/pre-rule/ssl-offload-https/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/pre-rule/ssl-offload-https/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/pre-rule/ssl-offload-https/{name}的响应数据",
+						"value": {
+							"name": "url-sched",
+							"description": "example_string",
+							"service": "SSL-OFFLOAD-HTTPS",
+							"source_address": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}",
+								"ref_isp_address_group": "{isp_address_group}"
+							},
+							"http_request_method_rule": "ALL",
+							"http_request_version_rule": "ALL",
+							"http_request_uri_rule": null,
+							"http_request_header_rules": [
+								"example_item"
+							],
+							"ssl_version_rule": "ALL",
+							"ssl_variable_rules": [
+								"example_item"
+							],
+							"action": "SCHED-POOL",
+							"notify_status_to_vs": "ENABLE",
+							"http_response": "200_OK",
+							"sched_pool": "web_oa_80_pool",
+							"url_location": "http://index.html",
+							"sched_failure": "NEXT-RULE",
+							"sched_failure_http_response": "400_Not_Found",
+							"rewrite_requests": [],
+							"rewrite_responses": [],
+							"inherit_vs_service_chain": "ENABLE",
+							"service_chain": "service_chain1_for_pre_rule"
+						}
 					}
 				}
 			}
@@ -456,7 +826,7 @@ module.exports ={
 						"type": "string",
 						"example": "{rewrite-request}"
 					},
-					"maxItems": 5
+					"maxItems": 8
 				},
 				"rewrite_responses": {
 					"description": "可选参数；执行动作为sched-pool-and-rewrite时，指定应答改写策略。",
@@ -466,7 +836,7 @@ module.exports ={
 						"type": "string",
 						"example": "{rewrite-response}"
 					},
-					"maxItems": 5
+					"maxItems": 8
 				},
 				"inherit_vs_service_chain": {
 					"type": "string",
@@ -480,7 +850,7 @@ module.exports ={
 				},
 				"service_chain": {
 					"type": "string",
-					"description": "指定当前前置策略的服务链，仅当inherit_vs_service_chain为DISBALE时生效",
+					"description": "指定当前前置策略的服务链，仅当inherit_vs_service_chain为DISABLE时生效",
 					"example": "service_chain1_for_pre_rule"
 				}
 			}

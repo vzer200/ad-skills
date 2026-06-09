@@ -62,6 +62,21 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_log_template"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all log-template",
+						"description": "查看已有的日志模板配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/log-template/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/log-template/ 响应",
+						"description": "返回GET /api/ad/v3/sys/log-template/的响应数据",
+						"value": {}
+					}
 				}
 			},
 			"put": {
@@ -80,6 +95,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_log_template_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific log-template",
+						"description": "修改指定的日志模板配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/log-template/",
+							"body": {
+								"server_log_template": "${module}:${details}",
+								"audit_log_template": "${username},${login_ip},${method},${module},${description}",
+								"nat_log_template": "${action} ${protocol} ${src_ip}:${src_port}->${dst_ip}:${dst_port}---${nat_src_ip}:${nat_src_port}->${nat_dst_ip}:${nat_dst_port}",
+								"ssl_log_template": "[${X509.errno}][${client_ip}:${client_port}]->[${vip}:${vport}]${vs_name}:${X509.subject}/${X509.issuer}/${X509.serial_num}/${X509.not_valid_before}-${X509.not_valid_after}"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/log-template/ 响应",
+						"description": "返回PUT /api/ad/v3/sys/log-template/的响应数据",
+						"value": {
+							"server_log_template": "",
+							"audit_log_template": "",
+							"nat_log_template": "",
+							"ssl_log_template": "",
+							"ssl_log_errcode_filter": {
+								"state": "DISABLE",
+								"others_errcode": "DISABLE",
+								"ssl_log_errcode": [
+									"0_SSL_HANDSHAKE_SUCCEEDED"
+								]
+							}
+						}
+					}
 				}
 			},
 			"patch": {
@@ -97,6 +145,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_log_template_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific log-template",
+						"description": "修改指定的日志模板配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/log-template/",
+							"body": {
+								"server_log_template": "${module}:${details}",
+								"audit_log_template": "${username},${login_ip},${method},${module},${description}",
+								"nat_log_template": "${action} ${protocol} ${src_ip}:${src_port}->${dst_ip}:${dst_port}---${nat_src_ip}:${nat_src_port}->${nat_dst_ip}:${nat_dst_port}",
+								"ssl_log_template": "[${X509.errno}][${client_ip}:${client_port}]->[${vip}:${vport}]${vs_name}:${X509.subject}/${X509.issuer}/${X509.serial_num}/${X509.not_valid_before}-${X509.not_valid_after}"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/log-template/ 响应",
+						"description": "返回PATCH /api/ad/v3/sys/log-template/的响应数据",
+						"value": {
+							"server_log_template": "",
+							"audit_log_template": "",
+							"nat_log_template": "",
+							"ssl_log_template": "",
+							"ssl_log_errcode_filter": {
+								"state": "DISABLE",
+								"others_errcode": "DISABLE",
+								"ssl_log_errcode": [
+									"0_SSL_HANDSHAKE_SUCCEEDED"
+								]
+							}
+						}
 					}
 				}
 			},
@@ -175,6 +256,63 @@ module.exports ={
 					"minLength": 1,
 					"default": "[${X509.errno}][${client_ip}:${client_port}]->[${vip}:${vport}]${vs_name}:${X509.subject}/${X509.issuer}/${X509.serial_num}/${X509.not_valid_before}-${X509.not_valid_after}",
 					"example": "[${X509.errno}][${client_ip}:${client_port}]->[${vip}:${vport}]${vs_name}:${X509.subject}/${X509.issuer}/${X509.serial_num}/${X509.not_valid_before}-${X509.not_valid_after}"
+				},
+				"ssl_log_errcode_filter": {
+					"description": "SSL外发日志过滤的错误码",
+					"type": "object",
+					"properties": {
+						"state": {
+							"description": "SSL日志过滤启/禁用状态",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"example": "DISABLE",
+							"default": "DISABLE"
+						},
+						"others_errcode": {
+							"description": "SSL日志过滤其他错误码的选中状态",
+							"type": "string",
+							"enum": [
+								"ENABLE",
+								"DISABLE"
+							],
+							"example": "DISABLE",
+							"default": "DISABLE"
+						},
+						"ssl_log_errcode": {
+							"description": "SSL外发日志过滤的错误码",
+							"type": "array",
+							"uniqueItems": true,
+							"items": {
+								"description": "SSL外发日志过滤的错误码",
+								"type": "string",
+								"enum": [
+									"0_SSL_HANDSHAKE_SUCCEEDED",
+									"2_CERTIFICATE_ISSUER_ERROR",
+									"7_SIGNATURE_IN_CERTIFICATE_IS_INVALID",
+									"9_CERTIFICATE_IS_INVALID",
+									"10_CERTIFICATE_HAS_EXPIRED",
+									"11_CRL_IS_INVALID",
+									"12_CRL_HAS_EXPIRED",
+									"18_SELF_SIGNED_CERTIFICATE_IS_NOT_TRUSTED",
+									"19_FAILED_TO_VERIFY_CERTIFICATE_CHAIN",
+									"20_FAILED_TO_GET_CERTIFICATE_ISSUER",
+									"21_ROOT_CERT_IS_NOT_SELF-SIGNED",
+									"23_CERTIFICATE_HAS_BEEN_REVOKED",
+									"26_CERT_CANNOT_BE_USED_FOR_REQUEST_PURPOSE",
+									"27_CERTIFICATE_IS_NOT_TRUSTED",
+									"32_CERTIFICATE_CANNOT_BE_USED_FOR_SIGNING",
+									"55_NO_CERTIFICATE",
+									"66_EE_CERTIFICATE_KEY_TOO_WEAK",
+									"67_CA_CERTIFICATE_KEY_TOO_WEAK",
+									"68_CA_SIGNATURE_DIGEST_ALGORITHM_TOO_WEAK",
+									"69_INVALID_CERTIFICATE_VERIFICATION_CONTEXT"
+								]
+							}
+						}
+					}
 				}
 			}
 		}

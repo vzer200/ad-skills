@@ -50,6 +50,72 @@ module.exports ={
 					"200": {
 						"$ref": "/api/ha/cluster.yaml#/responses/operation_config_cluster_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": " cluster-join",
+						"description": "加入集群",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/ha/cluster-join",
+							"body": {
+								"cluster_ha_address": "10.0.1.1",
+								"cluster_username": "admin",
+								"ha": {
+									"interface": {
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									},
+									"address": "10.0.1.2/24"
+								},
+								"weight_in_diff_platform": 1,
+								"alternate_ha": {
+									"interface": {
+										"type": "PHYSICAL",
+										"interface": "bond-134"
+									},
+									"address": "200.0.0.2/24"
+								}
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/ha/cluster-join 响应",
+						"description": "返回POST /api/ad/v3/ha/cluster-join的响应数据",
+						"value": {
+							"state": "ENABLE",
+							"heartbeat_timeout_ms": 6000,
+							"heartbeat_interval_ms": 100,
+							"ha": {
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"address": "10.0.1.1/24",
+								"gateway": "10.0.1.100"
+							},
+							"alternate_ha": {
+								"interface": {
+									"type": "PHYSICAL",
+									"interface": "bond-134"
+								},
+								"address": "200.0.0.1/24",
+								"gateway": "200.0.0.100"
+							},
+							"brain_split_detect": {
+								"state": "DISABLE",
+								"link": "wan_1"
+							},
+							"username": "admin",
+							"password": "admin",
+							"pk_password": "example_string",
+							"cluster_ip": "10.0.0.1/24",
+							"openad_net_check_flat": "DISABLE",
+							"openad_net_check_vlan": "DISABLE",
+							"openad_net_check_vxlan": "DISABLE",
+							"weight_in_diff_platform": 1
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [

@@ -62,6 +62,40 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_query"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all query statistics",
+						"description": "查询所有域名的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/query/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/query/ 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/query/的响应数据",
+						"value": {
+							"protocol": {
+								"tcp_query_rate": null,
+								"udp_query_rate": null
+							},
+							"result": {
+								"success": null,
+								"failed": null
+							},
+							"type": {
+								"a_record": null,
+								"ns_record": null,
+								"mx_record": null,
+								"cname_record": null,
+								"soa_record": null,
+								"srv_record": null,
+								"ptr_record": null,
+								"txt_record": null
+							}
+						}
+					}
 				}
 			}
 		},
@@ -99,6 +133,40 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_query"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get one query statistics",
+						"description": "查询查询指定类型域名的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/query/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/query/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/query/{item}的响应数据",
+						"value": {
+							"protocol": {
+								"tcp_query_rate": null,
+								"udp_query_rate": null
+							},
+							"result": {
+								"success": null,
+								"failed": null
+							},
+							"type": {
+								"a_record": null,
+								"ns_record": null,
+								"mx_record": null,
+								"cname_record": null,
+								"soa_record": null,
+								"srv_record": null,
+								"ptr_record": null,
+								"txt_record": null
+							}
+						}
 					}
 				}
 			}

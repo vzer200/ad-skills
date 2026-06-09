@@ -65,6 +65,101 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_service_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all virtual service",
+						"description": "查看当前已有的DNS服务配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/dns-virtual-service/virtual-service/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/dns-virtual-service/virtual-service/ 响应",
+						"description": "返回GET /api/ad/v4/dns/dns-virtual-service/virtual-service/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vs_dns_53",
+									"description": "example_string",
+									"state": "ENABLE",
+									"service": "DNS-UDP",
+									"vips": [
+										"10.0.1.83"
+									],
+									"inbound_links": [
+										"WAN_1"
+									],
+									"vports": [
+										"80-88"
+									],
+									"pool": "pool_1",
+									"pre_rules": [
+										"sub10_server1"
+									],
+									"http_sched_mode": "REQUEST",
+									"tcp_sched_stream_cache": {
+										"state": "DISABLE",
+										"cache": 4096,
+										"terminator": ""
+									},
+									"https_redirect": {
+										"state": "DISABLE",
+										"http_port": 80
+									},
+									"snat": "AUTO-MAP",
+									"snat_pool": "example_string",
+									"source_port": "PRESERVE",
+									"session_sync": "GLOBAL",
+									"dnat": "ENABLE",
+									"dport_trans": "ENABLE",
+									"dnat_translated_address": "23.3.3.3",
+									"dnat_translated_port": 0,
+									"http_profile": "NONE",
+									"sip_profile": "NONE",
+									"http2_profile_client": "NONE",
+									"http2_profile_server": "NONE",
+									"dns_profile": "Default_DNS",
+									"udp_profile": "NONE",
+									"http_defence": "NONE",
+									"tcp_profile": "NONE",
+									"qos_profile": "NONE",
+									"connection_limits": [
+										{
+											"source_address": {
+												"type": "IP-ADDRESS",
+												"address": "10.1.1.1/24"
+											},
+											"connection_limit": 1000000
+										}
+									],
+									"connection_limits_type": "SINGLE-SOURCE-IP",
+									"source_address_match_limit": {
+										"type": "ALL",
+										"address": "192.168.1.1/24",
+										"ref_custom_address_group": "{custom_address_group}"
+									},
+									"ipros": [
+										"example_string"
+									],
+									"icon": "DEFAULT",
+									"autolasthop": "GLOBAL",
+									"notify_status_to_vip": "ENABLE",
+									"force_keep_alive": "DISABLE",
+									"location_rewrite": "ENABLE",
+									"associated_application_group": "NONE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +177,123 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_service_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new virtual service",
+						"description": "新建一个DNS服务配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/dns-virtual-service/virtual-service/",
+							"body": {
+								"name": "AI_vs_dns_53_A",
+								"state": "ENABLE",
+								"service": "DNS-UDP",
+								"vips": [
+									"10.0.1.83"
+								],
+								"vports": [
+									"80-88"
+								],
+								"pool": "pool_1",
+								"http_sched_mode": "REQUEST",
+								"snat": "AUTO-MAP",
+								"source_port": "PRESERVE",
+								"session_sync": "GLOBAL",
+								"dnat": "ENABLE",
+								"dport_trans": "ENABLE",
+								"dnat_translated_port": 0,
+								"http_profile": "NONE",
+								"sip_profile": "NONE",
+								"http2_profile_client": "NONE",
+								"http2_profile_server": "NONE",
+								"udp_profile": "NONE",
+								"http_defence": "NONE",
+								"tcp_profile": "NONE",
+								"qos_profile": "NONE",
+								"connection_limits_type": "SINGLE-SOURCE-IP",
+								"autolasthop": "GLOBAL",
+								"notify_status_to_vip": "ENABLE",
+								"force_keep_alive": "DISABLE",
+								"location_rewrite": "ENABLE",
+								"associated_application_group": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/dns-virtual-service/virtual-service/ 响应",
+						"description": "返回POST /api/ad/v4/dns/dns-virtual-service/virtual-service/的响应数据",
+						"value": {
+							"name": "AI_vs_dns_53_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"service": "DNS-UDP",
+							"vips": [
+								"10.0.1.83"
+							],
+							"inbound_links": [
+								"WAN_1"
+							],
+							"vports": [
+								"80-88"
+							],
+							"pool": "pool_1",
+							"pre_rules": [
+								"sub10_server1"
+							],
+							"http_sched_mode": "REQUEST",
+							"tcp_sched_stream_cache": {
+								"state": "DISABLE",
+								"cache": 4096,
+								"terminator": ""
+							},
+							"https_redirect": {
+								"state": "DISABLE",
+								"http_port": 80
+							},
+							"snat": "AUTO-MAP",
+							"snat_pool": "example_string",
+							"source_port": "PRESERVE",
+							"session_sync": "GLOBAL",
+							"dnat": "ENABLE",
+							"dport_trans": "ENABLE",
+							"dnat_translated_address": "23.3.3.3",
+							"dnat_translated_port": 0,
+							"http_profile": "NONE",
+							"sip_profile": "NONE",
+							"http2_profile_client": "NONE",
+							"http2_profile_server": "NONE",
+							"dns_profile": "Default_DNS",
+							"udp_profile": "NONE",
+							"http_defence": "NONE",
+							"tcp_profile": "NONE",
+							"qos_profile": "NONE",
+							"connection_limits": [
+								{
+									"source_address": {
+										"type": "IP-ADDRESS",
+										"address": "10.1.1.1/24"
+									},
+									"connection_limit": 1000000
+								}
+							],
+							"connection_limits_type": "SINGLE-SOURCE-IP",
+							"source_address_match_limit": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"ipros": [
+								"example_string"
+							],
+							"icon": "DEFAULT",
+							"autolasthop": "GLOBAL",
+							"notify_status_to_vip": "ENABLE",
+							"force_keep_alive": "DISABLE",
+							"location_rewrite": "ENABLE",
+							"associated_application_group": "NONE"
+						}
 					}
 				}
 			},
@@ -138,6 +350,90 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_service_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual service",
+						"description": "查看指定的DNS服务配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v4/dns/dns-virtual-service/virtual-service/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v4/dns/dns-virtual-service/virtual-service/{name} 响应",
+						"description": "返回GET /api/ad/v4/dns/dns-virtual-service/virtual-service/{name}的响应数据",
+						"value": {
+							"name": "vs_dns_53",
+							"description": "example_string",
+							"state": "ENABLE",
+							"service": "DNS-UDP",
+							"vips": [
+								"10.0.1.83"
+							],
+							"inbound_links": [
+								"WAN_1"
+							],
+							"vports": [
+								"80-88"
+							],
+							"pool": "pool_1",
+							"pre_rules": [
+								"sub10_server1"
+							],
+							"http_sched_mode": "REQUEST",
+							"tcp_sched_stream_cache": {
+								"state": "DISABLE",
+								"cache": 4096,
+								"terminator": ""
+							},
+							"https_redirect": {
+								"state": "DISABLE",
+								"http_port": 80
+							},
+							"snat": "AUTO-MAP",
+							"snat_pool": "example_string",
+							"source_port": "PRESERVE",
+							"session_sync": "GLOBAL",
+							"dnat": "ENABLE",
+							"dport_trans": "ENABLE",
+							"dnat_translated_address": "23.3.3.3",
+							"dnat_translated_port": 0,
+							"http_profile": "NONE",
+							"sip_profile": "NONE",
+							"http2_profile_client": "NONE",
+							"http2_profile_server": "NONE",
+							"dns_profile": "Default_DNS",
+							"udp_profile": "NONE",
+							"http_defence": "NONE",
+							"tcp_profile": "NONE",
+							"qos_profile": "NONE",
+							"connection_limits": [
+								{
+									"source_address": {
+										"type": "IP-ADDRESS",
+										"address": "10.1.1.1/24"
+									},
+									"connection_limit": 1000000
+								}
+							],
+							"connection_limits_type": "SINGLE-SOURCE-IP",
+							"source_address_match_limit": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"ipros": [
+								"example_string"
+							],
+							"icon": "DEFAULT",
+							"autolasthop": "GLOBAL",
+							"notify_status_to_vip": "ENABLE",
+							"force_keep_alive": "DISABLE",
+							"location_rewrite": "ENABLE",
+							"associated_application_group": "NONE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -157,6 +453,123 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_service_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new virtual service",
+						"description": "新建指定的DNS服务配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v4/dns/dns-virtual-service/virtual-service/{name}",
+							"body": {
+								"name": "AI_vs_dns_53_B",
+								"state": "ENABLE",
+								"service": "DNS-UDP",
+								"vips": [
+									"10.0.1.83"
+								],
+								"vports": [
+									"80-88"
+								],
+								"pool": "pool_1",
+								"http_sched_mode": "REQUEST",
+								"snat": "AUTO-MAP",
+								"source_port": "PRESERVE",
+								"session_sync": "GLOBAL",
+								"dnat": "ENABLE",
+								"dport_trans": "ENABLE",
+								"dnat_translated_port": 0,
+								"http_profile": "NONE",
+								"sip_profile": "NONE",
+								"http2_profile_client": "NONE",
+								"http2_profile_server": "NONE",
+								"udp_profile": "NONE",
+								"http_defence": "NONE",
+								"tcp_profile": "NONE",
+								"qos_profile": "NONE",
+								"connection_limits_type": "SINGLE-SOURCE-IP",
+								"autolasthop": "GLOBAL",
+								"notify_status_to_vip": "ENABLE",
+								"force_keep_alive": "DISABLE",
+								"location_rewrite": "ENABLE",
+								"associated_application_group": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v4/dns/dns-virtual-service/virtual-service/{name} 响应",
+						"description": "返回POST /api/ad/v4/dns/dns-virtual-service/virtual-service/{name}的响应数据",
+						"value": {
+							"name": "AI_vs_dns_53_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"service": "DNS-UDP",
+							"vips": [
+								"10.0.1.83"
+							],
+							"inbound_links": [
+								"WAN_1"
+							],
+							"vports": [
+								"80-88"
+							],
+							"pool": "pool_1",
+							"pre_rules": [
+								"sub10_server1"
+							],
+							"http_sched_mode": "REQUEST",
+							"tcp_sched_stream_cache": {
+								"state": "DISABLE",
+								"cache": 4096,
+								"terminator": ""
+							},
+							"https_redirect": {
+								"state": "DISABLE",
+								"http_port": 80
+							},
+							"snat": "AUTO-MAP",
+							"snat_pool": "example_string",
+							"source_port": "PRESERVE",
+							"session_sync": "GLOBAL",
+							"dnat": "ENABLE",
+							"dport_trans": "ENABLE",
+							"dnat_translated_address": "23.3.3.3",
+							"dnat_translated_port": 0,
+							"http_profile": "NONE",
+							"sip_profile": "NONE",
+							"http2_profile_client": "NONE",
+							"http2_profile_server": "NONE",
+							"dns_profile": "Default_DNS",
+							"udp_profile": "NONE",
+							"http_defence": "NONE",
+							"tcp_profile": "NONE",
+							"qos_profile": "NONE",
+							"connection_limits": [
+								{
+									"source_address": {
+										"type": "IP-ADDRESS",
+										"address": "10.1.1.1/24"
+									},
+									"connection_limit": 1000000
+								}
+							],
+							"connection_limits_type": "SINGLE-SOURCE-IP",
+							"source_address_match_limit": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"ipros": [
+								"example_string"
+							],
+							"icon": "DEFAULT",
+							"autolasthop": "GLOBAL",
+							"notify_status_to_vip": "ENABLE",
+							"force_keep_alive": "DISABLE",
+							"location_rewrite": "ENABLE",
+							"associated_application_group": "NONE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -174,6 +587,123 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_service_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific virtual service",
+						"description": "替换指定DNS服务配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v4/dns/dns-virtual-service/virtual-service/{name}",
+							"body": {
+								"name": "vs_dns_53",
+								"state": "ENABLE",
+								"service": "DNS-UDP",
+								"vips": [
+									"10.0.1.83"
+								],
+								"vports": [
+									"80-88"
+								],
+								"pool": "pool_1",
+								"http_sched_mode": "REQUEST",
+								"snat": "AUTO-MAP",
+								"source_port": "PRESERVE",
+								"session_sync": "GLOBAL",
+								"dnat": "ENABLE",
+								"dport_trans": "ENABLE",
+								"dnat_translated_port": 0,
+								"http_profile": "NONE",
+								"sip_profile": "NONE",
+								"http2_profile_client": "NONE",
+								"http2_profile_server": "NONE",
+								"udp_profile": "NONE",
+								"http_defence": "NONE",
+								"tcp_profile": "NONE",
+								"qos_profile": "NONE",
+								"connection_limits_type": "SINGLE-SOURCE-IP",
+								"autolasthop": "GLOBAL",
+								"notify_status_to_vip": "ENABLE",
+								"force_keep_alive": "DISABLE",
+								"location_rewrite": "ENABLE",
+								"associated_application_group": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v4/dns/dns-virtual-service/virtual-service/{name} 响应",
+						"description": "返回PUT /api/ad/v4/dns/dns-virtual-service/virtual-service/{name}的响应数据",
+						"value": {
+							"name": "vs_dns_53",
+							"description": "example_string",
+							"state": "ENABLE",
+							"service": "DNS-UDP",
+							"vips": [
+								"10.0.1.83"
+							],
+							"inbound_links": [
+								"WAN_1"
+							],
+							"vports": [
+								"80-88"
+							],
+							"pool": "pool_1",
+							"pre_rules": [
+								"sub10_server1"
+							],
+							"http_sched_mode": "REQUEST",
+							"tcp_sched_stream_cache": {
+								"state": "DISABLE",
+								"cache": 4096,
+								"terminator": ""
+							},
+							"https_redirect": {
+								"state": "DISABLE",
+								"http_port": 80
+							},
+							"snat": "AUTO-MAP",
+							"snat_pool": "example_string",
+							"source_port": "PRESERVE",
+							"session_sync": "GLOBAL",
+							"dnat": "ENABLE",
+							"dport_trans": "ENABLE",
+							"dnat_translated_address": "23.3.3.3",
+							"dnat_translated_port": 0,
+							"http_profile": "NONE",
+							"sip_profile": "NONE",
+							"http2_profile_client": "NONE",
+							"http2_profile_server": "NONE",
+							"dns_profile": "Default_DNS",
+							"udp_profile": "NONE",
+							"http_defence": "NONE",
+							"tcp_profile": "NONE",
+							"qos_profile": "NONE",
+							"connection_limits": [
+								{
+									"source_address": {
+										"type": "IP-ADDRESS",
+										"address": "10.1.1.1/24"
+									},
+									"connection_limit": 1000000
+								}
+							],
+							"connection_limits_type": "SINGLE-SOURCE-IP",
+							"source_address_match_limit": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"ipros": [
+								"example_string"
+							],
+							"icon": "DEFAULT",
+							"autolasthop": "GLOBAL",
+							"notify_status_to_vip": "ENABLE",
+							"force_keep_alive": "DISABLE",
+							"location_rewrite": "ENABLE",
+							"associated_application_group": "NONE"
+						}
 					}
 				}
 			},
@@ -193,6 +723,123 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_service_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific virtual service",
+						"description": "修改指定DNS服务配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v4/dns/dns-virtual-service/virtual-service/{name}",
+							"body": {
+								"name": "vs_dns_53",
+								"state": "ENABLE",
+								"service": "DNS-UDP",
+								"vips": [
+									"10.0.1.83"
+								],
+								"vports": [
+									"80-88"
+								],
+								"pool": "pool_1",
+								"http_sched_mode": "REQUEST",
+								"snat": "AUTO-MAP",
+								"source_port": "PRESERVE",
+								"session_sync": "GLOBAL",
+								"dnat": "ENABLE",
+								"dport_trans": "ENABLE",
+								"dnat_translated_port": 0,
+								"http_profile": "NONE",
+								"sip_profile": "NONE",
+								"http2_profile_client": "NONE",
+								"http2_profile_server": "NONE",
+								"udp_profile": "NONE",
+								"http_defence": "NONE",
+								"tcp_profile": "NONE",
+								"qos_profile": "NONE",
+								"connection_limits_type": "SINGLE-SOURCE-IP",
+								"autolasthop": "GLOBAL",
+								"notify_status_to_vip": "ENABLE",
+								"force_keep_alive": "DISABLE",
+								"location_rewrite": "ENABLE",
+								"associated_application_group": "NONE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v4/dns/dns-virtual-service/virtual-service/{name} 响应",
+						"description": "返回PATCH /api/ad/v4/dns/dns-virtual-service/virtual-service/{name}的响应数据",
+						"value": {
+							"name": "vs_dns_53",
+							"description": "example_string",
+							"state": "ENABLE",
+							"service": "DNS-UDP",
+							"vips": [
+								"10.0.1.83"
+							],
+							"inbound_links": [
+								"WAN_1"
+							],
+							"vports": [
+								"80-88"
+							],
+							"pool": "pool_1",
+							"pre_rules": [
+								"sub10_server1"
+							],
+							"http_sched_mode": "REQUEST",
+							"tcp_sched_stream_cache": {
+								"state": "DISABLE",
+								"cache": 4096,
+								"terminator": ""
+							},
+							"https_redirect": {
+								"state": "DISABLE",
+								"http_port": 80
+							},
+							"snat": "AUTO-MAP",
+							"snat_pool": "example_string",
+							"source_port": "PRESERVE",
+							"session_sync": "GLOBAL",
+							"dnat": "ENABLE",
+							"dport_trans": "ENABLE",
+							"dnat_translated_address": "23.3.3.3",
+							"dnat_translated_port": 0,
+							"http_profile": "NONE",
+							"sip_profile": "NONE",
+							"http2_profile_client": "NONE",
+							"http2_profile_server": "NONE",
+							"dns_profile": "Default_DNS",
+							"udp_profile": "NONE",
+							"http_defence": "NONE",
+							"tcp_profile": "NONE",
+							"qos_profile": "NONE",
+							"connection_limits": [
+								{
+									"source_address": {
+										"type": "IP-ADDRESS",
+										"address": "10.1.1.1/24"
+									},
+									"connection_limit": 1000000
+								}
+							],
+							"connection_limits_type": "SINGLE-SOURCE-IP",
+							"source_address_match_limit": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"ipros": [
+								"example_string"
+							],
+							"icon": "DEFAULT",
+							"autolasthop": "GLOBAL",
+							"notify_status_to_vip": "ENABLE",
+							"force_keep_alive": "DISABLE",
+							"location_rewrite": "ENABLE",
+							"associated_application_group": "NONE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -205,6 +852,90 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_service_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific virtual service",
+						"description": "删除指定DNS服务配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v4/dns/dns-virtual-service/virtual-service/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v4/dns/dns-virtual-service/virtual-service/{name} 响应",
+						"description": "返回DELETE /api/ad/v4/dns/dns-virtual-service/virtual-service/{name}的响应数据",
+						"value": {
+							"name": "vs_dns_53",
+							"description": "example_string",
+							"state": "ENABLE",
+							"service": "DNS-UDP",
+							"vips": [
+								"10.0.1.83"
+							],
+							"inbound_links": [
+								"WAN_1"
+							],
+							"vports": [
+								"80-88"
+							],
+							"pool": "pool_1",
+							"pre_rules": [
+								"sub10_server1"
+							],
+							"http_sched_mode": "REQUEST",
+							"tcp_sched_stream_cache": {
+								"state": "DISABLE",
+								"cache": 4096,
+								"terminator": ""
+							},
+							"https_redirect": {
+								"state": "DISABLE",
+								"http_port": 80
+							},
+							"snat": "AUTO-MAP",
+							"snat_pool": "example_string",
+							"source_port": "PRESERVE",
+							"session_sync": "GLOBAL",
+							"dnat": "ENABLE",
+							"dport_trans": "ENABLE",
+							"dnat_translated_address": "23.3.3.3",
+							"dnat_translated_port": 0,
+							"http_profile": "NONE",
+							"sip_profile": "NONE",
+							"http2_profile_client": "NONE",
+							"http2_profile_server": "NONE",
+							"dns_profile": "Default_DNS",
+							"udp_profile": "NONE",
+							"http_defence": "NONE",
+							"tcp_profile": "NONE",
+							"qos_profile": "NONE",
+							"connection_limits": [
+								{
+									"source_address": {
+										"type": "IP-ADDRESS",
+										"address": "10.1.1.1/24"
+									},
+									"connection_limit": 1000000
+								}
+							],
+							"connection_limits_type": "SINGLE-SOURCE-IP",
+							"source_address_match_limit": {
+								"type": "ALL",
+								"address": "192.168.1.1/24",
+								"ref_custom_address_group": "{custom_address_group}"
+							},
+							"ipros": [
+								"example_string"
+							],
+							"icon": "DEFAULT",
+							"autolasthop": "GLOBAL",
+							"notify_status_to_vip": "ENABLE",
+							"force_keep_alive": "DISABLE",
+							"location_rewrite": "ENABLE",
+							"associated_application_group": "NONE"
+						}
 					}
 				}
 			}
@@ -458,7 +1189,8 @@ module.exports ={
 					"enum": [
 						"AUTO-MAP",
 						"SNAT-POOL",
-						"DISABLE"
+						"DISABLE",
+						"SNAT-VIP"
 					],
 					"description": "用来指定DNS服务是否做SNAT地址转换, 默认auto-map;disable表示禁用;auto-map表示使用自动SNAT,系统会自动选择源地址;snat-pool: 表示使用指定的地址作为转换后的源地址;snat-vip: 表示使用访问的虚拟服务ip作为转换后的源地址。",
 					"default": "AUTO-MAP"
@@ -563,6 +1295,15 @@ module.exports ={
 						"NONE"
 					],
 					"example": "Default_DNS"
+				},
+				"udp_profile": {
+					"type": "string",
+					"description": "UDP策略",
+					"optionalEnum": [
+						"NONE"
+					],
+					"default": "NONE",
+					"example": "Default_UDP"
 				},
 				"http_defence": {
 					"description": "用来指定基于http和ssl-offload-https类型服务的七层防护策略,默认为none,表示不启用。",
@@ -671,6 +1412,61 @@ module.exports ={
 					"default": "SINGLE-SOURCE-IP",
 					"example": "SINGLE-SOURCE-IP"
 				},
+				"source_address_match_limit": {
+					"type": "object",
+					"description": "源IP地址匹配限制",
+					"required": [
+						"type"
+					],
+					"properties": {
+						"type": {
+							"type": "string",
+							"description": "地址类型，合法输入为ALL、IP-ADDRESS和CUSTOM-ADDRESS-GROUP",
+							"enum": [
+								"ALL",
+								"IP-ADDRESS",
+								"CUSTOM-ADDRESS-GROUP"
+							],
+							"title": "地址类型",
+							"default": "ALL",
+							"example": "ALL"
+						},
+						"address": {
+							"type": "string",
+							"description": "IP地址，必须为单个IP地址、IP子网和IP范围,且IP类型需要和虚拟服务一致",
+							"title": "IP地址",
+							"ignore_rules": [
+								"man_att.format_pattern"
+							],
+							"anyOf": [
+								{
+									"format": "ipaddr_withmask"
+								},
+								{
+									"format": "ipv4"
+								},
+								{
+									"format": "ipv6"
+								},
+								{
+									"format": "ipv4_range_strict"
+								},
+								{
+									"format": "ipv6_range_strict"
+								}
+							],
+							"example": "192.168.1.1/24"
+						},
+						"ref_custom_address_group": {
+							"type": "string",
+							"description": "引用用户地址集",
+							"title": "引用的用户地址集",
+							"referSchema": "/rc/custom-address-group",
+							"format": "name",
+							"example": "{custom_address_group}"
+						}
+					}
+				},
 				"ipros": {
 					"type": "array",
 					"description": "DNS服务引用的ipro",
@@ -678,7 +1474,7 @@ module.exports ={
 						"type": "string",
 						"description": "用来指定DNS服务的脚本分发策略;该参数为一个对象列表,可以通过add或者delete指令添加iPro脚本。"
 					},
-					"maxItems": 5
+					"maxItems": 50
 				},
 				"icon": {
 					"description": "Web控制台图标定义",
@@ -750,8 +1546,8 @@ module.exports ={
 						"ENABLE",
 						"DISABLE"
 					],
-					"default": "ENABLE",
-					"example": "ENABLE"
+					"default": "DISABLE",
+					"example": "DISABLE"
 				},
 				"location_rewrite": {
 					"description": "Location重写",
@@ -762,6 +1558,16 @@ module.exports ={
 					],
 					"default": "ENABLE",
 					"example": "ENABLE"
+				},
+				"associated_application_group": {
+					"type": "string",
+					"description": "关联应用组的名称，必须为已存在的应用组名称，或者为NONE",
+					"optionalEnum": [
+						"NONE"
+					],
+					"default": "NONE",
+					"format": "bypass",
+					"example": "Default"
 				}
 			}
 		},

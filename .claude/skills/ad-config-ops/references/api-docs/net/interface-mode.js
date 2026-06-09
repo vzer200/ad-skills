@@ -51,6 +51,25 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_interface_mode_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get interface-mode",
+						"description": "查看网口配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/interface-mode"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/interface-mode 响应",
+						"description": "返回GET /api/ad/v3/net/interface-mode的响应数据",
+						"value": {
+							"device": "NET1",
+							"mode": "AUTO",
+							"lldp_status": "LLDP-STATUS-DISABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +88,29 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_interface_mode_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace interface-mode",
+						"description": "替换网口配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/interface-mode",
+							"body": {
+								"mode": "AUTO",
+								"lldp_status": "LLDP-STATUS-DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/interface-mode 响应",
+						"description": "返回PUT /api/ad/v3/net/interface-mode的响应数据",
+						"value": {
+							"device": "NET1",
+							"mode": "AUTO",
+							"lldp_status": "LLDP-STATUS-DISABLE"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +128,29 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_interface_mode_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify interface-mode",
+						"description": "修改网口配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/interface-mode",
+							"body": {
+								"mode": "AUTO",
+								"lldp_status": "LLDP-STATUS-DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/interface-mode 响应",
+						"description": "返回PATCH /api/ad/v3/net/interface-mode的响应数据",
+						"value": {
+							"device": "NET1",
+							"mode": "AUTO",
+							"lldp_status": "LLDP-STATUS-DISABLE"
+						}
 					}
 				}
 			},

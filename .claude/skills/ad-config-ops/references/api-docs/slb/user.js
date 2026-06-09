@@ -62,6 +62,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_user_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all user",
+						"description": "查看当前已有的访问控制用户配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/user/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/user/ 响应",
+						"description": "返回GET /api/ad/v3/slb/user/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "home_page_acp",
+									"description": "example_string",
+									"state": "ENABLE",
+									"password": "example_string",
+									"encrypted_password": "example_string",
+									"pk_password": "example_string"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +112,32 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_user_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new user",
+						"description": "新建一个访问控制用户配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/user/",
+							"body": {
+								"name": "AI_home_page_acp_A",
+								"state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/user/ 响应",
+						"description": "返回POST /api/ad/v3/slb/user/的响应数据",
+						"value": {
+							"name": "AI_home_page_acp_A",
+							"description": "example_string",
+							"state": "ENABLE",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"pk_password": "example_string"
+						}
 					}
 				}
 			},
@@ -128,6 +187,28 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_user_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific user",
+						"description": "查看指定的访问控制用户配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/user/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/user/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/user/{name}的响应数据",
+						"value": {
+							"name": "home_page_acp",
+							"description": "example_string",
+							"state": "ENABLE",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"pk_password": "example_string"
+						}
+					}
 				}
 			},
 			"post": {
@@ -147,6 +228,32 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_user_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new user",
+						"description": "新建指定的访问控制用户配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/user/{name}",
+							"body": {
+								"name": "AI_home_page_acp_B",
+								"state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/user/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/user/{name}的响应数据",
+						"value": {
+							"name": "AI_home_page_acp_B",
+							"description": "example_string",
+							"state": "ENABLE",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"pk_password": "example_string"
+						}
+					}
 				}
 			},
 			"put": {
@@ -164,6 +271,32 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_user_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific user",
+						"description": "修改指定的访问控制用户配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/user/{name}",
+							"body": {
+								"name": "home_page_acp",
+								"state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/user/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/user/{name}的响应数据",
+						"value": {
+							"name": "home_page_acp",
+							"description": "example_string",
+							"state": "ENABLE",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"pk_password": "example_string"
+						}
 					}
 				}
 			},
@@ -183,6 +316,32 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_user_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific user",
+						"description": "修改指定的访问控制用户配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/user/{name}",
+							"body": {
+								"name": "home_page_acp",
+								"state": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/user/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/user/{name}的响应数据",
+						"value": {
+							"name": "home_page_acp",
+							"description": "example_string",
+							"state": "ENABLE",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"pk_password": "example_string"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -195,6 +354,28 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_user_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific user",
+						"description": "删除指定的访问控制用户配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/user/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/user/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/user/{name}的响应数据",
+						"value": {
+							"name": "home_page_acp",
+							"description": "example_string",
+							"state": "ENABLE",
+							"password": "example_string",
+							"encrypted_password": "example_string",
+							"pk_password": "example_string"
+						}
 					}
 				}
 			}

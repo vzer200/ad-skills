@@ -59,6 +59,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_domain_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all domain statistics",
+						"description": "GET /api/ad/v3/stat/dns/domain/",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/domain/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/domain/ 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/domain/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"domain": "www.abc.com",
+									"query_rate": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -88,6 +117,24 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_domain_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific domain statistics",
+						"description": "查询指定域名的统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/domain/{domain}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/domain/{domain} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/domain/{domain}的响应数据",
+						"value": {
+							"domain": "www.abc.com",
+							"query_rate": null
+						}
 					}
 				}
 			}
@@ -121,6 +168,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific domain query statistics",
+						"description": "查询指定域名请求次数信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/domain/{domain}/query"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/domain/{domain}/query 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/domain/{domain}/query的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
 					}
 				}
 			}
@@ -160,6 +234,35 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_domain_ldns_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific domain ldns statistics",
+						"description": "查询域名ldns信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/domain/{domain}/ldns/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/domain/{domain}/ldns/ 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/domain/{domain}/ldns/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"address": "3.1.2.4",
+									"query": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -192,6 +295,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get each domain query statistics",
+						"description": "查询域名统计趋势",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/domain-each/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/domain-each/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/domain-each/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
 					}
 				}
 			}
@@ -226,6 +356,38 @@ module.exports ={
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend_multiple"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get each domain query statistics",
+						"description": "查询domain-each统计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/domain-each/query"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/domain-each/query 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/domain-each/query的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"series": [
+								{
+									"name": "example_string",
+									"values": [
+										0
+									],
+									"additional_data": [
+										"example_item"
+									]
+								}
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
+					}
 				}
 			}
 		},
@@ -258,6 +420,25 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_dns_domain_summary"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get summary domain statistics",
+						"description": "查询domain总计信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/dns/domain-summary"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/dns/domain-summary 响应",
+						"description": "返回GET /api/ad/v3/stat/dns/domain-summary的响应数据",
+						"value": {
+							"active": null,
+							"total": null,
+							"query_rate": null
+						}
 					}
 				}
 			}

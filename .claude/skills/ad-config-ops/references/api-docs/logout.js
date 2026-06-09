@@ -37,7 +37,24 @@ module.exports ={
 				],
 				"summary": "logout",
 				"description": "控制台登出",
-				"operationId": "logout"
+				"operationId": "logout",
+				"x-examples": {
+					"request": {
+						"summary": "logout",
+						"description": "控制台登出",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/logout"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/logout 响应",
+						"description": "返回POST /api/ad/v3/logout的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			}
 		}
 	}

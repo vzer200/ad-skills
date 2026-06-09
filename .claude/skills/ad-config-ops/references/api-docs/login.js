@@ -43,6 +43,26 @@ module.exports ={
 							}
 						}
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "login",
+						"description": "控制台登录",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/login",
+							"body": {
+								"username": "admin"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/login 响应",
+						"description": "返回POST /api/ad/v3/login的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
 				}
 			}
 		}

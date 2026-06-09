@@ -62,6 +62,44 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_local_device_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all local-device",
+						"description": "查看DNS本地服务设备配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/dns/local-device/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/dns/local-device/ 响应",
+						"description": "返回GET /api/ad/v3/dns/local-device/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "localhost",
+									"description": "example_string",
+									"is_default": true,
+									"state": "ONLINE",
+									"addresses": [
+										"200.200.1.1"
+									],
+									"port": 161,
+									"password": "example_string",
+									"pk_password": "example_string",
+									"encrypted_password": "example_string"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +117,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_local_device_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new local-device",
+						"description": "创建DNS本地服务设备",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/dns/local-device/",
+							"body": {
+								"name": "AI_localhost_A",
+								"is_default": false,
+								"state": "ONLINE",
+								"port": 161
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/dns/local-device/ 响应",
+						"description": "返回POST /api/ad/v3/dns/local-device/的响应数据",
+						"value": {
+							"name": "AI_localhost_A",
+							"description": "example_string",
+							"is_default": true,
+							"state": "ONLINE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 161,
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string"
+						}
 					}
 				}
 			},
@@ -98,6 +169,50 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_local_device_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify local-device",
+						"description": "修改DNS本地服务设备",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/dns/local-device/",
+							"body": {
+								"name": "localhost",
+								"is_default": false,
+								"state": "ONLINE",
+								"port": 161
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/dns/local-device/ 响应",
+						"description": "返回PATCH /api/ad/v3/dns/local-device/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "localhost",
+									"description": "example_string",
+									"is_default": true,
+									"state": "ONLINE",
+									"addresses": [
+										"200.200.1.1"
+									],
+									"port": 161,
+									"password": "example_string",
+									"pk_password": "example_string",
+									"encrypted_password": "example_string"
+								}
+							]
+						}
 					}
 				}
 			}
@@ -129,6 +244,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_local_device_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "查看指定已有的本地服务设备",
+						"description": "查看指定已有的本地服务设备",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/dns/local-device/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/dns/local-device/{name} 响应",
+						"description": "返回GET /api/ad/v3/dns/local-device/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"is_default": true,
+							"state": "ONLINE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 161,
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string"
+						}
+					}
 				}
 			},
 			"post": {
@@ -148,6 +290,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_local_device_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new local-device",
+						"description": "创建DNS本地服务设备",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/dns/local-device/{name}",
+							"body": {
+								"name": "AI_localhost_B",
+								"is_default": false,
+								"state": "ONLINE",
+								"port": 161
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/dns/local-device/{name} 响应",
+						"description": "返回POST /api/ad/v3/dns/local-device/{name}的响应数据",
+						"value": {
+							"name": "AI_localhost_B",
+							"description": "example_string",
+							"is_default": true,
+							"state": "ONLINE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 161,
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string"
+						}
+					}
 				}
 			},
 			"put": {
@@ -165,6 +340,39 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_local_device_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific local-device",
+						"description": "修改DNS本地服务设备",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/dns/local-device/{name}",
+							"body": {
+								"name": "localhost",
+								"is_default": false,
+								"state": "ONLINE",
+								"port": 161
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/dns/local-device/{name} 响应",
+						"description": "返回PUT /api/ad/v3/dns/local-device/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"is_default": true,
+							"state": "ONLINE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 161,
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string"
+						}
 					}
 				}
 			},
@@ -184,6 +392,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_local_device_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific local-device",
+						"description": "增量修改指定已有的DNS本地服务设备",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/dns/local-device/{name}",
+							"body": {
+								"name": "localhost",
+								"is_default": false,
+								"state": "ONLINE",
+								"port": 161
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/dns/local-device/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/dns/local-device/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"is_default": true,
+							"state": "ONLINE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 161,
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -196,6 +437,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_local_device_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific local-device",
+						"description": "删除指定已有的本地DNS设备",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/dns/local-device/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/dns/local-device/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/dns/local-device/{name}的响应数据",
+						"value": {
+							"name": "localhost",
+							"description": "example_string",
+							"is_default": true,
+							"state": "ONLINE",
+							"addresses": [
+								"200.200.1.1"
+							],
+							"port": 161,
+							"password": "example_string",
+							"pk_password": "example_string",
+							"encrypted_password": "example_string"
+						}
 					}
 				}
 			},
@@ -316,6 +584,11 @@ module.exports ={
 					"description": "DNS本地服务设备描述信息",
 					"type": "string"
 				},
+				"is_default": {
+					"description": "默认设备",
+					"type": "boolean",
+					"default": false
+				},
 				"state": {
 					"description": "DNS本地服务设备状态，只读属性，在线或离线",
 					"type": "string",
@@ -349,7 +622,8 @@ module.exports ={
 				"password": {
 					"description": "密码，长度限制为8~64个字符或为空",
 					"type": "string",
-					"writeOnly": true
+					"writeOnly": true,
+					"maxLength": 64
 				},
 				"pk_password": {
 					"description": "加密密码",

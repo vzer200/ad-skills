@@ -62,6 +62,51 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_stat_security_node_detail_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all security-node statistics",
+						"description": "查看指定安全资源池的安全设备状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/security-node"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/security-node 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/security-node的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "",
+									"description": "example_string",
+									"state": "ENABLE",
+									"health": "NORMAL",
+									"monitor_err": [
+										{
+											"name": "ping",
+											"state": "NORMAL",
+											"rs_mon_fault_type": "NETWORK_UNAVAILABLE"
+										}
+									],
+									"address": "192.168.1.101",
+									"connection": null,
+									"connection_established": null,
+									"connection_rate": null,
+									"upstream_throughput": null,
+									"downstream_throughput": null,
+									"general_throughput": null
+								}
+							]
+						}
+					}
 				}
 			}
 		},
@@ -85,6 +130,40 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_stat_security_node_detail"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific security-node statistics",
+						"description": "查看指定安全资源池内的指定安全设备状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/security-node/{security_node_name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/security-node/{security_node_name} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/security-node/{security_node_name}的响应数据",
+						"value": {
+							"name": "",
+							"description": "example_string",
+							"state": "ENABLE",
+							"health": "NORMAL",
+							"monitor_err": [
+								{
+									"name": "ping",
+									"state": "NORMAL",
+									"rs_mon_fault_type": "NETWORK_UNAVAILABLE"
+								}
+							],
+							"address": "192.168.1.101",
+							"connection": null,
+							"connection_established": null,
+							"connection_rate": null,
+							"upstream_throughput": null,
+							"downstream_throughput": null,
+							"general_throughput": null
+						}
 					}
 				}
 			}
@@ -115,6 +194,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_stat_trend"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific security-pool security_node statistics",
+						"description": "查看指定安全资源池内的指定安全设备的条目状态信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/stat/slb/security-node/{security_node_name}/{item}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/stat/slb/security-node/{security_node_name}/{item} 响应",
+						"description": "返回GET /api/ad/v3/stat/slb/security-node/{security_node_name}/{item}的响应数据",
+						"value": {
+							"model": "TREND-LAST-HOUR",
+							"unit": "BIT-PER-SECOND",
+							"timestamp": 0,
+							"values": [
+								0
+							],
+							"additional_data": [
+								null
+							],
+							"start_time": 0,
+							"step_time": 0
+						}
 					}
 				}
 			}

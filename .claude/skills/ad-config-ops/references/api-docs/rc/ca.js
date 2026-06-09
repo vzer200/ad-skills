@@ -62,6 +62,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ca_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all ca",
+						"description": "获取ca证书配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ca/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ca/ 响应",
+						"description": "返回GET /api/ad/v3/rc/ca/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.abc.com_cert",
+									"description": "example_string",
+									"certificate_chains": [
+										"example_item"
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +111,44 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ca_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ca",
+						"description": "新建ca证书配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/ca/",
+							"body": {
+								"name": "AI_www.abc.com_cert_A",
+								"certificate_chains": [
+									"example_item"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/ca/ 响应",
+						"description": "返回POST /api/ad/v3/rc/ca/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.abc.com_cert",
+									"description": "example_string",
+									"certificate_chains": [
+										"example_item"
+									]
+								}
+							]
+						}
 					}
 				}
 			},
@@ -98,6 +168,44 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ca_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify ca",
+						"description": "修改ca证书配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/ca/",
+							"body": {
+								"name": "www.abc.com_cert",
+								"certificate_chains": [
+									"example_item"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/ca/ 响应",
+						"description": "返回PATCH /api/ad/v3/rc/ca/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "www.abc.com_cert",
+									"description": "example_string",
+									"certificate_chains": [
+										"example_item"
+									]
+								}
+							]
+						}
 					}
 				}
 			},
@@ -147,6 +255,27 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ca_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific ca",
+						"description": "获取ca证书配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ca/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ca/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/ca/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"certificate_chains": [
+								"example_item"
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -166,6 +295,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ca_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new ca",
+						"description": "新建ca证书配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/ca/{name}",
+							"body": {
+								"name": "AI_www.abc.com_cert_B",
+								"certificate_chains": [
+									"example_item"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/ca/{name} 响应",
+						"description": "返回POST /api/ad/v3/rc/ca/{name}的响应数据",
+						"value": {
+							"name": "AI_www.abc.com_cert_B",
+							"description": "example_string",
+							"certificate_chains": [
+								"example_item"
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -183,6 +339,33 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ca_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific ca",
+						"description": "修改ca证书配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/rc/ca/{name}",
+							"body": {
+								"name": "www.abc.com_cert",
+								"certificate_chains": [
+									"example_item"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/rc/ca/{name} 响应",
+						"description": "返回PUT /api/ad/v3/rc/ca/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"certificate_chains": [
+								"example_item"
+							]
+						}
 					}
 				}
 			},
@@ -202,6 +385,33 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_ca_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific ca",
+						"description": "修改ca证书配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/ca/{name}",
+							"body": {
+								"name": "www.abc.com_cert",
+								"certificate_chains": [
+									"example_item"
+								]
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/ca/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/rc/ca/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"certificate_chains": [
+								"example_item"
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -214,6 +424,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_ca_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific ca",
+						"description": "删除ca证书配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/rc/ca/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/rc/ca/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/rc/ca/{name}的响应数据",
+						"value": {
+							"name": "www.abc.com_cert",
+							"description": "example_string",
+							"certificate_chains": [
+								"example_item"
+							]
+						}
 					}
 				}
 			}
@@ -244,6 +475,27 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "/api/{common}.yaml#/responses/operation_cgi_file_resource_response"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "export specific ca certificate file",
+						"description": "导出CA证书",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/ca/{name}/certificate"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/ca/{name}/certificate 响应",
+						"description": "返回GET /api/ad/v3/rc/ca/{name}/certificate的响应数据",
+						"value": {
+							"d": "1A2B3C4D5E6F",
+							"file_name": "config_snat_20170807165401.csv",
+							"file_type": "CSV",
+							"expired": 0,
+							"flag": "BAD_PARAM"
+						}
 					}
 				}
 			}

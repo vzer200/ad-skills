@@ -62,6 +62,46 @@ module.exports ={
 					"202": {
 						"$ref": "/api/{common}.yaml#/responses/operation_config_async_operation"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "url-analysis",
+						"description": "执行虚拟服务URL分析",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/slb/url-analysis",
+							"body": {
+								"virtual_service": "vs_http_portal",
+								"pool": "pool_http_portal",
+								"source_address": "192.168.1.103",
+								"timeout": 60,
+								"count": 50
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/slb/url-analysis 响应",
+						"description": "返回POST /api/ad/v3/debug/slb/url-analysis的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"id": 1,
+									"url": "/mail/index.html",
+									"access_times": 108,
+									"timeout_times": 8912001,
+									"response": "",
+									"detail": "example_string"
+								}
+							]
+						}
+					}
 				}
 			}
 		}

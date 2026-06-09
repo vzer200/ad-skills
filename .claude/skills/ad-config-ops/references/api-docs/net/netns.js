@@ -68,6 +68,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_netns_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all netns",
+						"description": "获取netns配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/netns/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/netns/ 响应",
+						"description": "返回GET /api/ad/v3/net/netns/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "mynetns",
+									"description": "this netns belongs to someone",
+									"state": "ENABLE",
+									"appgroup": "myappgroup",
+									"project": "myproject",
+									"new_conns_limit": 80,
+									"cur_conns_limit": 80,
+									"throughput_limit": 80
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -85,6 +120,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_netns_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new netns",
+						"description": "新建netns配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/netns/",
+							"body": {
+								"name": "AI_mynetns_A",
+								"description": "this netns belongs to someone",
+								"state": "ENABLE",
+								"project": "myproject"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/netns/ 响应",
+						"description": "返回POST /api/ad/v3/net/netns/的响应数据",
+						"value": {
+							"name": "AI_mynetns_A",
+							"description": "this netns belongs to someone",
+							"state": "ENABLE",
+							"appgroup": "myappgroup",
+							"project": "myproject",
+							"new_conns_limit": 80,
+							"cur_conns_limit": 80,
+							"throughput_limit": 80
+						}
 					}
 				}
 			},
@@ -104,6 +169,47 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_netns_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify netns",
+						"description": "修改netns配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/netns/",
+							"body": {
+								"name": "mynetns",
+								"description": "this netns belongs to someone",
+								"state": "ENABLE",
+								"project": "myproject"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/netns/ 响应",
+						"description": "返回PATCH /api/ad/v3/net/netns/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "mynetns",
+									"description": "this netns belongs to someone",
+									"state": "ENABLE",
+									"appgroup": "myappgroup",
+									"project": "myproject",
+									"new_conns_limit": 80,
+									"cur_conns_limit": 80,
+									"throughput_limit": 80
+								}
+							]
+						}
 					}
 				}
 			}
@@ -140,6 +246,30 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_netns_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific netns",
+						"description": "获取netns配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/net/netns/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/net/netns/{name} 响应",
+						"description": "返回GET /api/ad/v3/net/netns/{name}的响应数据",
+						"value": {
+							"name": "mynetns",
+							"description": "this netns belongs to someone",
+							"state": "ENABLE",
+							"appgroup": "myappgroup",
+							"project": "myproject",
+							"new_conns_limit": 80,
+							"cur_conns_limit": 80,
+							"throughput_limit": 80
+						}
+					}
 				}
 			},
 			"post": {
@@ -159,6 +289,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_netns_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new netns",
+						"description": "新建netns配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/net/netns/{name}",
+							"body": {
+								"name": "AI_mynetns_B",
+								"description": "this netns belongs to someone",
+								"state": "ENABLE",
+								"project": "myproject"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/net/netns/{name} 响应",
+						"description": "返回POST /api/ad/v3/net/netns/{name}的响应数据",
+						"value": {
+							"name": "AI_mynetns_B",
+							"description": "this netns belongs to someone",
+							"state": "ENABLE",
+							"appgroup": "myappgroup",
+							"project": "myproject",
+							"new_conns_limit": 80,
+							"cur_conns_limit": 80,
+							"throughput_limit": 80
+						}
+					}
 				}
 			},
 			"put": {
@@ -176,6 +336,36 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_netns_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific netns",
+						"description": "修改netns配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/net/netns/{name}",
+							"body": {
+								"name": "mynetns",
+								"description": "this netns belongs to someone",
+								"state": "ENABLE",
+								"project": "myproject"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/net/netns/{name} 响应",
+						"description": "返回PUT /api/ad/v3/net/netns/{name}的响应数据",
+						"value": {
+							"name": "mynetns",
+							"description": "this netns belongs to someone",
+							"state": "ENABLE",
+							"appgroup": "myappgroup",
+							"project": "myproject",
+							"new_conns_limit": 80,
+							"cur_conns_limit": 80,
+							"throughput_limit": 80
+						}
 					}
 				}
 			},
@@ -195,6 +385,36 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_netns_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific netns",
+						"description": "修改netns配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/net/netns/{name}",
+							"body": {
+								"name": "mynetns",
+								"description": "this netns belongs to someone",
+								"state": "ENABLE",
+								"project": "myproject"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/net/netns/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/net/netns/{name}的响应数据",
+						"value": {
+							"name": "mynetns",
+							"description": "this netns belongs to someone",
+							"state": "ENABLE",
+							"appgroup": "myappgroup",
+							"project": "myproject",
+							"new_conns_limit": 80,
+							"cur_conns_limit": 80,
+							"throughput_limit": 80
+						}
+					}
 				}
 			},
 			"delete": {
@@ -212,6 +432,30 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_netns_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific netns",
+						"description": "删除netns配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/net/netns/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/net/netns/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/net/netns/{name}的响应数据",
+						"value": {
+							"name": "mynetns",
+							"description": "this netns belongs to someone",
+							"state": "ENABLE",
+							"appgroup": "myappgroup",
+							"project": "myproject",
+							"new_conns_limit": 80,
+							"cur_conns_limit": 80,
+							"throughput_limit": 80
+						}
 					}
 				}
 			}

@@ -65,6 +65,60 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_radius_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-radius",
+						"description": "查看当前已有的监视器（RADIUS）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/radius/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/radius/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/radius/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "radius",
+									"description": "example_string",
+									"type": "RADIUS",
+									"timeout": 31,
+									"interval": 10,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"host": "*",
+									"port": 0,
+									"debug_mode": "DISABLE",
+									"gateway_detect": "DISABLE",
+									"radius_type": "ACCESS-REQUEST",
+									"shared_secret": "",
+									"encrypted_shared_secret": "A1B2C3D4",
+									"pk_shared_secret": "A1B2C3D4",
+									"username": "xx_123456",
+									"password": "",
+									"pk_password": "A1B2C3D4",
+									"encrypted_password": "A1B2C3D4",
+									"radius_authenticate_method": "PAP",
+									"radius_attributes": [
+										{
+											"id": 255,
+											"type": "TEXT",
+											"value": ""
+										}
+									]
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +136,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_radius_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-radius",
+						"description": "新建一个监视器（RADIUS）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/radius/",
+							"body": {
+								"name": "AI_radius_radius_A",
+								"type": "RADIUS",
+								"timeout": 31,
+								"interval": 10,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"radius_type": "ACCESS-REQUEST",
+								"username": "xx_123456",
+								"radius_authenticate_method": "PAP",
+								"shared_secret": "radius_secret_123",
+								"password": "Passw0rd!"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/radius/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/radius/的响应数据",
+						"value": {
+							"name": "AI_radius_radius_A",
+							"description": "example_string",
+							"type": "RADIUS",
+							"timeout": 31,
+							"interval": 10,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"radius_type": "ACCESS-REQUEST",
+							"shared_secret": "",
+							"encrypted_shared_secret": "A1B2C3D4",
+							"pk_shared_secret": "A1B2C3D4",
+							"username": "xx_123456",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"radius_authenticate_method": "PAP",
+							"radius_attributes": [
+								{
+									"id": 255,
+									"type": "TEXT",
+									"value": ""
+								}
+							]
+						}
 					}
 				}
 			},
@@ -130,6 +244,49 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_radius_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-radius",
+						"description": "查看指定的监视器（RADIUS）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/radius/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/radius/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/radius/{name}的响应数据",
+						"value": {
+							"name": "radius",
+							"description": "example_string",
+							"type": "RADIUS",
+							"timeout": 31,
+							"interval": 10,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"radius_type": "ACCESS-REQUEST",
+							"shared_secret": "",
+							"encrypted_shared_secret": "A1B2C3D4",
+							"pk_shared_secret": "A1B2C3D4",
+							"username": "xx_123456",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"radius_authenticate_method": "PAP",
+							"radius_attributes": [
+								{
+									"id": 255,
+									"type": "TEXT",
+									"value": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +306,66 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_radius_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-radius",
+						"description": "新建指定的监视器（RADIUS）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/radius/{name}",
+							"body": {
+								"name": "AI_radius_radius_B",
+								"type": "RADIUS",
+								"timeout": 31,
+								"interval": 10,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"radius_type": "ACCESS-REQUEST",
+								"username": "xx_123456",
+								"radius_authenticate_method": "PAP",
+								"shared_secret": "radius_secret_123",
+								"password": "Passw0rd!"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/radius/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/radius/{name}的响应数据",
+						"value": {
+							"name": "AI_radius_radius_B",
+							"description": "example_string",
+							"type": "RADIUS",
+							"timeout": 31,
+							"interval": 10,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"radius_type": "ACCESS-REQUEST",
+							"shared_secret": "",
+							"encrypted_shared_secret": "A1B2C3D4",
+							"pk_shared_secret": "A1B2C3D4",
+							"username": "xx_123456",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"radius_authenticate_method": "PAP",
+							"radius_attributes": [
+								{
+									"id": 255,
+									"type": "TEXT",
+									"value": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +383,66 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_radius_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-radius",
+						"description": "修改指定的监视器（RADIUS）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/radius/{name}",
+							"body": {
+								"name": "radius",
+								"type": "RADIUS",
+								"timeout": 31,
+								"interval": 10,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"radius_type": "ACCESS-REQUEST",
+								"username": "xx_123456",
+								"radius_authenticate_method": "PAP",
+								"shared_secret": "radius_secret_123",
+								"password": "Passw0rd!"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/radius/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/radius/{name}的响应数据",
+						"value": {
+							"name": "radius",
+							"description": "example_string",
+							"type": "RADIUS",
+							"timeout": 31,
+							"interval": 10,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"radius_type": "ACCESS-REQUEST",
+							"shared_secret": "",
+							"encrypted_shared_secret": "A1B2C3D4",
+							"pk_shared_secret": "A1B2C3D4",
+							"username": "xx_123456",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"radius_authenticate_method": "PAP",
+							"radius_attributes": [
+								{
+									"id": 255,
+									"type": "TEXT",
+									"value": ""
+								}
+							]
+						}
 					}
 				}
 			},
@@ -185,6 +462,66 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_radius_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-radius",
+						"description": "修改指定的监视器（RADIUS）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/radius/{name}",
+							"body": {
+								"name": "radius",
+								"type": "RADIUS",
+								"timeout": 31,
+								"interval": 10,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"radius_type": "ACCESS-REQUEST",
+								"username": "xx_123456",
+								"radius_authenticate_method": "PAP",
+								"shared_secret": "radius_secret_123",
+								"password": "Passw0rd!"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/radius/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/radius/{name}的响应数据",
+						"value": {
+							"name": "radius",
+							"description": "example_string",
+							"type": "RADIUS",
+							"timeout": 31,
+							"interval": 10,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"radius_type": "ACCESS-REQUEST",
+							"shared_secret": "",
+							"encrypted_shared_secret": "A1B2C3D4",
+							"pk_shared_secret": "A1B2C3D4",
+							"username": "xx_123456",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"radius_authenticate_method": "PAP",
+							"radius_attributes": [
+								{
+									"id": 255,
+									"type": "TEXT",
+									"value": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +534,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_radius_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-radius",
+						"description": "删除指定的监视器（RADIUS）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/radius/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/radius/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/radius/{name}的响应数据",
+						"value": {
+							"name": "radius",
+							"description": "example_string",
+							"type": "RADIUS",
+							"timeout": 31,
+							"interval": 10,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"radius_type": "ACCESS-REQUEST",
+							"shared_secret": "",
+							"encrypted_shared_secret": "A1B2C3D4",
+							"pk_shared_secret": "A1B2C3D4",
+							"username": "xx_123456",
+							"password": "",
+							"pk_password": "A1B2C3D4",
+							"encrypted_password": "A1B2C3D4",
+							"radius_authenticate_method": "PAP",
+							"radius_attributes": [
+								{
+									"id": 255,
+									"type": "TEXT",
+									"value": ""
+								}
+							]
+						}
 					}
 				}
 			}

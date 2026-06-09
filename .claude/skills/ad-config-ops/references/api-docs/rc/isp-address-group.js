@@ -62,6 +62,45 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_isp_address_group_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all isp-address-group",
+						"description": "获取ISP地址集配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/isp-address-group/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/isp-address-group/ 响应",
+						"description": "返回GET /api/ad/v3/rc/isp-address-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "China Telecom",
+									"description": "example_string",
+									"addresses": [
+										"192.168.1.100-192.168.1.200"
+									],
+									"addresses_ipv6": [
+										"2001::100-2001::1000"
+									],
+									"whois": [
+										"MAINT-CHINANET"
+									],
+									"default": "NON-DEFAULT"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -79,6 +118,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_isp_address_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new isp-address-group",
+						"description": "新建ISP地址集配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/isp-address-group/",
+							"body": {
+								"name": "AI_China Telecom_A",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/isp-address-group/ 响应",
+						"description": "返回POST /api/ad/v3/rc/isp-address-group/的响应数据",
+						"value": {
+							"name": "AI_China Telecom_A",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							],
+							"whois": [
+								"MAINT-CHINANET"
+							],
+							"default": "NON-DEFAULT"
+						}
 					}
 				}
 			},
@@ -98,6 +169,49 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_isp_address_group_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify isp-address-group",
+						"description": "修改ISP地址集配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/isp-address-group/",
+							"body": {
+								"name": "China Telecom",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/isp-address-group/ 响应",
+						"description": "返回PATCH /api/ad/v3/rc/isp-address-group/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "China Telecom",
+									"description": "example_string",
+									"addresses": [
+										"192.168.1.100-192.168.1.200"
+									],
+									"addresses_ipv6": [
+										"2001::100-2001::1000"
+									],
+									"whois": [
+										"MAINT-CHINANET"
+									],
+									"default": "NON-DEFAULT"
+								}
+							]
+						}
 					}
 				}
 			},
@@ -147,6 +261,34 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_isp_address_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific isp-address-group",
+						"description": "获取ISP地址集配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/rc/isp-address-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/rc/isp-address-group/{name} 响应",
+						"description": "返回GET /api/ad/v3/rc/isp-address-group/{name}的响应数据",
+						"value": {
+							"name": "China Telecom",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							],
+							"whois": [
+								"MAINT-CHINANET"
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"post": {
@@ -166,6 +308,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_isp_address_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new isp-address-group",
+						"description": "新建ISP地址集配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/rc/isp-address-group/{name}",
+							"body": {
+								"name": "AI_China Telecom_B",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/rc/isp-address-group/{name} 响应",
+						"description": "返回POST /api/ad/v3/rc/isp-address-group/{name}的响应数据",
+						"value": {
+							"name": "AI_China Telecom_B",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							],
+							"whois": [
+								"MAINT-CHINANET"
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"put": {
@@ -183,6 +357,38 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_isp_address_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific isp-address-group",
+						"description": "修改ISP地址集配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/rc/isp-address-group/{name}",
+							"body": {
+								"name": "China Telecom",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/rc/isp-address-group/{name} 响应",
+						"description": "返回PUT /api/ad/v3/rc/isp-address-group/{name}的响应数据",
+						"value": {
+							"name": "China Telecom",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							],
+							"whois": [
+								"MAINT-CHINANET"
+							],
+							"default": "NON-DEFAULT"
+						}
 					}
 				}
 			},
@@ -202,6 +408,38 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_isp_address_group_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific isp-address-group",
+						"description": "修改ISP地址集配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/rc/isp-address-group/{name}",
+							"body": {
+								"name": "China Telecom",
+								"default": "NON-DEFAULT"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/rc/isp-address-group/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/rc/isp-address-group/{name}的响应数据",
+						"value": {
+							"name": "China Telecom",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							],
+							"whois": [
+								"MAINT-CHINANET"
+							],
+							"default": "NON-DEFAULT"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -214,6 +452,34 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_isp_address_group_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific isp-address-group",
+						"description": "删除ISP地址集配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/rc/isp-address-group/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/rc/isp-address-group/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/rc/isp-address-group/{name}的响应数据",
+						"value": {
+							"name": "China Telecom",
+							"description": "example_string",
+							"addresses": [
+								"192.168.1.100-192.168.1.200"
+							],
+							"addresses_ipv6": [
+								"2001::100-2001::1000"
+							],
+							"whois": [
+								"MAINT-CHINANET"
+							],
+							"default": "NON-DEFAULT"
+						}
 					}
 				}
 			}

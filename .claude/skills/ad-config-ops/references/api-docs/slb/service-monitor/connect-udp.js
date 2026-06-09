@@ -65,6 +65,52 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_udp_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-connect-udp",
+						"description": "查看当前已有的监视器（CONNECT-UDP）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/connect-udp/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/connect-udp/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/connect-udp/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "CONNECT-UDP",
+									"timeout": 16,
+									"interval": 5,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"host": "*",
+									"port": 0,
+									"debug_mode": "DISABLE",
+									"gateway_detect": "DISABLE",
+									"send_content": "GET / HTTP/1.1",
+									"receive_cache_size": 5120,
+									"receive_content_match": "200",
+									"reverse_result": "DISABLE",
+									"node_disable_receive_content_match": "200",
+									"node_disable_reverse_result": "DISABLE",
+									"send_content_before_disconnect": "example_string",
+									"hexadecimal_mode": "DISABLE"
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +128,57 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_udp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-connect-udp",
+						"description": "新建一个监视器（CONNECT-UDP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/connect-udp/",
+							"body": {
+								"name": "AI_http_connect_udp_A",
+								"type": "CONNECT-UDP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"receive_cache_size": 5120,
+								"reverse_result": "DISABLE",
+								"node_disable_reverse_result": "DISABLE",
+								"hexadecimal_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/connect-udp/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/connect-udp/的响应数据",
+						"value": {
+							"name": "AI_http_connect_udp_A",
+							"description": "example_string",
+							"type": "CONNECT-UDP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE"
+						}
 					}
 				}
 			},
@@ -130,6 +227,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_udp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-connect-udp",
+						"description": "修改指定的监视器（CONNECT-UDP）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/connect-udp/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/connect-udp/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/connect-udp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-UDP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE"
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +281,57 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_udp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-connect-udp",
+						"description": "修改指定的监视器（CONNECT-UDP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/connect-udp/{name}",
+							"body": {
+								"name": "AI_http_connect_udp_B",
+								"type": "CONNECT-UDP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"receive_cache_size": 5120,
+								"reverse_result": "DISABLE",
+								"node_disable_reverse_result": "DISABLE",
+								"hexadecimal_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/connect-udp/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/connect-udp/{name}的响应数据",
+						"value": {
+							"name": "AI_http_connect_udp_B",
+							"description": "example_string",
+							"type": "CONNECT-UDP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +349,57 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_udp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-connect-udp",
+						"description": "修改指定的监视器（CONNECT-UDP）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/connect-udp/{name}",
+							"body": {
+								"name": "http",
+								"type": "CONNECT-UDP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"receive_cache_size": 5120,
+								"reverse_result": "DISABLE",
+								"node_disable_reverse_result": "DISABLE",
+								"hexadecimal_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/connect-udp/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/connect-udp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-UDP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE"
+						}
 					}
 				}
 			},
@@ -185,6 +419,57 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_udp_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-connect-udp",
+						"description": "删除指定的监视器（CONNECT-UDP）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/connect-udp/{name}",
+							"body": {
+								"name": "http",
+								"type": "CONNECT-UDP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"receive_cache_size": 5120,
+								"reverse_result": "DISABLE",
+								"node_disable_reverse_result": "DISABLE",
+								"hexadecimal_mode": "DISABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/connect-udp/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/connect-udp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-UDP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE"
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +482,41 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_connect_udp_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-connect-udp",
+						"description": "DELETE /api/ad/v3/slb/service-monitor/connect-udp/{name}",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/connect-udp/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/connect-udp/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/connect-udp/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "CONNECT-UDP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"send_content": "GET / HTTP/1.1",
+							"receive_cache_size": 5120,
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_content_before_disconnect": "example_string",
+							"hexadecimal_mode": "DISABLE"
+						}
 					}
 				}
 			}

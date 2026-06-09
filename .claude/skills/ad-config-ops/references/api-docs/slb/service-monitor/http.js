@@ -65,6 +65,52 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_http_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all service-monitor-http",
+						"description": "查看当前已有的监视器（HTTP）配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/http/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/http/ 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/http/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "http",
+									"description": "example_string",
+									"type": "HTTP",
+									"timeout": 16,
+									"interval": 5,
+									"err_interval": 2,
+									"err_interval_state": "DISABLE",
+									"host": "*",
+									"port": 0,
+									"debug_mode": "DISABLE",
+									"gateway_detect": "DISABLE",
+									"http_request_method": "GET",
+									"http_request_url": "/",
+									"expect_status_code": "200;302",
+									"receive_content_match": "200",
+									"reverse_result": "DISABLE",
+									"node_disable_receive_content_match": "200",
+									"node_disable_reverse_result": "DISABLE",
+									"send_host": ""
+								}
+							]
+						}
+					}
 				}
 			},
 			"post": {
@@ -82,6 +128,59 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_http_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-http",
+						"description": "新建一个监视器（HTTP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/http/",
+							"body": {
+								"name": "AI_http_http_A",
+								"type": "HTTP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"http_request_method": "GET",
+								"http_request_url": "/",
+								"expect_status_code": "200;302",
+								"reverse_result": "DISABLE",
+								"node_disable_reverse_result": "DISABLE",
+								"send_host": "${rs_ip}"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/http/ 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/http/的响应数据",
+						"value": {
+							"name": "AI_http_http_A",
+							"description": "example_string",
+							"type": "HTTP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"http_request_method": "GET",
+							"http_request_url": "/",
+							"expect_status_code": "200;302",
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_host": ""
+						}
 					}
 				}
 			},
@@ -130,6 +229,41 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_http_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific service-monitor-http",
+						"description": "查看指定的监视器（HTTP）配置",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/slb/service-monitor/http/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/slb/service-monitor/http/{name} 响应",
+						"description": "返回GET /api/ad/v3/slb/service-monitor/http/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "HTTP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"http_request_method": "GET",
+							"http_request_url": "/",
+							"expect_status_code": "200;302",
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_host": ""
+						}
+					}
 				}
 			},
 			"post": {
@@ -149,6 +283,59 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_http_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "create new service-monitor-http",
+						"description": "新建指定的监视器（HTTP）配置",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/slb/service-monitor/http/{name}",
+							"body": {
+								"name": "AI_http_http_B",
+								"type": "HTTP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"http_request_method": "GET",
+								"http_request_url": "/",
+								"expect_status_code": "200;302",
+								"reverse_result": "DISABLE",
+								"node_disable_reverse_result": "DISABLE",
+								"send_host": "${rs_ip}"
+							}
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/slb/service-monitor/http/{name} 响应",
+						"description": "返回POST /api/ad/v3/slb/service-monitor/http/{name}的响应数据",
+						"value": {
+							"name": "AI_http_http_B",
+							"description": "example_string",
+							"type": "HTTP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"http_request_method": "GET",
+							"http_request_url": "/",
+							"expect_status_code": "200;302",
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_host": ""
+						}
+					}
 				}
 			},
 			"put": {
@@ -166,6 +353,59 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_http_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace specific service-monitor-http",
+						"description": "修改指定的监视器（HTTP）配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/slb/service-monitor/http/{name}",
+							"body": {
+								"name": "http",
+								"type": "HTTP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"http_request_method": "GET",
+								"http_request_url": "/",
+								"expect_status_code": "200;302",
+								"reverse_result": "DISABLE",
+								"node_disable_reverse_result": "DISABLE",
+								"send_host": "${rs_ip}"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/slb/service-monitor/http/{name} 响应",
+						"description": "返回PUT /api/ad/v3/slb/service-monitor/http/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "HTTP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"http_request_method": "GET",
+							"http_request_url": "/",
+							"expect_status_code": "200;302",
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_host": ""
+						}
 					}
 				}
 			},
@@ -185,6 +425,59 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_http_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific service-monitor-http",
+						"description": "修改指定的监视器（HTTP）配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/slb/service-monitor/http/{name}",
+							"body": {
+								"name": "http",
+								"type": "HTTP",
+								"timeout": 16,
+								"interval": 5,
+								"err_interval": 2,
+								"err_interval_state": "DISABLE",
+								"host": "*",
+								"port": 0,
+								"debug_mode": "DISABLE",
+								"gateway_detect": "DISABLE",
+								"http_request_method": "GET",
+								"http_request_url": "/",
+								"expect_status_code": "200;302",
+								"reverse_result": "DISABLE",
+								"node_disable_reverse_result": "DISABLE",
+								"send_host": "${rs_ip}"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/slb/service-monitor/http/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/slb/service-monitor/http/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "HTTP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"http_request_method": "GET",
+							"http_request_url": "/",
+							"expect_status_code": "200;302",
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_host": ""
+						}
+					}
 				}
 			},
 			"delete": {
@@ -197,6 +490,41 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_service_monitor_http_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "delete specific service-monitor-http",
+						"description": "删除指定的监视器（HTTP）配置",
+						"value": {
+							"method": "DELETE",
+							"path": "/api/ad/v3/slb/service-monitor/http/{name}"
+						}
+					},
+					"response": {
+						"summary": "DELETE /api/ad/v3/slb/service-monitor/http/{name} 响应",
+						"description": "返回DELETE /api/ad/v3/slb/service-monitor/http/{name}的响应数据",
+						"value": {
+							"name": "http",
+							"description": "example_string",
+							"type": "HTTP",
+							"timeout": 16,
+							"interval": 5,
+							"err_interval": 2,
+							"err_interval_state": "DISABLE",
+							"host": "*",
+							"port": 0,
+							"debug_mode": "DISABLE",
+							"gateway_detect": "DISABLE",
+							"http_request_method": "GET",
+							"http_request_url": "/",
+							"expect_status_code": "200;302",
+							"receive_content_match": "200",
+							"reverse_result": "DISABLE",
+							"node_disable_receive_content_match": "200",
+							"node_disable_reverse_result": "DISABLE",
+							"send_host": ""
+						}
 					}
 				}
 			}
@@ -406,7 +734,7 @@ module.exports ={
 					"description": "响应状态码",
 					"type": "string",
 					"default": "200;302",
-					"minLength": 3,
+					"minLength": 0,
 					"maxLength": 255,
 					"example": "200;302"
 				},

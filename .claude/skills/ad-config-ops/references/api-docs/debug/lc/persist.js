@@ -59,6 +59,37 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_debug_persist_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get persist",
+						"description": "查询智能能路由会话保持",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/debug/lc/persist/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/debug/lc/persist/ 响应",
+						"description": "返回GET /api/ad/v3/debug/lc/persist/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"source_address": "192.168.1.12/24",
+									"destination_address": "200.200.0.123/24",
+									"outbound_link": "WAN_2",
+									"timeout": null
+								}
+							]
+						}
+					}
 				}
 			},
 			"__sfcli_example__": [
@@ -84,7 +115,24 @@ module.exports ={
 					"persist"
 				],
 				"summary": "clear persist",
-				"operationId": "clear_persist"
+				"operationId": "clear_persist",
+				"x-examples": {
+					"request": {
+						"summary": "clear persist",
+						"description": "清除智能能路由会话保持",
+						"value": {
+							"method": "POST",
+							"path": "/api/ad/v3/debug/lc/persist/clear"
+						}
+					},
+					"response": {
+						"summary": "POST /api/ad/v3/debug/lc/persist/clear 响应",
+						"description": "返回POST /api/ad/v3/debug/lc/persist/clear的响应数据",
+						"value": {
+							"ok": true
+						}
+					}
+				}
 			},
 			"__sfcli_example__": [
 				{

@@ -51,6 +51,52 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_web_service_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get web-service",
+						"description": "查看当前已有的登录配置信息",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/sys/web-service"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/sys/web-service 响应",
+						"description": "返回GET /api/ad/v3/sys/web-service的响应数据",
+						"value": {
+							"web_console": {
+								"https_port": 443,
+								"ssl_version": [
+									"TLS1.0"
+								],
+								"session_timeout": 1200
+							},
+							"report_center": {
+								"https_port": 85,
+								"session_timeout": 600
+							},
+							"restful_api": {
+								"token_timeout": 600
+							},
+							"remote_maintenance": "DISABLE",
+							"intranet_maintenance": "ENABLE",
+							"multitenant": "DISABLE",
+							"multi_login": "DISABLE",
+							"login_protect": {
+								"state": "ENABLE",
+								"statistical_time": 300,
+								"fail_times": 5,
+								"block_time": 300
+							},
+							"login_limit": {
+								"ip_addr": [
+									"example_string"
+								]
+							},
+							"risk_operation_verify": "ENABLE"
+						}
+					}
 				}
 			},
 			"put": {
@@ -69,6 +115,59 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_web_service_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "replace web-service",
+						"description": "修改登录配置",
+						"value": {
+							"method": "PUT",
+							"path": "/api/ad/v3/sys/web-service",
+							"body": {
+								"remote_maintenance": "DISABLE",
+								"intranet_maintenance": "ENABLE",
+								"multitenant": "DISABLE",
+								"multi_login": "DISABLE",
+								"risk_operation_verify": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PUT /api/ad/v3/sys/web-service 响应",
+						"description": "返回PUT /api/ad/v3/sys/web-service的响应数据",
+						"value": {
+							"web_console": {
+								"https_port": 443,
+								"ssl_version": [
+									"TLS1.0"
+								],
+								"session_timeout": 1200
+							},
+							"report_center": {
+								"https_port": 85,
+								"session_timeout": 600
+							},
+							"restful_api": {
+								"token_timeout": 600
+							},
+							"remote_maintenance": "DISABLE",
+							"intranet_maintenance": "ENABLE",
+							"multitenant": "DISABLE",
+							"multi_login": "DISABLE",
+							"login_protect": {
+								"state": "ENABLE",
+								"statistical_time": 300,
+								"fail_times": 5,
+								"block_time": 300
+							},
+							"login_limit": {
+								"ip_addr": [
+									"example_string"
+								]
+							},
+							"risk_operation_verify": "ENABLE"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -86,6 +185,59 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_web_service_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify web-service",
+						"description": "修改登录配置",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/sys/web-service",
+							"body": {
+								"remote_maintenance": "DISABLE",
+								"intranet_maintenance": "ENABLE",
+								"multitenant": "DISABLE",
+								"multi_login": "DISABLE",
+								"risk_operation_verify": "ENABLE"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/sys/web-service 响应",
+						"description": "返回PATCH /api/ad/v3/sys/web-service的响应数据",
+						"value": {
+							"web_console": {
+								"https_port": 443,
+								"ssl_version": [
+									"TLS1.0"
+								],
+								"session_timeout": 1200
+							},
+							"report_center": {
+								"https_port": 85,
+								"session_timeout": 600
+							},
+							"restful_api": {
+								"token_timeout": 600
+							},
+							"remote_maintenance": "DISABLE",
+							"intranet_maintenance": "ENABLE",
+							"multitenant": "DISABLE",
+							"multi_login": "DISABLE",
+							"login_protect": {
+								"state": "ENABLE",
+								"statistical_time": 300,
+								"fail_times": 5,
+								"block_time": 300
+							},
+							"login_limit": {
+								"ip_addr": [
+									"example_string"
+								]
+							},
+							"risk_operation_verify": "ENABLE"
+						}
 					}
 				}
 			},
@@ -144,6 +296,26 @@ module.exports ={
 							"maximum": 65535,
 							"minimum": 1,
 							"example": 443
+						},
+						"ssl_version": {
+							"description": "启用协议集合",
+							"type": "array",
+							"items": {
+								"description": "单个协议",
+								"type": "string",
+								"enum": [
+									"TLS1.0",
+									"TLS1.1",
+									"TLS1.2",
+									"TLS1.3"
+								]
+							},
+							"default": [
+								"TLS1.2",
+								"TLS1.3"
+							],
+							"minItems": 1,
+							"maxItems": 4
 						},
 						"session_timeout": {
 							"description": "HTTP会话超时时间",
@@ -279,16 +451,6 @@ module.exports ={
 					"description": "登录管理口的ip允许列表",
 					"type": "object",
 					"properties": {
-						"state": {
-							"description": "启用禁用登陆限制",
-							"type": "string",
-							"enum": [
-								"ENABLE",
-								"DISABLE"
-							],
-							"default": "DISABLE",
-							"example": "DISABLE"
-						},
 						"ip_addr": {
 							"description": "允许的ip",
 							"type": "array",
@@ -296,7 +458,9 @@ module.exports ={
 							"items": {
 								"description": "放通ip",
 								"type": "string"
-							}
+							},
+							"maxItems": 128,
+							"minItems": 0
 						}
 					}
 				},

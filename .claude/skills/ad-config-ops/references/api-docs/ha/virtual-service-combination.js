@@ -62,6 +62,39 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_service_combination_list"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get all virtual-service-combination",
+						"description": "获取所有虚拟服务关联组",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/ha/virtual-service-combination/"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/ha/virtual-service-combination/ 响应",
+						"description": "返回GET /api/ad/v3/ha/virtual-service-combination/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vs_relate_group_1",
+									"description": "example_string",
+									"virtual_services": [
+										"vs_http_8080"
+									],
+									"associated_application_group": "websrv_appgroup"
+								}
+							]
+						}
+					}
 				}
 			},
 			"patch": {
@@ -80,6 +113,42 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_service_combination_list"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify virtual-service-combination",
+						"description": "修改虚拟服务关联组",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/ha/virtual-service-combination/",
+							"body": {
+								"name": "vs_relate_group_1"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/ha/virtual-service-combination/ 响应",
+						"description": "返回PATCH /api/ad/v3/ha/virtual-service-combination/的响应数据",
+						"value": {
+							"maximum_items": 4000,
+							"total_pages": 5,
+							"page_number": 5,
+							"page_size": 10,
+							"total_items": 48,
+							"items_offset": 40,
+							"items_length": 8,
+							"items": [
+								{
+									"name": "vs_relate_group_1",
+									"description": "example_string",
+									"virtual_services": [
+										"vs_http_8080"
+									],
+									"associated_application_group": "websrv_appgroup"
+								}
+							]
+						}
 					}
 				}
 			}
@@ -111,6 +180,28 @@ module.exports ={
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_service_combination_object"
 					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "get specific virtual-service-combination",
+						"description": "获取指定虚拟服务关联组",
+						"value": {
+							"method": "GET",
+							"path": "/api/ad/v3/ha/virtual-service-combination/{name}"
+						}
+					},
+					"response": {
+						"summary": "GET /api/ad/v3/ha/virtual-service-combination/{name} 响应",
+						"description": "返回GET /api/ad/v3/ha/virtual-service-combination/{name}的响应数据",
+						"value": {
+							"name": "vs_relate_group_1",
+							"description": "example_string",
+							"virtual_services": [
+								"vs_http_8080"
+							],
+							"associated_application_group": "websrv_appgroup"
+						}
+					}
 				}
 			},
 			"patch": {
@@ -129,6 +220,31 @@ module.exports ={
 				"responses": {
 					"200": {
 						"$ref": "#/responses/operation_config_virtual_service_combination_object"
+					}
+				},
+				"x-examples": {
+					"request": {
+						"summary": "modify specific virtual-service-combination",
+						"description": "修改指定虚拟服务关联组",
+						"value": {
+							"method": "PATCH",
+							"path": "/api/ad/v3/ha/virtual-service-combination/{name}",
+							"body": {
+								"name": "vs_relate_group_1"
+							}
+						}
+					},
+					"response": {
+						"summary": "PATCH /api/ad/v3/ha/virtual-service-combination/{name} 响应",
+						"description": "返回PATCH /api/ad/v3/ha/virtual-service-combination/{name}的响应数据",
+						"value": {
+							"name": "vs_relate_group_1",
+							"description": "example_string",
+							"virtual_services": [
+								"vs_http_8080"
+							],
+							"associated_application_group": "websrv_appgroup"
+						}
 					}
 				}
 			},
