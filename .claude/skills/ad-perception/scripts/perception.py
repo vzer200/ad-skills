@@ -29,11 +29,15 @@ from multi_device import (
 )
 
 import argparse
+import hashlib
 import html as html_lib
 import json
 import math
 import statistics
 import sqlite3
+import tempfile
+import time
+import uuid
 from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
@@ -1405,6 +1409,227 @@ def _log_entry_identity(entry: Dict[str, Any]) -> Tuple[Any, ...]:
 
 def _sort_log_entries(entries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return sorted(entries, key=lambda x: f"{x.get('date', '')} {x.get('time', '')}", reverse=True)
+
+
+def _service_log_job_dir(state_dir: str = "") -> str:
+    base = state_dir or os.path.join(tempfile.gettempdir(), "ad_service_log_jobs")
+    os.makedirs(base, exist_ok=True)
+    return base
+
+
+def _service_log_job_path(job_id: str, state_dir: str = "") -> str:
+    safe_id = "".join(ch for ch in str(job_id) if ch.isalnum() or ch in ("-", "_"))
+    if not safe_id:
+        raise ValueError("job_id is required")
+    return os.path.join(_service_log_job_dir(state_dir), f"{safe_id}.json")
+
+
+def _write_service_log_job(job: Dict[str, Any], state_dir: str = "") -> None:
+    path = _service_log_job_path(str(job["job_id"]), state_dir)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(job, f, ensure_ascii=False, indent=2)
+
+
+def _read_service_log_job(job_id: str, state_dir: str = "") -> Dict[str, Any]:
+    path = _service_log_job_path(job_id, state_dir)
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _service_log_scan_segments(
+    levels: Optional[List[str]] = None,
+    modules: Optional[List[str]] = None,
+) -> List[Dict[str, Any]]:
+    level_values: List[Optional[str]] = levels or [None]
+    module_values: List[Optional[str]] = modules or [None]
+    segments = []
+    for level in level_values:
+        for module in module_values:
+            segments.append({"level": level, "module": module, "skip": 0, "done": False, "scanned": 0})
+    return segments
+
+
+def create_service_log_job(
+    host: str,
+    display_limit: int = 20,
+    page_size: int = 100,
+    from_time: str = "",
+    to_time: str = "",
+    levels: Optional[List[str]] = None,
+    modules: Optional[List[str]] = None,
+    log_type: str = "",
+    range_label: str = "",
+    state_dir: str = "",
+) -> Dict[str, Any]:
+    normalized_type = normalize_log_type(log_type)
+    display_limit = _normalize_log_limit(display_limit)
+    page_size = max(1, int(page_size or 100))
+    fingerprint = hashlib.sha1(
+        json.dumps(
+            {
+                "host": host,
+                "from_time": from_time,
+                "to_time": to_time,
+                "levels": levels or [],
+                "modules": modules or [],
+                "log_type": normalized_type,
+                "created": time.time(),
+                "nonce": uuid.uuid4().hex,
+            },
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()[:12]
+    job = {
+        "job_id": f"logs-{fingerprint}",
+        "host": host,
+        "from_time": from_time,
+        "to_time": to_time,
+        "range": range_label,
+        "levels": levels or ["ALERT", "ERROR"],
+        "modules": modules or [],
+        "log_type": normalized_type,
+        "log_type_label": log_type_label(normalized_type),
+        "display_limit": display_limit,
+        "page_size": page_size,
+        "max_items_per_query": 4000,
+        "segments": _service_log_scan_segments(levels or ["ALERT", "ERROR"], modules or []),
+        "entries": [],
+        "seen": [],
+        "done": False,
+        "created_at": int(time.time()),
+        "updated_at": int(time.time()),
+    }
+    _write_service_log_job(job, state_dir)
+    return job
+
+
+def _service_log_page_kwargs(job: Dict[str, Any], segment: Dict[str, Any]) -> Dict[str, Any]:
+    kwargs: Dict[str, Any] = {"limit": int(job.get("page_size") or 100), "skip": int(segment.get("skip") or 0)}
+    if job.get("from_time"):
+        kwargs["from_time"] = job["from_time"]
+    if job.get("to_time"):
+        kwargs["to_time"] = job["to_time"]
+    if segment.get("level"):
+        kwargs["levels"] = [segment["level"]]
+    if segment.get("module"):
+        kwargs["modules"] = [segment["module"]]
+    return kwargs
+
+
+def _service_log_job_result(job: Dict[str, Any]) -> Dict[str, Any]:
+    entries = _sort_log_entries(job.get("entries", []))
+    display_limit = int(job.get("display_limit") or 20)
+    scanned = sum(int(segment.get("scanned") or 0) for segment in job.get("segments", []))
+    return {
+        "job_id": job.get("job_id"),
+        "host": job.get("host", ""),
+        "done": bool(job.get("done")),
+        "scanned": scanned,
+        "matched": len(entries),
+        "entries": entries[:display_limit],
+        "display_limit": display_limit,
+        "range": job.get("range", ""),
+        "from_time": job.get("from_time", ""),
+        "to_time": job.get("to_time", ""),
+        "levels": job.get("levels", ["ALERT", "ERROR"]),
+        "modules": job.get("modules", []),
+        "log_type": job.get("log_type", ""),
+        "log_type_label": job.get("log_type_label", ""),
+        "segments": job.get("segments", []),
+    }
+
+
+def render_service_log_job_markdown(result: Dict[str, Any]) -> str:
+    lines = ["## 日志查询进度"]
+    lines.append(f"- 任务ID：{result.get('job_id', '')}")
+    if result.get("host"):
+        lines.append(f"- 目标设备：{result.get('host')}")
+    if result.get("range"):
+        lines.append(f"- 查询范围：{result.get('range')}")
+    if result.get("log_type_label"):
+        lines.append(f"- 日志类型：{result.get('log_type_label')}")
+    levels = result.get("levels") or []
+    if levels:
+        lines.append(f"- 日志级别：{'、'.join(str(level) for level in levels)}")
+    lines.append(f"- 已扫描：{result.get('scanned', 0)} 条")
+    lines.append(f"- 已命中：{result.get('matched', 0)} 条")
+    lines.append(f"- 状态：{'完成' if result.get('done') else '进行中'}")
+    entries = result.get("entries", [])
+    if entries:
+        lines.append("")
+        lines.append(f"## 日志线索（最新 {len(entries)} 条，上限 {result.get('display_limit', 20)} 条）")
+        lines.append("| 时间 | 级别 | 模块 | 详情 |")
+        lines.append("|---|---|---|---|")
+        for entry in entries:
+            lines.append(f"| {_md_cell(_log_time_display(entry))} | {_md_cell(entry.get('level', ''))} | {_md_cell(entry.get('module', ''))} | {_md_cell(entry.get('detail', ''))} |")
+    elif result.get("done"):
+        lines.append("")
+        lines.append("ℹ️ 查询范围内未发现匹配日志。")
+    else:
+        lines.append("")
+        lines.append("继续执行 `logs-progress --job-id <任务ID>` 或 `logs-wait --job-id <任务ID>`。")
+    return "\n".join(lines)
+
+
+def advance_service_log_job(
+    job_id: str,
+    client: Any,
+    state_dir: str = "",
+    max_pages: int = 5,
+    deadline_ts: Optional[float] = None,
+) -> Dict[str, Any]:
+    job = _read_service_log_job(job_id, state_dir)
+    if job.get("done"):
+        return _service_log_job_result(job)
+
+    page_size = int(job.get("page_size") or 100)
+    max_items_per_query = int(job.get("max_items_per_query") or 4000)
+    max_pages = max(1, int(max_pages or 1))
+    pages_done = 0
+    seen = set(tuple(item) if isinstance(item, list) else item for item in job.get("seen", []))
+    entries = [entry for entry in job.get("entries", []) if isinstance(entry, dict)]
+    normalized_type = normalize_log_type(job.get("log_type", ""))
+
+    for segment in job.get("segments", []):
+        if segment.get("done"):
+            continue
+        while pages_done < max_pages and int(segment.get("skip") or 0) < max_items_per_query:
+            if deadline_ts is not None and time.time() >= deadline_ts:
+                job["entries"] = _sort_log_entries(entries)
+                job["seen"] = [list(item) if isinstance(item, tuple) else item for item in seen]
+                job["updated_at"] = int(time.time())
+                _write_service_log_job(job, state_dir)
+                return _service_log_job_result(job)
+            data = client.get_service_log(**_service_log_page_kwargs(job, segment))
+            page_items = data.get("items", []) if isinstance(data, dict) else []
+            for item in page_items:
+                if not isinstance(item, dict):
+                    continue
+                identity = _log_entry_identity(item)
+                if identity in seen:
+                    continue
+                seen.add(identity)
+                if not normalized_type or log_entry_matches_type(item, normalized_type):
+                    entries.append(item)
+            pages_done += 1
+            segment["scanned"] = int(segment.get("scanned") or 0) + len(page_items)
+            total_items = data.get("total_items") if isinstance(data, dict) else None
+            if len(page_items) < page_size:
+                segment["done"] = True
+                break
+            segment["skip"] = int(segment.get("skip") or 0) + page_size
+            if isinstance(total_items, int) and int(segment.get("skip") or 0) >= total_items:
+                segment["done"] = True
+                break
+        if pages_done >= max_pages:
+            break
+
+    job["entries"] = _sort_log_entries(entries)
+    job["seen"] = [list(item) if isinstance(item, tuple) else item for item in seen]
+    job["done"] = all(segment.get("done") for segment in job.get("segments", []))
+    job["updated_at"] = int(time.time())
+    _write_service_log_job(job, state_dir)
+    return _service_log_job_result(job)
 
 
 def build_log_window(
@@ -2956,6 +3181,30 @@ def main() -> None:
     logs_p.add_argument("--modules", default="", help="逗号分隔日志模块/类型，如 ALARM,APPD,RS_DETECT")
     logs_p.add_argument("--log-type", "--type", dest="log_type", default="", help="日志语义类型，目前支持 address-conflict/地址冲突")
 
+    logs_start_p = subparsers.add_parser("logs-start", help="Start progressive service-log query")
+    _add_common_args(logs_start_p)
+    logs_start_p.add_argument("--limit", type=int, default=20, help="Output rows, max 20")
+    logs_start_p.add_argument("--days", type=int, default=0, help="Recent N days")
+    logs_start_p.add_argument("--hours", type=int, default=24, help="Recent N hours")
+    logs_start_p.add_argument("--from-time", default="", help="Start time, YYYY-MM-DD HH:MM:SS")
+    logs_start_p.add_argument("--to-time", default="", help="End time, YYYY-MM-DD HH:MM:SS")
+    logs_start_p.add_argument("--levels", default="ALERT,ERROR", help="Comma-separated log levels")
+    logs_start_p.add_argument("--modules", default="", help="Comma-separated log modules")
+    logs_start_p.add_argument("--log-type", "--type", dest="log_type", default="", help="Semantic log type, e.g. address-conflict")
+    logs_start_p.add_argument("--page-size", type=int, default=100, help="Rows per device API page")
+    logs_start_p.add_argument("--state-dir", default="", help="Log job state directory")
+    logs_progress_p = subparsers.add_parser("logs-progress", help="Advance progressive service-log query")
+    _add_common_args(logs_progress_p)
+    logs_progress_p.add_argument("--job-id", required=True, help="Job id returned by logs-start")
+    logs_progress_p.add_argument("--max-pages", type=int, default=5, help="Maximum pages to scan in this call")
+    logs_progress_p.add_argument("--state-dir", default="", help="Log job state directory")
+    logs_wait_p = subparsers.add_parser("logs-wait", help="Advance progressive service-log query until done or timeout")
+    _add_common_args(logs_wait_p)
+    logs_wait_p.add_argument("--job-id", required=True, help="Job id returned by logs-start")
+    logs_wait_p.add_argument("--timeout", type=int, default=55, help="Maximum seconds for this call")
+    logs_wait_p.add_argument("--max-pages-per-step", type=int, default=5, help="Pages to scan per inner step")
+    logs_wait_p.add_argument("--state-dir", default="", help="Log job state directory")
+
     args = parser.parse_args()
     cmd = args.command or "analyze"
 
@@ -2982,6 +3231,33 @@ def main() -> None:
             'log_type': normalize_log_type(getattr(a, 'log_type', '')),
             'range_label': range_label,
         }
+
+    def _single_device_context(devices: List[Dict[str, Any]]) -> Dict[str, Any]:
+        if len(devices) != 1:
+            print("错误: 进度式日志查询一次只支持单台设备，请使用 --device 指定 AD1/AD2", file=sys.stderr)
+            sys.exit(4)
+        return devices[0]
+
+    def _start_log_job_for_host(host_value: str) -> Dict[str, Any]:
+        log_options = _log_options_from_args(args)
+        return create_service_log_job(
+            host=host_value,
+            display_limit=log_options["limit"],
+            page_size=getattr(args, "page_size", 100),
+            from_time=log_options["from_time"],
+            to_time=log_options["to_time"],
+            levels=log_options["levels"],
+            modules=log_options["modules"],
+            log_type=log_options["log_type"],
+            range_label=log_options["range_label"],
+            state_dir=getattr(args, "state_dir", ""),
+        )
+
+    def _print_log_job_result(result: Dict[str, Any]) -> None:
+        if output_format == "json":
+            print(render_json(result))
+        else:
+            print(render_service_log_job_markdown(result))
 
     def _state_trend_from_args(a: argparse.Namespace) -> str:
         try:
@@ -3018,6 +3294,45 @@ def main() -> None:
             print("错误: 设备列表为空", file=sys.stderr)
             sys.exit(4)
 
+        if cmd == "logs-start":
+            device = _single_device_context(devices)
+            job = _start_log_job_for_host(str(device.get("host", "")))
+            result = _service_log_job_result(job)
+            _print_log_job_result(result)
+            sys.exit(0)
+        if cmd in ("logs-progress", "logs-wait"):
+            device = _single_device_context(devices)
+            client = ADClient(
+                host=str(device.get("host", "")),
+                username=str(device.get("user") or device.get("username") or args.user),
+                password=str(device.get("password") or password),
+            )
+            if cmd == "logs-progress":
+                result = advance_service_log_job(
+                    args.job_id,
+                    client,
+                    state_dir=getattr(args, "state_dir", ""),
+                    max_pages=getattr(args, "max_pages", 5),
+                )
+            else:
+                deadline = time.time() + max(1, int(getattr(args, "timeout", 55) or 55))
+                result = advance_service_log_job(
+                    args.job_id,
+                    client,
+                    state_dir=getattr(args, "state_dir", ""),
+                    max_pages=getattr(args, "max_pages_per_step", 5),
+                    deadline_ts=deadline,
+                )
+                while not result.get("done") and time.time() < deadline:
+                    result = advance_service_log_job(
+                        args.job_id,
+                        client,
+                        state_dir=getattr(args, "state_dir", ""),
+                        max_pages=getattr(args, "max_pages_per_step", 5),
+                        deadline_ts=deadline,
+                    )
+            _print_log_job_result(result)
+            sys.exit(0)
         if cmd == "logs":
             log_options = _log_options_from_args(args)
             results = run_multi(devices, _logs_one, **log_options)
@@ -3139,6 +3454,40 @@ def main() -> None:
 
     try:
         client = ADClient(host=host, username=user, password=password)
+
+        if cmd == "logs-start":
+            job = _start_log_job_for_host(host)
+            result = _service_log_job_result(job)
+            _print_log_job_result(result)
+            sys.exit(0)
+
+        if cmd in ("logs-progress", "logs-wait"):
+            if cmd == "logs-progress":
+                result = advance_service_log_job(
+                    args.job_id,
+                    client,
+                    state_dir=getattr(args, "state_dir", ""),
+                    max_pages=getattr(args, "max_pages", 5),
+                )
+            else:
+                deadline = time.time() + max(1, int(getattr(args, "timeout", 55) or 55))
+                result = advance_service_log_job(
+                    args.job_id,
+                    client,
+                    state_dir=getattr(args, "state_dir", ""),
+                    max_pages=getattr(args, "max_pages_per_step", 5),
+                    deadline_ts=deadline,
+                )
+                while not result.get("done") and time.time() < deadline:
+                    result = advance_service_log_job(
+                        args.job_id,
+                        client,
+                        state_dir=getattr(args, "state_dir", ""),
+                        max_pages=getattr(args, "max_pages_per_step", 5),
+                        deadline_ts=deadline,
+                    )
+            _print_log_job_result(result)
+            sys.exit(0)
 
         if cmd == "traffic":
             vs_name = args.vs if hasattr(args, 'vs') and args.vs else None

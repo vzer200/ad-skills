@@ -1,4 +1,5 @@
 import importlib.util
+import tempfile
 import sys
 import unittest
 from pathlib import Path
@@ -67,6 +68,31 @@ class ServiceLogTests(unittest.TestCase):
         self.assertEqual(result["shown"], 1)
         self.assertIn("172.16.1.100", result["entries"][0]["detail"])
         self.assertIn(100, [call.get("skip", 0) for call in client.calls])
+
+    def test_progress_job_advances_across_calls_until_semantic_match(self):
+        client = FakeLogClient()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            job = perception.create_service_log_job(
+                host="https://192.168.8.31",
+                display_limit=20,
+                page_size=100,
+                from_time="2026-06-01 00:00:00",
+                to_time="2026-06-09 23:59:59",
+                levels=["ALERT"],
+                modules=[],
+                log_type="address-conflict",
+                state_dir=temp_dir,
+            )
+
+            first = perception.advance_service_log_job(job["job_id"], client, state_dir=temp_dir, max_pages=1)
+            self.assertFalse(first["done"])
+            self.assertEqual(first["matched"], 0)
+
+            second = perception.advance_service_log_job(job["job_id"], client, state_dir=temp_dir, max_pages=1)
+            self.assertTrue(second["done"])
+            self.assertEqual(second["matched"], 1)
+            self.assertIn("172.16.1.100", second["entries"][0]["detail"])
+            self.assertEqual(second["display_limit"], 20)
 
 
 if __name__ == "__main__":
