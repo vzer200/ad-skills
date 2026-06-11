@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sangfor AD CLI"
+  short_description: "Generate Sangfor AD CLI command scripts from AD configuration bundles."
+  default_prompt: "Use $sangforad-cli for AD 命令行/CLI/sfcli requests. For WorkBot R4 filled YAML, run read-only AD API preflight, then publish only /opt/agent/data/outputs/apply.sfcli and /opt/agent/data/outputs/rollback.sfcli. Do not execute CLI commands, do not publish apply.py/rollback_apply.py, and do not read or print generated script contents."

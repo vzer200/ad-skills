@@ -1,0 +1,32 @@
+# Pool node priority update template.
+# Replace the pool name and node list before upload.
+#
+# For production changes, copy the full current `nodes` list from the device
+# read result and only change the target node's `priority_level`. This avoids
+# accidentally dropping other nodes if the device treats the node array as a
+# replacement-style patch.
+version: 1
+source: "base YAML template: update pool node priority"
+operations:
+  - id: patch-pool-node-priority
+    action: patch
+    schema: config.pool
+    document: slb/pool.js
+    payload:
+      name: internet_http_pool
+      priority_level_available_node: 1
+      nodes:
+        - name: node_1_192_0_2_51_80
+          type: ADDRESS
+          address: 192.0.2.51
+          port: 80
+          state: ENABLE
+          weight: 10
+          priority_level: 5
+        - name: node_2_192_0_2_52_80
+          type: ADDRESS
+          address: 192.0.2.52
+          port: 80
+          state: ENABLE
+          weight: 10
+          priority_level: 1

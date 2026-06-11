@@ -1,0 +1,29 @@
+version: "7.0.28"
+sha256: "<可选；填写 references/api-version.json 里的 sha256 可进一步绑定这批文档>"
+
+patches:
+  - id: "net-link-lan-addresses-required"
+    reason: "7.0.28 LAN创建时设备要求addresses必填，但Swagger required漏标。"
+    document: "net/link/lan.js"
+    schema: "config.link_lan"
+    operations:
+      - op: "add_required"
+        field: "addresses"
+
+  - id: "example-fix-wrong-uri"
+    reason: "示例：某个版本文档中的POST URI写错，只移动POST方法到正确URI。"
+    document: "net/link/lan.js"
+    operations:
+      - op: "move_method"
+        method: "post"
+        from: "/api/ad/v3/net/link/lan-wrong"
+        to: "/api/ad/v3/net/link/lan"
+
+  - id: "example-rename-path-parameter"
+    reason: "示例：文档路径参数名写成id，但实际使用name。"
+    document: "slb/virtual-service.js"
+    operations:
+      - op: "replace_path_parameter"
+        path: "/api/ad/v3/slb/virtual-service/{id}"
+        from: "id"
+        to: "name"

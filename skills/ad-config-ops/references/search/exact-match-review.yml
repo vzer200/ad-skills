@@ -1,0 +1,2052 @@
+# AD-OPS 全量精确匹配词审核文件。
+# generated_exact_term 是脚本自动生成的首选精确匹配词。
+# exact_terms 是当前生效的精确匹配词；命中后 lookup 会短路，不再走评分召回。
+# 请不要直接依赖本文件作为人工覆盖源；需要增删词时修改 search-map-overrides.json。
+resources:
+  batch:
+    document: "batch.js"
+    schema: "config.batch_job_order"
+    generated_exact_term: "batch"
+    exact_terms:
+      - "batch"
+  cgi.file_resource:
+    document: "cgi/file-resource.js"
+    schema: null
+    generated_exact_term: "file-resource"
+    exact_terms:
+      - "file-resource"
+  cgi.notice:
+    document: "cgi/notice.js"
+    schema: "config.notice"
+    generated_exact_term: "notice"
+    exact_terms:
+      - "notice"
+  common:
+    document: "{common}.js"
+    schema: "cgi.file_resource"
+    generated_exact_term: "{common}"
+    exact_terms:
+      - "{common}"
+  debug.dns.config_synchronization:
+    document: "debug/dns/config-synchronization.js"
+    schema: null
+    generated_exact_term: "config-synchronization"
+    exact_terms:
+      - "config-synchronization"
+  debug.dns.dns_map:
+    document: "debug/dns/dns-map.js"
+    schema: "debug.dns_map_simulator"
+    generated_exact_term: "dns-map"
+    exact_terms:
+      - "dns-map"
+  debug.dns.local_dns.block:
+    document: "debug/dns/local-dns/block.js"
+    schema: "debug.local_dns_block"
+    generated_exact_term: "block"
+    exact_terms:
+      - "block"
+  debug.dns.local_dns.defect:
+    document: "debug/dns/local-dns/defect.js"
+    schema: "debug.local_dns_defect_entry"
+    generated_exact_term: "defect"
+    exact_terms:
+      - "defect"
+  debug.ha.active_standby:
+    document: "debug/ha/active-standby.js"
+    schema: "debug.active_standby_reset_failure_status"
+    generated_exact_term: "active-standby"
+    exact_terms:
+      - "active-standby"
+  debug.ha.application_group:
+    document: "debug/ha/application-group.js"
+    schema: "debug.application_group_switch"
+    generated_exact_term: "application-group"
+    exact_terms:
+      - "application-group"
+  debug.ha.cluster.master_controller:
+    document: "debug/ha/cluster/master-controller.js"
+    schema: "debug.cluster_master_controller_switch_result"
+    generated_exact_term: "master-controller"
+    exact_terms:
+      - "master-controller"
+  debug.ha.virtual_mac:
+    document: "debug/ha/virtual-mac.js"
+    schema: "debug.generate_virtual_mac"
+    generated_exact_term: "virtual-mac"
+    exact_terms:
+      - "virtual-mac"
+  debug.lc.persist:
+    document: "debug/lc/persist.js"
+    schema: "debug.persist"
+    generated_exact_term: "persist"
+    exact_terms:
+      - "persist"
+  debug.lc.policy_route:
+    document: "debug/lc/policy-route.js"
+    schema: "debug.policy_route_simulator"
+    generated_exact_term: "policy-route"
+    exact_terms:
+      - "policy-route"
+  debug.log.service_log:
+    document: "debug/log/service-log.js"
+    schema: null
+    generated_exact_term: "service-log"
+    exact_terms:
+      - "service-log"
+  debug.net.acl:
+    document: "debug/net/acl.js"
+    schema: null
+    generated_exact_term: "acl"
+    exact_terms:
+      - "acl"
+  debug.net.arp:
+    document: "debug/net/arp.js"
+    schema: "debug.arp_discover_parameter"
+    generated_exact_term: "arp"
+    exact_terms:
+      - "arp"
+  debug.net.arp_broadcast:
+    document: "debug/net/arp-broadcast.js"
+    schema: null
+    generated_exact_term: "arp-broadcast"
+    exact_terms:
+      - "arp-broadcast"
+  debug.net.dnat:
+    document: "debug/net/dnat.js"
+    schema: null
+    generated_exact_term: "dnat"
+    exact_terms:
+      - "dnat"
+  debug.net.interface_reset:
+    document: "debug/net/interface-reset.js"
+    schema: null
+    generated_exact_term: "interface-reset"
+    exact_terms:
+      - "interface-reset"
+  debug.net.link.pppoe:
+    document: "debug/net/link/pppoe.js"
+    schema: null
+    generated_exact_term: "pppoe"
+    exact_terms:
+      - "pppoe"
+  debug.net.netns_alarm:
+    document: "debug/net/netns-alarm.js"
+    schema: "debug.netns_entry"
+    generated_exact_term: "netns-alarm"
+    exact_terms:
+      - "netns-alarm"
+  debug.net.netns_check:
+    document: "debug/net/netns-check.js"
+    schema: "debug.netns_entry"
+    generated_exact_term: "netns-check"
+    exact_terms:
+      - "netns-check"
+  debug.net.session:
+    document: "debug/net/session.js"
+    schema: "debug.session"
+    generated_exact_term: "session"
+    exact_terms:
+      - "session"
+  debug.net.snat:
+    document: "debug/net/snat.js"
+    schema: null
+    generated_exact_term: "snat"
+    exact_terms:
+      - "snat"
+  debug.net.tcpdump:
+    document: "debug/net/tcpdump.js"
+    schema: "debug.tcpdump_capture"
+    generated_exact_term: "tcpdump"
+    exact_terms:
+      - "tcpdump"
+  debug.rc.crl:
+    document: "debug/rc/crl.js"
+    schema: "debug.crl"
+    generated_exact_term: "crl"
+    exact_terms:
+      - "crl"
+  debug.slb.ddos:
+    document: "debug/slb/ddos.js"
+    schema: "debug.ddos_date"
+    generated_exact_term: "ddos"
+    exact_terms:
+      - "ddos"
+  debug.slb.http_cache:
+    document: "debug/slb/http-cache.js"
+    schema: "debug.http_cache_entry"
+    generated_exact_term: "http-cache"
+    exact_terms:
+      - "http-cache"
+  debug.slb.http_cache_analysis:
+    document: "debug/slb/http-cache-analysis.js"
+    schema: "debug.http_cache_defect_analysis"
+    generated_exact_term: "http-cache-analysis"
+    exact_terms:
+      - "http-cache-analysis"
+  debug.slb.http_rewrite:
+    document: "debug/slb/http-rewrite.js"
+    schema: null
+    generated_exact_term: "http-rewrite"
+    exact_terms:
+      - "http-rewrite"
+  debug.slb.ipv6_report_export:
+    document: "debug/slb/ipv6-report-export.js"
+    schema: null
+    generated_exact_term: "ipv6-report-export"
+    exact_terms:
+      - "ipv6-report-export"
+  debug.slb.monitor_test:
+    document: "debug/slb/monitor-test.js"
+    schema: "debug.monitor_test"
+    generated_exact_term: "monitor-test"
+    exact_terms:
+      - "monitor-test"
+  debug.slb.node:
+    document: "debug/slb/node.js"
+    schema: null
+    generated_exact_term: "node"
+    exact_terms:
+      - "node"
+  debug.slb.persist:
+    document: "debug/slb/persist.js"
+    schema: "debug.persist"
+    generated_exact_term: "persist"
+    exact_terms:
+      - "persist"
+  debug.slb.url_analysis:
+    document: "debug/slb/url-analysis.js"
+    schema: "debug.url_analysis"
+    generated_exact_term: "url-analysis"
+    exact_terms:
+      - "url-analysis"
+  debug.sys.alert_mail:
+    document: "debug/sys/alert-mail.js"
+    schema: null
+    generated_exact_term: "alert-mail"
+    exact_terms:
+      - "alert-mail"
+  debug.sys.alert_sms:
+    document: "debug/sys/alert-sms.js"
+    schema: null
+    generated_exact_term: "alert-sms"
+    exact_terms:
+      - "alert-sms"
+  debug.sys.alert_trap:
+    document: "debug/sys/alert-trap.js"
+    schema: null
+    generated_exact_term: "alert-trap"
+    exact_terms:
+      - "alert-trap"
+  debug.sys.maintenance:
+    document: "debug/sys/maintenance.js"
+    schema: null
+    generated_exact_term: "maintenance"
+    exact_terms:
+      - "maintenance"
+  debug.sys.maintenance_passwd:
+    document: "debug/sys/maintenance-passwd.js"
+    schema: "debug.maintenance-passwd"
+    generated_exact_term: "maintenance-passwd"
+    exact_terms:
+      - "maintenance-passwd"
+  debug.sys.ntp:
+    document: "debug/sys/ntp.js"
+    schema: "debug.ntp"
+    generated_exact_term: "ntp"
+    exact_terms:
+      - "ntp"
+  debug.sys.offline_check:
+    document: "debug/sys/offline-check.js"
+    schema: "debug.start_offline_check"
+    generated_exact_term: "offline-check"
+    exact_terms:
+      - "offline-check"
+  debug.sys.partition:
+    document: "debug/sys/partition.js"
+    schema: "config.partition_activate"
+    generated_exact_term: "partition"
+    exact_terms:
+      - "partition"
+  debug.sys.report_task:
+    document: "debug/sys/report-task.js"
+    schema: "debug.report_task_generate_parameter"
+    generated_exact_term: "report-task"
+    exact_terms:
+      - "report-task"
+  debug.sys.rollback:
+    document: "debug/sys/rollback.js"
+    schema: "debug.rollback"
+    generated_exact_term: "rollback"
+    exact_terms:
+      - "rollback"
+  debug.sys.smtp:
+    document: "debug/sys/smtp.js"
+    schema: "debug.smtp_verify"
+    generated_exact_term: "smtp"
+    exact_terms:
+      - "smtp"
+  debug.sys.update:
+    document: "debug/sys/update.js"
+    schema: null
+    generated_exact_term: "update"
+    exact_terms:
+      - "update"
+  debug.sys.upgrade:
+    document: "debug/sys/upgrade.js"
+    schema: "debug.upgrade_history_item"
+    generated_exact_term: "upgrade"
+    exact_terms:
+      - "upgrade"
+  dns.config_synchronization:
+    document: "dns/config-synchronization.js"
+    schema: "config.config_synchronization"
+    generated_exact_term: "config-synchronization"
+    exact_terms:
+      - "config-synchronization"
+  dns.data_center:
+    document: "dns/data-center.js"
+    schema: "config.data_center"
+    generated_exact_term: "data-center"
+    exact_terms:
+      - "data-center"
+  dns.dns_server:
+    document: "dns/dns-server.js"
+    schema: "config.dns_server"
+    generated_exact_term: "dns-server"
+    exact_terms:
+      - "dns-server"
+  dns.dns_virtual_service.dns_profile:
+    document: "dns/dns-virtual-service/dns-profile.js"
+    schema: "config.dns_profile"
+    generated_exact_term: "dns-profile"
+    exact_terms:
+      - "dns-profile"
+  dns.dns_virtual_service.virtual_service:
+    document: "dns/dns-virtual-service/virtual-service.js"
+    schema: "config.service_type"
+    generated_exact_term: "virtual-service"
+    exact_terms:
+      - "virtual-service"
+  dns.gslb.domain_map:
+    document: "dns/gslb/domain-map.js"
+    schema: "config.domain_map"
+    generated_exact_term: "domain-map"
+    exact_terms:
+      - "domain-map"
+  dns.gslb.ldns_address_group:
+    document: "dns/gslb/ldns-address-group.js"
+    schema: "config.ldns_address_group"
+    generated_exact_term: "ldns-address-group"
+    exact_terms:
+      - "ldns-address-group"
+  dns.gslb.vip_pool:
+    document: "dns/gslb/vip-pool.js"
+    schema: "config.vip_pool"
+    generated_exact_term: "vip-pool"
+    exact_terms:
+      - "vip-pool"
+  dns.local_device:
+    document: "dns/local-device.js"
+    schema: "config.local_device"
+    generated_exact_term: "local-device"
+    exact_terms:
+      - "local-device"
+  dns.local_dns.forward_zone:
+    document: "dns/local-dns/forward-zone.js"
+    schema: "config.forward_zone"
+    generated_exact_term: "forward-zone"
+    exact_terms:
+      - "forward-zone"
+  dns.local_dns.local_zone:
+    document: "dns/local-dns/local-zone.js"
+    schema: "config.local_zone"
+    generated_exact_term: "local-zone"
+    exact_terms:
+      - "local-zone"
+  dns.local_dns.response_policy_zones:
+    document: "dns/local-dns/response-policy-zones.js"
+    schema: "config.response_policy_zones"
+    generated_exact_term: "response-policy-zones"
+    exact_terms:
+      - "response-policy-zones"
+  dns.local_dns.setting:
+    document: "dns/local-dns/setting.js"
+    schema: "config.local_dns_setting"
+    generated_exact_term: "setting"
+    exact_terms:
+      - "setting"
+  dns.recovery_point:
+    document: "dns/recovery-point.js"
+    schema: "config.recovery_point"
+    generated_exact_term: "recovery-point"
+    exact_terms:
+      - "recovery-point"
+  dns.zone.dns_records.a:
+    document: "dns/zone/dns-records/a.js"
+    schema: "config.dns_record_a"
+    generated_exact_term: "a"
+    exact_terms:
+      - "a"
+  dns.zone.dns_records.aaaa:
+    document: "dns/zone/dns-records/aaaa.js"
+    schema: "config.dns_record_aaaa"
+    generated_exact_term: "aaaa"
+    exact_terms:
+      - "aaaa"
+  dns.zone.dns_records.all:
+    document: "dns/zone/dns-records/all.js"
+    schema: "config.dns_record_all"
+    generated_exact_term: "all"
+    exact_terms:
+      - "all"
+  dns.zone.dns_records.caa:
+    document: "dns/zone/dns-records/caa.js"
+    schema: "config.dns_record_caa"
+    generated_exact_term: "caa"
+    exact_terms:
+      - "caa"
+  dns.zone.dns_records.cname:
+    document: "dns/zone/dns-records/cname.js"
+    schema: "config.dns_record_cname"
+    generated_exact_term: "cname"
+    exact_terms:
+      - "cname"
+  dns.zone.dns_records.dname:
+    document: "dns/zone/dns-records/dname.js"
+    schema: "config.dns_record_dname"
+    generated_exact_term: "dname"
+    exact_terms:
+      - "dname"
+  dns.zone.dns_records.ds:
+    document: "dns/zone/dns-records/ds.js"
+    schema: "config.dns_record_ds"
+    generated_exact_term: "ds"
+    exact_terms:
+      - "ds"
+  dns.zone.dns_records.hinfo:
+    document: "dns/zone/dns-records/hinfo.js"
+    schema: "config.dns_record_hinfo"
+    generated_exact_term: "hinfo"
+    exact_terms:
+      - "hinfo"
+  dns.zone.dns_records.mx:
+    document: "dns/zone/dns-records/mx.js"
+    schema: "config.dns_record_mx"
+    generated_exact_term: "mx"
+    exact_terms:
+      - "mx"
+  dns.zone.dns_records.naptr:
+    document: "dns/zone/dns-records/naptr.js"
+    schema: "config.dns_record_naptr"
+    generated_exact_term: "naptr"
+    exact_terms:
+      - "naptr"
+  dns.zone.dns_records.ns:
+    document: "dns/zone/dns-records/ns.js"
+    schema: "config.dns_record_ns"
+    generated_exact_term: "ns"
+    exact_terms:
+      - "ns"
+  dns.zone.dns_records.ptr:
+    document: "dns/zone/dns-records/ptr.js"
+    schema: "config.dns_record_ptr"
+    generated_exact_term: "ptr"
+    exact_terms:
+      - "ptr"
+  dns.zone.dns_records.srv:
+    document: "dns/zone/dns-records/srv.js"
+    schema: "config.dns_record_srv"
+    generated_exact_term: "srv"
+    exact_terms:
+      - "srv"
+  dns.zone.dns_records.txt:
+    document: "dns/zone/dns-records/txt.js"
+    schema: "config.dns_record_txt"
+    generated_exact_term: "txt"
+    exact_terms:
+      - "txt"
+  dns.zone.dnssec_key:
+    document: "dns/zone/dnssec-key.js"
+    schema: "config.dnssec_key"
+    generated_exact_term: "dnssec-key"
+    exact_terms:
+      - "dnssec-key"
+  dns.zone.tsig_key:
+    document: "dns/zone/tsig-key.js"
+    schema: "config.tsig_key"
+    generated_exact_term: "tsig-key"
+    exact_terms:
+      - "tsig-key"
+  dns.zone.zone:
+    document: "dns/zone/zone.js"
+    schema: "config.zone"
+    generated_exact_term: "zone"
+    exact_terms:
+      - "zone"
+  export:
+    document: "export.js"
+    schema: "config.export_config_file"
+    generated_exact_term: "export"
+    exact_terms:
+      - "export"
+  ha.active_standby:
+    document: "ha/active-standby.js"
+    schema: "config.active_standby"
+    generated_exact_term: "active-standby"
+    exact_terms:
+      - "active-standby"
+  ha.active_standby_join:
+    document: "ha/active-standby-join.js"
+    schema: "config.active_standby_join"
+    generated_exact_term: "active-standby-join"
+    exact_terms:
+      - "active-standby-join"
+  ha.application_group:
+    document: "ha/application-group.js"
+    schema: "config.application_group"
+    generated_exact_term: "application-group"
+    exact_terms:
+      - "application-group"
+  ha.cluster:
+    document: "ha/cluster.js"
+    schema: "config.cluster"
+    generated_exact_term: "cluster"
+    exact_terms:
+      - "cluster"
+  ha.cluster_join:
+    document: "ha/cluster-join.js"
+    schema: "config.cluster_join"
+    generated_exact_term: "cluster-join"
+    exact_terms:
+      - "cluster-join"
+  ha.member:
+    document: "ha/member.js"
+    schema: "config.member"
+    generated_exact_term: "member"
+    exact_terms:
+      - "member"
+  ha.member_group:
+    document: "ha/member-group.js"
+    schema: "config.member_group"
+    generated_exact_term: "member-group"
+    exact_terms:
+      - "member-group"
+  ha.mode:
+    document: "ha/mode.js"
+    schema: "config.mode"
+    generated_exact_term: "mode"
+    exact_terms:
+      - "mode"
+  ha.snat_combination:
+    document: "ha/snat-combination.js"
+    schema: "config.snat_combination"
+    generated_exact_term: "snat-combination"
+    exact_terms:
+      - "snat-combination"
+  ha.virtual_service_combination:
+    document: "ha/virtual-service-combination.js"
+    schema: "config.virtual_service_combination"
+    generated_exact_term: "virtual-service-combination"
+    exact_terms:
+      - "virtual-service-combination"
+  import:
+    document: "import.js"
+    schema: "config.import_config_file"
+    generated_exact_term: "import"
+    exact_terms:
+      - "import"
+  last_event:
+    document: "last-event.js"
+    schema: null
+    generated_exact_term: "last-event"
+    exact_terms:
+      - "last-event"
+  lc.dns_intranet_record.a:
+    document: "lc/dns-intranet-record/a.js"
+    schema: "config.dns_intranet_record_a"
+    generated_exact_term: "a"
+    exact_terms:
+      - "a"
+  lc.dns_intranet_record.aaaa:
+    document: "lc/dns-intranet-record/aaaa.js"
+    schema: "config.dns_intranet_record_aaaa"
+    generated_exact_term: "aaaa"
+    exact_terms:
+      - "aaaa"
+  lc.dns_intranet_record.all:
+    document: "lc/dns-intranet-record/all.js"
+    schema: "config.dns_record"
+    generated_exact_term: "all"
+    exact_terms:
+      - "all"
+  lc.dns_intranet_record.cname:
+    document: "lc/dns-intranet-record/cname.js"
+    schema: "config.dns_intranet_record_cname"
+    generated_exact_term: "cname"
+    exact_terms:
+      - "cname"
+  lc.dns_intranet_record.mx:
+    document: "lc/dns-intranet-record/mx.js"
+    schema: "config.dns_intranet_record_mx"
+    generated_exact_term: "mx"
+    exact_terms:
+      - "mx"
+  lc.dns_intranet_record.txt:
+    document: "lc/dns-intranet-record/txt.js"
+    schema: "config.dns_intranet_record_txt"
+    generated_exact_term: "txt"
+    exact_terms:
+      - "txt"
+  lc.dns_pre_rule:
+    document: "lc/dns-pre-rule.js"
+    schema: "config.dns_pre_rule"
+    generated_exact_term: "dns-pre-rule"
+    exact_terms:
+      - "dns-pre-rule"
+  lc.dns_proxy:
+    document: "lc/dns-proxy.js"
+    schema: "config.dns_proxy"
+    generated_exact_term: "dns-proxy"
+    exact_terms:
+      - "dns-proxy"
+  lc.policy_route:
+    document: "lc/policy-route.js"
+    schema: "config.policy_route"
+    generated_exact_term: "policy-route"
+    exact_terms:
+      - "policy-route"
+  lc.policy_route_advanced:
+    document: "lc/policy-route-advanced.js"
+    schema: "config.policy_route_advanced"
+    generated_exact_term: "policy-route-advanced"
+    exact_terms:
+      - "policy-route-advanced"
+  lc.time_plan:
+    document: "lc/time-plan.js"
+    schema: "config.active_time"
+    generated_exact_term: "time-plan"
+    exact_terms:
+      - "time-plan"
+  log.blackbox_log:
+    document: "log/blackbox-log.js"
+    schema: "config.export_black_box"
+    generated_exact_term: "blackbox-log"
+    exact_terms:
+      - "blackbox-log"
+  log.operation_log:
+    document: "log/operation-log.js"
+    schema: "debug.operation_log_row"
+    generated_exact_term: "operation-log"
+    exact_terms:
+      - "operation-log"
+  log.service_log:
+    document: "log/service-log.js"
+    schema: "debug.service_log_row"
+    generated_exact_term: "service-log"
+    exact_terms:
+      - "service-log"
+  log.ssl_log:
+    document: "log/ssl-log.js"
+    schema: "debug.ssl_log_row"
+    generated_exact_term: "ssl-log"
+    exact_terms:
+      - "ssl-log"
+  login:
+    document: "login.js"
+    schema: "json.login"
+    generated_exact_term: "login"
+    exact_terms:
+      - "login"
+  logout:
+    document: "logout.js"
+    schema: null
+    generated_exact_term: "logout"
+    exact_terms:
+      - "logout"
+  net.acl:
+    document: "net/acl.js"
+    schema: "config.acl"
+    generated_exact_term: "acl"
+    exact_terms:
+      - "acl"
+  net.arp:
+    document: "net/arp.js"
+    schema: "config.arp"
+    generated_exact_term: "arp"
+    exact_terms:
+      - "arp"
+  net.arp_broadcast:
+    document: "net/arp-broadcast.js"
+    schema: "config.arp_broadcast"
+    generated_exact_term: "arp-broadcast"
+    exact_terms:
+      - "arp-broadcast"
+  net.arp_proxy:
+    document: "net/arp-proxy.js"
+    schema: "config.arp_proxy"
+    generated_exact_term: "arp-proxy"
+    exact_terms:
+      - "arp-proxy"
+  net.bgp:
+    document: "net/bgp.js"
+    schema: "config.bgp"
+    generated_exact_term: "bgp"
+    exact_terms:
+      - "bgp"
+  net.bond:
+    document: "net/bond.js"
+    schema: "config.bond"
+    generated_exact_term: "Bond口"
+    exact_terms:
+      - "Bond口"
+  net.bridge:
+    document: "net/bridge.js"
+    schema: "config.bridge"
+    generated_exact_term: "bridge"
+    exact_terms:
+      - "bridge"
+  net.ddos_defend_lan:
+    document: "net/ddos-defend-lan.js"
+    schema: "config.ddos-defend-lan"
+    generated_exact_term: "ddos-defend-lan"
+    exact_terms:
+      - "ddos-defend-lan"
+  net.ddos_defend_wan:
+    document: "net/ddos-defend-wan.js"
+    schema: "config.ddos-defend-wan"
+    generated_exact_term: "ddos-defend-wan"
+    exact_terms:
+      - "ddos-defend-wan"
+  net.dnat:
+    document: "net/dnat.js"
+    schema: "config.dnat"
+    generated_exact_term: "dnat"
+    exact_terms:
+      - "dnat"
+  net.interface_adapter:
+    document: "net/interface-adapter.js"
+    schema: "config.interface"
+    generated_exact_term: "interface-adapter"
+    exact_terms:
+      - "interface-adapter"
+  net.interface_mode:
+    document: "net/interface-mode.js"
+    schema: "config.interface_mode"
+    generated_exact_term: "interface-mode"
+    exact_terms:
+      - "interface-mode"
+  net.link.all:
+    document: "net/link/all.js"
+    schema: "config.link"
+    generated_exact_term: "all"
+    exact_terms:
+      - "all"
+  net.link.lan:
+    document: "net/link/lan.js"
+    schema: "config.link_lan"
+    generated_exact_term: "LAN口"
+    exact_terms:
+      - "LAN口"
+  net.link.pppoe:
+    document: "net/link/pppoe.js"
+    schema: "config.link_pppoe"
+    generated_exact_term: "PPPoE口"
+    exact_terms:
+      - "PPPoE口"
+  net.link.virtual_wire:
+    document: "net/link/virtual-wire.js"
+    schema: "config.link_virtual_wire"
+    generated_exact_term: "虚拟网线"
+    exact_terms:
+      - "虚拟网线"
+  net.link.wan:
+    document: "net/link/wan.js"
+    schema: "config.link_wan"
+    generated_exact_term: "WAN口"
+    exact_terms:
+      - "WAN口"
+  net.link_monitor.all:
+    document: "net/link-monitor/all.js"
+    schema: "config.link_monitor"
+    generated_exact_term: "all"
+    exact_terms:
+      - "all"
+  net.link_monitor.connect_tcp:
+    document: "net/link-monitor/connect-tcp.js"
+    schema: "config.link_monitor_connect_tcp"
+    generated_exact_term: "connect-tcp"
+    exact_terms:
+      - "connect-tcp"
+  net.link_monitor.icmp:
+    document: "net/link-monitor/icmp.js"
+    schema: "config.link_monitor_icmp"
+    generated_exact_term: "icmp"
+    exact_terms:
+      - "icmp"
+  net.link_monitor.icmpv6:
+    document: "net/link-monitor/icmpv6.js"
+    schema: "config.link_monitor_icmpv6"
+    generated_exact_term: "icmpv6"
+    exact_terms:
+      - "icmpv6"
+  net.lldp:
+    document: "net/lldp.js"
+    schema: "config.lldp"
+    generated_exact_term: "lldp"
+    exact_terms:
+      - "lldp"
+  net.macvlan:
+    document: "net/macvlan.js"
+    schema: "config.macvlan"
+    generated_exact_term: "macvlan"
+    exact_terms:
+      - "macvlan"
+  net.netns:
+    document: "net/netns.js"
+    schema: "config.netns"
+    generated_exact_term: "netns"
+    exact_terms:
+      - "netns"
+  net.ospf:
+    document: "net/ospf.js"
+    schema: "config.ospf"
+    generated_exact_term: "ospf"
+    exact_terms:
+      - "ospf"
+  net.ospf_interface:
+    document: "net/ospf-interface.js"
+    schema: "config.ospf_interface"
+    generated_exact_term: "ospf-interface"
+    exact_terms:
+      - "ospf-interface"
+  net.ospfv3:
+    document: "net/ospfv3.js"
+    schema: "config.ospfv3"
+    generated_exact_term: "ospfv3"
+    exact_terms:
+      - "ospfv3"
+  net.ospfv3_interface:
+    document: "net/ospfv3-interface.js"
+    schema: "config.ospfv3_interface"
+    generated_exact_term: "ospfv3-interface"
+    exact_terms:
+      - "ospfv3-interface"
+  net.rip:
+    document: "net/rip.js"
+    schema: "config.rip"
+    generated_exact_term: "rip"
+    exact_terms:
+      - "rip"
+  net.rip_interface:
+    document: "net/rip-interface.js"
+    schema: "config.rip_interface"
+    generated_exact_term: "rip-interface"
+    exact_terms:
+      - "rip-interface"
+  net.snat:
+    document: "net/snat.js"
+    schema: "config.snat"
+    generated_exact_term: "snat"
+    exact_terms:
+      - "snat"
+  net.static_route:
+    document: "net/static-route.js"
+    schema: "config.static_route"
+    generated_exact_term: "static-route"
+    exact_terms:
+      - "static-route"
+  net.static_route_monitor:
+    document: "net/static-route-monitor.js"
+    schema: "config.static_route_monitor"
+    generated_exact_term: "static-route-monitor"
+    exact_terms:
+      - "static-route-monitor"
+  net.virtual_wire:
+    document: "net/virtual-wire.js"
+    schema: "config.virtual-wire"
+    generated_exact_term: "virtual-wire"
+    exact_terms:
+      - "virtual-wire"
+  net.vlan:
+    document: "net/vlan.js"
+    schema: "config.vlan"
+    generated_exact_term: "VLAN口"
+    exact_terms:
+      - "VLAN口"
+  net.vxnet:
+    document: "net/vxnet.js"
+    schema: "config.vxnet"
+    generated_exact_term: "vxnet"
+    exact_terms:
+      - "vxnet"
+  rc.application_identification:
+    document: "rc/application-identification.js"
+    schema: "config.application_identification"
+    generated_exact_term: "application-identification"
+    exact_terms:
+      - "application-identification"
+  rc.ca:
+    document: "rc/ca.js"
+    schema: "config.ca"
+    generated_exact_term: "ca"
+    exact_terms:
+      - "ca"
+  rc.certificate_utility:
+    document: "rc/certificate-utility.js"
+    schema: "config.certificate_utility_file_abnormal"
+    generated_exact_term: "certificate-utility"
+    exact_terms:
+      - "certificate-utility"
+  rc.crl:
+    document: "rc/crl.js"
+    schema: "config.crl"
+    generated_exact_term: "crl"
+    exact_terms:
+      - "crl"
+  rc.custom_address_group:
+    document: "rc/custom-address-group.js"
+    schema: "config.custom_address_group"
+    generated_exact_term: "custom-address-group"
+    exact_terms:
+      - "custom-address-group"
+  rc.data_group:
+    document: "rc/data-group.js"
+    schema: "config.data_group"
+    generated_exact_term: "data-group"
+    exact_terms:
+      - "data-group"
+  rc.domain_group:
+    document: "rc/domain-group.js"
+    schema: "config.domain_group"
+    generated_exact_term: "domain-group"
+    exact_terms:
+      - "domain-group"
+  rc.global_address_library:
+    document: "rc/global-address-library.js"
+    schema: "config.global_address_library_city"
+    generated_exact_term: "global-address-library"
+    exact_terms:
+      - "global-address-library"
+  rc.http_content:
+    document: "rc/http-content.js"
+    schema: "config.http_content"
+    generated_exact_term: "http-content"
+    exact_terms:
+      - "http-content"
+  rc.isp_address_group:
+    document: "rc/isp-address-group.js"
+    schema: "config.isp_address_group"
+    generated_exact_term: "isp-address-group"
+    exact_terms:
+      - "isp-address-group"
+  rc.software_image:
+    document: "rc/software-image.js"
+    schema: "config.software_image"
+    generated_exact_term: "software-image"
+    exact_terms:
+      - "software-image"
+  rc.ssl_certificate.all:
+    document: "rc/ssl-certificate/all.js"
+    schema: "config.ssl_certificate_all"
+    generated_exact_term: "all"
+    exact_terms:
+      - "all"
+  rc.ssl_certificate.certificate_request:
+    document: "rc/ssl-certificate/certificate-request.js"
+    schema: "config.ssl_certificate_certificate_request"
+    generated_exact_term: "certificate-request"
+    exact_terms:
+      - "certificate-request"
+  rc.ssl_certificate.imported_certificate:
+    document: "rc/ssl-certificate/imported-certificate.js"
+    schema: "config.ssl_certificate_imported_certificate"
+    generated_exact_term: "imported-certificate"
+    exact_terms:
+      - "imported-certificate"
+  rc.ssl_certificate.self_signed:
+    document: "rc/ssl-certificate/self-signed.js"
+    schema: "config.ssl_certificate_self_signed"
+    generated_exact_term: "self-signed"
+    exact_terms:
+      - "self-signed"
+  rc.zone_address_group:
+    document: "rc/zone-address-group.js"
+    schema: "config.zone_address_group"
+    generated_exact_term: "zone-address-group"
+    exact_terms:
+      - "zone-address-group"
+  report_logout:
+    document: "report-logout.js"
+    schema: "json.logout"
+    generated_exact_term: "report-logout"
+    exact_terms:
+      - "report-logout"
+  scenario:
+    document: "scenario.js"
+    schema: "config.scenario"
+    generated_exact_term: "scenario"
+    exact_terms:
+      - "scenario"
+  search:
+    document: "search.js"
+    schema: "config.search_order"
+    generated_exact_term: "search"
+    exact_terms:
+      - "search"
+  slb.access_control_profile:
+    document: "slb/access-control-profile.js"
+    schema: "config.access_control_profile"
+    generated_exact_term: "access-control-profile"
+    exact_terms:
+      - "access-control-profile"
+  slb.http2_profile:
+    document: "slb/http2-profile.js"
+    schema: "config.http2_profile"
+    generated_exact_term: "http2-profile"
+    exact_terms:
+      - "http2-profile"
+  slb.http_defence:
+    document: "slb/http-defence.js"
+    schema: "config.http_defence"
+    generated_exact_term: "http-defence"
+    exact_terms:
+      - "http-defence"
+  slb.http_profile:
+    document: "slb/http-profile.js"
+    schema: "config.http_profile"
+    generated_exact_term: "http-profile"
+    exact_terms:
+      - "http-profile"
+  slb.http_rewrite.all:
+    document: "slb/http-rewrite/all.js"
+    schema: "config.http_rewrite"
+    generated_exact_term: "all"
+    exact_terms:
+      - "all"
+  slb.http_rewrite.request:
+    document: "slb/http-rewrite/request.js"
+    schema: "config.http_rewrite_request"
+    generated_exact_term: "request"
+    exact_terms:
+      - "request"
+  slb.http_rewrite.response:
+    document: "slb/http-rewrite/response.js"
+    schema: "config.http_rewrite_response"
+    generated_exact_term: "response"
+    exact_terms:
+      - "response"
+  slb.ipro:
+    document: "slb/ipro.js"
+    schema: "config.ipro"
+    generated_exact_term: "ipro"
+    exact_terms:
+      - "ipro"
+  slb.node:
+    document: "slb/node.js"
+    schema: "config.node"
+    generated_exact_term: "节点"
+    exact_terms:
+      - "节点"
+  slb.persist.all:
+    document: "slb/persist/all.js"
+    schema: "config.persist"
+    generated_exact_term: "all"
+    exact_terms:
+      - "all"
+  slb.persist.cookie_insert:
+    document: "slb/persist/cookie-insert.js"
+    schema: "config.persist_cookie_insert"
+    generated_exact_term: "COOKIE-INSERT会话保持"
+    exact_terms:
+      - "COOKIE-INSERT会话保持"
+  slb.persist.cookie_rewrite:
+    document: "slb/persist/cookie-rewrite.js"
+    schema: "config.persist_cookie_rewrite"
+    generated_exact_term: "COOKIE-REWRITE会话保持"
+    exact_terms:
+      - "COOKIE-REWRITE会话保持"
+  slb.persist.cookie_study:
+    document: "slb/persist/cookie-study.js"
+    schema: "config.persist_cookie_study"
+    generated_exact_term: "COOKIE-STUDY会话保持"
+    exact_terms:
+      - "COOKIE-STUDY会话保持"
+  slb.persist.http_request_study:
+    document: "slb/persist/http-request-study.js"
+    schema: "config.persist_http_request_study"
+    generated_exact_term: "HTTP-REQUEST-STUDY会话保持"
+    exact_terms:
+      - "HTTP-REQUEST-STUDY会话保持"
+  slb.persist.http_response_study:
+    document: "slb/persist/http-response-study.js"
+    schema: "config.persist_http_response_study"
+    generated_exact_term: "HTTP-RESPONSE-STUDY会话保持"
+    exact_terms:
+      - "HTTP-RESPONSE-STUDY会话保持"
+  slb.persist.radius:
+    document: "slb/persist/radius.js"
+    schema: "config.persist_radius"
+    generated_exact_term: "RADIUS会话保持"
+    exact_terms:
+      - "RADIUS会话保持"
+  slb.persist.sip:
+    document: "slb/persist/sip.js"
+    schema: "config.persist_sip"
+    generated_exact_term: "SIP会话保持"
+    exact_terms:
+      - "SIP会话保持"
+  slb.persist.source_ip:
+    document: "slb/persist/source-ip.js"
+    schema: "config.persist_source_ip"
+    generated_exact_term: "SOURCE-IP会话保持"
+    exact_terms:
+      - "SOURCE-IP会话保持"
+  slb.persist.source_ip_port:
+    document: "slb/persist/source-ip-port.js"
+    schema: "config.persist_source_ip_port"
+    generated_exact_term: "SOURCE-IP-PORT会话保持"
+    exact_terms:
+      - "SOURCE-IP-PORT会话保持"
+  slb.persist.ssl_sessionid:
+    document: "slb/persist/ssl-sessionid.js"
+    schema: "config.persist_ssl_sessionid"
+    generated_exact_term: "SSL-SESSIONID会话保持"
+    exact_terms:
+      - "SSL-SESSIONID会话保持"
+  slb.pool:
+    document: "slb/pool.js"
+    schema: "config.pool"
+    generated_exact_term: "节点池"
+    exact_terms:
+      - "节点池"
+  slb.pre_rule.8583:
+    document: "slb/pre-rule/8583.js"
+    schema: "config.pre_rule_8583"
+    generated_exact_term: "8583前置策略"
+    exact_terms:
+      - "8583前置策略"
+  slb.pre_rule.all:
+    document: "slb/pre-rule/all.js"
+    schema: "config.pre_rule"
+    generated_exact_term: "all"
+    exact_terms:
+      - "all"
+  slb.pre_rule.any:
+    document: "slb/pre-rule/any.js"
+    schema: "config.pre_rule_any"
+    generated_exact_term: "ANY前置策略"
+    exact_terms:
+      - "ANY前置策略"
+  slb.pre_rule.dns:
+    document: "slb/pre-rule/dns.js"
+    schema: "config.pre_rule_dns"
+    generated_exact_term: "DNS前置策略"
+    exact_terms:
+      - "DNS前置策略"
+  slb.pre_rule.ftp:
+    document: "slb/pre-rule/ftp.js"
+    schema: "config.pre_rule_ftp"
+    generated_exact_term: "FTP前置策略"
+    exact_terms:
+      - "FTP前置策略"
+  slb.pre_rule.http:
+    document: "slb/pre-rule/http.js"
+    schema: "config.pre_rule_http"
+    generated_exact_term: "HTTP前置策略"
+    exact_terms:
+      - "HTTP前置策略"
+  slb.pre_rule.ip:
+    document: "slb/pre-rule/ip.js"
+    schema: "config.pre_rule_ip"
+    generated_exact_term: "IP前置策略"
+    exact_terms:
+      - "IP前置策略"
+  slb.pre_rule.radius:
+    document: "slb/pre-rule/radius.js"
+    schema: "config.pre_rule_radius"
+    generated_exact_term: "RADIUS前置策略"
+    exact_terms:
+      - "RADIUS前置策略"
+  slb.pre_rule.sip:
+    document: "slb/pre-rule/sip.js"
+    schema: "config.pre_rule_sip"
+    generated_exact_term: "SIP前置策略"
+    exact_terms:
+      - "SIP前置策略"
+  slb.pre_rule.ssl_offload:
+    document: "slb/pre-rule/ssl-offload.js"
+    schema: "config.pre_rule_ssl_offload"
+    generated_exact_term: "SSL-OFFLOAD前置策略"
+    exact_terms:
+      - "SSL-OFFLOAD前置策略"
+  slb.pre_rule.ssl_offload_https:
+    document: "slb/pre-rule/ssl-offload-https.js"
+    schema: "config.pre_rule_ssl_offload_https"
+    generated_exact_term: "SSL-OFFLOAD-HTTPS前置策略"
+    exact_terms:
+      - "SSL-OFFLOAD-HTTPS前置策略"
+  slb.pre_rule.tcp_forward:
+    document: "slb/pre-rule/tcp-forward.js"
+    schema: "config.pre_rule_tcp_forward"
+    generated_exact_term: "TCP-FORWARD前置策略"
+    exact_terms:
+      - "TCP-FORWARD前置策略"
+  slb.pre_rule.tcp_proxy:
+    document: "slb/pre-rule/tcp-proxy.js"
+    schema: "config.pre_rule_tcp_proxy"
+    generated_exact_term: "TCP-PROXY前置策略"
+    exact_terms:
+      - "TCP-PROXY前置策略"
+  slb.pre_rule.udp_forward:
+    document: "slb/pre-rule/udp-forward.js"
+    schema: "config.pre_rule_udp_forward"
+    generated_exact_term: "UDP-FORWARD前置策略"
+    exact_terms:
+      - "UDP-FORWARD前置策略"
+  slb.pre_rule.udp_proxy:
+    document: "slb/pre-rule/udp-proxy.js"
+    schema: "config.pre_rule_udp_proxy"
+    generated_exact_term: "UDP-PROXY前置策略"
+    exact_terms:
+      - "UDP-PROXY前置策略"
+  slb.qos_profile:
+    document: "slb/qos-profile.js"
+    schema: "config.qos_profile"
+    generated_exact_term: "qos-profile"
+    exact_terms:
+      - "qos-profile"
+  slb.security_node:
+    document: "slb/security-node.js"
+    schema: "config.security_node"
+    generated_exact_term: "security-node"
+    exact_terms:
+      - "security-node"
+  slb.security_pool:
+    document: "slb/security-pool.js"
+    schema: "config.security_pool"
+    generated_exact_term: "安全池"
+    exact_terms:
+      - "安全池"
+  slb.service_chain:
+    document: "slb/service-chain.js"
+    schema: "config.service_chain"
+    generated_exact_term: "service-chain"
+    exact_terms:
+      - "service-chain"
+  slb.service_host:
+    document: "slb/service-host.js"
+    schema: "config.service_host"
+    generated_exact_term: "service-host"
+    exact_terms:
+      - "service-host"
+  slb.service_monitor.all:
+    document: "slb/service-monitor/all.js"
+    schema: "config.service_monitor"
+    generated_exact_term: "all"
+    exact_terms:
+      - "all"
+  slb.service_monitor.connect_ssl:
+    document: "slb/service-monitor/connect-ssl.js"
+    schema: "config.service_monitor_connect_ssl"
+    generated_exact_term: "CONNECT-SSL监视器"
+    exact_terms:
+      - "CONNECT-SSL监视器"
+  slb.service_monitor.connect_tcp:
+    document: "slb/service-monitor/connect-tcp.js"
+    schema: "config.service_monitor_connect_tcp"
+    generated_exact_term: "CONNECT-TCP监视器"
+    exact_terms:
+      - "CONNECT-TCP监视器"
+  slb.service_monitor.connect_udp:
+    document: "slb/service-monitor/connect-udp.js"
+    schema: "config.service_monitor_connect_udp"
+    generated_exact_term: "CONNECT-UDP监视器"
+    exact_terms:
+      - "CONNECT-UDP监视器"
+  slb.service_monitor.dns:
+    document: "slb/service-monitor/dns.js"
+    schema: "config.service_monitor_dns"
+    generated_exact_term: "DNS监视器"
+    exact_terms:
+      - "DNS监视器"
+  slb.service_monitor.external_monitor:
+    document: "slb/service-monitor/external-monitor.js"
+    schema: "config.service_monitor_external_monitor"
+    generated_exact_term: "EXTERNAL-MONITOR监视器"
+    exact_terms:
+      - "EXTERNAL-MONITOR监视器"
+  slb.service_monitor.ftp:
+    document: "slb/service-monitor/ftp.js"
+    schema: "config.service_monitor_ftp"
+    generated_exact_term: "FTP监视器"
+    exact_terms:
+      - "FTP监视器"
+  slb.service_monitor.http:
+    document: "slb/service-monitor/http.js"
+    schema: "config.service_monitor_http"
+    generated_exact_term: "HTTP监视器"
+    exact_terms:
+      - "HTTP监视器"
+  slb.service_monitor.https:
+    document: "slb/service-monitor/https.js"
+    schema: "config.service_monitor_https"
+    generated_exact_term: "HTTPS监视器"
+    exact_terms:
+      - "HTTPS监视器"
+  slb.service_monitor.icmp:
+    document: "slb/service-monitor/icmp.js"
+    schema: "config.service_monitor_icmp"
+    generated_exact_term: "ICMP监视器"
+    exact_terms:
+      - "ICMP监视器"
+  slb.service_monitor.icmpv6:
+    document: "slb/service-monitor/icmpv6.js"
+    schema: "config.service_monitor_icmpv6"
+    generated_exact_term: "ICMPV6监视器"
+    exact_terms:
+      - "ICMPV6监视器"
+  slb.service_monitor.ldap:
+    document: "slb/service-monitor/ldap.js"
+    schema: "config.service_monitor_ldap"
+    generated_exact_term: "LDAP监视器"
+    exact_terms:
+      - "LDAP监视器"
+  slb.service_monitor.monitor_expression:
+    document: "slb/service-monitor/monitor-expression.js"
+    schema: "config.service_monitor_monitor_expression"
+    generated_exact_term: "MONITOR-EXPRESSION监视器"
+    exact_terms:
+      - "MONITOR-EXPRESSION监视器"
+  slb.service_monitor.mssql_database:
+    document: "slb/service-monitor/mssql-database.js"
+    schema: "config.service_monitor_mssql_database"
+    generated_exact_term: "MSSQL-DATABASE监视器"
+    exact_terms:
+      - "MSSQL-DATABASE监视器"
+  slb.service_monitor.mysql_database:
+    document: "slb/service-monitor/mysql-database.js"
+    schema: "config.service_monitor_mysql_database"
+    generated_exact_term: "MYSQL-DATABASE监视器"
+    exact_terms:
+      - "MYSQL-DATABASE监视器"
+  slb.service_monitor.oracle_database:
+    document: "slb/service-monitor/oracle-database.js"
+    schema: "config.service_monitor_oracle_database"
+    generated_exact_term: "ORACLE-DATABASE监视器"
+    exact_terms:
+      - "ORACLE-DATABASE监视器"
+  slb.service_monitor.passive_http:
+    document: "slb/service-monitor/passive-http.js"
+    schema: "config.service_monitor_passive_http"
+    generated_exact_term: "PASSIVE-HTTP监视器"
+    exact_terms:
+      - "PASSIVE-HTTP监视器"
+  slb.service_monitor.passive_tcp:
+    document: "slb/service-monitor/passive-tcp.js"
+    schema: "config.service_monitor_passive_tcp"
+    generated_exact_term: "PASSIVE-TCP监视器"
+    exact_terms:
+      - "PASSIVE-TCP监视器"
+  slb.service_monitor.radius:
+    document: "slb/service-monitor/radius.js"
+    schema: "config.service_monitor_radius"
+    generated_exact_term: "RADIUS监视器"
+    exact_terms:
+      - "RADIUS监视器"
+  slb.service_monitor.sip:
+    document: "slb/service-monitor/sip.js"
+    schema: "config.service_monitor_sip"
+    generated_exact_term: "SIP监视器"
+    exact_terms:
+      - "SIP监视器"
+  slb.service_monitor.snmp:
+    document: "slb/service-monitor/snmp.js"
+    schema: "config.service_monitor_snmp"
+    generated_exact_term: "SNMP监视器"
+    exact_terms:
+      - "SNMP监视器"
+  slb.service_monitor.tcp_half_open:
+    document: "slb/service-monitor/tcp-half-open.js"
+    schema: "config.service_monitor_tcp_half_open"
+    generated_exact_term: "TCP-HALF-OPEN监视器"
+    exact_terms:
+      - "TCP-HALF-OPEN监视器"
+  slb.sip_profile:
+    document: "slb/sip-profile.js"
+    schema: "config.sip_profile"
+    generated_exact_term: "sip-profile"
+    exact_terms:
+      - "sip-profile"
+  slb.snat_pool:
+    document: "slb/snat-pool.js"
+    schema: "config.snat_rule"
+    generated_exact_term: "SNAT地址池"
+    exact_terms:
+      - "SNAT地址池"
+  slb.ssl_client:
+    document: "slb/ssl-client.js"
+    schema: "config.ssl_cipher_suites"
+    generated_exact_term: "ssl-client"
+    exact_terms:
+      - "ssl-client"
+  slb.ssl_server:
+    document: "slb/ssl-server.js"
+    schema: "config.ssl_server"
+    generated_exact_term: "ssl-server"
+    exact_terms:
+      - "ssl-server"
+  slb.tcp_profile.all:
+    document: "slb/tcp-profile/all.js"
+    schema: "config.tcp_profile"
+    generated_exact_term: "all"
+    exact_terms:
+      - "all"
+  slb.tcp_profile.l3_forward:
+    document: "slb/tcp-profile/l3-forward.js"
+    schema: "config.tcp_profile_l3_forward"
+    generated_exact_term: "L3-FORWARDTCP Profile"
+    exact_terms:
+      - "L3-FORWARDTCP Profile"
+  slb.tcp_profile.l4_forward:
+    document: "slb/tcp-profile/l4-forward.js"
+    schema: "config.tcp_profile_l4_forward"
+    generated_exact_term: "L4-FORWARDTCP Profile"
+    exact_terms:
+      - "L4-FORWARDTCP Profile"
+  slb.tcp_profile.l7_proxy:
+    document: "slb/tcp-profile/l7-proxy.js"
+    schema: "config.tcp_profile_l7_proxy"
+    generated_exact_term: "L7-PROXYTCP Profile"
+    exact_terms:
+      - "L7-PROXYTCP Profile"
+  slb.udp_profile:
+    document: "slb/udp-profile.js"
+    schema: "config.udp_profile"
+    generated_exact_term: "udp-profile"
+    exact_terms:
+      - "udp-profile"
+  slb.user:
+    document: "slb/user.js"
+    schema: "config.user"
+    generated_exact_term: "user"
+    exact_terms:
+      - "user"
+  slb.virtual_ip:
+    document: "slb/virtual-ip.js"
+    schema: "config.virtual_ip"
+    generated_exact_term: "虚拟IP"
+    exact_terms:
+      - "虚拟IP"
+  slb.virtual_service.8583:
+    document: "slb/virtual-service/8583.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "8583虚拟服务"
+    exact_terms:
+      - "8583虚拟服务"
+  slb.virtual_service.any:
+    document: "slb/virtual-service/any.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "ANY虚拟服务"
+    exact_terms:
+      - "ANY虚拟服务"
+  slb.virtual_service.dns:
+    document: "slb/virtual-service/dns.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "DNS虚拟服务"
+    exact_terms:
+      - "DNS虚拟服务"
+  slb.virtual_service.ftp:
+    document: "slb/virtual-service/ftp.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "FTP虚拟服务"
+    exact_terms:
+      - "FTP虚拟服务"
+  slb.virtual_service.http:
+    document: "slb/virtual-service/http.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "HTTP虚拟服务"
+    exact_terms:
+      - "HTTP虚拟服务"
+  slb.virtual_service.ip:
+    document: "slb/virtual-service/ip.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "IP虚拟服务"
+    exact_terms:
+      - "IP虚拟服务"
+  slb.virtual_service.radius:
+    document: "slb/virtual-service/radius.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "RADIUS虚拟服务"
+    exact_terms:
+      - "RADIUS虚拟服务"
+  slb.virtual_service.sip_tcp:
+    document: "slb/virtual-service/sip-tcp.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "SIP-TCP虚拟服务"
+    exact_terms:
+      - "SIP-TCP虚拟服务"
+  slb.virtual_service.sip_udp:
+    document: "slb/virtual-service/sip-udp.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "SIP-UDP虚拟服务"
+    exact_terms:
+      - "SIP-UDP虚拟服务"
+  slb.virtual_service.ssl_offload:
+    document: "slb/virtual-service/ssl-offload.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "SSL-OFFLOAD虚拟服务"
+    exact_terms:
+      - "SSL-OFFLOAD虚拟服务"
+  slb.virtual_service.ssl_offload_https:
+    document: "slb/virtual-service/ssl-offload-https.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "SSL-OFFLOAD-HTTPS虚拟服务"
+    exact_terms:
+      - "SSL-OFFLOAD-HTTPS虚拟服务"
+  slb.virtual_service.tcp_forward:
+    document: "slb/virtual-service/tcp-forward.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "TCP-FORWARD虚拟服务"
+    exact_terms:
+      - "TCP-FORWARD虚拟服务"
+  slb.virtual_service.tcp_proxy:
+    document: "slb/virtual-service/tcp-proxy.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "TCP-PROXY虚拟服务"
+    exact_terms:
+      - "TCP-PROXY虚拟服务"
+  slb.virtual_service.udp_forward:
+    document: "slb/virtual-service/udp-forward.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "UDP-FORWARD虚拟服务"
+    exact_terms:
+      - "UDP-FORWARD虚拟服务"
+  slb.virtual_service.udp_proxy:
+    document: "slb/virtual-service/udp-proxy.js"
+    schema: "config.virtual_service"
+    generated_exact_term: "UDP-PROXY虚拟服务"
+    exact_terms:
+      - "UDP-PROXY虚拟服务"
+  stat.dns.data_center:
+    document: "stat/dns/data-center.js"
+    schema: "stat.data_center_detail"
+    generated_exact_term: "data-center"
+    exact_terms:
+      - "data-center"
+  stat.dns.domain:
+    document: "stat/dns/domain.js"
+    schema: "stat.dns_domain_detail"
+    generated_exact_term: "domain"
+    exact_terms:
+      - "domain"
+  stat.dns.domain_map:
+    document: "stat/dns/domain-map.js"
+    schema: "stat.dns_map"
+    generated_exact_term: "domain-map"
+    exact_terms:
+      - "domain-map"
+  stat.dns.local_device:
+    document: "stat/dns/local-device.js"
+    schema: "stat.local_device_detail"
+    generated_exact_term: "local-device"
+    exact_terms:
+      - "local-device"
+  stat.dns.local_dns:
+    document: "stat/dns/local-dns.js"
+    schema: "stat.local_dns_detail"
+    generated_exact_term: "local-dns"
+    exact_terms:
+      - "local-dns"
+  stat.dns.query:
+    document: "stat/dns/query.js"
+    schema: "stat.dns_query"
+    generated_exact_term: "query"
+    exact_terms:
+      - "query"
+  stat.dns.vip_pool:
+    document: "stat/dns/vip-pool.js"
+    schema: "stat.dns_vip_pool"
+    generated_exact_term: "vip-pool"
+    exact_terms:
+      - "vip-pool"
+  stat.ha.active_standby:
+    document: "stat/ha/active-standby.js"
+    schema: "stat.active_standby"
+    generated_exact_term: "active-standby"
+    exact_terms:
+      - "active-standby"
+  stat.ha.application_group:
+    document: "stat/ha/application-group.js"
+    schema: "stat.application_group_detail"
+    generated_exact_term: "application-group"
+    exact_terms:
+      - "application-group"
+  stat.ha.member:
+    document: "stat/ha/member.js"
+    schema: "stat.member_detail"
+    generated_exact_term: "member"
+    exact_terms:
+      - "member"
+  stat.lc.dns_proxy:
+    document: "stat/lc/dns-proxy.js"
+    schema: "stat.dns_proxy"
+    generated_exact_term: "dns-proxy"
+    exact_terms:
+      - "dns-proxy"
+  stat.lc.policy_route:
+    document: "stat/lc/policy-route.js"
+    schema: "stat.policy_route_detail"
+    generated_exact_term: "policy-route"
+    exact_terms:
+      - "policy-route"
+  stat.net.acl:
+    document: "stat/net/acl.js"
+    schema: "stat.acl"
+    generated_exact_term: "acl"
+    exact_terms:
+      - "acl"
+  stat.net.bgp_neighbors:
+    document: "stat/net/bgp-neighbors.js"
+    schema: "stat.bgp_neighbors_detail"
+    generated_exact_term: "bgp-neighbors"
+    exact_terms:
+      - "bgp-neighbors"
+  stat.net.bond:
+    document: "stat/net/bond.js"
+    schema: "stat.bond_detail"
+    generated_exact_term: "bond"
+    exact_terms:
+      - "bond"
+  stat.net.bridge:
+    document: "stat/net/bridge.js"
+    schema: "stat.bridge_detail"
+    generated_exact_term: "bridge"
+    exact_terms:
+      - "bridge"
+  stat.net.dnat:
+    document: "stat/net/dnat.js"
+    schema: "stat.dnat"
+    generated_exact_term: "dnat"
+    exact_terms:
+      - "dnat"
+  stat.net.dynamic_route:
+    document: "stat/net/dynamic-route.js"
+    schema: "stat.dynamic_route_detail"
+    generated_exact_term: "dynamic-route"
+    exact_terms:
+      - "dynamic-route"
+  stat.net.interface:
+    document: "stat/net/interface.js"
+    schema: "stat.interface_detail"
+    generated_exact_term: "interface"
+    exact_terms:
+      - "interface"
+  stat.net.interface_mode:
+    document: "stat/net/interface-mode.js"
+    schema: "stat.interface_mode"
+    generated_exact_term: "interface-mode"
+    exact_terms:
+      - "interface-mode"
+  stat.net.link.lan:
+    document: "stat/net/link/lan.js"
+    schema: "stat.link_lan_detail"
+    generated_exact_term: "lan"
+    exact_terms:
+      - "lan"
+  stat.net.link.pppoe:
+    document: "stat/net/link/pppoe.js"
+    schema: "stat.link_pppoe_status"
+    generated_exact_term: "pppoe"
+    exact_terms:
+      - "pppoe"
+  stat.net.link.wan:
+    document: "stat/net/link/wan.js"
+    schema: "stat.link_wan_application_throughput"
+    generated_exact_term: "wan"
+    exact_terms:
+      - "wan"
+  stat.net.lldp_neighbors:
+    document: "stat/net/lldp-neighbors.js"
+    schema: "stat.lldp_neighbors_detail"
+    generated_exact_term: "lldp-neighbors"
+    exact_terms:
+      - "lldp-neighbors"
+  stat.net.ospf_neighbors:
+    document: "stat/net/ospf-neighbors.js"
+    schema: "stat.ospf_neighbors_detail"
+    generated_exact_term: "ospf-neighbors"
+    exact_terms:
+      - "ospf-neighbors"
+  stat.net.ospfv3_neighbors:
+    document: "stat/net/ospfv3-neighbors.js"
+    schema: "stat.ospfv3_neighbors_detail"
+    generated_exact_term: "ospfv3-neighbors"
+    exact_terms:
+      - "ospfv3-neighbors"
+  stat.net.snat:
+    document: "stat/net/snat.js"
+    schema: "stat.snat"
+    generated_exact_term: "snat"
+    exact_terms:
+      - "snat"
+  stat.net.static_route:
+    document: "stat/net/static-route.js"
+    schema: "stat.static_route"
+    generated_exact_term: "static-route"
+    exact_terms:
+      - "static-route"
+  stat.net.vxnet:
+    document: "stat/net/vxnet.js"
+    schema: "stat.vxnet_detail"
+    generated_exact_term: "vxnet"
+    exact_terms:
+      - "vxnet"
+  stat.rc.crl:
+    document: "stat/rc/crl.js"
+    schema: "stat.crl"
+    generated_exact_term: "crl"
+    exact_terms:
+      - "crl"
+  stat.slb.all_nodes_health:
+    document: "stat/slb/all-nodes-health.js"
+    schema: "stat.node_detail"
+    generated_exact_term: "all-nodes-health"
+    exact_terms:
+      - "all-nodes-health"
+  stat.slb.http_rewrite:
+    document: "stat/slb/http-rewrite.js"
+    schema: "stat.http_rewrite"
+    generated_exact_term: "http-rewrite"
+    exact_terms:
+      - "http-rewrite"
+  stat.slb.node:
+    document: "stat/slb/node.js"
+    schema: "stat.node_detail"
+    generated_exact_term: "node"
+    exact_terms:
+      - "node"
+  stat.slb.pool:
+    document: "stat/slb/pool.js"
+    schema: "stat.pool_detail"
+    generated_exact_term: "pool"
+    exact_terms:
+      - "pool"
+  stat.slb.pre_rule:
+    document: "stat/slb/pre-rule.js"
+    schema: "stat.pre_rule"
+    generated_exact_term: "pre-rule"
+    exact_terms:
+      - "pre-rule"
+  stat.slb.rtt:
+    document: "stat/slb/rtt.js"
+    schema: "stat.slb_rtt"
+    generated_exact_term: "rtt"
+    exact_terms:
+      - "rtt"
+  stat.slb.security_node:
+    document: "stat/slb/security-node.js"
+    schema: "stat.security_node_detail"
+    generated_exact_term: "security-node"
+    exact_terms:
+      - "security-node"
+  stat.slb.security_pool:
+    document: "stat/slb/security-pool.js"
+    schema: "stat.security_pool_detail"
+    generated_exact_term: "security-pool"
+    exact_terms:
+      - "security-pool"
+  stat.slb.service_chain:
+    document: "stat/slb/service-chain.js"
+    schema: "stat.service_chain_detail"
+    generated_exact_term: "service-chain"
+    exact_terms:
+      - "service-chain"
+  stat.slb.service_host:
+    document: "stat/slb/service-host.js"
+    schema: "stat.service_host_detail"
+    generated_exact_term: "service-host"
+    exact_terms:
+      - "service-host"
+  stat.slb.virtual_ip:
+    document: "stat/slb/virtual-ip.js"
+    schema: "stat.virtual_ip"
+    generated_exact_term: "virtual-ip"
+    exact_terms:
+      - "virtual-ip"
+  stat.slb.virtual_service:
+    document: "stat/slb/virtual-service.js"
+    schema: "stat.virtual_service"
+    generated_exact_term: "virtual-service"
+    exact_terms:
+      - "virtual-service"
+  stat.sys.system:
+    document: "stat/sys/system.js"
+    schema: "stat.system"
+    generated_exact_term: "system"
+    exact_terms:
+      - "system"
+  sys.alert_mail:
+    document: "sys/alert-mail.js"
+    schema: "config.alert_mail"
+    generated_exact_term: "alert-mail"
+    exact_terms:
+      - "alert-mail"
+  sys.alert_ras:
+    document: "sys/alert-ras.js"
+    schema: "config.alert_ras"
+    generated_exact_term: "alert-ras"
+    exact_terms:
+      - "alert-ras"
+  sys.alert_trap:
+    document: "sys/alert-trap.js"
+    schema: "config.alert_trap"
+    generated_exact_term: "alert-trap"
+    exact_terms:
+      - "alert-trap"
+  sys.backup_config:
+    document: "sys/backup-config.js"
+    schema: "config.backup_config"
+    generated_exact_term: "backup-config"
+    exact_terms:
+      - "backup-config"
+  sys.backup_config_setting:
+    document: "sys/backup-config-setting.js"
+    schema: "config.backup_config_setting"
+    generated_exact_term: "backup-config-setting"
+    exact_terms:
+      - "backup-config-setting"
+  sys.banner:
+    document: "sys/banner.js"
+    schema: "config.banner"
+    generated_exact_term: "banner"
+    exact_terms:
+      - "banner"
+  sys.current_user:
+    document: "sys/current-user.js"
+    schema: "config.current_user"
+    generated_exact_term: "current-user"
+    exact_terms:
+      - "current-user"
+  sys.dns_log:
+    document: "sys/dns-log.js"
+    schema: "config.dns_log"
+    generated_exact_term: "dns-log"
+    exact_terms:
+      - "dns-log"
+  sys.external_authentication:
+    document: "sys/external-authentication.js"
+    schema: "config.external_authentication"
+    generated_exact_term: "external-authentication"
+    exact_terms:
+      - "external-authentication"
+  sys.host:
+    document: "sys/host.js"
+    schema: "config.host"
+    generated_exact_term: "host"
+    exact_terms:
+      - "host"
+  sys.http_log:
+    document: "sys/http-log.js"
+    schema: "config.http_log"
+    generated_exact_term: "http-log"
+    exact_terms:
+      - "http-log"
+  sys.licence:
+    document: "sys/licence.js"
+    schema: "config.licence"
+    generated_exact_term: "licence"
+    exact_terms:
+      - "licence"
+  sys.log_template:
+    document: "sys/log-template.js"
+    schema: "config.log_template"
+    generated_exact_term: "log-template"
+    exact_terms:
+      - "log-template"
+  sys.maintenance_mode:
+    document: "sys/maintenance-mode.js"
+    schema: "config.maintenance_mode"
+    generated_exact_term: "maintenance-mode"
+    exact_terms:
+      - "maintenance-mode"
+  sys.management:
+    document: "sys/management.js"
+    schema: "config.management"
+    generated_exact_term: "management"
+    exact_terms:
+      - "management"
+  sys.network_setting:
+    document: "sys/network-setting.js"
+    schema: "config.network_setting"
+    generated_exact_term: "network-setting"
+    exact_terms:
+      - "network-setting"
+  sys.ntp:
+    document: "sys/ntp.js"
+    schema: "config.ntp"
+    generated_exact_term: "ntp"
+    exact_terms:
+      - "ntp"
+  sys.offline_check:
+    document: "sys/offline-check.js"
+    schema: "config.offline_check"
+    generated_exact_term: "offline-check"
+    exact_terms:
+      - "offline-check"
+  sys.partition:
+    document: "sys/partition.js"
+    schema: "config.partition"
+    generated_exact_term: "partition"
+    exact_terms:
+      - "partition"
+  sys.passwd_policy:
+    document: "sys/passwd-policy.js"
+    schema: "config.passwd_policy"
+    generated_exact_term: "passwd-policy"
+    exact_terms:
+      - "passwd-policy"
+  sys.permission:
+    document: "sys/permission.js"
+    schema: "config.permission"
+    generated_exact_term: "permission"
+    exact_terms:
+      - "permission"
+  sys.privacy:
+    document: "sys/privacy.js"
+    schema: "config.privacy"
+    generated_exact_term: "privacy"
+    exact_terms:
+      - "privacy"
+  sys.project:
+    document: "sys/project.js"
+    schema: "config.project"
+    generated_exact_term: "project"
+    exact_terms:
+      - "project"
+  sys.proxy:
+    document: "sys/proxy.js"
+    schema: "config.proxy"
+    generated_exact_term: "proxy"
+    exact_terms:
+      - "proxy"
+  sys.report_mail:
+    document: "sys/report-mail.js"
+    schema: "config.report_mail"
+    generated_exact_term: "report-mail"
+    exact_terms:
+      - "report-mail"
+  sys.report_setting:
+    document: "sys/report-setting.js"
+    schema: "config.report_setting"
+    generated_exact_term: "report-setting"
+    exact_terms:
+      - "report-setting"
+  sys.report_task:
+    document: "sys/report-task.js"
+    schema: "config.report_task"
+    generated_exact_term: "report-task"
+    exact_terms:
+      - "report-task"
+  sys.role:
+    document: "sys/role.js"
+    schema: "config.role"
+    generated_exact_term: "role"
+    exact_terms:
+      - "role"
+  sys.route_priority:
+    document: "sys/route-priority.js"
+    schema: "config.network_setting"
+    generated_exact_term: "route-priority"
+    exact_terms:
+      - "route-priority"
+  sys.smtp:
+    document: "sys/smtp.js"
+    schema: "config.smtp"
+    generated_exact_term: "smtp"
+    exact_terms:
+      - "smtp"
+  sys.snmp:
+    document: "sys/snmp.js"
+    schema: "config.snmp"
+    generated_exact_term: "snmp"
+    exact_terms:
+      - "snmp"
+  sys.snmpv3:
+    document: "sys/snmpv3.js"
+    schema: "config.snmpv3"
+    generated_exact_term: "snmpv3"
+    exact_terms:
+      - "snmpv3"
+  sys.ssh_setting:
+    document: "sys/ssh-setting.js"
+    schema: "config.ssh_setting"
+    generated_exact_term: "ssh-setting"
+    exact_terms:
+      - "ssh-setting"
+  sys.syslog:
+    document: "sys/syslog.js"
+    schema: "config.syslog"
+    generated_exact_term: "syslog"
+    exact_terms:
+      - "syslog"
+  sys.time:
+    document: "sys/time.js"
+    schema: "config.time"
+    generated_exact_term: "time"
+    exact_terms:
+      - "time"
+  sys.trap:
+    document: "sys/trap.js"
+    schema: "config.trap"
+    generated_exact_term: "trap"
+    exact_terms:
+      - "trap"
+  sys.update:
+    document: "sys/update.js"
+    schema: "config.update"
+    generated_exact_term: "update"
+    exact_terms:
+      - "update"
+  sys.user:
+    document: "sys/user.js"
+    schema: "config.user"
+    generated_exact_term: "user"
+    exact_terms:
+      - "user"
+  sys.web_service:
+    document: "sys/web-service.js"
+    schema: "config.web_service"
+    generated_exact_term: "web-service"
+    exact_terms:
+      - "web-service"
+  sys.whitelist:
+    document: "sys/whitelist.js"
+    schema: "config.ssh_whitelist"
+    generated_exact_term: "whitelist"
+    exact_terms:
+      - "whitelist"
+  title_desc:
+    document: "title_desc.js"
+    schema: null
+    generated_exact_term: "title_desc"
+    exact_terms:
+      - "title_desc"
+  toc:
+    document: "toc.js"
+    schema: null
+    generated_exact_term: "toc"
+    exact_terms:
+      - "toc"
+  token:
+    document: "token.js"
+    schema: "config.refresh"
+    generated_exact_term: "token"
+    exact_terms:
+      - "token"
+  version:
+    document: "version.js"
+    schema: "config.version"
+    generated_exact_term: "version"
+    exact_terms:
+      - "version"
+variant_options:
