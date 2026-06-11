@@ -1,0 +1,19 @@
+{
+  "name": "ad-build",
+  "version": "0.1.0",
+  "description": "Deterministic AD build verification CLI",
+  "type": "commonjs",
+  "bin": {
+    "ad-build": "bin/ad-build.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "templates",
+    "skills"
+  ],
+  "scripts": {
+    "test": "node --test test/ad-build.test.js"
+  },
+  "license": "UNLICENSED"
+}

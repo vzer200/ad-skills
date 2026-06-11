@@ -1,0 +1,11 @@
+modules:
+  snmp:
+    display_name: SNMP
+    paths:
+      - apps/snmp/**
+    cwd: .
+    build:
+      - make -C apps/snmp
+    timeout_seconds: 3600
+    env: {}
+    log_name: snmp
