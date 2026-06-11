@@ -1,0 +1,26 @@
+﻿{
+    "generated_at":  "2026-06-11T12:05:03.230Z",
+    "git_branch":  "codex/ad-build-cli-skill",
+    "git_commit":  "e7429daf90bde7f0ea73add082886c4094b07734",
+    "npm_tarball_path":  "dist/ad-build-0.1.0.tgz",
+    "npm_tarball_sha256":  "sha256:0b02ea92ac1fd6232d9a714c38f66b34ada1cc7ddaeb29090cb8f1de675907a9",
+    "zip_path":  "dist/ad-build-project.zip",
+    "zip_sha256":  "sha256:0fb95bfd0fead1a833e2030eecb70626da6100e718bd61122b349bc4d5c5be8b",
+    "included_files":  [
+                           ".gitignore",
+                           "artifact-manifest.json",
+                           "bin/ad-build.js",
+                           "dist/ad-build-0.1.0.tgz",
+                           "docs/superpowers/plans/2026-06-11-ad-build-npm-cli-skill-implementation.md",
+                           "docs/superpowers/specs/2026-06-11-ad-build-cli-skill-design.md",
+                           "lib/commands.js",
+                           "lib/core.js",
+                           "lib/module-map.js",
+                           "package.json",
+                           "README.md",
+                           "skills/ad-build/SKILL.md",
+                           "templates/module-map.yaml",
+                           "test/ad-build.test.js",
+                           "tools/module-map.yaml"
+                       ]
+}
