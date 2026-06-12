@@ -1,0 +1,59 @@
+# Copy to tools/base-image.yaml in the target AD repository, or pass
+# --config /path/to/base-image.yaml. This config does not need to be committed.
+
+# Registry/repository used when ad-build computes an image tag.
+# Example computed tag:
+#   registry.example.com/ad/ad-build-base:release-AD7.0.29R2-public-<key>
+registry: registry.example.com/ad
+image_name: ad-build-base
+
+# Prefer the immutable platos digest in CI when available.
+# Environment overrides:
+#   AD_BUILD_PUBLIC_BASE_FROM
+#   AD_BUILD_PUBLIC_BASE_DIGEST
+base_image: platos:latest
+# base_image_digest: sha256:<platos-image-digest>
+
+# Where artifacts are stored inside the public base image.
+artifact_root: /opt/ad-build/base
+
+# Inputs that decide whether the public base image must be rebuilt.
+# Keep this focused on public/base-library source and build config, not business modules.
+public_inputs:
+  - libs/**
+  - sinfor/**
+  - include/**
+  - linux/**
+  - app_bin/**
+  - compile.sh
+  - Makefile
+  - app.mk
+  - '**/*.mk'
+
+# Defaults filter common generated files out of the public key.
+# Tighten these for AD if generated outputs and source files share a directory.
+public_input_excludes:
+  - '**/*.o'
+  - '**/*.so'
+  - '**/*.so.*'
+  - '**/*.a'
+  - '**/*.ko'
+  - '**/build/**'
+  - '**/dist/**'
+  - '**/.cache/**'
+
+# Directories packaged into the public base image after a trusted full/public build.
+artifact_dirs:
+  - libs
+  - sinfor
+  - include
+  - linux
+  - app_bin
+
+# Directories that may be deleted first when restoring with --delete.
+restore_dirs:
+  - libs
+  - sinfor
+  - include
+  - linux
+  - app_bin
