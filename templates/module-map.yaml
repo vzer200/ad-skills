@@ -9,3 +9,8 @@ modules:
     timeout_seconds: 3600
     env: {}
     log_name: snmp
+
+risk_rules:
+  high:
+    - tools/base-image.yaml
+    - tools/base-image.json
