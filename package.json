@@ -13,7 +13,7 @@
     "skills"
   ],
   "scripts": {
-    "test": "node --test test/ad-build.test.js"
+    "test": "node --test test/ad-build.test.js test/base-image.test.js"
   },
   "license": "UNLICENSED"
 }
