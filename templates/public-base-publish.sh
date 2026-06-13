@@ -1,15 +1,10 @@
 #!/usr/bin/env sh
 set -eu
 
-PUBLIC_BASE_REPO="${1:?usage: public-base-publish.sh <ad-build-public-base-repo> <branch> [public-base.tar]}"
-BRANCH="${2:?usage: public-base-publish.sh <ad-build-public-base-repo> <branch> [public-base.tar]}"
-BUNDLE="${3:-}"
+BRANCH="${1:?usage: public-base-publish.sh <release-dir> [public-base.tar]}"
+PUBLIC_BASE_TAR="${2:-/root/public-base.tar}"
 
-if [ -n "$BUNDLE" ]; then
-  ad-build public-base publish --repo "$PUBLIC_BASE_REPO" --branch "$BRANCH" --bundle "$BUNDLE"
-else
-  ad-build public-base publish --repo "$PUBLIC_BASE_REPO" --branch "$BRANCH"
-fi
+ad-build public-base check --bundle "$PUBLIC_BASE_TAR" --integrity-only --json
+ad-build public-base publish --branch "$BRANCH" --bundle "$PUBLIC_BASE_TAR" --push --json
 
-echo "public-base files written under: $PUBLIC_BASE_REPO/$BRANCH"
-echo "Review, commit, and push that artifact repository explicitly."
+echo "public-base published to fixed artifact repository for: $BRANCH"

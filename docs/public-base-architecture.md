@@ -9,12 +9,13 @@ It does not snapshot a whole compiled workspace. It stores only the public depen
 - `obj/lib64/`
 - `include/`
 - `obj/bin/`
+- `libs/rdma-core-2404mlnx51/build/include/`
 - `KERNEL_VER`
 - `OS_PLATFORM.file`
 
 The full compiled-state bundle command remains available for diagnostics, but it is not the recommended AD workflow because a full build tree can contain very large package outputs and generated directories.
 
-## Why public-base exists
+## Why Public-Base Exists
 
 The normal AD loop is:
 
@@ -22,11 +23,54 @@ The normal AD loop is:
 checkout branch -> edit code -> compile if needed -> replace on device -> test -> edit again
 ```
 
-For C/C++ app/module work, a new workspace usually needs common libraries, headers, and generated build tools before app-local verification can run. Rebuilding everything only to get those shared dependencies is slow and produces large unrelated artifacts.
+For C/C++ app/module work, a new workspace usually needs common libraries, generated headers, tool outputs, and public dependency headers before app-local verification can run. Rebuilding everything only to get those shared dependencies is slow and produces large unrelated artifacts.
 
 `public-base` keeps that common layer as a validated tar bundle. Developers and CI can restore it into a clean checkout, then run `ad-build map` and `ad-build verify <module>` for the actual app change.
 
-## Bundle contents
+## Fixed Artifact Repository
+
+The production artifact repository is fixed:
+
+```text
+https://git.sangfor.com/69765/ad-build-public-base.git
+```
+
+Normal users should not manually clone it and should not manually derive latest artifact paths. The CLI manages a cache at:
+
+```text
+.ad-build/cache/public-base-repo/
+```
+
+The only normal commands are:
+
+```bash
+ad-build public-base publish --branch <release-dir> --bundle <public-base.tar> --push --json
+ad-build public-base use --branch <release-dir> --json
+```
+
+The shipped CLI always uses the fixed repository URL. Runtime environment variables must not override it. Tests may inject a local repository only through internal module options, not through normal user-facing CLI environment variables.
+
+## Authentication
+
+Tokens are stored through Git's credential helper. Do not put credentials in repository URLs or command arguments.
+
+Scripted setup:
+
+```bash
+read -r -s -p "Git token: " TOKEN
+printf '\n'
+printf '%s' "$TOKEN" | ad-build public-base auth login --token-stdin --json
+unset TOKEN
+ad-build public-base auth status --json
+```
+
+Reset:
+
+```bash
+ad-build public-base auth logout --remove-cache --json
+```
+
+## Bundle Contents
 
 Default included restore paths:
 
@@ -34,24 +78,34 @@ Default included restore paths:
 obj/lib64/
 include/
 obj/bin/
+libs/rdma-core-2404mlnx51/build/include/
 KERNEL_VER
 OS_PLATFORM.file
 ```
 
-Default excluded paths:
+Default excluded package and transient paths:
 
 ```text
 apps/
-libs/ intermediate outputs
-linux/ad_kernel/
-access_layer/build/
-access_layer/dist/
 mkpacket/
 ssipacket/
 ad_packet/
 gcov_result/
 gtest_result/
 .pytest_cache/
+**/build/** as public input only
+**/tmp/** as public input only
+**/.deps/**
+**/.libs/**
+*.o
+*.lo
+*.so
+*.a
+*.Po
+*.pyc
+*.pyo
+*.md5
+*.map
 *.ssu
 *.ssi
 *.tar
@@ -64,7 +118,13 @@ gtest_result/
 
 The default configuration is available in `templates/public-base.yaml`. Copy it to `tools/public-base.yaml` only when a repository needs to override the defaults.
 
-## Public-base key
+Important distinction:
+
+- `restore_dirs` and `restore_files` decide what goes into `public-base.tar`.
+- `public_inputs` and `public_input_excludes` decide what contributes to the public-base key.
+- Excluding generated files from `public_inputs` does not prevent explicitly configured restore paths from being packaged.
+
+## Public-Base Key
 
 The bundle is keyed by public inputs, not by branch name alone.
 
@@ -75,11 +135,52 @@ compile.sh
 Makefile
 app.mk
 **/*.mk
-libs/**
 include/**
 proto/**
+libs/**
 sinfor/**
 ```
+
+The broad `libs/**` and `sinfor/**` inputs intentionally catch repository-specific build drivers such as `configure`, `CMakeLists.txt`, `.S`, `.in`, shell scripts, generated-source templates, and other dependency-layer inputs that are easy to miss with an extension whitelist.
+
+Default public input excludes then remove common generated side effects:
+
+```text
+**/build/**
+**/tmp/**
+**/.deps/**
+**/.libs/**
+**/*.o
+**/*.lo
+**/*.so
+**/*.a
+**/*.Po
+**/*.pyc
+**/*.pyo
+**/*.md5
+**/*.map
+```
+
+The key output includes diagnostics to make bad defaults visible:
+
+```json
+{
+  "status": "computed",
+  "public_base_key_short": "e27e3a5f30e3",
+  "input_files_count": 3254,
+  "top_level_counts": {
+    "include": 1229,
+    "libs": 1494,
+    "sinfor": 512
+  },
+  "extension_counts": {
+    ".h": 1956,
+    ".c": 1875
+  }
+}
+```
+
+If `libs` or `sinfor` counts explode after a build because generated outputs are being keyed, fix `tools/public-base.yaml` before trusting the key.
 
 The key also includes selected toolchain environment variables by default:
 
@@ -97,22 +198,11 @@ AD_BUILD_PLATFORM
 AD_BUILD_PUBLIC_BASE_TOOLCHAIN
 ```
 
-Default non-key inputs:
-
-```text
-apps/**
-mkpacket/**
-ssipacket/**
-ad_packet/**
-test output
-coverage output
-release packages
-```
-
 Rules:
 
-- `apps/**` changes can reuse an existing public-base when `check` is matched.
-- `libs/**`, `include/**`, `proto/**`, `sinfor/**`, root Makefile, `app.mk`, `compile.sh`, or shared `*.mk` changes invalidate the public-base and require a rebuild.
+- `apps/**` changes can reuse an existing public-base when `public-base use` reports `status: ready`.
+- Source/config changes in `libs/`, `sinfor/`, `include/`, `proto/`, root Makefile, shared `*.mk`, `app.mk`, or `compile.sh` invalidate the public-base and require a rebuild.
+- Generated outputs under default exclude patterns should not invalidate public-base.
 - `public-base` restore is not proof that the current code passes a full build. It only proves the dependency layer was restored.
 
 ## Commands
@@ -120,30 +210,41 @@ Rules:
 Trusted full-build workspace:
 
 ```bash
+read -r -s -p "Git token: " TOKEN
+printf '\n'
+printf '%s' "$TOKEN" | ad-build public-base auth login --token-stdin --json
+unset TOKEN
+ad-build public-base auth status --json
 ad-build full-build -- ./compile.sh
-ad-build public-base key
-ad-build public-base pack --out public-base.tar
-ad-build public-base check --bundle public-base.tar
-ad-build public-base publish --repo /path/to/ad-build-public-base --branch release-AD7.0.29R2 --bundle public-base.tar
+ad-build public-base pack --out /root/public-base.tar --json
+ad-build public-base check --bundle /root/public-base.tar --integrity-only --json
+ad-build public-base publish --branch release-AD7.0.29R2 --bundle /root/public-base.tar --push --json
 ```
 
 Developer or app verification workspace:
 
 ```bash
-LATEST_JSON=/path/to/ad-build-public-base/release-AD7.0.29R2/latest.json
-BUNDLE=$(dirname "$LATEST_JSON")/$(node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); process.stdout.write(j.bundle)" "$LATEST_JSON")
-ad-build public-base check --bundle "$BUNDLE"
-ad-build public-base restore --bundle "$BUNDLE"
-ad-build public-base status
+ad-build public-base auth status --json
+ad-build public-base use --branch release-AD7.0.29R2 --json
 ad-build map
 ad-build verify <module>
 ```
 
+`public-base use` runs the full fixed sequence:
+
+1. Clone or update `.ad-build/cache/public-base-repo` from the fixed repository.
+2. Internally read `<release-dir>/latest.json`.
+3. Validate bundle integrity with `check --integrity-only`.
+4. Restore the bundle.
+5. Run `public-base status`.
+6. Run full `public-base check`.
+7. Write `.ad-build/public-base/use-summary.json`.
+
 `pack` fails by default if any required restore path is missing. Use `--allow-partial` only for deliberate diagnostics.
 
-`restore` refuses to overwrite existing files whose current sha256 differs from the bundle. Use `--force` only when the workspace is known to be disposable or already backed up.
+The low-level restore stage refuses to overwrite locally changed files in the normal workflow. It may overwrite git-clean tracked files when the clean checkout version differs from the trusted full-build bundle, because this is how generated public-base outputs such as `OS_PLATFORM.file` are restored.
 
-If `check` outputs `status: invalid`, do not restore and do not continue verify. Download `public-base.tar` again, or rebuild it in a trusted full-build workspace with `ad-build public-base pack`.
+If `check` outputs `status: invalid`, do not restore and do not continue verify. Download the artifact again, or rebuild it in a trusted full-build workspace with `ad-build public-base pack`.
 
 ## Outputs
 
@@ -160,9 +261,23 @@ public-base.tar.sha256
 .ad-build/public-base/latest/latest.json
 ```
 
-Restore writes:
+Publish writes to the fixed artifact repository:
 
 ```text
+release-AD7.0.29R2/
+  latest.json
+  sha256-<public_base_key_12>/
+    public-base.tar
+    manifest.json
+    inventory.json
+    public-base.tar.sha256
+    publish-summary.json
+```
+
+Use/restore writes:
+
+```text
+.ad-build/public-base/use-summary.json
 .ad-build/public-base/current.json
 .ad-build/inventory/current.json
 .ad-build/public-base/restore/<run-id>/restore-summary.json
@@ -178,30 +293,33 @@ Status/check write:
 .ad-build/public-base/check.md
 ```
 
-## Separate artifact repository
+## JSON Status Contract
 
-Do not commit `public-base.tar` into the AD source repository.
-
-Recommended storage:
+Important statuses:
 
 ```text
-ad-build-public-base/
-  release-AD7.0.29R2/
-    latest.json
-    sha256-<public_base_key_12>/
-      public-base.tar
-      manifest.json
-      inventory.json
-      public-base.tar.sha256
+auth login: stored
+auth status: authenticated | unauthenticated
+pack: packed
+check --integrity-only: valid | invalid
+full check: matched | mismatch | invalid
+restore/status: restored | partial | changed | missing
+use: ready | not_ready | invalid
+publish --push: published | no_changes
 ```
 
-The AD source repository should contain the CLI, skill, config, and scripts. The public-base repository or artifact system should contain generated bundles.
+Exit code conventions:
 
-`ad-build public-base publish --repo <repo> --branch <branch> [--bundle <public-base.tar>]` generates this layout automatically. If `--bundle` is omitted, it publishes the latest bundle recorded by `.ad-build/public-base/latest/pack-summary.json`.
+```text
+0: success / ready / valid / matched
+2: usage error
+3: missing local file/path
+4: authentication unavailable
+5: invalid artifact or restore conflict
+6: mismatch / not_ready / missing status
+```
 
-The publish command only writes files into the artifact repository. Commit and push of that repository remain explicit CI/operator steps.
-
-## Reliability guarantees
+## Reliability Guarantees
 
 `restore` validates:
 
@@ -212,10 +330,10 @@ The publish command only writes files into the artifact repository. Commit and p
 - every bundled file exists before restore
 - bundled file content matches manifest sha256 before restore
 - destination parents are not symlinks
-- existing changed files are not overwritten unless `--force` is supplied
+- existing locally changed files are not overwritten in the normal workflow
 
 `status` verifies restored files against `.ad-build/public-base/current.json`.
 
-`check` validates the archive payload, inventory consistency, and bundle sha256 sidecar when present, then compares the current public input key with the bundle key.
+`check` validates the archive payload, inventory consistency, and bundle sha256 sidecar when present. Full check also compares the current public input key with the bundle key.
 
 All file hashing uses streaming reads, so large files do not hit Node's single-buffer 2 GiB limit.

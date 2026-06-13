@@ -2,80 +2,130 @@
 
 Use these rules when GLM5 or another AI agent interprets `ad-build` output.
 
-## Required facts
+## Fixed Commands
+
+The public-base artifact repository is fixed:
+
+```text
+https://git.sangfor.com/69765/ad-build-public-base.git
+```
+
+Do not manually clone this repository in normal use. Do not manually derive latest artifact paths. Do not put a Git personal token in a URL or command argument.
+
+Authentication:
+
+```bash
+read -r -s -p "Git token: " TOKEN
+printf '\n'
+printf '%s' "$TOKEN" | ad-build public-base auth login --token-stdin --json
+unset TOKEN
+ad-build public-base auth status --json
+```
+
+Trusted full-build publish:
+
+```bash
+ad-build public-base pack --out /root/public-base.tar --json
+ad-build public-base check --bundle /root/public-base.tar --integrity-only --json
+ad-build public-base publish --branch release-AD7.0.29R2 --bundle /root/public-base.tar --push --json
+```
+
+Developer/app verification restore:
+
+```bash
+ad-build public-base use --branch release-AD7.0.29R2 --json
+ad-build diff
+ad-build map
+ad-build verify <module...>
+```
+
+`public-base use` is the only normal restore entrypoint. It clones or updates the fixed artifact repository under `.ad-build/cache/public-base-repo`, internally reads `<release-dir>/latest.json`, validates the bundle, restores files, runs status, runs full check, and writes `.ad-build/public-base/use-summary.json`. AI agents and users must not manually read `latest.json` or derive bundle paths.
+
+## Required Facts
 
 Before recommending module verification, collect:
 
 ```bash
-ad-build public-base status
-ad-build public-base check --bundle <public-base.tar>
+ad-build public-base use --branch <release-dir> --json
 ad-build diff
 ad-build map
 ```
 
 If `ad-build diff --source-only` is being used after a restore, read `.ad-build/inventory/current.json` as well.
 
-## Decision rules
+Read these public-base outputs when available:
+
+- `.ad-build/public-base/use-summary.json`
+- `.ad-build/public-base/status.json`
+- `.ad-build/public-base/check.json`
+- `.ad-build/public-base/restore-conflicts.json`
+
+## Decision Rules
 
 If only `apps/**` changed:
 
-- `public-base status` must be `restored`
-- `public-base check` must be `matched`
+- `use-summary.json.status` must be `ready`
+- `use-summary.json.integrity_status` must be `valid`
+- `use-summary.json.status_status` must be `restored`
+- `use-summary.json.check_status` must be `matched`
 - then recommend the mapped module verification, for example `ad-build verify appd`
 
-If any public input changed:
+If source/config public inputs changed:
 
 ```text
 compile.sh
 Makefile
 app.mk
 **/*.mk
-libs/**
 include/**
 proto/**
-sinfor/**
+libs/** source/config files
+sinfor/** source/config files
 ```
 
 then public-base is stale. Do not recommend app-local verification as sufficient. Require a full build or a rebuilt public-base bundle.
+
+Generated build side effects under `libs/**/build/**`, `libs/**/tmp/**`, `sinfor/**/build/**`, `sinfor/**/tmp/**`, object files, archives, shared libraries, `.Po`, `.pyc`, `.md5`, and `.map` are excluded from the default public-base key. Do not classify these generated files as source input changes unless the repository-specific `tools/public-base.yaml` says otherwise.
 
 If `public-base pack` reports missing restore paths:
 
 - do not publish the bundle
 - rerun the full build or pass `--allow-partial` only for deliberate diagnostics
 
-If `status` is `missing`:
+If `public-base use` reports `status: not_ready`:
 
-- next command should be `ad-build public-base restore --bundle <public-base.tar>`
-- if restore reports conflicts, stop and report them; do not add `--force` unless the workspace is disposable or backed up
+- read `use-summary.json`
+- read `status.json` and `check.json`
+- do not continue verify until the reason is understood
 
-If `status` is `partial` or `changed`:
+If restore reports conflicts:
 
-- do not trust local verification
-- restore again from the intended bundle, or rebuild public-base if public inputs changed
+- stop and report `.ad-build/public-base/restore-conflicts.json`
+- do not enable forced overwrite unless the workspace is disposable or backed up
 
-If `check` is `mismatch`:
+If full `check` is `mismatch`:
 
 - public inputs differ from the bundle
 - require public-base rebuild or full build
 
-If `ad-build public-base check` outputs `status: invalid`:
+If any public-base check outputs `status: invalid`:
 
 - do not restore
 - do not continue verify
-- require downloading `public-base.tar` again, or rebuilding it in a trusted full-build workspace with `ad-build public-base pack`
+- require downloading the artifact again, or rebuilding it in a trusted full-build workspace with `ad-build public-base pack`
 
-## What public-base does not prove
+## What Public-Base Does Not Prove
 
 Do not say public-base means:
 
-- full build passed
+- full build passed for the current change
 - packaging passed
 - `.ssu` or `.ssi` output is valid
 - device-side behavior is correct
 
-It only means the reusable dependency layer was restored and matches the bundle manifest.
+It only means the reusable dependency layer was restored and matches the bundle manifest/key for the current public inputs.
 
-## Recommended final fields
+## Recommended Final Fields
 
 Keep final recommendations structured:
 
@@ -84,7 +134,7 @@ risk_level: low | medium | high
 evidence: <CLI outputs, diff files, module-map output, public-base outputs, Makefiles, logs used>
 required_verification: <modules and/or full build that must run>
 optional_verification: <extra modules or checks that improve confidence>
-public_base_status: not_used | restored | missing | partial | changed | mismatch | invalid | rebuild_required
+public_base_status: not_used | ready | restored | missing | partial | changed | mismatch | invalid | rebuild_required
 full_build_status: not_required | required | passed | queued
 next_command: <single next ad-build command or local fallback command>
 ```

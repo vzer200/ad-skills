@@ -23,12 +23,12 @@ ad-build doctor
 ad-build precheck
 ad-build full-build -- <command...>
 ad-build baseline-save --from-run latest
-ad-build public-base key
-ad-build public-base pack --out public-base.tar
-ad-build public-base restore --bundle public-base.tar
-ad-build public-base publish --repo /path/to/ad-build-public-base --branch release-AD7.0.29R2
-ad-build public-base status
-ad-build public-base check --bundle public-base.tar
+printf '%s' "$TOKEN" | ad-build public-base auth login --token-stdin --json
+ad-build public-base pack --out public-base.tar --json
+ad-build public-base check --bundle public-base.tar --integrity-only --json
+ad-build public-base publish --branch release-AD7.0.29R2 --bundle public-base.tar --push --json
+ad-build public-base use --branch release-AD7.0.29R2 --json
+ad-build public-base status --json
 ad-build image status
 ad-build image save [--push]
 ad-build image pull
@@ -38,11 +38,12 @@ ad-build map
 ad-build modules
 ad-build verify <module...>
 ad-build report <run-id>
+ad-build completion install --shell bash
 ```
 
 Copy `templates/module-map.yaml` to `tools/module-map.yaml` in the target repository and adjust module paths/build commands before using `map`, `modules`, or `verify`.
 
-`public-base` is the recommended first-stage workflow. It stores only the public dependency layer needed for app-local verification: `obj/lib64/`, `include/`, `obj/bin/`, `KERNEL_VER`, and `OS_PLATFORM.file`.
+`public-base` is the recommended first-stage workflow. It stores only the public dependency layer needed for app-local verification: `obj/lib64/`, `include/`, `obj/bin/`, `libs/rdma-core-2404mlnx51/build/include/`, `KERNEL_VER`, and `OS_PLATFORM.file`.
 
 Copy `templates/public-base.yaml` to `tools/public-base.yaml` only when the repository needs to override the default public-base paths.
 
@@ -52,33 +53,43 @@ First CI run or trusted AD build node:
 
 ```bash
 ad-build full-build -- ./compile.sh
-ad-build public-base key
-ad-build public-base pack --out public-base.tar
-ad-build public-base check --bundle public-base.tar
-ad-build public-base publish --repo /path/to/ad-build-public-base --branch release-AD7.0.29R2 --bundle public-base.tar
+read -r -s -p "Git token: " TOKEN
+printf '\n'
+printf '%s' "$TOKEN" | ad-build public-base auth login --token-stdin --json
+unset TOKEN
+ad-build public-base auth status --json
+ad-build public-base pack --out /root/public-base.tar --json
+ad-build public-base check --bundle /root/public-base.tar --integrity-only --json
+ad-build public-base publish --branch release-AD7.0.29R2 --bundle /root/public-base.tar --push --json
 ```
 
 Developer restore flow:
 
 ```bash
-LATEST_JSON=/path/to/ad-build-public-base/release-AD7.0.29R2/latest.json
-BUNDLE=$(dirname "$LATEST_JSON")/$(node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); process.stdout.write(j.bundle)" "$LATEST_JSON")
-ad-build public-base check --bundle "$BUNDLE"
-ad-build public-base restore --bundle "$BUNDLE"
-ad-build public-base status
+ad-build public-base auth status --json
+ad-build public-base use --branch release-AD7.0.29R2 --json
+ad-build public-base status --json
 ad-build map
 ad-build verify <module>
 ```
 
 `public-base pack` fails if any required restore path is missing. Use `--allow-partial` only for deliberate diagnostics.
 
-`public-base restore` refuses to overwrite existing files whose content differs from the bundle. Use `--force` only in a disposable or backed-up workspace.
+The low-level restore stage may overwrite Git-clean tracked files from the trusted bundle. It refuses local modifications, untracked conflicts, symlinks, directories, and unsafe paths. Normal users should run `public-base use`, not call low-level restore directly.
 
-If `public-base check` outputs `status: invalid`, do not restore and do not continue verify. Download `public-base.tar` again, or rebuild it in a trusted full-build workspace with `ad-build public-base pack`.
+If `public-base check --integrity-only` outputs `status: invalid`, do not restore and do not continue verify. Download `public-base.tar` again, or rebuild it in a trusted full-build workspace with `ad-build public-base pack`.
 
-Do not store `public-base.tar` in the AD source repository. Store it in a separate `ad-build-public-base` repository or artifact system together with its manifest, inventory, and sha256 sidecar.
+The default public-base artifact repository is fixed:
 
-`ad-build public-base publish` writes:
+```text
+https://git.sangfor.com/69765/ad-build-public-base.git
+```
+
+Do not manually clone this repository or manually derive latest artifact paths in normal use. Use `ad-build public-base use --branch <release-dir> --json`.
+
+Do not store `public-base.tar` in the AD source repository. Normal shipped CLI flow must publish it only through `ad-build public-base publish --push` into the fixed `ad-build-public-base` repository together with its manifest, inventory, and sha256 sidecar.
+
+`ad-build public-base publish --push` writes:
 
 ```text
 ad-build-public-base/<branch>/latest.json
@@ -89,6 +100,29 @@ ad-build-public-base/<branch>/sha256-<key>/public-base.tar.sha256
 ```
 
 `ad-build bundle pack --profile full` remains available for diagnostics, but it is not the recommended AD public-base workflow. Full compiled trees can include large package outputs such as `mkpacket/`, `ssipacket/`, and `ad_packet/`.
+
+## Shell completion
+
+Install Tab completion for the current user:
+
+```bash
+ad-build completion install --shell bash
+```
+
+The installer writes the completion script and adds a managed source block to the user's shell startup file. Start a new shell, or source the startup file, before using Tab completion.
+
+For zsh:
+
+```bash
+ad-build completion install --shell zsh
+```
+
+You can also print the script without installing it:
+
+```bash
+ad-build completion bash
+ad-build completion zsh
+```
 
 ## Public base image workflow
 

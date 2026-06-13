@@ -27,6 +27,9 @@ test('package has safe npm delivery shape', () => {
   assert.ok(pkg.files.includes('lib'));
   assert.ok(pkg.files.includes('templates'));
   assert.ok(pkg.files.includes('skills'));
+  assert.ok(pkg.files.includes('docs/public-base-architecture.md'));
+  assert.ok(!pkg.files.includes('docs'));
+  assert.ok(!pkg.files.some((file) => file.includes('public-base-mvp-test-fix-plan')));
 });
 
 test('compute ref key handles detached head', () => {

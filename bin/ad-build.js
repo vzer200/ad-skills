@@ -3,6 +3,7 @@
 const commands = require('../lib/commands');
 const baseImage = require('../lib/base-image');
 const bundle = require('../lib/bundle');
+const completion = require('../lib/completion');
 const publicBase = require('../lib/public-base');
 const skill = require('../lib/skill');
 
@@ -24,6 +25,15 @@ async function main(argv = process.argv.slice(2)) {
 
   if (command === 'public-base') {
     return publicBase.runPublicBaseCli(argv.slice(1), {
+      cwd: process.cwd(),
+      env: process.env,
+      stdout: process.stdout,
+      stderr: process.stderr
+    });
+  }
+
+  if (command === 'completion') {
+    return completion.runCompletionCli(argv.slice(1), {
       cwd: process.cwd(),
       env: process.env,
       stdout: process.stdout,

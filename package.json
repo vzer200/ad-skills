@@ -1,6 +1,6 @@
 {
   "name": "ad-build",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Deterministic AD build verification CLI",
   "type": "commonjs",
   "bin": {
@@ -11,11 +11,14 @@
     "lib",
     "templates",
     "skills",
-    "docs"
+    "docs/ad-build-technical-architecture.md",
+    "docs/glm5-internal-handoff.md",
+    "docs/glm5-public-base-handoff.md",
+    "docs/public-base-architecture.md"
   ],
   "scripts": {
     "postinstall": "node bin/ad-build.js skill install --force",
-    "test": "node --test test/ad-build.test.js test/base-image.test.js test/bundle.test.js test/public-base.test.js test/skill-install.test.js"
+    "test": "node --test test/ad-build.test.js test/base-image.test.js test/bundle.test.js test/completion.test.js test/public-base.test.js test/skill-install.test.js"
   },
   "license": "UNLICENSED"
 }

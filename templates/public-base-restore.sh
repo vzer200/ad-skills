@@ -1,10 +1,8 @@
 #!/usr/bin/env sh
 set -eu
 
-BUNDLE="${1:?usage: public-base-restore.sh <public-base.tar>}"
+BRANCH="${1:?usage: public-base-restore.sh <release-dir>}"
 
-ad-build public-base restore --bundle "$BUNDLE"
-ad-build public-base status
-ad-build public-base check --bundle "$BUNDLE"
+ad-build public-base use --branch "$BRANCH" --json
 
-echo "public-base restored and validated from: $BUNDLE"
+echo "public-base restored and validated for: $BRANCH"

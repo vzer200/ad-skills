@@ -2,6 +2,7 @@ restore_dirs:
   - obj/lib64
   - include
   - obj/bin
+  - libs/rdma-core-2404mlnx51/build/include
 
 restore_files:
   - KERNEL_VER
@@ -12,9 +13,9 @@ public_inputs:
   - Makefile
   - app.mk
   - "**/*.mk"
-  - libs/**
   - include/**
   - proto/**
+  - libs/**
   - sinfor/**
 
 toolchain_env:
@@ -30,7 +31,7 @@ toolchain_env:
   - AD_BUILD_PLATFORM
   - AD_BUILD_PUBLIC_BASE_TOOLCHAIN
 
-exclude_patterns:
+public_input_excludes:
   - .git/**
   - .ad-build/**
   - node_modules/**
@@ -41,6 +42,19 @@ exclude_patterns:
   - gcov_result/**
   - gtest_result/**
   - .pytest_cache/**
+  - "**/build/**"
+  - "**/tmp/**"
+  - "**/.deps/**"
+  - "**/.libs/**"
+  - "**/*.o"
+  - "**/*.lo"
+  - "**/*.so"
+  - "**/*.a"
+  - "**/*.Po"
+  - "**/*.pyc"
+  - "**/*.pyo"
+  - "**/*.md5"
+  - "**/*.map"
   - "**/*.ssu"
   - "**/*.ssi"
   - "**/*.tar"
