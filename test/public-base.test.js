@@ -20,6 +20,11 @@ function runCommand(command, args, cwd) {
   return result;
 }
 
+function commitPaths(repo, message, paths) {
+  run(repo, ['add', ...paths]);
+  run(repo, ['-c', 'user.email=a@b.c', '-c', 'user.name=test', 'commit', '-m', message]);
+}
+
 function makeRepo() {
   const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-'));
   fs.mkdirSync(path.join(repo, 'obj/lib64'), { recursive: true });
@@ -66,6 +71,14 @@ function makeSourceOnlyRepo() {
   return repo;
 }
 
+function makeVerificationRepo() {
+  const repo = makeSourceOnlyRepo();
+  fs.mkdirSync(path.join(repo, 'include'), { recursive: true });
+  fs.writeFileSync(path.join(repo, 'include/shared.h'), 'header\n');
+  commitPaths(repo, 'add tracked public include input', ['include/shared.h']);
+  return repo;
+}
+
 function runCli(repo, args, env = {}) {
   const cli = path.join(__dirname, '..', 'bin', 'ad-build.js');
   return spawnSync(process.execPath, [cli, ...args], {
@@ -99,12 +112,30 @@ function makeIsolatedCredentialEnv() {
   };
 }
 
+function writeFullBuildResult(repo, status = 'passed') {
+  const dir = path.join(repo, '.ad-build', 'full-build', 'latest');
+  fs.mkdirSync(dir, { recursive: true });
+  core.writeJson(path.join(dir, 'full-build-result.json'), {
+    schema_version: 1,
+    status,
+    run_id: `full-build-${status}`,
+    started_at: '2026-06-13T00:00:00.000Z',
+    ended_at: '2026-06-13T00:01:00.000Z'
+  });
+}
+
+function writePublicBaseConfig(repo, body) {
+  fs.mkdirSync(path.join(repo, 'tools'), { recursive: true });
+  fs.writeFileSync(path.join(repo, 'tools', 'public-base.yaml'), body);
+}
+
 test('public-base key ignores apps changes but changes when public inputs change', () => {
   const repo = makeRepo();
   const first = publicBase.runKey({ repoRoot: repo });
   fs.writeFileSync(path.join(repo, 'apps/appd/app.c'), 'app changed\n');
   const afterApp = publicBase.runKey({ repoRoot: repo });
   fs.writeFileSync(path.join(repo, 'libs/input.c'), 'lib changed\n');
+  commitPaths(repo, 'lib input change', ['libs/input.c']);
   const afterLib = publicBase.runKey({ repoRoot: repo });
 
   assert.match(first.public_base_key, /^sha256:[a-f0-9]{64}$/);
@@ -118,12 +149,16 @@ test('public-base key tracks broad libs and sinfor build inputs', () => {
   const first = publicBase.runKey({ repoRoot: repo });
 
   fs.writeFileSync(path.join(repo, 'libs', 'CMakeLists.txt'), 'cmake config\n');
+  commitPaths(repo, 'add cmake input', ['libs/CMakeLists.txt']);
   const afterCmake = publicBase.runKey({ repoRoot: repo });
   fs.writeFileSync(path.join(repo, 'sinfor', 'configure'), '#!/bin/sh\n');
+  commitPaths(repo, 'add configure input', ['sinfor/configure']);
   const afterConfigure = publicBase.runKey({ repoRoot: repo });
   fs.writeFileSync(path.join(repo, 'sinfor', 'build.S'), 'asm source\n');
+  commitPaths(repo, 'add asm input', ['sinfor/build.S']);
   const afterAsm = publicBase.runKey({ repoRoot: repo });
   fs.writeFileSync(path.join(repo, 'libs', 'config.in'), 'config template\n');
+  commitPaths(repo, 'add config template', ['libs/config.in']);
   const afterConfigTemplate = publicBase.runKey({ repoRoot: repo });
 
   assert.notEqual(afterCmake.public_base_key, first.public_base_key);
@@ -147,12 +182,134 @@ test('public-base key ignores generated libs and sinfor build side effects', () 
   fs.writeFileSync(path.join(repo, 'sinfor/example/tmp/generated.a'), 'archive\n');
   const afterGenerated = publicBase.runKey({ repoRoot: repo });
   fs.writeFileSync(path.join(repo, 'sinfor/sec.c'), 'real sinfor change\n');
+  commitPaths(repo, 'real sinfor input change', ['sinfor/sec.c']);
   const afterSource = publicBase.runKey({ repoRoot: repo });
 
   assert.equal(afterGenerated.public_base_key, first.public_base_key);
   assert.notEqual(afterSource.public_base_key, first.public_base_key);
   assert.equal(afterGenerated.top_level_counts.libs > 0, true);
   assert.equal(afterGenerated.extension_counts['.o'] || 0, 0);
+});
+
+test('public-base key defaults to git HEAD public inputs and ignores dirty generated public inputs', () => {
+  const repo = makeRepo();
+  const first = publicBase.runKey({ repoRoot: repo });
+  fs.writeFileSync(path.join(repo, 'include/shared.h'), 'generated header after full build\n');
+  fs.writeFileSync(path.join(repo, 'libs/input.c'), 'generated lib source after full build\n');
+
+  const afterDirty = publicBase.runKey({ repoRoot: repo });
+
+  assert.equal(afterDirty.public_input_mode, 'git-head');
+  assert.equal(afterDirty.public_base_key, first.public_base_key);
+  assert.equal(afterDirty.files.find((file) => file.path === 'include/shared.h').source, 'public-input-git-head');
+});
+
+test('public-base check reports dirty public inputs as mismatch with git HEAD key mode', () => {
+  const repo = makeRepo();
+  const out = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-dirty-check.tar`);
+  publicBase.packPublicBase({ repoRoot: repo, out });
+  fs.writeFileSync(path.join(repo, 'apps/appd/app.c'), 'app changed\n');
+  const appOnly = publicBase.runCheck({ repoRoot: repo, bundle: out });
+  fs.writeFileSync(path.join(repo, 'libs/input.c'), 'dirty public input\n');
+  const withPublicInput = publicBase.runCheck({ repoRoot: repo, bundle: out });
+
+  assert.equal(appOnly.status, 'matched');
+  assert.equal(appOnly.dirty_public_inputs_count, 0);
+  assert.equal(withPublicInput.status, 'mismatch');
+  assert.equal(withPublicInput.dirty_public_inputs_count, 1);
+  assert.deepEqual(withPublicInput.dirty_public_inputs_sample, ['libs/input.c']);
+});
+
+test('public-base check reports untracked and staged public inputs as dirty in git HEAD mode', () => {
+  const untracked = makeRepo();
+  const untrackedOut = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-untracked-dirty.tar`);
+  publicBase.packPublicBase({ repoRoot: untracked, out: untrackedOut });
+  fs.writeFileSync(path.join(untracked, 'libs/untracked.c'), 'new public input\n');
+  const untrackedCheck = publicBase.runCheck({ repoRoot: untracked, bundle: untrackedOut });
+
+  assert.equal(untrackedCheck.status, 'mismatch');
+  assert.equal(untrackedCheck.current_key, untrackedCheck.bundle_key);
+  assert.deepEqual(untrackedCheck.dirty_public_inputs_sample, ['libs/untracked.c']);
+
+  const staged = makeRepo();
+  const stagedOut = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-staged-dirty.tar`);
+  publicBase.packPublicBase({ repoRoot: staged, out: stagedOut });
+  fs.writeFileSync(path.join(staged, 'libs/staged.c'), 'staged public input\n');
+  run(staged, ['add', 'libs/staged.c']);
+  const stagedCheck = publicBase.runCheck({ repoRoot: staged, bundle: stagedOut });
+
+  assert.equal(stagedCheck.status, 'mismatch');
+  assert.equal(stagedCheck.current_key, stagedCheck.bundle_key);
+  assert.deepEqual(stagedCheck.dirty_public_inputs_sample, ['libs/staged.c']);
+});
+
+test('public-base check ignores restored public-base files until they are locally changed again', () => {
+  const source = makeRepo();
+  fs.writeFileSync(path.join(source, 'include/shared.h'), 'generated header after full build\n');
+  const out = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-restored-public-input.tar`);
+  publicBase.packPublicBase({ repoRoot: source, out });
+
+  const target = makeRepo();
+  publicBase.restorePublicBase({ repoRoot: target, bundle: out, force: true });
+  const restored = publicBase.runCheck({ repoRoot: target, bundle: out });
+
+  assert.equal(restored.status, 'matched');
+  assert.equal(restored.dirty_public_inputs_count, 0);
+
+  fs.writeFileSync(path.join(target, 'include/shared.h'), 'developer public header change\n');
+  const changed = publicBase.runCheck({ repoRoot: target, bundle: out });
+
+  assert.equal(changed.status, 'mismatch');
+  assert.equal(changed.dirty_public_inputs_count, 1);
+  assert.deepEqual(changed.dirty_public_inputs_sample, ['include/shared.h']);
+});
+
+test('public-base check only ignores restored public-base files for the same bundle', () => {
+  const sourceA = makeRepo();
+  fs.writeFileSync(path.join(sourceA, 'include/shared.h'), 'generated header from bundle A\n');
+  const bundleA = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-bundle-a.tar`);
+  publicBase.packPublicBase({ repoRoot: sourceA, out: bundleA });
+
+  const sourceB = makeRepo();
+  const bundleB = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-bundle-b.tar`);
+  publicBase.packPublicBase({ repoRoot: sourceB, out: bundleB });
+
+  const target = makeRepo();
+  publicBase.restorePublicBase({ repoRoot: target, bundle: bundleA, force: true });
+  const checkedAgainstB = publicBase.runCheck({ repoRoot: target, bundle: bundleB });
+
+  assert.equal(checkedAgainstB.status, 'mismatch');
+  assert.equal(checkedAgainstB.current_key, checkedAgainstB.bundle_key);
+  assert.deepEqual(checkedAgainstB.dirty_public_inputs_sample, ['include/shared.h']);
+});
+
+test('public-base key supports explicit worktree public input mode', () => {
+  const repo = makeRepo();
+  writePublicBaseConfig(repo, 'public_input_mode: worktree\n');
+  const first = publicBase.runKey({ repoRoot: repo });
+  fs.writeFileSync(path.join(repo, 'libs/input.c'), 'dirty worktree public input\n');
+  const afterDirty = publicBase.runKey({ repoRoot: repo });
+
+  assert.equal(first.public_input_mode, 'worktree');
+  assert.notEqual(afterDirty.public_base_key, first.public_base_key);
+  assert.equal(afterDirty.files.find((file) => file.path === 'libs/input.c').source, 'public-input-worktree');
+});
+
+test('public-base check treats dirty public inputs as included diagnostics in worktree mode', () => {
+  const repo = makeRepo();
+  writePublicBaseConfig(repo, 'public_input_mode: worktree\n');
+  fs.writeFileSync(path.join(repo, 'libs/input.c'), 'dirty worktree public input\n');
+  const out = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-worktree-check.tar`);
+  publicBase.packPublicBase({ repoRoot: repo, out });
+
+  const check = publicBase.runCheck({ repoRoot: repo, bundle: out });
+
+  assert.equal(check.status, 'matched');
+  assert.equal(check.current_key, check.bundle_key);
+  assert.equal(check.public_input_mode, 'worktree');
+  assert.equal(check.bundle_public_input_mode, 'worktree');
+  assert.deepEqual(check.dirty_public_inputs_sample, ['libs/input.c']);
+  assert.match(check.warnings.map((warning) => warning.message).join('\n'), /public_input_mode is worktree/);
 });
 
 test('public-base pack only stores configured public dependency paths', () => {
@@ -368,7 +525,9 @@ test('public-base check compares current public input key with bundle key', () =
   fs.writeFileSync(path.join(repo, 'libs/input.c'), 'lib changed\n');
   const mismatch = publicBase.runCheck({ repoRoot: repo, bundle: out });
   assert.equal(mismatch.status, 'mismatch');
-  assert.notEqual(mismatch.current_key, mismatch.bundle_key);
+  assert.equal(mismatch.current_key, mismatch.bundle_key);
+  assert.equal(mismatch.dirty_public_inputs_count, 1);
+  assert.deepEqual(mismatch.dirty_public_inputs_sample, ['libs/input.c']);
 });
 
 test('public-base check supports integrity-only validation', () => {
@@ -543,6 +702,7 @@ test('public-base publish rejects missing sha256 sidecar', () => {
 
 test('public-base publish writes branch and key scoped artifact repository layout', () => {
   const repo = makeRepo();
+  writeFullBuildResult(repo, 'passed');
   const artifactRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-'));
   const out = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-publish.tar`);
   const packed = publicBase.packPublicBase({ repoRoot: repo, out });
@@ -568,6 +728,92 @@ test('public-base publish writes branch and key scoped artifact repository layou
   assert.equal(latest.manifest, `sha256-${packed.public_base_key_short}/manifest.json`);
   assert.equal(latest.inventory, `sha256-${packed.public_base_key_short}/inventory.json`);
   assert.equal(latest.sha256, `sha256-${packed.public_base_key_short}/public-base.tar.sha256`);
+});
+
+test('public-base publish requires passed full-build unless allow-unproven is explicit', () => {
+  const missing = makeRepo();
+  const missingRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-unproven-missing-'));
+  const missingOut = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-unproven-missing.tar`);
+  publicBase.packPublicBase({ repoRoot: missing, out: missingOut });
+
+  assert.throws(() => publicBase.publishPublicBase({
+    repoRoot: missing,
+    repo: missingRepo,
+    branch: 'release-AD7.0.29R2',
+    bundle: missingOut
+  }), /requires a passed full-build/);
+
+  const failed = makeRepo();
+  writeFullBuildResult(failed, 'failed');
+  const failedRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-unproven-failed-'));
+  const failedOut = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-unproven-failed.tar`);
+  publicBase.packPublicBase({ repoRoot: failed, out: failedOut });
+  assert.throws(() => publicBase.publishPublicBase({
+    repoRoot: failed,
+    repo: failedRepo,
+    branch: 'release-AD7.0.29R2',
+    bundle: failedOut
+  }), /requires a passed full-build/);
+
+  const proven = makeRepo();
+  writeFullBuildResult(proven, 'passed');
+  const provenRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-proven-'));
+  const provenOut = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-proven.tar`);
+  publicBase.packPublicBase({ repoRoot: proven, out: provenOut });
+  const published = publicBase.publishPublicBase({
+    repoRoot: proven,
+    repo: provenRepo,
+    branch: 'release-AD7.0.29R2',
+    bundle: provenOut
+  });
+  assert.equal(published.full_build_status, 'passed');
+  assert.equal(published.full_build_run_id, 'full-build-passed');
+  assert.equal(published.allow_unproven, false);
+
+  const diagnostic = makeRepo();
+  const diagnosticRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-allow-unproven-'));
+  const diagnosticOut = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-allow-unproven.tar`);
+  publicBase.packPublicBase({ repoRoot: diagnostic, out: diagnosticOut });
+  const diagnosticPublish = publicBase.publishPublicBase({
+    repoRoot: diagnostic,
+    repo: diagnosticRepo,
+    branch: 'release-AD7.0.29R2',
+    bundle: diagnosticOut,
+    allowUnproven: true
+  });
+  assert.equal(diagnosticPublish.full_build_status, 'missing');
+  assert.equal(diagnosticPublish.allow_unproven, true);
+});
+
+test('public-base CLI publish passes --allow-unproven through to managed publish', () => {
+  const repo = makeRepo();
+  const bare = makeBareArtifactRepo();
+  const out = path.join(repo, 'public-base.tar');
+  publicBase.packPublicBase({ repoRoot: repo, out });
+  let stdout = '';
+  let stderr = '';
+
+  const code = publicBase.runPublicBaseCli([
+    'publish',
+    '--branch', 'release-AD7.0.29R2',
+    '--bundle', out,
+    '--push',
+    '--allow-unproven',
+    '--json'
+  ], {
+    repoRoot: repo,
+    repoUrl: `file://${bare.replaceAll('\\', '/')}`,
+    allowRepoOverride: true,
+    stdout: { write: (value) => { stdout += value; } },
+    stderr: { write: (value) => { stderr += value; } }
+  });
+
+  assert.equal(code, 0, stderr || stdout);
+  assert.equal(stderr, '');
+  const body = JSON.parse(stdout);
+  assert.match(body.status, /published|no_changes/);
+  assert.equal(body.allow_unproven, true);
+  assert.equal(body.full_build_status, 'missing');
 });
 
 test('public-base publish rejects malicious manifest short keys and invalid branch paths', () => {
@@ -632,6 +878,7 @@ test('public-base publish validates latest pack summary before default publish',
 
 test('public-base publish rejects unsafe existing artifact repo paths and residual directories', (t) => {
   const repo = makeRepo();
+  writeFullBuildResult(repo, 'passed');
   const artifactRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-unsafe-'));
   const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-outside-'));
   const out = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-unsafe.tar`);
@@ -666,6 +913,7 @@ test('public-base publish rejects unsafe existing artifact repo paths and residu
 
 test('public-base publish rejects symlinked publish leaf files', (t) => {
   const repo = makeRepo();
+  writeFullBuildResult(repo, 'passed');
   const artifactRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-leaf-'));
   const outside = path.join(os.tmpdir(), `ad-build-public-base-outside-${Date.now()}-${process.pid}`);
   fs.writeFileSync(outside, 'outside\n');
@@ -697,6 +945,7 @@ test('public-base publish rejects symlinked publish leaf files', (t) => {
 
 test('public-base publish rejects symlinked latest file', (t) => {
   const repo = makeRepo();
+  writeFullBuildResult(repo, 'passed');
   const artifactRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-latest-'));
   const outside = path.join(os.tmpdir(), `ad-build-public-base-latest-outside-${Date.now()}-${process.pid}`);
   fs.writeFileSync(outside, 'outside\n');
@@ -746,6 +995,7 @@ test('public-base CLI publish rejects local repo and requires push', () => {
 
 test('public-base publish --push and use operate through managed cache repository', () => {
   const repo = makeRepo();
+  writeFullBuildResult(repo, 'passed');
   const bare = makeBareArtifactRepo();
   const out = path.join(repo, 'public-base.tar');
   publicBase.packPublicBase({ repoRoot: repo, out });
@@ -766,8 +1016,10 @@ test('public-base publish --push and use operate through managed cache repositor
     allowRepoOverride: true
   });
   assert.equal(repeatedPublish.status, 'no_changes');
+  assert.equal(repeatedPublish.full_build_status, 'passed');
+  assert.equal(repeatedPublish.allow_unproven, false);
 
-  const target = makeSourceOnlyRepo();
+  const target = makeVerificationRepo();
   const summary = publicBase.usePublicBase({
     repoRoot: target,
     branch: 'release-AD7.0.29R2',
@@ -797,6 +1049,7 @@ test('public-base use reports artifact repository git failures as runtime failur
 
 test('public-base use --json preserves invalid domain status on integrity failure', () => {
   const repo = makeRepo();
+  writeFullBuildResult(repo, 'passed');
   const bare = makeBareArtifactRepo();
   const out = path.join(repo, 'public-base.tar');
   publicBase.packPublicBase({ repoRoot: repo, out });
@@ -829,7 +1082,7 @@ test('public-base use --json preserves invalid domain status on integrity failur
 
   let stdout = '';
   let stderr = '';
-  const target = makeSourceOnlyRepo();
+  const target = makeVerificationRepo();
   const code = publicBase.runPublicBaseCli(['use', '--branch', 'release-AD7.0.29R2', '--json'], {
     repoRoot: target,
     repoUrl: `file://${bare.replaceAll('\\', '/')}`,
@@ -850,6 +1103,7 @@ test('public-base use --json preserves invalid domain status on integrity failur
 
 test('public-base use overwrites stale ready summary on later failure', () => {
   const repo = makeRepo();
+  writeFullBuildResult(repo, 'passed');
   const bare = makeBareArtifactRepo();
   const out = path.join(repo, 'public-base.tar');
   publicBase.packPublicBase({ repoRoot: repo, out });
@@ -861,7 +1115,7 @@ test('public-base use overwrites stale ready summary on later failure', () => {
     allowRepoOverride: true
   });
 
-  const target = makeSourceOnlyRepo();
+  const target = makeVerificationRepo();
   publicBase.usePublicBase({
     repoRoot: target,
     branch: 'release-AD7.0.29R2',
@@ -888,6 +1142,7 @@ test('public-base use overwrites stale ready summary on later failure', () => {
 
 test('public-base managed cache rejects symlinked cache paths', (t) => {
   const repo = makeRepo();
+  writeFullBuildResult(repo, 'passed');
   const bare = makeBareArtifactRepo();
   const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-cache-outside-'));
   const cacheDir = path.join(repo, '.ad-build', 'cache');

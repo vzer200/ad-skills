@@ -51,6 +51,7 @@ ad-build completion zsh
 - Use `ad-build public-base auth login --token-stdin --json` for token setup.
 - Use `ad-build public-base publish --branch <release-dir> --bundle <public-base.tar> --push --json` to publish from a trusted full-build workspace.
 - Use `ad-build public-base use --branch <release-dir> --json` to restore and validate in a developer/app verification workspace.
+- `public-base publish` must come from a bundle whose manifest has `full_build.status: passed`. If `--allow-unproven` appears, treat the output as diagnostics only, not as a trusted team baseline.
 - If `status: invalid` appears in any public-base check output, stop. Do not restore and do not continue verify. Download the artifact again or rebuild it in a trusted full-build workspace with `ad-build public-base pack`.
 
 ## Fixed Repository Authentication
@@ -92,6 +93,8 @@ Expected meaning:
 - `publish.status: no_changes` means the same artifact already exists in the fixed repository and no new commit was needed.
 
 `public-base pack` fails if any required restore path is missing. `--allow-partial` is only for deliberate diagnostics, not normal delivery.
+
+`public-base pack` may include warnings for dirty public inputs after a full build. The key still defaults to Git HEAD tracked public inputs (`public_input_mode: git-head`). Do not override to `worktree` unless the user is deliberately diagnosing key composition.
 
 ## Developer/App Verification Workflow
 
@@ -151,7 +154,8 @@ This layer is intentionally smaller than a full compiled workspace. It is meant 
 
 - If only `apps/**` changed, public-base can be reused only when `public-base use` reports `status: ready`.
 - If source/config inputs under `libs/`, `sinfor/`, `include/`, `proto/`, root Makefile, shared `*.mk`, `app.mk`, or `compile.sh` changed, public-base is stale and a full build or rebuilt public-base is required.
-- Generated side effects under `libs/**/build/**`, `libs/**/tmp/**`, `sinfor/**/build/**`, `sinfor/**/tmp/**`, object files, archives, shared libraries, `.Po`, `.pyc`, `.md5`, and `.map` are not public-base key inputs by default.
+- Generated side effects under `libs/**/build/**`, `libs/**/tmp/**`, `sinfor/**/build/**`, `sinfor/**/tmp/**`, `**/dist/**`, object files, archives, shared libraries, `.so.*`, `.ko`, `.Po`, `.pyc`, `.md5`, `.map`, and `*.egg-info` are not public-base key inputs by default.
+- If full `check` reports `dirty_public_inputs_count > 0`, stop and inspect `dirty_public_inputs_sample`. In the default `git-head` mode, any remaining dirty public input means the current workspace cannot trust app-local verification until the input is committed, reverted, or explained by restored public-base files that still match `.ad-build/public-base/current.json`. If `public_input_mode` is `worktree`, treat it as diagnostics: dirty public inputs are included in the key and the bundle must not be used as a trusted team publish baseline without explicit human approval.
 - If `status` is `missing`, run `ad-build public-base use --branch <release-dir> --json`.
 - If `status` is `partial` or `changed`, do not trust module verification until `public-base use` succeeds again or public-base is rebuilt.
 - If full `check` is `mismatch`, public inputs differ from the bundle. Do not recommend app-local verification as sufficient.

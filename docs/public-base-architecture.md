@@ -123,6 +123,7 @@ Important distinction:
 - `restore_dirs` and `restore_files` decide what goes into `public-base.tar`.
 - `public_inputs` and `public_input_excludes` decide what contributes to the public-base key.
 - Excluding generated files from `public_inputs` does not prevent explicitly configured restore paths from being packaged.
+- `public_input_mode` defaults to `git-head`, so the key is based on tracked public inputs in Git HEAD instead of dirty full-build worktree files.
 
 ## Public-Base Key
 
@@ -143,6 +144,16 @@ sinfor/**
 
 The broad `libs/**` and `sinfor/**` inputs intentionally catch repository-specific build drivers such as `configure`, `CMakeLists.txt`, `.S`, `.in`, shell scripts, generated-source templates, and other dependency-layer inputs that are easy to miss with an extension whitelist.
 
+Default key mode is `git-head`:
+
+```text
+public_input_mode: git-head
+```
+
+In this mode the key payload records public input paths and HEAD blob ids. Untracked build outputs and tracked files modified by the full-build process do not change the key. The diagnostic `worktree` mode is still available in `tools/public-base.yaml`, but it should not be used for team public-base publishing unless the repository has a specific reason.
+
+In `worktree` mode, dirty public inputs are part of the key by design. Full `check` may warn about them, but it does not mark a matching worktree-mode bundle as `mismatch` solely because those dirty inputs exist.
+
 Default public input excludes then remove common generated side effects:
 
 ```text
@@ -150,10 +161,14 @@ Default public input excludes then remove common generated side effects:
 **/tmp/**
 **/.deps/**
 **/.libs/**
+**/dist/**
 **/*.o
 **/*.lo
 **/*.so
+**/*.so.*
+**/*.ko
 **/*.a
+**/*.egg-info/**
 **/*.Po
 **/*.pyc
 **/*.pyo
@@ -181,6 +196,18 @@ The key output includes diagnostics to make bad defaults visible:
 ```
 
 If `libs` or `sinfor` counts explode after a build because generated outputs are being keyed, fix `tools/public-base.yaml` before trusting the key.
+
+Full `check` also reports dirty public inputs:
+
+```json
+{
+  "status": "mismatch",
+  "dirty_public_inputs_count": 1,
+  "dirty_public_inputs_sample": ["libs/input.c"]
+}
+```
+
+Dirty public inputs mean the current workspace has public source/config changes that are not represented by the bundle. Restored files that still match `.ad-build/public-base/current.json` are not counted as dirty; if they are edited after restore, they are counted again.
 
 The key also includes selected toolchain environment variables by default:
 
@@ -241,6 +268,8 @@ ad-build verify <module>
 7. Write `.ad-build/public-base/use-summary.json`.
 
 `pack` fails by default if any required restore path is missing. Use `--allow-partial` only for deliberate diagnostics.
+
+`publish` requires the bundle manifest to come from a passed `ad-build full-build` record. If `.ad-build/full-build/latest/full-build-result.json` is missing or not `passed`, publish fails by default. `--allow-unproven` is only for diagnostics and must not be treated as a trusted team baseline.
 
 The low-level restore stage refuses to overwrite locally changed files in the normal workflow. It may overwrite git-clean tracked files when the clean checkout version differs from the trusted full-build bundle, because this is how generated public-base outputs such as `OS_PLATFORM.file` are restored.
 

@@ -47,6 +47,10 @@ Copy `templates/module-map.yaml` to `tools/module-map.yaml` in the target reposi
 
 Copy `templates/public-base.yaml` to `tools/public-base.yaml` only when the repository needs to override the default public-base paths.
 
+By default, `public-base` computes its key from Git HEAD tracked public inputs (`public_input_mode: git-head`), not from dirty full-build worktree content. If full `check` reports `dirty_public_inputs_count > 0`, do not trust the current workspace for app-local verification until those public input changes are committed, reverted, or explained by restored public-base files that still match `.ad-build/public-base/current.json`.
+
+`public_input_mode: worktree` is a diagnostic override: dirty public inputs are included in the key, and such bundles must not be treated as trusted team publish baselines without explicit human approval.
+
 ## Public-base file workflow
 
 First CI run or trusted AD build node:
@@ -74,6 +78,8 @@ ad-build verify <module>
 ```
 
 `public-base pack` fails if any required restore path is missing. Use `--allow-partial` only for deliberate diagnostics.
+
+`public-base publish` requires the bundle manifest to contain `full_build.status: passed`. `--allow-unproven` exists only for diagnostics; do not use an unproven publish as a trusted team baseline.
 
 The low-level restore stage may overwrite Git-clean tracked files from the trusted bundle. It refuses local modifications, untracked conflicts, symlinks, directories, and unsafe paths. Normal users should run `public-base use`, not call low-level restore directly.
 

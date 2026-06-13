@@ -23,6 +23,7 @@ test('completion bash prints ad-build completion script', () => {
   assert.doesNotMatch(result.stdout, /key pack check/);
   assert.doesNotMatch(result.stdout, /status restore/);
   assert.match(result.stdout, /--integrity-only/);
+  assert.match(result.stdout, /--allow-unproven/);
   assert.doesNotMatch(result.stdout, /public-base\) COMPREPLY=.*--force/);
   assert.match(result.stdout, /complete -F _ad_build_completion ad-build/);
 });
@@ -44,6 +45,7 @@ test('completion zsh prints ad-build completion script', () => {
   assert.match(result.stdout, /skill=\(install status uninstall\)/);
   assert.match(result.stdout, /auth_commands=\(login status logout\)/);
   assert.match(result.stdout, /--integrity-only/);
+  assert.match(result.stdout, /--allow-unproven/);
   assert.doesNotMatch(result.stdout, /public_base_opts=.*--force/);
   assert.doesNotMatch(result.stdout, /public_base=\(.*restore/);
   assert.doesNotMatch(result.stdout, /commands=\(doctor:check environment/);

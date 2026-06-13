@@ -25,6 +25,7 @@ ad-build public-base auth status --json
 Trusted full-build publish:
 
 ```bash
+ad-build full-build -- ./compile.sh
 ad-build public-base pack --out /root/public-base.tar --json
 ad-build public-base check --bundle /root/public-base.tar --integrity-only --json
 ad-build public-base publish --branch release-AD7.0.29R2 --bundle /root/public-base.tar --push --json
@@ -85,12 +86,22 @@ sinfor/** source/config files
 
 then public-base is stale. Do not recommend app-local verification as sufficient. Require a full build or a rebuilt public-base bundle.
 
-Generated build side effects under `libs/**/build/**`, `libs/**/tmp/**`, `sinfor/**/build/**`, `sinfor/**/tmp/**`, object files, archives, shared libraries, `.Po`, `.pyc`, `.md5`, and `.map` are excluded from the default public-base key. Do not classify these generated files as source input changes unless the repository-specific `tools/public-base.yaml` says otherwise.
+Generated build side effects under `libs/**/build/**`, `libs/**/tmp/**`, `sinfor/**/build/**`, `sinfor/**/tmp/**`, `**/dist/**`, object files, archives, shared libraries, `.so.*`, `.ko`, `.Po`, `.pyc`, `.md5`, `.map`, and `*.egg-info` are excluded from the default public-base key. Do not classify these generated files as source input changes unless the repository-specific `tools/public-base.yaml` says otherwise.
+
+The default public-base key mode is `git-head`. The key represents tracked public inputs in Git HEAD, not dirty files left by the full build. If `tools/public-base.yaml` sets `public_input_mode: worktree`, treat that as a diagnostic override and do not use it as the normal publish baseline without explicit human approval. In `worktree` mode, dirty public inputs are included in the key, so a matching check can still be `matched` while warning about dirty inputs.
+
+If full `public-base check` reports `dirty_public_inputs_count > 0`, read `dirty_public_inputs_sample`. Restored files that still match `.ad-build/public-base/current.json` are ignored by the CLI; any reported dirty public input means the current workspace has public input changes outside the bundle.
 
 If `public-base pack` reports missing restore paths:
 
 - do not publish the bundle
 - rerun the full build or pass `--allow-partial` only for deliberate diagnostics
+
+If `public-base publish` fails because `full_build.status` is missing or not `passed`:
+
+- do not use `--allow-unproven` for a shared team baseline
+- rerun `ad-build full-build -- <command>` in the trusted full-build workspace
+- only use `--allow-unproven` for a clearly labelled diagnostic publish
 
 If `public-base use` reports `status: not_ready`:
 
