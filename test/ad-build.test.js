@@ -135,7 +135,7 @@ test('full-build result includes run id and runtime metadata', () => {
   assert.equal(result.os.arch, process.arch);
   assert.equal(result.cwd, repo);
   assert.equal(result.package_json_path.endsWith('package.json'), true);
-  assert.equal(result.package_root.endsWith('dynamic'), true);
+  assert.equal(result.package_root, process.cwd());
   assert.equal(typeof result.worktree_clean, 'boolean');
 });
 
