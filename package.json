@@ -14,7 +14,7 @@
     "docs"
   ],
   "scripts": {
-    "test": "node --test test/ad-build.test.js test/base-image.test.js test/bundle.test.js"
+    "test": "node --test test/ad-build.test.js test/base-image.test.js test/bundle.test.js test/skill-install.test.js"
   },
   "license": "UNLICENSED"
 }

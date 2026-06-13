@@ -3,6 +3,7 @@
 const commands = require('../lib/commands');
 const baseImage = require('../lib/base-image');
 const bundle = require('../lib/bundle');
+const skill = require('../lib/skill');
 
 async function main(argv = process.argv.slice(2)) {
   const command = argv[0] || 'help';
@@ -22,6 +23,15 @@ async function main(argv = process.argv.slice(2)) {
 
   if (command === 'inventory') {
     return bundle.runInventoryCli(argv.slice(1), {
+      cwd: process.cwd(),
+      env: process.env,
+      stdout: process.stdout,
+      stderr: process.stderr
+    });
+  }
+
+  if (command === 'skill') {
+    return skill.runSkillCli(argv.slice(1), {
       cwd: process.cwd(),
       env: process.env,
       stdout: process.stdout,
