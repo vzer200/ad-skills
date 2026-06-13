@@ -59,6 +59,7 @@ ad-build full-build -- ./compile.sh
 ad-build public-base key
 ad-build public-base pack --out public-base.tar
 ad-build public-base check --bundle public-base.tar
+ad-build public-base publish --repo /path/to/ad-build-public-base --branch release-AD7.0.29R2 --bundle public-base.tar
 ```
 
 `public-base pack` fails if any required restore path is missing. `--allow-partial` is only for deliberate diagnostics, not normal delivery.
@@ -66,9 +67,11 @@ ad-build public-base check --bundle public-base.tar
 Developer or app verification workspace:
 
 ```bash
-ad-build public-base restore --bundle public-base.tar
+LATEST_JSON=/path/to/ad-build-public-base/release-AD7.0.29R2/latest.json
+BUNDLE=$(dirname "$LATEST_JSON")/$(node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); process.stdout.write(j.bundle)" "$LATEST_JSON")
+ad-build public-base check --bundle "$BUNDLE"
+ad-build public-base restore --bundle "$BUNDLE"
 ad-build public-base status
-ad-build public-base check --bundle public-base.tar
 ad-build diff
 ad-build map
 ad-build verify <module...>
@@ -98,6 +101,7 @@ Do not treat public-base restore as proof that the current change is correct or 
 - If `status` is `missing`, the next command should be `ad-build public-base restore --bundle <public-base.tar>`.
 - If `status` is `partial` or `changed`, do not trust module verification until the intended bundle is restored again or public-base is rebuilt.
 - If `check` is `mismatch`, public inputs differ from the bundle. Do not recommend app-local verification as sufficient.
+- If `check` is `invalid`, do not restore and do not continue verify. Require downloading `public-base.tar` again, or rebuilding it in a trusted full-build workspace with `ad-build public-base pack`.
 - If restore reports conflicts, do not use `--force` unless the workspace is disposable or explicitly backed up.
 - If `verify` fails due to missing libraries or headers, inspect `public-base status` and `public-base check` before changing source code.
 
@@ -154,6 +158,7 @@ ad-build full-build -- ./compile.sh
 ad-build public-base key
 ad-build public-base pack --out public-base.tar
 ad-build public-base check --bundle public-base.tar
+ad-build public-base publish --repo /path/to/ad-build-public-base --branch release-AD7.0.29R2 --bundle public-base.tar
 ad-build baseline-save --from-run latest
 ```
 
@@ -193,7 +198,7 @@ risk_level: low | medium | high
 evidence: <CLI outputs, diff files, module-map output, public-base output, Makefiles, logs used>
 required_verification: <modules and/or full build that must run>
 optional_verification: <extra modules or checks that improve confidence>
-public_base_status: not_used | restored | missing | partial | changed | mismatch | rebuild_required
+public_base_status: not_used | restored | missing | partial | changed | mismatch | invalid | rebuild_required
 full_build_status: not_required | required | passed | queued
 next_command: <single next ad-build command or local fallback command>
 ```

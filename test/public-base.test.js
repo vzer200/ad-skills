@@ -191,7 +191,10 @@ test('public-base check validates bundled file content before reporting matched'
   fs.writeFileSync(path.join(staging, 'files', 'include', 'shared.h'), 'tampered header\n');
   runCommand('tar', ['-cf', bad, '-C', staging, 'manifest.json', 'inventory.json', 'files'], repo);
 
-  assert.throws(() => publicBase.runCheck({ repoRoot: repo, bundle: bad }), /sha256 mismatch/);
+  const invalid = publicBase.runCheck({ repoRoot: repo, bundle: bad });
+  assert.equal(invalid.status, 'invalid');
+  assert.match(invalid.error, /sha256 mismatch/);
+  assert.equal(fs.existsSync(path.join(repo, '.ad-build/public-base/check.json')), true);
 });
 
 test('public-base check rejects incomplete inventory and invalid sha256 sidecar', () => {
@@ -207,12 +210,148 @@ test('public-base check rejects incomplete inventory and invalid sha256 sidecar'
   core.writeJson(inventoryPath, inventory);
   runCommand('tar', ['-cf', badInventory, '-C', staging, 'manifest.json', 'inventory.json', 'files'], repo);
 
-  assert.throws(() => publicBase.runCheck({ repoRoot: repo, bundle: badInventory }), /inventory file count/);
+  const invalidInventory = publicBase.runCheck({ repoRoot: repo, bundle: badInventory });
+  assert.equal(invalidInventory.status, 'invalid');
+  assert.match(invalidInventory.error, /inventory file count/);
 
   fs.writeFileSync(out + '.sha256', 'sha256:0000000000000000000000000000000000000000000000000000000000000000  public-base.tar\n');
   const invalid = publicBase.runCheck({ repoRoot: repo, bundle: out });
   assert.equal(invalid.status, 'invalid');
   assert.equal(invalid.sidecar_status, 'mismatch');
+});
+
+test('public-base publish writes branch and key scoped artifact repository layout', () => {
+  const repo = makeRepo();
+  const artifactRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-'));
+  const out = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-publish.tar`);
+  const packed = publicBase.packPublicBase({ repoRoot: repo, out });
+
+  const published = publicBase.publishPublicBase({
+    repoRoot: repo,
+    repo: artifactRepo,
+    branch: 'release-AD7.0.29R2',
+    bundle: out
+  });
+
+  const releaseDir = path.join(artifactRepo, 'release-AD7.0.29R2');
+  const keyDir = path.join(releaseDir, `sha256-${packed.public_base_key_short}`);
+  assert.equal(published.publish_dir, keyDir.replaceAll('\\', '/'));
+  assert.equal(fs.existsSync(path.join(keyDir, 'public-base.tar')), true);
+  assert.equal(fs.existsSync(path.join(keyDir, 'manifest.json')), true);
+  assert.equal(fs.existsSync(path.join(keyDir, 'inventory.json')), true);
+  assert.equal(fs.existsSync(path.join(keyDir, 'public-base.tar.sha256')), true);
+
+  const latest = core.readJson(path.join(releaseDir, 'latest.json'));
+  assert.equal(latest.public_base_key, packed.public_base_key);
+  assert.equal(latest.bundle, `sha256-${packed.public_base_key_short}/public-base.tar`);
+  assert.equal(latest.manifest, `sha256-${packed.public_base_key_short}/manifest.json`);
+  assert.equal(latest.inventory, `sha256-${packed.public_base_key_short}/inventory.json`);
+  assert.equal(latest.sha256, `sha256-${packed.public_base_key_short}/public-base.tar.sha256`);
+});
+
+test('public-base publish rejects malicious manifest short keys and invalid branch paths', () => {
+  const repo = makeRepo();
+  const artifactRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-bad-'));
+  const out = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-bad-short-source.tar`);
+  const bad = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-bad-short.tar`);
+  const staging = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-bad-short-'));
+  publicBase.packPublicBase({ repoRoot: repo, out });
+  runCommand('tar', ['-xf', out, '-C', staging], repo);
+  const manifestPath = path.join(staging, 'manifest.json');
+  const manifest = core.readJson(manifestPath);
+  manifest.public_base_key_short = '../escape';
+  core.writeJson(manifestPath, manifest);
+  runCommand('tar', ['-cf', bad, '-C', staging, 'manifest.json', 'inventory.json', 'files'], repo);
+
+  assert.throws(() => publicBase.publishPublicBase({
+    repoRoot: repo,
+    repo: artifactRepo,
+    branch: 'release-AD7.0.29R2',
+    bundle: bad
+  }), /public_base_key_short/);
+  assert.throws(() => publicBase.publishPublicBase({
+    repoRoot: repo,
+    repo: artifactRepo,
+    branch: '.git/hooks',
+    bundle: out
+  }), /invalid public-base branch/);
+});
+
+test('public-base publish validates latest pack summary before default publish', () => {
+  const repo = makeRepo();
+  const artifactRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-stale-'));
+  const out = path.join(repo, 'public-base.tar');
+  publicBase.packPublicBase({ repoRoot: repo, out });
+  const summaryPath = path.join(repo, '.ad-build/public-base/latest/pack-summary.json');
+  const summary = core.readJson(summaryPath);
+  summary.bundle_sha256 = 'sha256:0000000000000000000000000000000000000000000000000000000000000000';
+  core.writeJson(summaryPath, summary);
+
+  assert.throws(() => publicBase.publishPublicBase({
+    repoRoot: repo,
+    repo: artifactRepo,
+    branch: 'release-AD7.0.29R2'
+  }), /latest public-base bundle sha256 mismatch/);
+
+  delete summary.bundle_sha256;
+  summary.public_base_key = 'sha256:0000000000000000000000000000000000000000000000000000000000000000';
+  core.writeJson(summaryPath, summary);
+  assert.throws(() => publicBase.publishPublicBase({
+    repoRoot: repo,
+    repo: artifactRepo,
+    branch: 'release-AD7.0.29R2'
+  }), /latest public-base pack summary missing bundle_sha256/);
+});
+
+test('public-base publish rejects unsafe existing artifact repo paths and residual directories', (t) => {
+  const repo = makeRepo();
+  const artifactRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-unsafe-'));
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-outside-'));
+  const out = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-unsafe.tar`);
+  const packed = publicBase.packPublicBase({ repoRoot: repo, out });
+  const release = path.join(artifactRepo, 'release-AD7.0.29R2');
+  fs.mkdirSync(release, { recursive: true });
+  const keyDir = path.join(release, `sha256-${packed.public_base_key_short}`);
+  fs.mkdirSync(keyDir, { recursive: true });
+  fs.writeFileSync(path.join(keyDir, 'public-base.tar'), 'stale partial bundle\n');
+
+  assert.throws(() => publicBase.publishPublicBase({
+    repoRoot: repo,
+    repo: artifactRepo,
+    branch: 'release-AD7.0.29R2',
+    bundle: out
+  }), /non-empty publish target/);
+
+  fs.rmSync(release, { recursive: true, force: true });
+  try {
+    fs.symlinkSync(outside, release, process.platform === 'win32' ? 'junction' : 'dir');
+  } catch (error) {
+    t.skip(`symlink creation unavailable: ${error.message}`);
+    return;
+  }
+  assert.throws(() => publicBase.publishPublicBase({
+    repoRoot: repo,
+    repo: artifactRepo,
+    branch: 'release-AD7.0.29R2',
+    bundle: out
+  }), /symlink|junction|not a directory/);
+});
+
+test('public-base publish defaults to the latest packed bundle and CLI exposes publish', () => {
+  const repo = makeRepo();
+  const artifactRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-cli-'));
+  const cli = path.join(__dirname, '..', 'bin', 'ad-build.js');
+  const out = path.join(repo, 'public-base.tar');
+  publicBase.packPublicBase({ repoRoot: repo, out });
+
+  const publish = spawnSync(process.execPath, [cli, 'public-base', 'publish', '--repo', artifactRepo, '--branch', 'release-AD7.0.29R2'], {
+    cwd: repo,
+    encoding: 'utf8'
+  });
+
+  assert.equal(publish.status, 0, publish.stderr);
+  assert.match(publish.stdout, /published public-base/);
+  assert.equal(fs.existsSync(path.join(artifactRepo, 'release-AD7.0.29R2', 'latest.json')), true);
 });
 
 test('CLI wrapper exposes public-base commands', () => {

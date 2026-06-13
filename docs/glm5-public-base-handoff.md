@@ -58,6 +58,12 @@ If `check` is `mismatch`:
 - public inputs differ from the bundle
 - require public-base rebuild or full build
 
+If `ad-build public-base check` outputs `status: invalid`:
+
+- do not restore
+- do not continue verify
+- require downloading `public-base.tar` again, or rebuilding it in a trusted full-build workspace with `ad-build public-base pack`
+
 ## What public-base does not prove
 
 Do not say public-base means:
@@ -78,7 +84,7 @@ risk_level: low | medium | high
 evidence: <CLI outputs, diff files, module-map output, public-base outputs, Makefiles, logs used>
 required_verification: <modules and/or full build that must run>
 optional_verification: <extra modules or checks that improve confidence>
-public_base_status: not_used | restored | missing | partial | changed | mismatch | rebuild_required
+public_base_status: not_used | restored | missing | partial | changed | mismatch | invalid | rebuild_required
 full_build_status: not_required | required | passed | queued
 next_command: <single next ad-build command or local fallback command>
 ```

@@ -124,14 +124,17 @@ ad-build full-build -- ./compile.sh
 ad-build public-base key
 ad-build public-base pack --out public-base.tar
 ad-build public-base check --bundle public-base.tar
+ad-build public-base publish --repo /path/to/ad-build-public-base --branch release-AD7.0.29R2 --bundle public-base.tar
 ```
 
 Developer or app verification workspace:
 
 ```bash
-ad-build public-base restore --bundle public-base.tar
+LATEST_JSON=/path/to/ad-build-public-base/release-AD7.0.29R2/latest.json
+BUNDLE=$(dirname "$LATEST_JSON")/$(node -e "const fs=require('fs'); const j=JSON.parse(fs.readFileSync(process.argv[1],'utf8')); process.stdout.write(j.bundle)" "$LATEST_JSON")
+ad-build public-base check --bundle "$BUNDLE"
+ad-build public-base restore --bundle "$BUNDLE"
 ad-build public-base status
-ad-build public-base check --bundle public-base.tar
 ad-build map
 ad-build verify <module>
 ```
@@ -139,6 +142,8 @@ ad-build verify <module>
 `pack` fails by default if any required restore path is missing. Use `--allow-partial` only for deliberate diagnostics.
 
 `restore` refuses to overwrite existing files whose current sha256 differs from the bundle. Use `--force` only when the workspace is known to be disposable or already backed up.
+
+If `check` outputs `status: invalid`, do not restore and do not continue verify. Download `public-base.tar` again, or rebuild it in a trusted full-build workspace with `ad-build public-base pack`.
 
 ## Outputs
 
@@ -191,6 +196,10 @@ ad-build-public-base/
 ```
 
 The AD source repository should contain the CLI, skill, config, and scripts. The public-base repository or artifact system should contain generated bundles.
+
+`ad-build public-base publish --repo <repo> --branch <branch> [--bundle <public-base.tar>]` generates this layout automatically. If `--bundle` is omitted, it publishes the latest bundle recorded by `.ad-build/public-base/latest/pack-summary.json`.
+
+The publish command only writes files into the artifact repository. Commit and push of that repository remain explicit CI/operator steps.
 
 ## Reliability guarantees
 
