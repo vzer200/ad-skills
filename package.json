@@ -1,6 +1,6 @@
 {
   "name": "ad-build",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Deterministic AD build verification CLI",
   "type": "commonjs",
   "bin": {

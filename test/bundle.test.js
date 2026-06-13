@@ -119,6 +119,22 @@ test('source-only diff honors base ref and source-only map refreshes stale diff'
   assert.deepEqual(mapped.valid_verify_modules, ['foo']);
 });
 
+test('source-only diff handles large untracked file lists without ENOBUFS', () => {
+  const repo = makeRepo();
+  const generatedDir = path.join(repo, 'generated');
+  const count = 8000;
+  fs.mkdirSync(generatedDir, { recursive: true });
+  for (let index = 0; index < count; index += 1) {
+    const padded = String(index).padStart(5, '0');
+    const name = `file-${padded}-${'x'.repeat(150)}.tmp`;
+    fs.writeFileSync(path.join(generatedDir, name), '');
+  }
+
+  const diff = bundle.runSourceOnlyDiff({ repoRoot: repo });
+
+  assert.equal(diff.files.filter((file) => file.path.startsWith('generated/')).length, count);
+});
+
 test('restore rejects bundles with missing staged files before writing inventory', () => {
   const repo = makeRepo();
   const out = path.join(os.tmpdir(), `ad-build-state-${Date.now()}-${process.pid}-bad-source.tar`);
