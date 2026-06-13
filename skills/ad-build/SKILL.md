@@ -48,7 +48,7 @@ ad-build completion zsh
 - Do not manually clone `ad-build-public-base` in normal use.
 - Do not manually derive latest artifact paths in normal use.
 - Do not pass a personal token in a URL or CLI argument.
-- Use `ad-build public-base auth login --token-stdin --json` for token setup.
+- Use `ad-build login` for normal token setup.
 - Use `ad-build public-base publish --branch <release-dir> --bundle <public-base.tar> --push --json` to publish from a trusted full-build workspace.
 - Use `ad-build public-base use --branch <release-dir> --json` to restore and validate in a developer/app verification workspace.
 - `public-base publish` must come from a bundle whose manifest has `full_build.status: passed`. If `--allow-unproven` appears, treat the output as diagnostics only, not as a trusted team baseline.
@@ -56,23 +56,21 @@ ad-build completion zsh
 
 ## Fixed Repository Authentication
 
-Use this scripted form when the user can paste a Git personal token:
+Use this normal form when the user can paste a Git personal token:
 
 ```bash
-read -r -s -p "Git token: " TOKEN
-printf '\n'
-printf '%s' "$TOKEN" | ad-build public-base auth login --token-stdin --json
-unset TOKEN
-ad-build public-base auth status --json
+ad-build login
 ```
+
+For CI, use `printf '%s' "$TOKEN" | ad-build login --token-stdin --json`.
 
 If authentication is broken:
 
 ```bash
-ad-build public-base auth logout --remove-cache --json
+ad-build logout
 ```
 
-Then run the login sequence again. Never print or save the token in logs, docs, shell history, URLs, or issue comments.
+Then run `ad-build login` again. Never print or save the token in logs, docs, shell history, URLs, or issue comments.
 
 ## Trusted Full-Build Publish Workflow
 
@@ -101,7 +99,7 @@ Expected meaning:
 Run in the AD source workspace:
 
 ```bash
-ad-build public-base auth status --json
+ad-build login
 ad-build public-base use --branch release-AD7.0.29R2 --json
 ad-build diff
 ad-build map
@@ -155,10 +153,12 @@ This layer is intentionally smaller than a full compiled workspace. It is meant 
 - If only `apps/**` changed, public-base can be reused only when `public-base use` reports `status: ready`.
 - If source/config inputs under `libs/`, `sinfor/`, `include/`, `proto/`, root Makefile, shared `*.mk`, `app.mk`, or `compile.sh` changed, public-base is stale and a full build or rebuilt public-base is required.
 - Generated side effects under `libs/**/build/**`, `libs/**/tmp/**`, `sinfor/**/build/**`, `sinfor/**/tmp/**`, `**/dist/**`, object files, archives, shared libraries, `.so.*`, `.ko`, `.Po`, `.pyc`, `.md5`, `.map`, and `*.egg-info` are not public-base key inputs by default.
-- If full `check` reports `dirty_public_inputs_count > 0`, stop and inspect `dirty_public_inputs_sample`. In the default `git-head` mode, any remaining dirty public input means the current workspace cannot trust app-local verification until the input is committed, reverted, or explained by restored public-base files that still match `.ad-build/public-base/current.json`. If `public_input_mode` is `worktree`, treat it as diagnostics: dirty public inputs are included in the key and the bundle must not be used as a trusted team publish baseline without explicit human approval.
+- If full `check` reports `tracked_dirty_public_inputs_count > 0`, stop and inspect `tracked_dirty_public_inputs_sample`. In default `git-head` mode, tracked dirty public inputs mean the current workspace cannot trust app-local verification until the inputs are committed, reverted, or explained by restored public-base files that still match `.ad-build/public-base/current.json`.
+- If full `check` reports only `generated_public_inputs_count > 0`, do not treat that as public-base failure. Generated public inputs are untracked full-build outputs such as installed headers; they do not block reuse or publish.
+- If `public_input_mode` is `worktree`, treat it as diagnostics: dirty public inputs are included in the key and the bundle must not be used as a trusted team publish baseline without explicit human approval.
 - If `status` is `missing`, run `ad-build public-base use --branch <release-dir> --json`.
 - If `status` is `partial` or `changed`, do not trust module verification until `public-base use` succeeds again or public-base is rebuilt.
-- If full `check` is `mismatch`, public inputs differ from the bundle. Do not recommend app-local verification as sufficient.
+- If full `check` is `mismatch`, inspect `tracked_dirty_public_inputs_count`, `generated_public_inputs_count`, `current_key`, and `bundle_key`. Do not recommend app-local verification as sufficient when tracked public inputs changed or keys differ.
 - If integrity `check` is `invalid`, do not restore and do not continue verify.
 - If restore reports conflicts, do not enable forced overwrite unless the workspace is disposable or explicitly backed up.
 - If `verify` fails due to missing libraries or headers, inspect `public-base status`, `public-base check`, and `use-summary.json` before changing source code.
@@ -218,8 +218,7 @@ Unmapped files are not safe by default. Inspect Makefiles and shared includes, t
 Normal fixed commands:
 
 ```bash
-printf '%s' "$TOKEN" | ad-build public-base auth login --token-stdin --json
-ad-build public-base auth status --json
+ad-build login
 ad-build public-base pack --out /root/public-base.tar --json
 ad-build public-base check --bundle /root/public-base.tar --integrity-only --json
 ad-build public-base publish --branch release-AD7.0.29R2 --bundle /root/public-base.tar --push --json
@@ -232,6 +231,8 @@ ad-build modules
 ad-build verify <module...>
 ad-build report <run-id>
 ```
+
+If `public-base use` fails with authentication guidance, the next command is `ad-build login`. Do not recommend manual Git Username/Password input, token-in-URL workarounds, or `public-base auth status` as the normal user recovery step.
 
 Fallback local form:
 

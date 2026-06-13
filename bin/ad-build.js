@@ -27,8 +27,33 @@ async function main(argv = process.argv.slice(2)) {
     return publicBase.runPublicBaseCli(argv.slice(1), {
       cwd: process.cwd(),
       env: process.env,
+      stdin: process.stdin,
       stdout: process.stdout,
       stderr: process.stderr
+    });
+  }
+
+  if (command === 'login') {
+    return publicBase.runPublicBaseCli(['auth', 'login', ...argv.slice(1)], {
+      cwd: process.cwd(),
+      env: process.env,
+      stdin: process.stdin,
+      stdout: process.stdout,
+      stderr: process.stderr,
+      displayCommand: 'login',
+      friendlyAuthCommand: 'login'
+    });
+  }
+
+  if (command === 'logout') {
+    return publicBase.runPublicBaseCli(['auth', 'logout', '--remove-cache', ...argv.slice(1)], {
+      cwd: process.cwd(),
+      env: process.env,
+      stdin: process.stdin,
+      stdout: process.stdout,
+      stderr: process.stderr,
+      displayCommand: 'logout',
+      friendlyAuthCommand: 'logout'
     });
   }
 

@@ -15,12 +15,10 @@ Do not manually clone this repository in normal use. Do not manually derive late
 Authentication:
 
 ```bash
-read -r -s -p "Git token: " TOKEN
-printf '\n'
-printf '%s' "$TOKEN" | ad-build public-base auth login --token-stdin --json
-unset TOKEN
-ad-build public-base auth status --json
+ad-build login
 ```
+
+For CI, use `printf '%s' "$TOKEN" | ad-build login --token-stdin --json`. Do not recommend `public-base auth status` as the normal user login check.
 
 Trusted full-build publish:
 
@@ -90,7 +88,9 @@ Generated build side effects under `libs/**/build/**`, `libs/**/tmp/**`, `sinfor
 
 The default public-base key mode is `git-head`. The key represents tracked public inputs in Git HEAD, not dirty files left by the full build. If `tools/public-base.yaml` sets `public_input_mode: worktree`, treat that as a diagnostic override and do not use it as the normal publish baseline without explicit human approval. In `worktree` mode, dirty public inputs are included in the key, so a matching check can still be `matched` while warning about dirty inputs.
 
-If full `public-base check` reports `dirty_public_inputs_count > 0`, read `dirty_public_inputs_sample`. Restored files that still match `.ad-build/public-base/current.json` are ignored by the CLI; any reported dirty public input means the current workspace has public input changes outside the bundle.
+If full `public-base check` reports `tracked_dirty_public_inputs_count > 0`, read `tracked_dirty_public_inputs_sample`. Restored files that still match `.ad-build/public-base/current.json` are ignored by the CLI; any reported tracked dirty public input means Git-tracked or staged public source/config inputs differ from HEAD.
+
+If full `public-base check` reports only `generated_public_inputs_count > 0`, do not treat that as public-base failure. Generated public inputs are untracked full-build outputs such as installed headers; they do not block reuse in default `git-head` mode.
 
 If `public-base pack` reports missing restore paths:
 
@@ -103,11 +103,24 @@ If `public-base publish` fails because `full_build.status` is missing or not `pa
 - rerun `ad-build full-build -- <command>` in the trusted full-build workspace
 - only use `--allow-unproven` for a clearly labelled diagnostic publish
 
+If `public-base publish` fails because tracked dirty public inputs exist:
+
+- read `tracked_dirty_public_inputs_after_full_build`
+- require commit/revert or rebuild from a clean trusted full-build workspace
+- do not treat `generated_public_inputs_after_full_build` as a publish blocker
+
 If `public-base use` reports `status: not_ready`:
 
 - read `use-summary.json`
 - read `status.json` and `check.json`
 - do not continue verify until the reason is understood
+
+If `public-base use` fails because authentication is unavailable:
+
+- the next command must be `ad-build login`
+- do not suggest manual Git Username/Password input
+- do not tell the user to put a token in the repository URL
+- do not use `public-base auth status` as the normal recovery step
 
 If restore reports conflicts:
 
@@ -116,8 +129,8 @@ If restore reports conflicts:
 
 If full `check` is `mismatch`:
 
-- public inputs differ from the bundle
-- require public-base rebuild or full build
+- inspect `tracked_dirty_public_inputs_count`, `generated_public_inputs_count`, `current_key`, and `bundle_key`
+- require public-base rebuild or full build when tracked public inputs changed or keys differ
 
 If any public-base check outputs `status: invalid`:
 

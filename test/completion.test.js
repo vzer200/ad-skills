@@ -16,6 +16,7 @@ test('completion bash prints ad-build completion script', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /_ad_build_completion/);
   assert.match(result.stdout, /public-base/);
+  assert.match(result.stdout, /compgen -W "login logout doctor/);
   assert.match(result.stdout, /auth pack check use publish status/);
   assert.match(result.stdout, /inventory\) COMPREPLY=\( \$\(compgen -W "status"/);
   assert.match(result.stdout, /image\) COMPREPLY=\( \$\(compgen -W "status save pull restore"/);
@@ -38,7 +39,7 @@ test('completion zsh prints ad-build completion script', () => {
   assert.match(result.stdout, /#compdef ad-build/);
   assert.match(result.stdout, /public-base/);
   assert.match(result.stdout, /_arguments/);
-  assert.match(result.stdout, /commands=\('doctor:check environment'/);
+  assert.match(result.stdout, /commands=\('login:log in to public-base'/);
   assert.match(result.stdout, /public_base=\(auth pack check use publish status\)/);
   assert.match(result.stdout, /inventory=\(status\)/);
   assert.match(result.stdout, /image=\(status save pull restore\)/);

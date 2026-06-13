@@ -88,6 +88,41 @@ function runCli(repo, args, env = {}) {
   });
 }
 
+function capturePublicBaseCli(args, options = {}) {
+  let stdout = '';
+  let stderr = '';
+  const code = publicBase.runPublicBaseCli(args, {
+    ...options,
+    stdout: { write: (value) => { stdout += value; } },
+    stderr: { write: (value) => { stderr += value; } }
+  });
+  return { code, stdout, stderr };
+}
+
+function runPublicBaseCliChild(repo, args, options = {}) {
+  const cliModule = path.join(__dirname, '..', 'lib', 'public-base.js');
+  const code = [
+    `const publicBase = require(${JSON.stringify(cliModule)});`,
+    `const code = publicBase.runPublicBaseCli(${JSON.stringify(args)}, {`,
+    `  cwd: ${JSON.stringify(repo)},`,
+    `  repoRoot: ${JSON.stringify(repo)},`,
+    options.repoUrl ? `  repoUrl: ${JSON.stringify(options.repoUrl)},` : '',
+    options.allowRepoOverride ? '  allowRepoOverride: true,' : '',
+    '  env: process.env,',
+    '  stdin: process.stdin,',
+    '  stdout: process.stdout,',
+    '  stderr: process.stderr',
+    '});',
+    'process.exitCode = code;'
+  ].filter(Boolean).join('\n');
+  return spawnSync(process.execPath, ['-e', code], {
+    cwd: repo,
+    encoding: 'utf8',
+    input: options.input || '',
+    env: { ...process.env, ...(options.env || {}) }
+  });
+}
+
 function makeBareArtifactRepo() {
   const bare = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-bare-'));
   runCommand('git', ['init', '--bare', bare], process.cwd());
@@ -215,22 +250,33 @@ test('public-base check reports dirty public inputs as mismatch with git HEAD ke
 
   assert.equal(appOnly.status, 'matched');
   assert.equal(appOnly.dirty_public_inputs_count, 0);
+  assert.equal(appOnly.tracked_dirty_public_inputs_count, 0);
+  assert.equal(appOnly.generated_public_inputs_count, 0);
   assert.equal(withPublicInput.status, 'mismatch');
   assert.equal(withPublicInput.dirty_public_inputs_count, 1);
   assert.deepEqual(withPublicInput.dirty_public_inputs_sample, ['libs/input.c']);
+  assert.equal(withPublicInput.tracked_dirty_public_inputs_count, 1);
+  assert.deepEqual(withPublicInput.tracked_dirty_public_inputs_sample, ['libs/input.c']);
+  assert.equal(withPublicInput.generated_public_inputs_count, 0);
 });
 
-test('public-base check reports untracked and staged public inputs as dirty in git HEAD mode', () => {
+test('public-base check reports untracked public inputs as generated and does not block git HEAD reuse', () => {
   const untracked = makeRepo();
   const untrackedOut = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-untracked-dirty.tar`);
   publicBase.packPublicBase({ repoRoot: untracked, out: untrackedOut });
   fs.writeFileSync(path.join(untracked, 'libs/untracked.c'), 'new public input\n');
   const untrackedCheck = publicBase.runCheck({ repoRoot: untracked, bundle: untrackedOut });
 
-  assert.equal(untrackedCheck.status, 'mismatch');
+  assert.equal(untrackedCheck.status, 'matched');
   assert.equal(untrackedCheck.current_key, untrackedCheck.bundle_key);
-  assert.deepEqual(untrackedCheck.dirty_public_inputs_sample, ['libs/untracked.c']);
+  assert.equal(untrackedCheck.dirty_public_inputs_count, 0);
+  assert.deepEqual(untrackedCheck.dirty_public_inputs_sample, []);
+  assert.equal(untrackedCheck.tracked_dirty_public_inputs_count, 0);
+  assert.equal(untrackedCheck.generated_public_inputs_count, 1);
+  assert.deepEqual(untrackedCheck.generated_public_inputs_sample, ['libs/untracked.c']);
+});
 
+test('public-base check reports staged public inputs as tracked dirty in git HEAD mode', () => {
   const staged = makeRepo();
   const stagedOut = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-staged-dirty.tar`);
   publicBase.packPublicBase({ repoRoot: staged, out: stagedOut });
@@ -241,6 +287,9 @@ test('public-base check reports untracked and staged public inputs as dirty in g
   assert.equal(stagedCheck.status, 'mismatch');
   assert.equal(stagedCheck.current_key, stagedCheck.bundle_key);
   assert.deepEqual(stagedCheck.dirty_public_inputs_sample, ['libs/staged.c']);
+  assert.equal(stagedCheck.tracked_dirty_public_inputs_count, 1);
+  assert.deepEqual(stagedCheck.tracked_dirty_public_inputs_sample, ['libs/staged.c']);
+  assert.equal(stagedCheck.generated_public_inputs_count, 0);
 });
 
 test('public-base check ignores restored public-base files until they are locally changed again', () => {
@@ -255,6 +304,8 @@ test('public-base check ignores restored public-base files until they are locall
 
   assert.equal(restored.status, 'matched');
   assert.equal(restored.dirty_public_inputs_count, 0);
+  assert.equal(restored.tracked_dirty_public_inputs_count, 0);
+  assert.equal(restored.generated_public_inputs_count, 0);
 
   fs.writeFileSync(path.join(target, 'include/shared.h'), 'developer public header change\n');
   const changed = publicBase.runCheck({ repoRoot: target, bundle: out });
@@ -262,6 +313,9 @@ test('public-base check ignores restored public-base files until they are locall
   assert.equal(changed.status, 'mismatch');
   assert.equal(changed.dirty_public_inputs_count, 1);
   assert.deepEqual(changed.dirty_public_inputs_sample, ['include/shared.h']);
+  assert.equal(changed.tracked_dirty_public_inputs_count, 1);
+  assert.deepEqual(changed.tracked_dirty_public_inputs_sample, ['include/shared.h']);
+  assert.equal(changed.generated_public_inputs_count, 0);
 });
 
 test('public-base check only ignores restored public-base files for the same bundle', () => {
@@ -281,6 +335,7 @@ test('public-base check only ignores restored public-base files for the same bun
   assert.equal(checkedAgainstB.status, 'mismatch');
   assert.equal(checkedAgainstB.current_key, checkedAgainstB.bundle_key);
   assert.deepEqual(checkedAgainstB.dirty_public_inputs_sample, ['include/shared.h']);
+  assert.deepEqual(checkedAgainstB.tracked_dirty_public_inputs_sample, ['include/shared.h']);
 });
 
 test('public-base key supports explicit worktree public input mode', () => {
@@ -309,7 +364,29 @@ test('public-base check treats dirty public inputs as included diagnostics in wo
   assert.equal(check.public_input_mode, 'worktree');
   assert.equal(check.bundle_public_input_mode, 'worktree');
   assert.deepEqual(check.dirty_public_inputs_sample, ['libs/input.c']);
+  assert.deepEqual(check.tracked_dirty_public_inputs_sample, ['libs/input.c']);
+  assert.equal(check.generated_public_inputs_count, 0);
   assert.match(check.warnings.map((warning) => warning.message).join('\n'), /public_input_mode is worktree/);
+});
+
+test('public-base pack classifies tracked dirty and generated public inputs separately', () => {
+  const repo = makeRepo();
+  fs.writeFileSync(path.join(repo, 'include/shared.h'), 'tracked header dirty after full build\n');
+  fs.mkdirSync(path.join(repo, 'include/adconf'), { recursive: true });
+  fs.writeFileSync(path.join(repo, 'include/adconf/generated.pb.h'), 'generated protobuf header\n');
+  const out = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-dirty-split.tar`);
+  const packed = publicBase.packPublicBase({ repoRoot: repo, out });
+  const manifest = core.readJson(out.replace(/\.tar$/, '') + '.manifest.json');
+
+  assert.equal(packed.dirty_public_inputs_count, 1);
+  assert.equal(manifest.dirty_public_inputs_count, 1);
+  assert.deepEqual(manifest.dirty_public_inputs_after_full_build, ['include/shared.h']);
+  assert.equal(manifest.tracked_dirty_public_inputs_count, 1);
+  assert.deepEqual(manifest.tracked_dirty_public_inputs_after_full_build, ['include/shared.h']);
+  assert.equal(manifest.generated_public_inputs_count, 1);
+  assert.deepEqual(manifest.generated_public_inputs_after_full_build, ['include/adconf/generated.pb.h']);
+  assert.equal(packed.warnings.some((warning) => warning.type === 'tracked_dirty_public_inputs_after_full_build'), true);
+  assert.equal(packed.warnings.some((warning) => warning.type === 'generated_public_inputs_after_full_build'), true);
 });
 
 test('public-base pack only stores configured public dependency paths', () => {
@@ -600,35 +677,62 @@ test('public-base CLI emits json error payloads for restore conflicts', () => {
 test('public-base auth login accepts token from stdin without exposing it', () => {
   const repo = makeRepo();
   const isolated = makeIsolatedCredentialEnv();
+  const bare = makeBareArtifactRepo();
 
   try {
-    const login = spawnSync(process.execPath, [path.join(__dirname, '..', 'bin', 'ad-build.js'), 'public-base', 'auth', 'login', '--token-stdin', '--json'], {
-      cwd: repo,
-      encoding: 'utf8',
+    const login = runPublicBaseCliChild(repo, ['auth', 'login', '--token-stdin', '--json'], {
+      repoUrl: `file://${bare.replaceAll('\\', '/')}`,
+      allowRepoOverride: true,
       env: { ...process.env, ...isolated.env },
       input: 'secret-token\n'
     });
     assert.equal(login.status, 0, login.stderr || login.stdout);
     const body = JSON.parse(login.stdout);
-    assert.equal(body.status, 'stored');
+    assert.equal(body.status, 'authenticated');
     assert.equal(JSON.stringify(body).includes('secret-token'), false);
-    assert.equal(fs.readFileSync(isolated.credentials, 'utf8').includes('secret-token'), true);
+    assert.equal(fs.existsSync(isolated.credentials), false);
   } finally {
     fs.rmSync(isolated.home, { recursive: true, force: true });
+    fs.rmSync(bare, { recursive: true, force: true });
   }
 });
 
-test('public-base auth login requires token stdin', () => {
+test('top-level login in non-interactive mode requires token stdin', () => {
   const repo = makeRepo();
 
-  const login = runCli(repo, ['public-base', 'auth', 'login', '--json']);
+  const login = runCli(repo, ['login', '--json']);
 
   assert.equal(login.status, 2);
   assert.equal(login.stderr, '');
   const body = JSON.parse(login.stdout);
   assert.equal(body.status, 'error');
-  assert.equal(body.command, 'auth');
+  assert.equal(body.command, 'login');
   assert.match(body.error, /--token-stdin/);
+});
+
+test('top-level logout removes public-base cache', () => {
+  const repo = makeRepo();
+  const cache = path.join(repo, '.ad-build', 'cache', 'public-base-repo');
+  fs.mkdirSync(cache, { recursive: true });
+  fs.writeFileSync(path.join(cache, 'stale.txt'), 'stale\n');
+
+  const logout = runCli(repo, ['logout', '--json']);
+
+  assert.equal(logout.status, 0, logout.stderr || logout.stdout);
+  const body = JSON.parse(logout.stdout);
+  assert.equal(body.status, 'removed');
+  assert.equal(body.command, 'logout');
+  assert.equal(fs.existsSync(cache), false);
+});
+
+test('public-base auth errors are normalized to ad-build login guidance', () => {
+  const usernamePrompt = publicBase.normalizeAuthError("fatal: could not read Username for 'https://git.sangfor.com': terminal prompts disabled");
+  const accessDenied = publicBase.normalizeAuthError('remote: HTTP Basic: Access denied');
+
+  assert.match(usernamePrompt, /ad-build login/);
+  assert.match(accessDenied, /ad-build login/);
+  assert.doesNotMatch(usernamePrompt, /Username for|Password for/);
+  assert.doesNotMatch(accessDenied, /Username for|Password for/);
 });
 
 test('public-base CLI rejects runtime artifact repo URL overrides', () => {
@@ -783,6 +887,56 @@ test('public-base publish requires passed full-build unless allow-unproven is ex
   });
   assert.equal(diagnosticPublish.full_build_status, 'missing');
   assert.equal(diagnosticPublish.allow_unproven, true);
+});
+
+test('public-base publish blocks tracked dirty public inputs unless allow-unproven is explicit', () => {
+  const repo = makeRepo();
+  writeFullBuildResult(repo, 'passed');
+  fs.writeFileSync(path.join(repo, 'include/shared.h'), 'tracked dirty public input\n');
+  const artifactRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-tracked-dirty-'));
+  const out = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-tracked-dirty.tar`);
+  publicBase.packPublicBase({ repoRoot: repo, out });
+
+  assert.throws(() => publicBase.publishPublicBase({
+    repoRoot: repo,
+    repo: artifactRepo,
+    branch: 'release-AD7.0.29R2',
+    bundle: out
+  }), /requires clean tracked public inputs/);
+
+  const diagnostic = publicBase.publishPublicBase({
+    repoRoot: repo,
+    repo: artifactRepo,
+    branch: 'release-AD7.0.29R2',
+    bundle: out,
+    allowUnproven: true
+  });
+
+  assert.equal(diagnostic.allow_unproven, true);
+  assert.equal(diagnostic.full_build_status, 'passed');
+});
+
+test('public-base publish allows generated public inputs with passed full-build', () => {
+  const repo = makeRepo();
+  writeFullBuildResult(repo, 'passed');
+  fs.mkdirSync(path.join(repo, 'include/adconf'), { recursive: true });
+  fs.writeFileSync(path.join(repo, 'include/adconf/generated.pb.h'), 'generated protobuf header\n');
+  const artifactRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-public-base-repo-generated-'));
+  const out = path.join(os.tmpdir(), `public-base-${Date.now()}-${process.pid}-generated.tar`);
+  const packed = publicBase.packPublicBase({ repoRoot: repo, out });
+
+  assert.equal(packed.dirty_public_inputs_count, 0);
+  assert.equal(packed.generated_public_inputs_count, 1);
+
+  const published = publicBase.publishPublicBase({
+    repoRoot: repo,
+    repo: artifactRepo,
+    branch: 'release-AD7.0.29R2',
+    bundle: out
+  });
+
+  assert.equal(published.full_build_status, 'passed');
+  assert.equal(published.allow_unproven, false);
 });
 
 test('public-base CLI publish passes --allow-unproven through to managed publish', () => {

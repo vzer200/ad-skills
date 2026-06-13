@@ -54,21 +54,25 @@ The shipped CLI always uses the fixed repository URL. Runtime environment variab
 
 Tokens are stored through Git's credential helper. Do not put credentials in repository URLs or command arguments.
 
+Normal setup:
+
+```bash
+ad-build login
+```
+
 Scripted setup:
 
 ```bash
-read -r -s -p "Git token: " TOKEN
-printf '\n'
-printf '%s' "$TOKEN" | ad-build public-base auth login --token-stdin --json
-unset TOKEN
-ad-build public-base auth status --json
+printf '%s' "$TOKEN" | ad-build login --token-stdin --json
 ```
 
 Reset:
 
 ```bash
-ad-build public-base auth logout --remove-cache --json
+ad-build logout
 ```
+
+The lower-level `ad-build public-base auth ...` commands remain available for CI compatibility and diagnostics, but normal user documentation should prefer `ad-build login` and `ad-build logout`.
 
 ## Bundle Contents
 
@@ -197,17 +201,25 @@ The key output includes diagnostics to make bad defaults visible:
 
 If `libs` or `sinfor` counts explode after a build because generated outputs are being keyed, fix `tools/public-base.yaml` before trusting the key.
 
-Full `check` also reports dirty public inputs:
+Full `check` splits dirty public inputs into tracked source/config changes and untracked generated outputs:
 
 ```json
 {
   "status": "mismatch",
+  "tracked_dirty_public_inputs_count": 1,
+  "tracked_dirty_public_inputs_sample": ["libs/input.c"],
+  "generated_public_inputs_count": 15032,
+  "generated_public_inputs_sample": ["include/adconf/ad_common.pb.h"],
   "dirty_public_inputs_count": 1,
   "dirty_public_inputs_sample": ["libs/input.c"]
 }
 ```
 
-Dirty public inputs mean the current workspace has public source/config changes that are not represented by the bundle. Restored files that still match `.ad-build/public-base/current.json` are not counted as dirty; if they are edited after restore, they are counted again.
+`tracked_dirty_public_inputs_*` means Git-tracked or staged public source/config inputs differ from HEAD. In default `git-head` mode this blocks `matched` check status and formal publish until the inputs are committed or reverted.
+
+`generated_public_inputs_*` means untracked files match public input paths, usually because the full build installed headers needed by app-local verification. These files can enter `public-base.tar`, but they do not participate in the Git HEAD key and do not block reuse or publish.
+
+The legacy `dirty_public_inputs_*` fields are compatibility aliases for tracked dirty inputs. Restored files that still match `.ad-build/public-base/current.json` are not counted as dirty; if they are edited after restore, they are counted again.
 
 The key also includes selected toolchain environment variables by default:
 
@@ -237,11 +249,7 @@ Rules:
 Trusted full-build workspace:
 
 ```bash
-read -r -s -p "Git token: " TOKEN
-printf '\n'
-printf '%s' "$TOKEN" | ad-build public-base auth login --token-stdin --json
-unset TOKEN
-ad-build public-base auth status --json
+ad-build login
 ad-build full-build -- ./compile.sh
 ad-build public-base pack --out /root/public-base.tar --json
 ad-build public-base check --bundle /root/public-base.tar --integrity-only --json
@@ -251,7 +259,7 @@ ad-build public-base publish --branch release-AD7.0.29R2 --bundle /root/public-b
 Developer or app verification workspace:
 
 ```bash
-ad-build public-base auth status --json
+ad-build login
 ad-build public-base use --branch release-AD7.0.29R2 --json
 ad-build map
 ad-build verify <module>
@@ -269,7 +277,7 @@ ad-build verify <module>
 
 `pack` fails by default if any required restore path is missing. Use `--allow-partial` only for deliberate diagnostics.
 
-`publish` requires the bundle manifest to come from a passed `ad-build full-build` record. If `.ad-build/full-build/latest/full-build-result.json` is missing or not `passed`, publish fails by default. `--allow-unproven` is only for diagnostics and must not be treated as a trusted team baseline.
+`publish` requires the bundle manifest to come from a passed `ad-build full-build` record and to have no tracked dirty public inputs. If `.ad-build/full-build/latest/full-build-result.json` is missing or not `passed`, or if `tracked_dirty_public_inputs_count > 0`, publish fails by default. Generated public inputs do not block publish. `--allow-unproven` is only for diagnostics and must not be treated as a trusted team baseline.
 
 The low-level restore stage refuses to overwrite locally changed files in the normal workflow. It may overwrite git-clean tracked files when the clean checkout version differs from the trusted full-build bundle, because this is how generated public-base outputs such as `OS_PLATFORM.file` are restored.
 
@@ -327,7 +335,7 @@ Status/check write:
 Important statuses:
 
 ```text
-auth login: stored
+login/auth login: authenticated
 auth status: authenticated | unauthenticated
 pack: packed
 check --integrity-only: valid | invalid

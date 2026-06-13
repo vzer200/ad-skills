@@ -23,7 +23,8 @@ ad-build doctor
 ad-build precheck
 ad-build full-build -- <command...>
 ad-build baseline-save --from-run latest
-printf '%s' "$TOKEN" | ad-build public-base auth login --token-stdin --json
+ad-build login
+ad-build logout
 ad-build public-base pack --out public-base.tar --json
 ad-build public-base check --bundle public-base.tar --integrity-only --json
 ad-build public-base publish --branch release-AD7.0.29R2 --bundle public-base.tar --push --json
@@ -47,7 +48,7 @@ Copy `templates/module-map.yaml` to `tools/module-map.yaml` in the target reposi
 
 Copy `templates/public-base.yaml` to `tools/public-base.yaml` only when the repository needs to override the default public-base paths.
 
-By default, `public-base` computes its key from Git HEAD tracked public inputs (`public_input_mode: git-head`), not from dirty full-build worktree content. If full `check` reports `dirty_public_inputs_count > 0`, do not trust the current workspace for app-local verification until those public input changes are committed, reverted, or explained by restored public-base files that still match `.ad-build/public-base/current.json`.
+By default, `public-base` computes its key from Git HEAD tracked public inputs (`public_input_mode: git-head`), not from dirty full-build worktree content. Full `check` splits dirty public inputs into `tracked_dirty_public_inputs_*` and `generated_public_inputs_*`: tracked dirty inputs block app-local verification and formal publish until committed or reverted; generated public inputs are untracked full-build outputs and do not block reuse or publish.
 
 `public_input_mode: worktree` is a diagnostic override: dirty public inputs are included in the key, and such bundles must not be treated as trusted team publish baselines without explicit human approval.
 
@@ -57,11 +58,7 @@ First CI run or trusted AD build node:
 
 ```bash
 ad-build full-build -- ./compile.sh
-read -r -s -p "Git token: " TOKEN
-printf '\n'
-printf '%s' "$TOKEN" | ad-build public-base auth login --token-stdin --json
-unset TOKEN
-ad-build public-base auth status --json
+ad-build login
 ad-build public-base pack --out /root/public-base.tar --json
 ad-build public-base check --bundle /root/public-base.tar --integrity-only --json
 ad-build public-base publish --branch release-AD7.0.29R2 --bundle /root/public-base.tar --push --json
@@ -70,16 +67,22 @@ ad-build public-base publish --branch release-AD7.0.29R2 --bundle /root/public-b
 Developer restore flow:
 
 ```bash
-ad-build public-base auth status --json
+ad-build login
 ad-build public-base use --branch release-AD7.0.29R2 --json
 ad-build public-base status --json
 ad-build map
 ad-build verify <module>
 ```
 
+For CI or scripts, use stdin instead of interactive input:
+
+```bash
+printf '%s' "$TOKEN" | ad-build login --token-stdin --json
+```
+
 `public-base pack` fails if any required restore path is missing. Use `--allow-partial` only for deliberate diagnostics.
 
-`public-base publish` requires the bundle manifest to contain `full_build.status: passed`. `--allow-unproven` exists only for diagnostics; do not use an unproven publish as a trusted team baseline.
+`public-base publish` requires the bundle manifest to contain `full_build.status: passed` and `tracked_dirty_public_inputs_count: 0`. Generated public inputs do not block publish. `--allow-unproven` exists only for diagnostics; do not use an unproven publish as a trusted team baseline.
 
 The low-level restore stage may overwrite Git-clean tracked files from the trusted bundle. It refuses local modifications, untracked conflicts, symlinks, directories, and unsafe paths. Normal users should run `public-base use`, not call low-level restore directly.
 
