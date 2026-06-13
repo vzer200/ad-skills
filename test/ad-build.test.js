@@ -22,7 +22,7 @@ test('package has safe npm delivery shape', () => {
   assert.equal(pkg.bundledDependencies, undefined);
   assert.ok(!pkg.scripts?.preinstall);
   assert.ok(!pkg.scripts?.install);
-  assert.ok(!pkg.scripts?.postinstall);
+  assert.equal(pkg.scripts?.postinstall, 'node bin/ad-build.js skill install --force');
   assert.ok(pkg.files.includes('bin'));
   assert.ok(pkg.files.includes('lib'));
   assert.ok(pkg.files.includes('templates'));
