@@ -1,0 +1,51 @@
+restore_dirs:
+  - obj/lib64
+  - include
+  - obj/bin
+
+restore_files:
+  - KERNEL_VER
+  - OS_PLATFORM.file
+
+public_inputs:
+  - compile.sh
+  - Makefile
+  - app.mk
+  - "**/*.mk"
+  - libs/**
+  - include/**
+  - proto/**
+  - sinfor/**
+
+toolchain_env:
+  - CC
+  - CXX
+  - AR
+  - LD
+  - CFLAGS
+  - CXXFLAGS
+  - LDFLAGS
+  - AD_BUILD_TOOLCHAIN
+  - AD_BUILD_TARGET
+  - AD_BUILD_PLATFORM
+  - AD_BUILD_PUBLIC_BASE_TOOLCHAIN
+
+exclude_patterns:
+  - .git/**
+  - .ad-build/**
+  - node_modules/**
+  - apps/**
+  - mkpacket/**
+  - ssipacket/**
+  - ad_packet/**
+  - gcov_result/**
+  - gtest_result/**
+  - .pytest_cache/**
+  - "**/*.ssu"
+  - "**/*.ssi"
+  - "**/*.tar"
+  - "**/*.tar.gz"
+  - "**/*.tar.zst"
+  - "**/*.img"
+  - "**/*.iso"
+  - "**/*.log"

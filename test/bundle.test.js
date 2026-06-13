@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 const bundle = require('../lib/bundle');
 const core = require('../lib/core');
@@ -133,6 +134,30 @@ test('source-only diff handles large untracked file lists without ENOBUFS', () =
   const diff = bundle.runSourceOnlyDiff({ repoRoot: repo });
 
   assert.equal(diff.files.filter((file) => file.path.startsWith('generated/')).length, count);
+});
+
+test('bundle pack hashes files without reading each file into one buffer', () => {
+  const repo = makeRepo();
+  const out = path.join(os.tmpdir(), `ad-build-state-${Date.now()}-${process.pid}-stream-hash.tar`);
+  const target = path.join(repo, 'libs', 'large-public-dep.bin');
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, 'large file shape\n');
+  const expected = `sha256:${crypto.createHash('sha256').update('large file shape\n').digest('hex')}`;
+  const originalReadFileSync = fs.readFileSync;
+
+  fs.readFileSync = function patchedReadFileSync(file, ...args) {
+    if (path.resolve(file) === target) {
+      throw new Error('readFileSync should not be used for bundle file hashing');
+    }
+    return originalReadFileSync.call(fs, file, ...args);
+  };
+  try {
+    bundle.packBundle({ repoRoot: repo, profile: 'full', out });
+  } finally {
+    fs.readFileSync = originalReadFileSync;
+  }
+  const manifest = core.readJson(out.replace(/\.tar$/, '') + '.manifest.json');
+  assert.equal(manifest.files.find((file) => file.path === 'libs/large-public-dep.bin').sha256, expected);
 });
 
 test('restore rejects bundles with missing staged files before writing inventory', () => {
