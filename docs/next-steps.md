@@ -324,6 +324,17 @@ Confirmed force behavior:
 
 ### Restore doctor must validate relocated symlinks correctly
 
+MVP policy:
+
+- Do not make full-repository symlink health a default restore blocker.
+- The first goal is to reproduce the manually validated appd flow:
+  - restore overlay payload
+  - rewrite old `/root/AD` paths to the current AD root
+  - repair required symlink/file issues encountered by the appd build path
+  - run readiness checks for known required paths
+  - let users run native `make`
+- Treat broad symlink inspection as diagnostics unless it affects required readiness paths.
+
 Observed bug:
 
 - After running restore/use, `doctor.json` can report:
@@ -357,19 +368,26 @@ Root cause hypotheses:
 
 Expected behavior:
 
-- Restore should repair managed symlinks as part of the main `restore` flow, before final readiness checks.
+- Restore should repair managed symlinks needed by the validated appd restore path as part of the main `restore` flow, before final readiness checks.
 - Symlink validation should resolve targets according to their type:
   - absolute old-root targets are rewritten to the current AD root
   - repo-relative targets are resolved from the current AD root only when the inventory explicitly marks them that way
   - normal relative symlink targets are resolved from the symlink's parent directory
-  - targets outside the AD root are reported separately
-  - targets with wildcard characters are classified separately and not blindly counted as ordinary dangling symlinks
+  - targets outside the AD root are reported separately and do not block restore unless required by the selected readiness check
+  - targets with wildcard characters are classified separately and do not block restore by default
 - `doctor` output should group symlink issues into actionable categories:
   - true dangling symlink
   - invalid outside-repo symlink
   - wildcard-pattern symlink
   - old-root symlink not relocated
   - permission or replacement failure
+- Default `restore` should fail only when a required readiness path is missing after repair.
+- Full strict symlink validation should be opt-in, for example:
+
+```bash
+ad-build doctor --branch <branch> --strict
+```
+
 - Terminal output should show a concise Chinese summary and only a small sample. Full details should be written to a report file such as:
 
 ```text
@@ -394,13 +412,9 @@ Test coverage required:
 - Absolute old-root symlink targets are rewritten to the current root.
 - Wildcard-like symlink targets are classified separately.
 - Required appd paths are checked after symlink repair.
-- Doctor fails on true dangling required symlinks but does not fail on known harmless wildcard-pattern entries unless they affect required build paths.
+- Default doctor/restore fails on true dangling required symlinks but does not fail on broad non-required symlink issues.
+- Strict doctor fails on full-repository symlink issues.
 - The symlink report contains enough detail to debug without printing hundreds of entries to the terminal.
-
-Open questions before implementation:
-
-- Confirm whether wildcard symlink entries such as `librte_*.so* -> dpdk/pmds-21.0/librte_*.so*` are expected build artifacts that should be preserved, or whether they should be expanded/recreated as concrete links.
-- Confirm whether all dangling symlinks should block `restore`, or only those related to required readiness checks for the target workflow.
 
 ### Restore summary and doctor execution order must be consistent
 
