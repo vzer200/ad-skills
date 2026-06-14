@@ -315,9 +315,136 @@ Test coverage required:
 - Existing directories are not removed by symlink restore.
 - Symlink targets outside repo root are rejected.
 
-Open confirmation before implementation:
+Confirmed force behavior:
 
-- Confirm whether existing regular files at symlink target paths are always safe to replace when `--force` is used, or whether some paths should still require explicit confirmation.
+- `--force` may replace an existing regular file with the expected symlink when both conditions hold:
+  - the path is declared by the overlay inventory as a symlink target
+  - the path is inside the current AD repository root
+- This does not allow deleting directories, following symlinks, or deleting paths outside the repository.
+
+### Restore doctor must validate relocated symlinks correctly
+
+Observed bug:
+
+- After running restore/use, `doctor.json` can report:
+
+```text
+dangling_symlinks : 959 dangling overlay-managed symlinks were found
+required_path:libs/rdma-core-2404mlnx51/build/include/infiniband/mlx5dv.h : ... is missing; overlay is not ready for appd
+```
+
+- Example reported symlink:
+
+```json
+{
+  "path": "apps/ad_appd_new/libs/dpdk/tmp_install/lib64/librte_*.so*",
+  "target": "dpdk/pmds-21.0/librte_*.so*"
+}
+```
+
+Why this matters:
+
+- A restore can write tens of thousands of files successfully but still be unusable if managed symlinks point to the wrong root, wrong relative target, or unresolved build-cache paths.
+- The current report is too broad: it shows a large dangling count but does not clearly separate true broken symlinks, relative symlink validation issues, wildcard-like symlink entries, and known build-system links.
+
+Root cause hypotheses:
+
+- Symlink relocation may only rewrite absolute old-root paths such as `/root/AD/...`, while relative symlink targets are not normalized against the symlink's parent directory.
+- `doctor` may be checking relative symlink targets from the repository root instead of from the directory containing the symlink.
+- Symlink targets containing wildcard characters such as `*` may be treated as literal paths, causing false dangling reports.
+- Some symlinks may not have been replaced correctly because earlier restore logic failed on existing symlink targets.
+- Required appd paths such as `libs/rdma-core-2404mlnx51/build/include/infiniband/mlx5dv.h` may depend on the symlink repair step and must be checked after repair, not before.
+
+Expected behavior:
+
+- Restore should repair managed symlinks as part of the main `restore` flow, before final readiness checks.
+- Symlink validation should resolve targets according to their type:
+  - absolute old-root targets are rewritten to the current AD root
+  - repo-relative targets are resolved from the current AD root only when the inventory explicitly marks them that way
+  - normal relative symlink targets are resolved from the symlink's parent directory
+  - targets outside the AD root are reported separately
+  - targets with wildcard characters are classified separately and not blindly counted as ordinary dangling symlinks
+- `doctor` output should group symlink issues into actionable categories:
+  - true dangling symlink
+  - invalid outside-repo symlink
+  - wildcard-pattern symlink
+  - old-root symlink not relocated
+  - permission or replacement failure
+- Terminal output should show a concise Chinese summary and only a small sample. Full details should be written to a report file such as:
+
+```text
+$HOME/.ad-build/overlay/last-restore/symlink-report.json
+```
+
+Repair behavior:
+
+- `ad-build restore --branch <branch>` should run symlink repair automatically.
+- A separate repair command can remain for diagnostics, for example:
+
+```bash
+ad-build doctor --branch <branch>
+ad-build repair symlinks --branch <branch>
+```
+
+- If required paths are still missing after repair, report the exact missing path, the related symlink if known, and the next command to inspect or repair it.
+
+Test coverage required:
+
+- Relative symlink targets are validated relative to the symlink's parent directory.
+- Absolute old-root symlink targets are rewritten to the current root.
+- Wildcard-like symlink targets are classified separately.
+- Required appd paths are checked after symlink repair.
+- Doctor fails on true dangling required symlinks but does not fail on known harmless wildcard-pattern entries unless they affect required build paths.
+- The symlink report contains enough detail to debug without printing hundreds of entries to the terminal.
+
+Open questions before implementation:
+
+- Confirm whether wildcard symlink entries such as `librte_*.so* -> dpdk/pmds-21.0/librte_*.so*` are expected build artifacts that should be preserved, or whether they should be expanded/recreated as concrete links.
+- Confirm whether all dangling symlinks should block `restore`, or only those related to required readiness checks for the target workflow.
+
+### Restore summary and doctor execution order must be consistent
+
+Observed bug:
+
+- `/root/.ad-build/overlay/use-summary.json` exists after `overlay use`.
+- The same run's `doctor.json` still reports:
+
+```text
+use_summary_ready : overlay use-summary is missing
+```
+
+Why this matters:
+
+- The final status becomes misleading:
+  - `use-summary.json` says restore completed enough to write a summary
+  - `doctor.json` says the summary is missing
+- This makes users and inner AI agents spend time debugging a state file that actually exists.
+
+Root cause hypothesis:
+
+- `overlay use` likely runs doctor before writing the final use summary.
+- Doctor reads the summary from disk instead of receiving the in-memory restore result.
+- The warning then gets copied into the final summary, leaving stale diagnostic state.
+
+Expected behavior:
+
+- Restore should write a minimal in-progress summary before running doctor, then overwrite it with the final summary after doctor completes.
+- Or doctor should accept the restore result directly when called from restore/use, and standalone doctor can still read state from disk.
+- The final `use-summary.json` must not contain stale warnings produced only because the summary had not been written yet.
+- If doctor is run after a failed restore, it should report the actual failed phase rather than `use-summary missing`.
+
+Suggested state model:
+
+```text
+started -> files_restored -> symlinks_repaired -> paths_relocated -> doctor_checked -> ready/not_ready
+```
+
+Test coverage required:
+
+- Successful restore writes `use-summary.json` before final doctor result is persisted.
+- Doctor run inside restore does not warn that the summary is missing.
+- Standalone doctor still warns if no restore summary exists.
+- Failed restore writes a partial summary with the failed phase and error details.
 
 Compatibility:
 
