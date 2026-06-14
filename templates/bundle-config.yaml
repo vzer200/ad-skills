@@ -1,7 +1,0 @@
-# Reference-only bundle profile notes. The CLI currently uses built-in full/dev profiles.
-default_profile: full
-profiles:
-  full:
-    description: tracked modified files plus generated files under full build output directories
-  dev:
-    description: tracked modified files plus generated files needed for local/module development verification

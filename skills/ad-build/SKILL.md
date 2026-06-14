@@ -1,11 +1,13 @@
 ---
 name: ad-build
-description: Use when Codex needs to decide whether AD project changes can reuse a public-base dependency bundle, restore the fixed public-base artifact repository, publish a trusted full-build public-base bundle, inspect ad-build CLI outputs, select module verification, or explain ad-build verify/report logs. The CLI is deterministic and never calls a model; this skill teaches AI agents how to use it safely.
+description: Use when Codex works with the AD artifact overlay appd MVP: publishing an overlay from a trusted full-build workspace, restoring an overlay in a developer workspace, building appd, or interpreting overlay CLI JSON and logs. Use only the overlay command whitelist; do not use legacy public-base, bundle, image, baseline, verify, report, diff, map, or manual shell repair workflows.
 ---
 
-# ad-build
+# ad-build Artifact Overlay Skill
 
-`ad-build` is a deterministic npm CLI. It never calls a model. Use AI judgment only to interpret its JSON outputs together with the diff, module map, Makefiles, public-base status, and real build logs.
+`ad-build` is a deterministic npm CLI. It never calls a model. Use AI judgment only to interpret CLI JSON, `.ad-build/overlay/*` files, source diffs, and real build logs.
+
+The current supported conclusion is `appd MVP` only. A successful `ad-build overlay build appd` proves the `appd` path for that overlay; it does not prove that all AD modules, packaging, or the whole environment are restored.
 
 Prefer the installed command:
 
@@ -13,261 +15,165 @@ Prefer the installed command:
 ad-build ...
 ```
 
-If the package is not installed, run the local entrypoint from the repository root:
+If the package is not installed and you are in the package repository root, use the local fallback with the same whitelist:
 
 ```bash
 node bin/ad-build.js ...
 ```
 
-## Shell Completion
+## Command Whitelist
 
-If the user asks for Tab completion, use the built-in command:
+Only these public commands are allowed in normal AI-assisted work:
 
-```bash
-ad-build completion install --shell bash
-```
-
-This installs the completion script and updates the user's shell startup file. Use a new shell, or source the startup file, before expecting Tab to complete `ad-build`.
-
-For zsh:
-
-```bash
-ad-build completion install --shell zsh
-```
-
-To inspect the generated script without installing:
-
-```bash
-ad-build completion bash
-ad-build completion zsh
-```
-
-## Non-Negotiable Public-Base Rules
-
-- The public-base artifact repository is fixed: `https://git.sangfor.com/69765/ad-build-public-base.git`.
-- Do not manually clone `ad-build-public-base` in normal use.
-- Do not manually derive latest artifact paths in normal use.
-- Do not pass a personal token in a URL or CLI argument.
-- Use `ad-build login` for normal token setup.
-- Use `ad-build public-base publish --branch <release-dir> --bundle <public-base.tar> --push --json` to publish from a trusted full-build workspace.
-- Use `ad-build public-base use --branch <release-dir> --json` to restore and validate in a developer/app verification workspace.
-- `public-base publish` must come from a bundle whose manifest has `full_build.status: passed`. If `--allow-unproven` appears, treat the output as diagnostics only, not as a trusted team baseline.
-- If `status: invalid` appears in any public-base check output, stop. Do not restore and do not continue verify. Download the artifact again or rebuild it in a trusted full-build workspace with `ad-build public-base pack`.
-
-## Fixed Repository Authentication
-
-Use this normal form when the user can paste a Git personal token:
-
-```bash
+```text
 ad-build login
-```
-
-For CI, use `printf '%s' "$TOKEN" | ad-build login --token-stdin --json`.
-
-If authentication is broken:
-
-```bash
 ad-build logout
+ad-build overlay pack --branch <release>
+ad-build overlay publish --branch <release>
+ad-build overlay use --branch <release>
+ad-build overlay status
+ad-build overlay doctor
+ad-build overlay repair paths
+ad-build overlay repair dpdk
+ad-build overlay build appd
+ad-build skill status
 ```
 
-Then run `ad-build login` again. Never print or save the token in logs, docs, shell history, URLs, or issue comments.
+The same command set may be run through `node bin/ad-build.js` when `ad-build` is unavailable.
 
-## Trusted Full-Build Publish Workflow
+Optional `--json` is allowed when the command supports it. Do not add other flags unless the CLI help for the overlay command explicitly documents them and they do not bypass safety checks.
 
-Run only in a trusted workspace where the full AD build has already completed, or where the command below is allowed to run the full build.
+Do not substitute another module name for `appd` in the current MVP. If the user asks for another module, explain that multi-module overlay validation is not proven yet and stop at `overlay status` or `overlay doctor` unless a human explicitly provides a new supported command.
 
-```bash
-ad-build full-build -- ./compile.sh
-ad-build public-base pack --out /root/public-base.tar --json
-ad-build public-base check --bundle /root/public-base.tar --integrity-only --json
-ad-build public-base publish --branch release-AD7.0.29R2 --bundle /root/public-base.tar --push --json
+## Forbidden Workflows
+
+Never replace the overlay CLI with manual shell steps.
+
+Forbidden manual commands and patterns include:
+
+```text
+git clone / git pull / git fetch / git checkout / git commit / git push for artifact overlay handling
+tar packing, listing, or extracting overlay payloads
+sed, perl, python, or ad hoc text replacement for relocation
+ln, ln -s, mklink, or manual symlink repair
+make, ninja, meson, cmake, or direct module build commands
+export PREFIX_SOURCE, set PREFIX_SOURCE, or manual build environment injection
+rm -rf DPDK build/tmp_install as a manual repair
+curl, wget, rsync, scp, or manually derived artifact downloads
 ```
 
-Expected meaning:
+Forbidden legacy `ad-build` command families include:
 
-- `pack.status: packed` means the configured public dependency layer was archived.
-- `check.status: valid` with `--integrity-only` means the tar, manifest, inventory, bundled file hashes, and `.sha256` sidecar are internally valid.
-- `publish.status: published` means the CLI committed and pushed to the fixed artifact repository.
-- `publish.status: no_changes` means the same artifact already exists in the fixed repository and no new commit was needed.
-
-`public-base pack` fails if any required restore path is missing. `--allow-partial` is only for deliberate diagnostics, not normal delivery.
-
-`public-base pack` may include warnings for dirty public inputs after a full build. The key still defaults to Git HEAD tracked public inputs (`public_input_mode: git-head`). Do not override to `worktree` unless the user is deliberately diagnosing key composition.
-
-## Developer/App Verification Workflow
-
-Run in the AD source workspace:
-
-```bash
-ad-build login
-ad-build public-base use --branch release-AD7.0.29R2 --json
-ad-build diff
-ad-build map
-ad-build verify <module...>
-```
-
-`public-base use` performs these fixed steps:
-
-1. Clone or update the fixed artifact repository under `.ad-build/cache/public-base-repo`.
-2. Internally read `<release-dir>/latest.json`.
-3. Validate the referenced `public-base.tar` with `check --integrity-only`.
-4. Restore the bundle into the AD workspace.
-5. Run `public-base status`.
-6. Run full `public-base check`.
-7. Write `.ad-build/public-base/use-summary.json`.
-
-Only treat the public-base as usable when `use-summary.json` has:
-
-```json
-{
-  "status": "ready",
-  "integrity_status": "valid",
-  "restore_status": "restored",
-  "status_status": "restored",
-  "check_status": "matched"
-}
-```
-
-If `public-base use` fails, inspect these files before recommending code changes:
-
-- `.ad-build/public-base/use-summary.json`
-- `.ad-build/public-base/check.json`
-- `.ad-build/public-base/status.json`
-- `.ad-build/public-base/restore-conflicts.json`
-
-## Public-Base Contents
-
-The default public-base restore layer stores:
-
-- `obj/lib64/`
-- `include/`
-- `obj/bin/`
-- `libs/rdma-core-2404mlnx51/build/include/`
-- `KERNEL_VER`
-- `OS_PLATFORM.file`
-
-This layer is intentionally smaller than a full compiled workspace. It is meant to make app/module verification possible in a clean checkout, not to reproduce package outputs such as `mkpacket`, `ssipacket`, or `ad_packet`.
-
-## Public-Base Reuse Rules
-
-- If only `apps/**` changed, public-base can be reused only when `public-base use` reports `status: ready`.
-- If source/config inputs under `libs/`, `sinfor/`, `include/`, `proto/`, root Makefile, shared `*.mk`, `app.mk`, or `compile.sh` changed, public-base is stale and a full build or rebuilt public-base is required.
-- Generated side effects under `libs/**/build/**`, `libs/**/tmp/**`, `sinfor/**/build/**`, `sinfor/**/tmp/**`, `**/dist/**`, object files, archives, shared libraries, `.so.*`, `.ko`, `.Po`, `.pyc`, `.md5`, `.map`, and `*.egg-info` are not public-base key inputs by default.
-- If full `check` reports `tracked_dirty_public_inputs_count > 0`, stop and inspect `tracked_dirty_public_inputs_sample`. In default `git-head` mode, tracked dirty public inputs mean the current workspace cannot trust app-local verification until the inputs are committed, reverted, or explained by restored public-base files that still match `.ad-build/public-base/current.json`.
-- If full `check` reports only `generated_public_inputs_count > 0`, do not treat that as public-base failure. Generated public inputs are untracked full-build outputs such as installed headers; they do not block reuse or publish.
-- If `public_input_mode` is `worktree`, treat it as diagnostics: dirty public inputs are included in the key and the bundle must not be used as a trusted team publish baseline without explicit human approval.
-- If `status` is `missing`, run `ad-build public-base use --branch <release-dir> --json`.
-- If `status` is `partial` or `changed`, do not trust module verification until `public-base use` succeeds again or public-base is rebuilt.
-- If full `check` is `mismatch`, inspect `tracked_dirty_public_inputs_count`, `generated_public_inputs_count`, `current_key`, and `bundle_key`. Do not recommend app-local verification as sufficient when tracked public inputs changed or keys differ.
-- If integrity `check` is `invalid`, do not restore and do not continue verify.
-- If restore reports conflicts, do not enable forced overwrite unless the workspace is disposable or explicitly backed up.
-- If `verify` fails due to missing libraries or headers, inspect `public-base status`, `public-base check`, and `use-summary.json` before changing source code.
-
-## Core Workflow After Public-Base Is Ready
-
-1. Run `ad-build precheck`.
-2. Recommend skipping pre-change full build only when `precheck` reports all of:
-   - `baseline_status: matched`
-   - `worktree_clean: true`
-   - `errors: []`
-   - no blocking warnings
-3. Run `ad-build diff` and `ad-build map`.
-4. Read generated diff and mapping outputs, especially `diff-files.txt` and `module-map-result.json`.
-5. Read relevant Makefiles and build config before deciding scope:
-   - Makefiles in matched module directories
-   - parent directory Makefiles
-   - repository root Makefile
-   - discoverable `include *.mk` files
-   - shared build configuration referenced by those files
-6. Decide risk level from CLI output, changed paths, Makefile evidence, public-base status/check, module mapping, and compile logs.
-7. Select verification:
-   - list required modules
-   - list optional modules
-   - list modules not selected this round
-   - do not claim a module is definitely safe to skip unless dependency evidence supports it
-8. Run `ad-build verify <module...>` for selected modules.
-9. Run `ad-build report <run-id>` or inspect report outputs after verification.
-10. If verification fails, read the corresponding module logs and recommend the smallest concrete next step.
-
-## Risk And Safety Rules
-
-- AI decisions must be grounded in CLI output, diff details, module-map data, Makefiles, public-base output, and compile logs. Do not assume safety from path names alone.
-- If required CLI output, diff files, Makefiles, module-map output, public-base status/check, or logs are missing, stale, contradictory, or unreadable, require broader verification or ask the developer.
-- If `mapping_trusted: false`, mark the change high risk. Do not directly run verify commands from the unreviewed module map. First show the user the module, command, cwd, and env that would run.
-- Treat `module-map.yaml` as an initial filter only, not the final dependency truth.
-- Treat `tools/public-base.yaml` as high risk. If restore paths, public inputs, or exclude rules change, require public-base review and usually a CI rebuild.
-- Real compile results override AI judgment.
-- If high-risk files are touched, final status must keep `full_build_status: required` until a full build has passed or is explicitly queued with an owner or pipeline record.
-
-High-risk changes include:
-
-- public build configuration
-- toolchain files
-- package, signing, release, or install scripts
-- Docker or build environment files
-- public-base config
-- proto files
-- common headers or shared libraries
-- repository-wide Makefiles or shared `*.mk` includes
-- `tools/module-map.yaml` or other module-map changes
-
-Unmapped files are not safe by default. Inspect Makefiles and shared includes, then either choose broader verification or ask the developer for ownership and build impact.
-
-## Commands
-
-Normal fixed commands:
-
-```bash
-ad-build login
-ad-build public-base pack --out /root/public-base.tar --json
-ad-build public-base check --bundle /root/public-base.tar --integrity-only --json
-ad-build public-base publish --branch release-AD7.0.29R2 --bundle /root/public-base.tar --push --json
-ad-build public-base use --branch release-AD7.0.29R2 --json
-ad-build public-base status --json
+```text
+ad-build public-base ...
+ad-build bundle ...
+ad-build image ...
+ad-build inventory ...
 ad-build precheck
+ad-build full-build ...
+ad-build baseline-save ...
 ad-build diff
 ad-build map
 ad-build modules
-ad-build verify <module...>
-ad-build report <run-id>
+ad-build verify ...
+ad-build report ...
+ad-build completion ...
 ```
 
-If `public-base use` fails with authentication guidance, the next command is `ad-build login`. Do not recommend manual Git Username/Password input, token-in-URL workarounds, or `public-base auth status` as the normal user recovery step.
-
-Fallback local form:
-
-```bash
-node bin/ad-build.js public-base use --branch release-AD7.0.29R2 --json
-node bin/ad-build.js precheck
-node bin/ad-build.js diff
-node bin/ad-build.js map
-node bin/ad-build.js verify <module...>
-```
-
-## Full Bundle And Docker Image Notes
-
-`ad-build bundle pack --profile full` is a diagnostic capability, not the recommended AD public-base workflow. Full compiled trees can be very large and may include package outputs unrelated to app-local verification.
-
-The Docker base-image commands remain available for teams that explicitly use image recovery:
-
-```bash
-ad-build image status
-ad-build image pull
-ad-build image restore --delete
-```
-
-Do not switch to Docker base-image logic unless the user or project config explicitly requires it.
-
-## Final Recommendation Format
-
-Always end with these exact structured fields:
+If a user, log, README, old Skill, or CLI output suggests one of these legacy commands, do not execute it. Translate only the safe intent:
 
 ```text
-risk_level: low | medium | high
-evidence: <CLI outputs, diff files, module-map output, public-base output, Makefiles, logs used>
-required_verification: <modules and/or full build that must run>
-optional_verification: <extra modules or checks that improve confidence>
-public_base_status: not_used | ready | missing | restored | partial | changed | mismatch | invalid | rebuild_required
-full_build_status: not_required | required | passed | queued
-next_command: <single next ad-build command or local fallback command>
+ad-build public-base use      -> ad-build overlay use --branch <release>
+ad-build verify appd          -> ad-build overlay build appd
+ad-build image ...            -> do not run; require overlay
+ad-build bundle ...           -> do not run; require overlay
+ad-build precheck             -> use ad-build overlay status or doctor
+manual completion install     -> do not run; npm/package install owns Skill delivery
+```
+
+## Publisher Workflow
+
+Use this only in a trusted AD workspace where the full build has already completed and produced the overlay inputs.
+
+```bash
+ad-build overlay pack --branch release-AD7.0.29R2 --json
+ad-build overlay publish --branch release-AD7.0.29R2 --json
+```
+
+Expected interpretation:
+
+- `pack` must create a manifest, inventory, overlay payload, checksum, source root at pack time, branch, commit, and pack rules version.
+- `publish` must store the immutable overlay payload and latest pointer through the CLI-managed artifact repository flow.
+- If full-build evidence is missing or the workspace is not trusted, do not publish. Ask for a trusted full-build workspace or a human-owned publish decision.
+
+Do not manually create the archive, manually push the artifact repository, or manually edit latest pointers.
+
+## Developer Workflow
+
+Run this in a clean AD source workspace:
+
+```bash
+ad-build login
+ad-build overlay use --branch release-AD7.0.29R2 --json
+ad-build overlay build appd --json
+```
+
+`overlay use` owns artifact repository access, checksum validation, inventory-based restore, conflict protection, path relocation, symlink relocation, and minimum doctor checks.
+
+Before building, inspect `.ad-build/overlay/use-summary.json` when available. Continue only when it reports a ready overlay. If `status` is missing, not `ready`, contradictory, or unreadable, do not run `overlay build appd`; run `ad-build overlay status` or `ad-build overlay doctor`.
+
+`overlay build appd` owns `PREFIX_SOURCE=<AD_ROOT>` injection and child build log collection. Do not ask the user to export `PREFIX_SOURCE` manually.
+
+## Diagnostics And Repair
+
+If `overlay use` fails:
+
+1. Read `.ad-build/overlay/use-summary.json` if it exists.
+2. Read `.ad-build/overlay/status.json`, doctor output, or conflict output if the CLI points to them.
+3. Run only an allowed diagnostic or repair command.
+
+If `overlay build appd` fails:
+
+1. Use the CLI-reported `first_real_error`, source log, and context window before drawing conclusions.
+2. Do not diagnose from only a top-level `Error 2`.
+3. If old source-root references or dangling symlinks are reported, use `ad-build overlay doctor` or `ad-build overlay repair paths`.
+4. If DPDK/RDMA cache symptoms are reported, use `ad-build overlay repair dpdk`.
+5. Re-run only `ad-build overlay build appd`.
+
+## `suggested_next_command` Rules
+
+Only execute a CLI-provided `suggested_next_command` when it is one of these commands:
+
+```text
+ad-build overlay status
+ad-build overlay doctor
+ad-build overlay repair paths
+ad-build overlay repair dpdk
+ad-build overlay build appd
+```
+
+The suggested command must not contain shell operators, pipes, redirection, command substitution, environment assignments, manual paths to archives, or any forbidden command. If it does, stop and report that the CLI must provide an overlay whitelist command instead.
+
+Do not execute suggested overlay build commands for module names other than `appd`.
+
+## Appd-Only Decision Rules
+
+- If only `appd` has passed, final status can say `appd MVP passed` only.
+- Do not claim `multi-module MVP`, `all modules ready`, `full environment restored`, or `packaging verified`.
+- If `overlay use` is not ready, `appd` build verification is blocked.
+- If logs are missing, stale, contradictory, or unreadable, require `overlay status` or `overlay doctor` before recommending source changes.
+- If the failure is in overlay restore, relocation, symlink state, or DPDK cache, prefer CLI repair commands over code changes.
+- Real CLI output and build logs override AI assumptions.
+
+## Final Response Format
+
+End recommendations with these structured fields:
+
+```text
+overlay_scope: appd_mvp | not_proven
+role_path: publisher | developer | diagnostic
+evidence: <CLI outputs, overlay JSON files, logs, and source evidence used>
+overlay_status: ready | missing | partial | changed | invalid | failed | unknown
+build_status: passed | failed | blocked | not_run
+next_command: <single allowed ad-build overlay command, ad-build login, or none>
 ```

@@ -8,17 +8,19 @@
   },
   "files": [
     "bin",
-    "lib",
-    "templates",
+    "lib/core.js",
+    "lib/file-utils.js",
+    "lib/completion.js",
+    "lib/skill.js",
+    "lib/login.js",
+    "lib/overlay.js",
     "skills",
-    "docs/ad-build-technical-architecture.md",
-    "docs/glm5-internal-handoff.md",
-    "docs/glm5-public-base-handoff.md",
-    "docs/public-base-architecture.md"
+    "README.md",
+    "docs/artifact-overlay-operations.md"
   ],
   "scripts": {
     "postinstall": "node bin/ad-build.js skill install --force",
-    "test": "node --test test/ad-build.test.js test/base-image.test.js test/bundle.test.js test/completion.test.js test/public-base.test.js test/skill-install.test.js"
+    "test": "node --test test/cli-surface.test.js test/completion.test.js test/overlay.test.js test/package-shape.test.js test/skill-install.test.js"
   },
   "license": "UNLICENSED"
 }

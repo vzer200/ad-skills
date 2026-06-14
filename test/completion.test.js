@@ -1,108 +1,73 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
 
-const cli = path.join(__dirname, '..', 'bin', 'ad-build.js');
+const completion = require('../lib/completion');
 
-test('completion bash prints ad-build completion script', () => {
-  const result = spawnSync(process.execPath, [cli, 'completion', 'bash'], {
-    cwd: process.cwd(),
-    encoding: 'utf8'
-  });
+test('bash completion contains the overlay whitelist and no legacy commands', () => {
+  const script = completion.renderBashCompletion();
 
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /_ad_build_completion/);
-  assert.match(result.stdout, /public-base/);
-  assert.match(result.stdout, /compgen -W "login logout doctor/);
-  assert.match(result.stdout, /auth pack check use publish status/);
-  assert.match(result.stdout, /inventory\) COMPREPLY=\( \$\(compgen -W "status"/);
-  assert.match(result.stdout, /image\) COMPREPLY=\( \$\(compgen -W "status save pull restore"/);
-  assert.match(result.stdout, /skill\) COMPREPLY=\( \$\(compgen -W "install status uninstall"/);
-  assert.doesNotMatch(result.stdout, /key pack check/);
-  assert.doesNotMatch(result.stdout, /status restore/);
-  assert.match(result.stdout, /--integrity-only/);
-  assert.match(result.stdout, /--allow-unproven/);
-  assert.doesNotMatch(result.stdout, /public-base\) COMPREPLY=.*--force/);
-  assert.match(result.stdout, /complete -F _ad_build_completion ad-build/);
-});
-
-test('completion zsh prints ad-build completion script', () => {
-  const result = spawnSync(process.execPath, [cli, 'completion', 'zsh'], {
-    cwd: process.cwd(),
-    encoding: 'utf8'
-  });
-
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /#compdef ad-build/);
-  assert.match(result.stdout, /public-base/);
-  assert.match(result.stdout, /_arguments/);
-  assert.match(result.stdout, /commands=\('login:log in to public-base'/);
-  assert.match(result.stdout, /public_base=\(auth pack check use publish status\)/);
-  assert.match(result.stdout, /inventory=\(status\)/);
-  assert.match(result.stdout, /image=\(status save pull restore\)/);
-  assert.match(result.stdout, /skill=\(install status uninstall\)/);
-  assert.match(result.stdout, /auth_commands=\(login status logout\)/);
-  assert.match(result.stdout, /--integrity-only/);
-  assert.match(result.stdout, /--allow-unproven/);
-  assert.doesNotMatch(result.stdout, /public_base_opts=.*--force/);
-  assert.doesNotMatch(result.stdout, /public_base=\(.*restore/);
-  assert.doesNotMatch(result.stdout, /commands=\(doctor:check environment/);
-});
-
-test('completion install writes shell completion into requested home directory', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-completion-home-'));
-  const result = spawnSync(process.execPath, [cli, 'completion', 'install', '--shell', 'bash'], {
-    cwd: process.cwd(),
-    encoding: 'utf8',
-    env: { ...process.env, HOME: home, USERPROFILE: home }
-  });
-
-  const target = path.join(home, '.bash_completion.d', 'ad-build');
-  const bashrc = path.join(home, '.bashrc');
-  assert.equal(result.status, 0, result.stderr);
-  assert.equal(fs.existsSync(target), true);
-  assert.match(fs.readFileSync(target, 'utf8'), /_ad_build_completion/);
-  assert.match(fs.readFileSync(bashrc, 'utf8'), /ad-build completion/);
-  assert.match(fs.readFileSync(bashrc, 'utf8'), /bash_completion\.d\/ad-build/);
-  assert.match(result.stdout, /installed ad-build bash completion/);
-});
-
-test('completion install writes zsh fpath configuration', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-completion-zsh-home-'));
-  const result = spawnSync(process.execPath, [cli, 'completion', 'install', '--shell', 'zsh'], {
-    cwd: process.cwd(),
-    encoding: 'utf8',
-    env: { ...process.env, HOME: home, USERPROFILE: home }
-  });
-
-  const target = path.join(home, '.zsh', 'completions', '_ad-build');
-  const zshrc = path.join(home, '.zshrc');
-  assert.equal(result.status, 0, result.stderr);
-  assert.equal(fs.existsSync(target), true);
-  assert.match(fs.readFileSync(target, 'utf8'), /#compdef ad-build/);
-  assert.match(fs.readFileSync(zshrc, 'utf8'), /fpath=/);
-  assert.match(fs.readFileSync(zshrc, 'utf8'), /compinit/);
-});
-
-test('completion bash script completes public-base commands when bash is available', (t) => {
-  const bashVersion = spawnSync('bash', ['--version'], { encoding: 'utf8' });
-  if (bashVersion.status !== 0) {
-    t.skip('bash is not available');
-    return;
+  for (const expected of ['login', 'logout', 'overlay', 'skill', 'pack', 'publish', 'use', 'doctor', 'repair', 'build']) {
+    assert.match(script, new RegExp(`\\b${expected}\\b`));
   }
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ad-build-completion-bash-'));
-  const script = path.join(dir, 'ad-build');
-  fs.writeFileSync(script, spawnSync(process.execPath, [cli, 'completion', 'bash'], { encoding: 'utf8' }).stdout);
-  const quoted = script.replaceAll('\\', '/').replace(/'/g, "'\\''");
-  const result = spawnSync('bash', ['-lc', `source '${quoted}'; COMP_WORDS=(ad-build public-base ""); COMP_CWORD=2; _ad_build_completion; printf '%s\\n' "\${COMPREPLY[@]}"`], {
-    encoding: 'utf8'
-  });
 
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /check/);
-  assert.match(result.stdout, /use/);
-  assert.doesNotMatch(result.stdout, /restore/);
+  for (const legacy of ['public-base', 'bundle', 'image', 'inventory', 'baseline-save', 'full-build', 'verify', 'report', 'completion', '--token-stdin']) {
+    assert.doesNotMatch(script, new RegExp(legacy.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
 });
+
+test('zsh completion contains the overlay whitelist and no legacy commands', () => {
+  const script = completion.renderZshCompletion();
+
+  assert.match(script, /overlay:artifact overlay workflow/);
+  assert.match(script, /\brepair\b/);
+  assert.match(script, /\bdpdk\b/);
+  assertNoLegacyTokens(script);
+});
+
+test('shell completion module exposes only internal install/render helpers', () => {
+  assert.deepEqual(Object.keys(completion).sort(), [
+    'installCompletion',
+    'installCompletionBestEffort',
+    'renderBashCompletion',
+    'renderZshCompletion'
+  ]);
+});
+
+test('best-effort completion install can be skipped and does not throw on unsupported shells', () => {
+  const home = path.join(os.tmpdir(), `ad-build-completion-${Date.now()}`);
+  const skipped = completion.installCompletionBestEffort({
+    env: {
+      HOME: home,
+      SHELL: '/bin/bash',
+      AD_BUILD_SKIP_COMPLETION_INSTALL: '1'
+    }
+  });
+  assert.equal(skipped.skipped, true);
+
+  let warning = '';
+  const unsupported = completion.installCompletionBestEffort({
+    env: {
+      HOME: home,
+      SHELL: '/bin/fish'
+    },
+    stderr: {
+      write(value) {
+        warning += value;
+      }
+    }
+  });
+  assert.equal(unsupported.ok, false);
+  assert.match(warning, /warning: ad-build completion install skipped/);
+});
+
+function assertNoLegacyTokens(script) {
+  for (const legacy of ['public-base', 'bundle', 'image', 'inventory', 'baseline-save', 'full-build', 'verify', 'report', 'completion', '--token-stdin']) {
+    const escaped = legacy.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = legacy.startsWith('--')
+      ? new RegExp(escaped)
+      : new RegExp(`(^|[^A-Za-z0-9_-])${escaped}([^A-Za-z0-9_-]|$)`);
+    assert.doesNotMatch(script, pattern);
+  }
+}

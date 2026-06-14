@@ -1,8 +1,10 @@
 # ad-build
 
-Deterministic AD build verification CLI for baseline checks, public-base dependency recovery, module mapping, module verification, and build reports.
+`ad-build` is the AD artifact overlay CLI for the current `appd` MVP.
 
-The CLI never calls a model. AI agents should use the bundled `skills/ad-build/SKILL.md` to interpret CLI outputs safely.
+The supported path is no longer a small public dependency restore. A trusted full-build workspace publishes an artifact overlay, and a clean developer workspace restores that overlay before building `appd` locally.
+
+The CLI is deterministic and never calls a model. AI agents should use the bundled `skills/ad-build/SKILL.md`, which keeps the workflow on the overlay commands only.
 
 ## Install
 
@@ -16,132 +18,70 @@ Local development fallback:
 node bin/ad-build.js <command>
 ```
 
-## Commands
+## Current Scope
+
+This release is an `appd` overlay MVP:
+
+- It validates the artifact overlay flow for `appd`.
+- It does not prove that every AD module can build from the overlay.
+- It does not ask users or AI agents to manually clone artifact repositories, unpack archives, rewrite paths, fix symlinks, export build variables, or run `make` directly.
+
+## Publisher Path
+
+Run this path only in a trusted AD workspace where the full build has already produced the required build artifacts.
 
 ```bash
-ad-build doctor
-ad-build precheck
-ad-build full-build -- <command...>
-ad-build baseline-save --from-run latest
-ad-build login
-ad-build logout
-ad-build public-base pack --out public-base.tar --json
-ad-build public-base check --bundle public-base.tar --integrity-only --json
-ad-build public-base publish --branch release-AD7.0.29R2 --bundle public-base.tar --push --json
-ad-build public-base use --branch release-AD7.0.29R2 --json
-ad-build public-base status --json
-ad-build image status
-ad-build image save [--push]
-ad-build image pull
-ad-build image restore [--delete]
-ad-build diff
-ad-build map
-ad-build modules
-ad-build verify <module...>
-ad-build report <run-id>
-ad-build completion install --shell bash
+ad-build overlay pack --branch release-AD7.0.29R2
+ad-build overlay publish --branch release-AD7.0.29R2
 ```
 
-Copy `templates/module-map.yaml` to `tools/module-map.yaml` in the target repository and adjust module paths/build commands before using `map`, `modules`, or `verify`.
+`overlay pack` records the build artifact inventory, manifest, checksum, source root at pack time, branch, commit, and pack policy version.
 
-`public-base` is the recommended first-stage workflow. It stores only the public dependency layer needed for app-local verification: `obj/lib64/`, `include/`, `obj/bin/`, `libs/rdma-core-2404mlnx51/build/include/`, `KERNEL_VER`, and `OS_PLATFORM.file`.
+`overlay publish` writes the immutable overlay payload and latest pointer to the fixed artifact repository through the CLI-managed flow.
 
-Copy `templates/public-base.yaml` to `tools/public-base.yaml` only when the repository needs to override the default public-base paths.
+## Developer Path
 
-By default, `public-base` computes its key from Git HEAD tracked public inputs (`public_input_mode: git-head`), not from dirty full-build worktree content. Full `check` splits dirty public inputs into `tracked_dirty_public_inputs_*` and `generated_public_inputs_*`: tracked dirty inputs block app-local verification and formal publish until committed or reverted; generated public inputs are untracked full-build outputs and do not block reuse or publish.
-
-`public_input_mode: worktree` is a diagnostic override: dirty public inputs are included in the key, and such bundles must not be treated as trusted team publish baselines without explicit human approval.
-
-## Public-base file workflow
-
-First CI run or trusted AD build node:
-
-```bash
-ad-build full-build -- ./compile.sh
-ad-build login
-ad-build public-base pack --out /root/public-base.tar --json
-ad-build public-base check --bundle /root/public-base.tar --integrity-only --json
-ad-build public-base publish --branch release-AD7.0.29R2 --bundle /root/public-base.tar --push --json
-```
-
-Developer restore flow:
+Run this path in a clean AD source workspace:
 
 ```bash
 ad-build login
-ad-build public-base use --branch release-AD7.0.29R2 --json
-ad-build public-base status --json
-ad-build map
-ad-build verify <module>
+ad-build overlay use --branch release-AD7.0.29R2
+ad-build overlay build appd
 ```
 
-For CI or scripts, use stdin instead of interactive input:
+`overlay use` fetches the published overlay through the managed artifact repository, validates checksums, restores only manifest inventory entries, protects local changes, relocates paths, repairs managed symlink targets, and writes `.ad-build/overlay/use-summary.json`.
+
+Only continue to `overlay build appd` when the overlay use summary reports `status: ready`.
+
+`overlay build appd` injects the required AD root environment, builds `appd`, preserves logs, and reports the first real build error when the build fails.
+
+## Diagnostics
+
+Use these commands only after `overlay use` or `overlay build appd` fails, or when the CLI explicitly suggests one of them:
 
 ```bash
-printf '%s' "$TOKEN" | ad-build login --token-stdin --json
+ad-build overlay status
+ad-build overlay doctor
+ad-build overlay repair paths
+ad-build overlay repair dpdk
 ```
 
-`public-base pack` fails if any required restore path is missing. Use `--allow-partial` only for deliberate diagnostics.
+`overlay doctor` and `overlay repair` are the supported way to diagnose old source-root references, dangling symlinks, and DPDK cache issues. Do not replace them with manual `git`, `tar`, `sed`, `ln`, `make`, or `export PREFIX_SOURCE` steps.
 
-`public-base publish` requires the bundle manifest to contain `full_build.status: passed` and `tracked_dirty_public_inputs_count: 0`. Generated public inputs do not block publish. `--allow-unproven` exists only for diagnostics; do not use an unproven publish as a trusted team baseline.
+## Skill Delivery
 
-The low-level restore stage may overwrite Git-clean tracked files from the trusted bundle. It refuses local modifications, untracked conflicts, symlinks, directories, and unsafe paths. Normal users should run `public-base use`, not call low-level restore directly.
-
-If `public-base check --integrity-only` outputs `status: invalid`, do not restore and do not continue verify. Download `public-base.tar` again, or rebuild it in a trusted full-build workspace with `ad-build public-base pack`.
-
-The default public-base artifact repository is fixed:
+The npm `postinstall` step installs or updates the bundled `ad-build` Skill:
 
 ```text
-https://git.sangfor.com/69765/ad-build-public-base.git
+node bin/ad-build.js skill install --force
 ```
 
-Do not manually clone this repository or manually derive latest artifact paths in normal use. Use `ad-build public-base use --branch <release-dir> --json`.
+Normal users should not run shell-completion or legacy setup commands manually. Package installation owns Skill delivery.
 
-Do not store `public-base.tar` in the AD source repository. Normal shipped CLI flow must publish it only through `ad-build public-base publish --push` into the fixed `ad-build-public-base` repository together with its manifest, inventory, and sha256 sidecar.
+## Design Notes
 
-`ad-build public-base publish --push` writes:
+The packaged overlay operation guide is in:
 
 ```text
-ad-build-public-base/<branch>/latest.json
-ad-build-public-base/<branch>/sha256-<key>/public-base.tar
-ad-build-public-base/<branch>/sha256-<key>/manifest.json
-ad-build-public-base/<branch>/sha256-<key>/inventory.json
-ad-build-public-base/<branch>/sha256-<key>/public-base.tar.sha256
+docs/artifact-overlay-operations.md
 ```
-
-`ad-build bundle pack --profile full` remains available for diagnostics, but it is not the recommended AD public-base workflow. Full compiled trees can include large package outputs such as `mkpacket/`, `ssipacket/`, and `ad_packet/`.
-
-## Shell completion
-
-Install Tab completion for the current user:
-
-```bash
-ad-build completion install --shell bash
-```
-
-The installer writes the completion script and adds a managed source block to the user's shell startup file. Start a new shell, or source the startup file, before using Tab completion.
-
-For zsh:
-
-```bash
-ad-build completion install --shell zsh
-```
-
-You can also print the script without installing it:
-
-```bash
-ad-build completion bash
-ad-build completion zsh
-```
-
-## Public base image workflow
-
-The Docker base-image commands are retained for teams that explicitly use image-based recovery:
-
-```bash
-ad-build image status
-ad-build image save --push
-ad-build image pull
-ad-build image restore --delete
-```
-
-Use `AD_BUILD_PUBLIC_BASE_FROM`, `AD_BUILD_PUBLIC_BASE_DIGEST`, `AD_BUILD_PUBLIC_BASE_REGISTRY`, or `AD_BUILD_PUBLIC_BASE_IMAGE_REF` in CI when the platos base image or registry tag should be supplied externally.

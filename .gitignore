@@ -3,3 +3,8 @@ node_modules/
 *.pyc
 __pycache__/
 dist/.stage/
+*.tgz
+*.zip
+*.7z
+nvm-offline-v*/
+plugins/
