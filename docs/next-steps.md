@@ -163,22 +163,28 @@ Current behavior:
 Expected behavior:
 
 - Recommended publisher commands:
-  - `ad-build pack --release <release>`
-  - `ad-build publish --release <release>`
+  - `ad-build pack --branch <branch>`
+  - `ad-build publish --branch <branch>`
 - Recommended developer command:
-  - `ad-build restore`
-- Optional targeted restore:
-  - `ad-build restore --release <release>`
+  - `ad-build restore --branch <branch>`
+- Optional version alias:
   - `ad-build restore --version <version>` if a product version alias is later introduced
 - Optional verification:
   - `ad-build verify appd`
 
-Default restore behavior:
+Branch selection behavior:
 
-- `ad-build restore` with no release/version argument should restore the latest published overlay.
-- The artifact repository must maintain a global latest pointer for this default path.
-- `ad-build restore --release release-AD7.0.29R2` should restore that specific release only.
-- `--branch` should become a compatibility alias, not the preferred flag name, because it is easy to confuse with Git branches.
+- `--branch` is required for `pack`, `publish`, and `restore`.
+- Do not implement a global "latest across all branches" default. It is too easy to restore the wrong AD branch's compiled artifacts.
+- `ad-build restore` without `--branch` should fail fast with a Chinese message explaining that the branch must be specified.
+- The artifact repository branch should match the AD source branch:
+  - AD branch `release-AD7.0.29R2` publishes to artifact repo branch `release-AD7.0.29R2`.
+  - `ad-build restore --branch release-AD7.0.29R2` restores from artifact repo branch `release-AD7.0.29R2`.
+- "Latest" is allowed only inside the specified artifact branch. That means latest for `release-AD7.0.29R2`, not latest among all branches.
+- Before publish, the CLI should print the current AD branch, selected artifact branch, source commit, and artifact repo URL.
+- Before restore, the CLI should print the selected artifact branch, latest artifact hash, source branch, and source commit recorded in the manifest.
+- If the current AD source branch differs from `--branch`, fail by default and require an explicit override such as `--allow-branch-mismatch`.
+- Avoid `--release` as the primary flag for this workflow. The user-facing concept here is the Git branch that produced the compiled artifacts, not a product release label.
 
 Restore responsibility:
 
