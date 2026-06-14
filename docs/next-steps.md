@@ -204,6 +204,66 @@ cd /root/workspace/AD/apps/ad_appd_new
 make
 ```
 
+### Restore must handle existing symlink targets under force
+
+Observed bug:
+
+- Command:
+
+```bash
+ad-build overlay use --branch release-AD7.0.29R2 --force
+```
+
+- Failure:
+
+```text
+ad-build overlay use failed: EEXIST: file already exists, symlink '/app/usr/ad/bin/swcsmmgmt' -> '/root/workspace/AD/shell/arch/aarch64/app/usr/ad/bin/swcsmmgmt_ukey'
+```
+
+Root cause hypothesis:
+
+- `--force` already allows overwriting regular restored files.
+- Symlink restore entries still call `fs.symlinkSync(source, target)` directly.
+- If `target` already exists, Node throws `EEXIST`.
+- This interrupts the whole restore even though the user explicitly requested `--force`.
+
+Expected behavior:
+
+- For inventory entries whose type is `symlink`, restore must be idempotent.
+- If target does not exist, create the symlink.
+- If target exists and is already the expected symlink, treat it as success.
+- If target exists and is a different file or symlink:
+  - without `--force`, fail with a clear Chinese conflict message
+  - with `--force`, remove only that exact target path and recreate the symlink
+- If target exists and is a directory, fail by default. Directory deletion must not happen through this symlink path unless a future explicit and narrowly scoped flag is added.
+
+Safety rules:
+
+- Only operate on symlink targets declared in the overlay inventory.
+- Only operate on paths inside the current AD repository root.
+- Never follow a symlink and delete its resolved destination.
+- Never delete arbitrary parent directories.
+- Write symlink conflicts to a structured report, for example:
+
+```text
+$HOME/.ad-build/overlay/last-restore/symlink-conflicts.json
+```
+
+Test coverage required:
+
+- Restoring a missing symlink creates it.
+- Restoring the same symlink twice succeeds.
+- Restoring with an existing wrong symlink fails without `--force`.
+- Restoring with an existing wrong symlink succeeds with `--force`.
+- Restoring with an existing regular file fails without `--force`.
+- Restoring with an existing regular file succeeds with `--force`.
+- Existing directories are not removed by symlink restore.
+- Symlink targets outside repo root are rejected.
+
+Open confirmation before implementation:
+
+- Confirm whether existing regular files at symlink target paths are always safe to replace when `--force` is used, or whether some paths should still require explicit confirmation.
+
 Compatibility:
 
 - Existing `ad-build overlay ...` commands may remain temporarily as compatibility aliases.
