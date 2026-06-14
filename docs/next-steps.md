@@ -149,3 +149,57 @@ Safety and UX rules:
   - which public key file should be added to GitLab
   - that the user should rerun `ad-build login`
 - Do not require users to manually export `GIT_SSH_COMMAND`.
+
+## Command Semantics
+
+### Replace overlay use/build with restore/verify
+
+Current behavior:
+
+- The main developer workflow is `ad-build overlay use --branch <release>` followed by `ad-build overlay build appd`.
+- This makes `overlay build appd` look like part of the required restore path.
+- In reality, `build appd` is only a verification step. A successful restore should leave the AD workspace ready for native build commands.
+
+Expected behavior:
+
+- Recommended publisher commands:
+  - `ad-build pack --release <release>`
+  - `ad-build publish --release <release>`
+- Recommended developer command:
+  - `ad-build restore`
+- Optional targeted restore:
+  - `ad-build restore --release <release>`
+  - `ad-build restore --version <version>` if a product version alias is later introduced
+- Optional verification:
+  - `ad-build verify appd`
+
+Default restore behavior:
+
+- `ad-build restore` with no release/version argument should restore the latest published overlay.
+- The artifact repository must maintain a global latest pointer for this default path.
+- `ad-build restore --release release-AD7.0.29R2` should restore that specific release only.
+- `--branch` should become a compatibility alias, not the preferred flag name, because it is easy to confuse with Git branches.
+
+Restore responsibility:
+
+- `restore` must perform the full environment preparation:
+  - fetch or update the artifact repository
+  - select latest or requested release
+  - validate manifest, inventory, archive members, and checksum
+  - restore compiled artifacts
+  - rewrite fixed source-root paths
+  - repair managed symlinks
+  - handle known DPDK/RDMA cache issues
+  - run readiness checks
+- After `ad-build restore` reports ready, users should be able to run native build commands directly, for example:
+
+```bash
+cd /root/workspace/AD/apps/ad_appd_new
+make
+```
+
+Compatibility:
+
+- Existing `ad-build overlay ...` commands may remain temporarily as compatibility aliases.
+- They should print migration hints toward the shorter commands.
+- Future stable documentation should prefer `pack`, `publish`, `restore`, `status`, `doctor`, and `verify`.
