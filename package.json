@@ -1,6 +1,6 @@
 {
   "name": "ad-build",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Deterministic AD build verification CLI",
   "type": "commonjs",
   "bin": {
@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "postinstall": "node bin/ad-build.js skill install --force",
-    "test": "node --test test/cli-surface.test.js test/completion.test.js test/overlay.test.js test/package-shape.test.js test/skill-install.test.js"
+    "test": "node --test test/cli-surface.test.js test/completion.test.js test/login.test.js test/overlay.test.js test/package-shape.test.js test/skill-install.test.js"
   },
   "license": "UNLICENSED"
 }

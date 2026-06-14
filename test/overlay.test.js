@@ -78,16 +78,21 @@ function makeConsumerRepo() {
 
 test('overlay pack, publish, and use restore relocatable artifacts idempotently', () => {
   const producer = makeCompiledProducer();
+  const home = tmpDir('ad-build-home-');
   const artifactRepo = tmpDir('ad-build-overlay-artifacts-');
   const packed = overlay.packOverlay({
     repoRoot: producer,
     branch: 'release-test',
     sourceRoot: '/root/AD',
-    out: 'overlay-out',
-    env: process.env
+    env: { ...process.env, HOME: home, USERPROFILE: home }
   });
   assert.equal(packed.status, 'packed');
   assert.ok(packed.entries_count > 0);
+  assert.equal(
+    packed.artifact_path.replaceAll('\\', '/'),
+    path.join(home, '.ad-build/overlay/latest/ad-artifact-overlay.tar.gz').replaceAll('\\', '/')
+  );
+  assert.equal(fs.existsSync(path.join(producer, '.ad-build/overlay/latest/ad-artifact-overlay.tar.gz')), false);
 
   const published = overlay.publishOverlay({
     repoRoot: producer,
@@ -95,7 +100,7 @@ test('overlay pack, publish, and use restore relocatable artifacts idempotently'
     overlay: packed.artifact_path,
     repo: artifactRepo,
     noPush: true,
-    env: process.env
+    env: { ...process.env, HOME: home, USERPROFILE: home }
   });
   assert.match(published.latest_path, /latest-artifact-overlay\.json/);
 
@@ -105,7 +110,7 @@ test('overlay pack, publish, and use restore relocatable artifacts idempotently'
     branch: 'release-test',
     repo: artifactRepo,
     allowSourceDrift: true,
-    env: process.env
+    env: { ...process.env, HOME: home, USERPROFILE: home }
   });
   assert.equal(firstUse.status, 'ready');
 
@@ -126,9 +131,28 @@ test('overlay pack, publish, and use restore relocatable artifacts idempotently'
     branch: 'release-test',
     repo: artifactRepo,
     allowSourceDrift: true,
-    env: process.env
+    env: { ...process.env, HOME: home, USERPROFILE: home }
   });
   assert.equal(secondUse.status, 'ready');
+});
+
+test('managed overlay state and cache default to HOME, not the AD repository', () => {
+  const producer = makeCompiledProducer();
+  const home = tmpDir('ad-build-home-');
+  const artifactRepo = tmpDir('ad-build-overlay-artifacts-');
+  const env = { ...process.env, HOME: home, USERPROFILE: home };
+  const packed = overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', env });
+  overlay.publishOverlay({ repoRoot: producer, branch: 'release-test', overlay: packed.artifact_path, repo: artifactRepo, noPush: true, env });
+
+  const consumer = makeConsumerRepo();
+  overlay.useOverlay({ repoRoot: consumer, branch: 'release-test', repo: artifactRepo, allowSourceDrift: true, env });
+  overlay.runDoctor({ repoRoot: consumer, env });
+
+  assert.equal(fs.existsSync(path.join(home, '.ad-build/overlay/current.json')), true);
+  assert.equal(fs.existsSync(path.join(home, '.ad-build/overlay/use-summary.json')), true);
+  assert.equal(fs.existsSync(path.join(home, '.ad-build/overlay/doctor.json')), true);
+  assert.equal(fs.existsSync(path.join(consumer, '.ad-build/overlay/current.json')), false);
+  assert.equal(fs.existsSync(path.join(consumer, '.ad-build/overlay/use-summary.json')), false);
 });
 
 test('overlay pack rejects workspaces missing appd-required artifacts', () => {
@@ -206,8 +230,10 @@ test('overlay use rejects unsafe archive members before extraction', () => {
 
 test('overlay build appd injects PREFIX_SOURCE and writes a build summary', () => {
   const root = makeConsumerRepo();
+  const home = tmpDir('ad-build-home-');
+  const env = { ...process.env, HOME: home, USERPROFILE: home };
   mkdir(root, 'apps/ad_appd_new');
-  core.writeJson(path.join(root, '.ad-build/overlay/use-summary.json'), { status: 'ready' });
+  core.writeJson(path.join(home, '.ad-build/overlay/use-summary.json'), { status: 'ready' });
 
   const fakeBin = tmpDir('ad-build-fake-bin-');
   const fakeMake = path.join(fakeBin, process.platform === 'win32' ? 'make.cmd' : 'make');
@@ -222,7 +248,7 @@ test('overlay build appd injects PREFIX_SOURCE and writes a build summary', () =
     repoRoot: root,
     moduleName: 'appd',
     env: {
-      ...process.env,
+      ...env,
       PATH: `${fakeBin}${path.delimiter}${process.env.PATH || ''}`
     }
   });
@@ -230,7 +256,8 @@ test('overlay build appd injects PREFIX_SOURCE and writes a build summary', () =
   assert.equal(result.status, 'passed');
   assert.equal(result.prefix_source.replaceAll('\\', '/'), root.replaceAll('\\', '/'));
   assert.equal(fs.readFileSync(path.join(root, 'apps/ad_appd_new/prefix-source.txt'), 'utf8').trim().replaceAll('\\', '/'), root.replaceAll('\\', '/'));
-  assert.equal(fs.existsSync(path.join(root, '.ad-build/overlay/last-build-summary.json')), true);
+  assert.equal(fs.existsSync(path.join(home, '.ad-build/overlay/last-build-summary.json')), true);
+  assert.equal(fs.existsSync(path.join(root, '.ad-build/overlay/last-build-summary.json')), false);
 });
 
 function isSymlink(file) {

@@ -54,6 +54,17 @@ git@git.sangfor.com:69765/ad-build-public-base.git
 
 The repository name is historical; the current content is artifact overlay data, not the old public-base workflow.
 
+CLI-managed state, cache, logs, and default pack output are stored under `$HOME/.ad-build/` by default:
+
+- `$HOME/.ad-build/overlay/latest/`
+- `$HOME/.ad-build/overlay/auth.json`
+- `$HOME/.ad-build/overlay/current.json`
+- `$HOME/.ad-build/overlay/use-summary.json`
+- `$HOME/.ad-build/overlay/runs/`
+- `$HOME/.ad-build/cache/artifact-overlay-repo/`
+
+The AD repository path is only the restore and build target.
+
 ## Developer Flow
 
 Run in a clean AD source workspace.
@@ -64,7 +75,7 @@ ad-build overlay use --branch release-AD7.0.29R2
 ad-build overlay build appd
 ```
 
-`login` configures SSH access. It does not configure HTTPS token credentials.
+`login` configures SSH access. It does not configure HTTPS token credentials. The SSH probe forces the selected private key with `-i <key> -o IdentitiesOnly=yes`, so adding the exact printed public key to GitLab SSH Keys is required.
 
 `use` validates the latest pointer, manifest, inventory, artifact checksum, archive members, and restore conflicts before writing managed files. It also relocates old source-root paths and managed symlink targets.
 

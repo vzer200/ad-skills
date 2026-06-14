@@ -5,7 +5,7 @@ description: Use when Codex works with the AD artifact overlay appd MVP: publish
 
 # ad-build Artifact Overlay Skill
 
-`ad-build` is a deterministic npm CLI. It never calls a model. Use AI judgment only to interpret CLI JSON, `.ad-build/overlay/*` files, source diffs, and real build logs.
+`ad-build` is a deterministic npm CLI. It never calls a model. Use AI judgment only to interpret CLI JSON, `$HOME/.ad-build/overlay/*` files, source diffs, and real build logs.
 
 The current supported conclusion is `appd MVP` only. A successful `ad-build overlay build appd` proves the `appd` path for that overlay; it does not prove that all AD modules, packaging, or the whole environment are restored.
 
@@ -120,7 +120,7 @@ ad-build overlay build appd --json
 
 `overlay use` owns artifact repository access, checksum validation, inventory-based restore, conflict protection, path relocation, symlink relocation, and minimum doctor checks.
 
-Before building, inspect `.ad-build/overlay/use-summary.json` when available. Continue only when it reports a ready overlay. If `status` is missing, not `ready`, contradictory, or unreadable, do not run `overlay build appd`; run `ad-build overlay status` or `ad-build overlay doctor`.
+Before building, inspect `$HOME/.ad-build/overlay/use-summary.json` when available. Continue only when it reports a ready overlay. If `status` is missing, not `ready`, contradictory, or unreadable, do not run `overlay build appd`; run `ad-build overlay status` or `ad-build overlay doctor`.
 
 `overlay build appd` owns `PREFIX_SOURCE=<AD_ROOT>` injection and child build log collection. Do not ask the user to export `PREFIX_SOURCE` manually.
 
@@ -128,8 +128,8 @@ Before building, inspect `.ad-build/overlay/use-summary.json` when available. Co
 
 If `overlay use` fails:
 
-1. Read `.ad-build/overlay/use-summary.json` if it exists.
-2. Read `.ad-build/overlay/status.json`, doctor output, or conflict output if the CLI points to them.
+1. Read `$HOME/.ad-build/overlay/use-summary.json` if it exists.
+2. Read `$HOME/.ad-build/overlay/status.json`, doctor output, or conflict output if the CLI points to them.
 3. Run only an allowed diagnostic or repair command.
 
 If `overlay build appd` fails:

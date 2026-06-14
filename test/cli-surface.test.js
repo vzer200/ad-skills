@@ -44,7 +44,8 @@ test('login help documents SSH and not token setup', () => {
   const result = run(['login', '--help']);
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /ssh -T git@git\.sangfor\.com/);
+  assert.match(result.stdout, /IdentitiesOnly/);
+  assert.match(result.stdout, /\$HOME\/\.ad-build\/overlay\/auth\.json/);
   assert.match(result.stdout, /git@git\.sangfor\.com:69765\/ad-build-public-base\.git/);
   assert.doesNotMatch(result.stdout, /token-stdin|personal access token|HTTPS token/i);
 });

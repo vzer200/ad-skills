@@ -49,11 +49,13 @@ ad-build overlay use --branch release-AD7.0.29R2
 ad-build overlay build appd
 ```
 
-`overlay use` fetches the published overlay through the managed artifact repository, validates checksums, restores only manifest inventory entries, protects local changes, relocates paths, repairs managed symlink targets, and writes `.ad-build/overlay/use-summary.json`.
+`overlay use` fetches the published overlay through the managed artifact repository, validates checksums, restores only manifest inventory entries, protects local changes, relocates paths, repairs managed symlink targets, and writes `$HOME/.ad-build/overlay/use-summary.json`.
 
 Only continue to `overlay build appd` when the overlay use summary reports `status: ready`.
 
 `overlay build appd` injects the required AD root environment, builds `appd`, preserves logs, and reports the first real build error when the build fails.
+
+CLI-managed overlay state, cache, logs, and default pack output are stored under `$HOME/.ad-build/` by default. The AD source workspace is used only as the restore/build target.
 
 ## Diagnostics
 
