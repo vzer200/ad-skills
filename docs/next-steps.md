@@ -1,5 +1,60 @@
 # ad-build Next Steps
 
+## User-Facing Chinese Output
+
+### Human-readable feedback and errors should use Chinese
+
+Current behavior:
+
+- Many CLI messages, failure messages, progress messages, and command summaries are still English.
+- Some Chinese output is not reliably encoded or displayed, which can produce unreadable text in terminals.
+- Raw Node/Git/tar errors leak directly into user-facing output without a clear Chinese explanation.
+
+Expected behavior:
+
+- All human-readable CLI output should use Chinese by default:
+  - normal success messages
+  - progress messages
+  - validation warnings
+  - recoverable errors
+  - fatal errors
+  - next-step instructions
+  - conflict reports printed to terminal
+- `--json` output should keep stable machine-readable field names in English, but human-readable string values such as `message`, `hint`, and `error` should be Chinese.
+- When a low-level command fails, show:
+  - Chinese summary of what failed
+  - concrete command or operation name
+  - important path or branch involved
+  - next action the user should take
+- Preserve the raw underlying error in structured diagnostics, for example:
+
+```json
+{
+  "status": "error",
+  "error": "恢复失败：目标符号链接已存在",
+  "operation": "restore_symlink",
+  "path": "shell/arch/aarch64/app/usr/ad/bin/swcsmmgmt_ukey",
+  "raw_error": "EEXIST: file already exists, symlink ..."
+}
+```
+
+Encoding requirements:
+
+- Source files that contain Chinese user-facing text must be saved as UTF-8.
+- Tests should assert representative Chinese messages so accidental mojibake is caught.
+- Documentation examples should avoid mixing corrupted terminal output into the stable user guide.
+
+Scope:
+
+- This applies to all stable commands, including `login`, `pack`, `publish`, `restore`, `status`, `doctor`, `verify`, and compatibility `overlay ...` aliases.
+- Internal variable names, JSON keys, manifest fields, and test names can remain English.
+- Third-party tool output may remain English when streamed verbatim, but ad-build must print a Chinese summary before or after it.
+
+Implementation note:
+
+- Add a small message helper instead of scattering ad hoc strings through command handlers.
+- The helper should make it easy to keep terminal output, JSON output, and tests consistent.
+
 ## Login UX
 
 ### Authenticated login output should be concise
