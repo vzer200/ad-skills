@@ -115,3 +115,37 @@ Safety rules:
 - Never delete directories outside `<release>/artifact-overlay/`.
 - Never delete the newly published `sha256-<hash>` directory.
 - If cleanup fails, fail the publish before pushing so the repository does not enter a partially updated state.
+
+## SSH Propagation
+
+### Internal Git commands must reuse the login key
+
+Current behavior:
+
+- `ad-build login` probes GitLab SSH with the selected key, for example `/root/.ssh/id_ed25519`.
+- `ad-build overlay publish` may still prompt for `git@git.sangfor.com's password:` during internal `git pull` or `git push`.
+- This means login authentication and Git operations are not using the same SSH configuration.
+
+Expected behavior:
+
+- After `ad-build login` succeeds, all internal Git operations must reuse the key recorded in `$HOME/.ad-build/overlay/auth.json`.
+- Commands affected:
+  - `git clone`
+  - `git pull --ff-only`
+  - `git push`
+  - any future Git fetch or remote operation used by overlay commands
+- The CLI should set an equivalent of:
+
+```bash
+GIT_SSH_COMMAND="ssh -i <key_path> -o IdentitiesOnly=yes -o BatchMode=yes"
+```
+
+Safety and UX rules:
+
+- Never allow internal Git commands to fall back to password prompts.
+- Use `BatchMode=yes` so authentication failures return immediately.
+- If SSH authentication fails, report a clear Chinese error explaining:
+  - which key path was used
+  - which public key file should be added to GitLab
+  - that the user should rerun `ad-build login`
+- Do not require users to manually export `GIT_SSH_COMMAND`.
