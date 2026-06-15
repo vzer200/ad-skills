@@ -10,14 +10,12 @@ const LEGACY_COMMANDS = new Set([
   'public-base',
   'inventory',
   'completion',
-  'doctor',
   'precheck',
   'full-build',
   'baseline-save',
   'diff',
   'map',
   'modules',
-  'verify',
   'report'
 ]);
 
@@ -35,6 +33,25 @@ async function main(argv = process.argv.slice(2)) {
       env: process.env,
       stdout: process.stdout,
       stderr: process.stderr
+    });
+  }
+
+  const overlayAliases = {
+    pack: ['pack'],
+    publish: ['publish'],
+    restore: ['use'],
+    status: ['status'],
+    doctor: ['doctor'],
+    repair: ['repair'],
+    verify: ['build']
+  };
+  if (overlayAliases[command]) {
+    return overlay.runOverlayCli([...overlayAliases[command], ...argv.slice(1)], {
+      cwd: process.cwd(),
+      env: process.env,
+      stdout: process.stdout,
+      stderr: process.stderr,
+      publicCommand: command
     });
   }
 
@@ -70,7 +87,7 @@ async function main(argv = process.argv.slice(2)) {
     return 2;
   }
 
-  process.stderr.write(`unknown command: ${command}\n\n${helpText()}`);
+  process.stderr.write(`未知命令: ${command}\n\n${helpText()}`);
   return 2;
 }
 
@@ -80,18 +97,18 @@ function helpText() {
     'Usage: ad-build <command>',
     '',
     'Commands:',
-    '  login                         Configure SSH access for artifact overlay',
-    '  logout                        Remove overlay SSH auth state',
-    '  overlay pack --branch <rel>    Build an artifact overlay from a compiled AD workspace',
-    '  overlay publish --branch <rel> Publish the latest overlay through the SSH artifact repo',
-    '  overlay use --branch <rel>     Restore an artifact overlay into this AD workspace',
-    '  overlay status                 Show overlay auth/current/use state',
-    '  overlay doctor                 Diagnose overlay restore readiness',
-    '  overlay repair paths           Relocate old root paths and symlink targets',
-    '  overlay repair dpdk            Reconfigure the appd DPDK build cache',
-    '  overlay build appd             Build appd with PREFIX_SOURCE injected',
-    '  skill status                   Check ad-build skill installation status',
-    '  help                           Show this help',
+    '  ad-build login                          配置或检查产物仓库 SSH 登录状态',
+    '  ad-build logout                         清理 overlay SSH 登录状态',
+    '  ad-build pack --branch <rel>             在全量编译工作区打包 overlay',
+    '  ad-build publish --branch <rel>          发布当前 overlay 到同名 Git 分支',
+    '  ad-build restore --branch <rel>          在干净 AD 工作区恢复 overlay',
+    '  ad-build status                          查看 overlay 当前状态',
+    '  ad-build doctor [--strict]               诊断恢复后的可用性',
+    '  ad-build repair paths                    修正旧工作区路径和软链接',
+    '  ad-build repair dpdk                     重建 appd DPDK 缓存',
+    '  ad-build verify appd                     使用当前环境验证 appd 编译',
+    '  ad-build skill status                    检查 ad-build skill 安装状态',
+    '  ad-build help                            显示帮助',
     ''
   ].join('\n');
 }
@@ -100,75 +117,67 @@ function legacyMigrationText(command, args) {
   const suffix = args.length > 0 ? ` ${args.join(' ')}` : '';
   const replacements = {
     image: [
-      'The image command is no longer a public ad-build workflow.',
-      'Use artifact overlay instead: ad-build overlay use --branch <release>, then ad-build overlay build appd.'
+      'image 属于旧镜像方案，当前主路径已经迁移到 overlay。',
+      '请使用: ad-build restore --branch <release>，然后 ad-build verify appd。'
     ],
     bundle: [
-      'The bundle command is no longer a public ad-build workflow.',
-      'Use artifact overlay instead: ad-build overlay pack/publish on the producer side, or ad-build overlay use on the consumer side.'
+      'bundle 属于旧 compiled-state 大包方案，当前主路径已经迁移到 overlay。',
+      '生产端使用 ad-build pack/publish，消费端使用 ad-build restore。'
     ],
     'public-base': [
-      'The public-base command is no longer a public ad-build workflow.',
-      'Use ad-build overlay pack, ad-build overlay publish, or ad-build overlay use instead.'
+      'public-base 属于旧公共基础包方案。',
+      '请改用 ad-build pack、ad-build publish、ad-build restore。'
     ],
     inventory: [
-      'The inventory command belonged to the old compiled-state bundle flow.',
-      'Use ad-build overlay status or ad-build overlay doctor instead.'
+      'inventory 属于旧 compiled-state bundle 流程。',
+      '请使用 ad-build status 或 ad-build doctor。'
     ],
     completion: [
-      'The completion command is no longer a public setup step.',
-      'Completion is managed by installation/skill tooling; use ad-build help for the supported command surface.'
-    ],
-    doctor: [
-      'The top-level doctor command is no longer a public ad-build workflow.',
-      'Use ad-build overlay doctor instead.'
+      'completion 不再作为公开 setup 命令。',
+      '补全脚本由安装/skill 机制自动处理。'
     ],
     precheck: [
-      'The precheck command belonged to the old baseline flow.',
-      'Use ad-build overlay status or ad-build overlay doctor instead.'
+      'precheck 属于旧 baseline 流程。',
+      '请使用 ad-build status 或 ad-build doctor。'
     ],
     'full-build': [
-      'The full-build command belonged to the old baseline flow.',
-      'Use ad-build overlay pack on a trusted fully compiled AD workspace.'
+      'full-build 属于旧 baseline 流程。',
+      '请在可信全量编译工作区执行 ad-build pack。'
     ],
     'baseline-save': [
-      'The baseline-save command belonged to the old baseline flow.',
-      'Use ad-build overlay publish after ad-build overlay pack.'
+      'baseline-save 属于旧 baseline 流程。',
+      '请在 ad-build pack 后执行 ad-build publish。'
     ],
     diff: [
-      'The diff command is no longer a public ad-build workflow.',
-      'Use ad-build overlay build appd for the current module validation path and ad-build overlay doctor for restore diagnostics.'
+      'diff 不再作为当前公开工作流。',
+      '请使用 ad-build doctor 和 ad-build verify appd。'
     ],
     map: [
-      'The map command is no longer a public ad-build workflow.',
-      'Use ad-build overlay build appd for the current appd MVP.'
+      'map 不再作为当前公开工作流。',
+      '请使用 ad-build verify appd。'
     ],
     modules: [
-      'The modules command is no longer a public ad-build workflow.',
-      'The current overlay MVP exposes: ad-build overlay build appd.'
-    ],
-    verify: [
-      'The verify command has moved to the overlay build flow.',
-      'Use ad-build overlay build appd instead.'
+      'modules 不再作为当前公开工作流。',
+      '当前 MVP 使用: ad-build verify appd。'
     ],
     report: [
-      'The report command belonged to the old verify/report flow.',
-      'Use the output from ad-build overlay build appd instead.'
+      'report 属于旧 verify/report 流程。',
+      '请查看 ad-build verify appd 的输出。'
     ]
   };
   const lines = replacements[command] || ['This command has moved to artifact overlay.'];
   return [
-    `ad-build ${command}${suffix} has migrated to the artifact overlay CLI.`,
+    `ad-build ${command}${suffix} 已迁移到 overlay 工作流。`,
     ...lines,
     '',
-    'Supported public flow:',
+    '当前支持的消费端流程:',
     '  ad-build login',
-    '  ad-build overlay use --branch <release>',
-    '  ad-build overlay build appd',
+    '  ad-build restore --branch <release>',
+    '  ad-build verify appd',
     '',
-    'Producer flow:',
-    '  ad-build overlay pack --branch <release>',
-    '  ad-build overlay publish --branch <release>',
+    '生产端流程:',
+    '  ad-build pack --branch <release>',
+    '  ad-build publish --branch <release>',
     ''
   ].join('\n');
 }
@@ -176,6 +185,6 @@ function legacyMigrationText(command, args) {
 main().then((exitCode) => {
   process.exitCode = exitCode;
 }).catch((error) => {
-  process.stderr.write(`ad-build failed: ${error.message}\n`);
+  process.stderr.write(`ad-build 执行失败: ${error.message}\n`);
   process.exitCode = 2;
 });

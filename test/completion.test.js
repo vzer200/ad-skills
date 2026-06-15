@@ -8,11 +8,13 @@ const completion = require('../lib/completion');
 test('bash completion contains the overlay whitelist and no legacy commands', () => {
   const script = completion.renderBashCompletion();
 
-  for (const expected of ['login', 'logout', 'overlay', 'skill', 'pack', 'publish', 'use', 'doctor', 'repair', 'build']) {
+  for (const expected of ['login', 'logout', 'skill', 'pack', 'publish', 'restore', 'status', 'doctor', 'repair', 'verify']) {
     assert.match(script, new RegExp(`\\b${expected}\\b`));
   }
 
-  for (const legacy of ['public-base', 'bundle', 'image', 'inventory', 'baseline-save', 'full-build', 'verify', 'report', 'completion', '--token-stdin']) {
+  assert.doesNotMatch(script, /(^|\s)overlay(\s|$)/);
+
+  for (const legacy of ['public-base', 'bundle', 'image', 'inventory', 'baseline-save', 'full-build', 'report', 'completion', '--token-stdin', '--allow-source-drift']) {
     assert.doesNotMatch(script, new RegExp(legacy.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
 });
@@ -20,7 +22,7 @@ test('bash completion contains the overlay whitelist and no legacy commands', ()
 test('zsh completion contains the overlay whitelist and no legacy commands', () => {
   const script = completion.renderZshCompletion();
 
-  assert.match(script, /overlay:artifact overlay workflow/);
+  assert.doesNotMatch(script, /overlay:artifact overlay workflow/);
   assert.match(script, /\brepair\b/);
   assert.match(script, /\bdpdk\b/);
   assertNoLegacyTokens(script);
@@ -59,11 +61,11 @@ test('best-effort completion install can be skipped and does not throw on unsupp
     }
   });
   assert.equal(unsupported.ok, false);
-  assert.match(warning, /warning: ad-build completion install skipped/);
+  assert.match(warning, /警告: ad-build 补全安装已跳过/);
 });
 
 function assertNoLegacyTokens(script) {
-  for (const legacy of ['public-base', 'bundle', 'image', 'inventory', 'baseline-save', 'full-build', 'verify', 'report', 'completion', '--token-stdin']) {
+  for (const legacy of ['public-base', 'bundle', 'image', 'inventory', 'baseline-save', 'full-build', 'report', 'completion', '--token-stdin', '--allow-source-drift']) {
     const escaped = legacy.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const pattern = legacy.startsWith('--')
       ? new RegExp(escaped)

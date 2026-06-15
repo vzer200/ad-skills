@@ -25,7 +25,7 @@ test('CLI installs bundled ad-build skill into requested skills directory', () =
 
   assert.equal(result.status, 0, result.stderr);
   assert.equal(fs.existsSync(path.join(skillsDir, 'ad-build', 'SKILL.md')), true);
-  assert.match(result.stdout, /installed/i);
+  assert.match(result.stdout, /已安装/);
 });
 
 test('CLI reports installed skill status and refuses overwrite without force', () => {
@@ -35,11 +35,11 @@ test('CLI reports installed skill status and refuses overwrite without force', (
 
   const second = runSkill(['install', '--skills-dir', skillsDir]);
   assert.equal(second.status, 4);
-  assert.match(second.stderr, /already exists|--force/i);
+  assert.match(second.stderr, /已存在|--force/i);
 
   const status = runSkill(['status', '--skills-dir', skillsDir]);
   assert.equal(status.status, 0, status.stderr);
-  assert.match(status.stdout, /installed/i);
+  assert.match(status.stdout, /已安装/);
 
   const forced = runSkill(['install', '--skills-dir', skillsDir, '--force']);
   assert.equal(forced.status, 0, forced.stderr);
@@ -65,7 +65,7 @@ test('installing the skill best-effort installs shell completion in the user hom
   });
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /installed ad-build bash completion/);
+  assert.match(result.stdout, /已安装 ad-build bash 补全/);
   assert.equal(fs.existsSync(path.join(home, '.bash_completion.d', 'ad-build')), true);
 });
 
@@ -78,5 +78,5 @@ test('CLI uninstalls bundled ad-build skill from requested skills directory', ()
 
   assert.equal(uninstall.status, 0, uninstall.stderr);
   assert.equal(fs.existsSync(path.join(skillsDir, 'ad-build')), false);
-  assert.match(uninstall.stdout, /removed/i);
+  assert.match(uninstall.stdout, /已删除/);
 });

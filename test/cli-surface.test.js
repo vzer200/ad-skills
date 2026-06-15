@@ -21,18 +21,19 @@ test('top-level help exposes only the overlay public workflow', () => {
   const result = run(['help']);
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /overlay pack --branch <rel>/);
-  assert.match(result.stdout, /overlay use --branch <rel>/);
-  assert.match(result.stdout, /overlay build appd/);
+  assert.match(result.stdout, /ad-build pack --branch <rel>/);
+  assert.match(result.stdout, /ad-build publish --branch <rel>/);
+  assert.match(result.stdout, /ad-build restore --branch <rel>/);
+  assert.match(result.stdout, /ad-build verify appd/);
   assert.doesNotMatch(result.stdout, /\bpublic-base\b/);
   assert.doesNotMatch(result.stdout, /\bbundle\b/);
   assert.doesNotMatch(result.stdout, /\bimage\b/);
   assert.doesNotMatch(result.stdout, /\bcompletion\b/);
-  assert.doesNotMatch(result.stdout, /\bverify\b/);
+  assert.doesNotMatch(result.stdout, /overlay build <module>/);
 });
 
 test('legacy public commands fail with an overlay migration message', () => {
-  for (const command of ['public-base', 'bundle', 'image', 'completion', 'verify', 'full-build', 'doctor']) {
+  for (const command of ['public-base', 'bundle', 'image', 'completion', 'full-build', 'baseline-save', 'inventory']) {
     const result = run([command, '--help']);
     assert.notEqual(result.status, 0, `${command} unexpectedly succeeded`);
     assert.match(result.stderr, /artifact overlay|overlay/i, `${command} did not explain overlay migration`);
@@ -50,6 +51,17 @@ test('login help documents SSH and not token setup', () => {
   assert.doesNotMatch(result.stdout, /token-stdin|personal access token|HTTPS token/i);
 });
 
+test('top-level restore help keeps the public command name', () => {
+  const result = run(['restore', '--help']);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /^ad-build restore/m);
+  assert.match(result.stdout, /--force/);
+  assert.doesNotMatch(result.stdout, /allow-source-drift/);
+  assert.doesNotMatch(result.stdout, /allow-branch-mismatch/);
+  assert.doesNotMatch(result.stdout, /^ad-build overlay/m);
+});
+
 test('malformed json requests return structured json errors', () => {
   for (const args of [
     ['login', '--json', '--bad-option'],
@@ -62,4 +74,14 @@ test('malformed json requests return structured json errors', () => {
     assert.equal(payload.status, 'error');
     assert.equal(typeof payload.error, 'string');
   }
+});
+
+test('restore without --branch returns a structured Chinese error', () => {
+  const result = run(['restore', '--json']);
+
+  assert.notEqual(result.status, 0);
+  assert.equal(result.stderr, '');
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.status, 'error');
+  assert.match(payload.error, /分支|--branch/);
 });

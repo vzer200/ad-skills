@@ -4,7 +4,7 @@
 
 The supported path is no longer a small public dependency restore. A trusted full-build workspace publishes an artifact overlay, and a clean developer workspace restores that overlay before building `appd` locally.
 
-The CLI is deterministic and never calls a model. AI agents should use the bundled `skills/ad-build/SKILL.md`, which keeps the workflow on the overlay commands only.
+The CLI is deterministic and never calls a model. AI agents should use the bundled `skills/ad-build/SKILL.md`, which keeps the workflow on the stable `pack` / `publish` / `restore` / `verify` commands.
 
 ## Install
 
@@ -31,13 +31,13 @@ This release is an `appd` overlay MVP:
 Run this path only in a trusted AD workspace where the full build has already produced the required build artifacts.
 
 ```bash
-ad-build overlay pack --branch release-AD7.0.29R2
-ad-build overlay publish --branch release-AD7.0.29R2
+ad-build pack --branch release-AD7.0.29R2
+ad-build publish --branch release-AD7.0.29R2
 ```
 
-`overlay pack` records the build artifact inventory, manifest, checksum, source root at pack time, branch, commit, and pack policy version.
+`pack` records the build artifact inventory, manifest, checksum, source root at pack time, source branch, source commit, source Git remote URL, and pack policy version. The current AD branch must match `--branch` unless `--allow-branch-mismatch` is explicitly supplied for diagnostics.
 
-`overlay publish` writes the immutable overlay payload and latest pointer to the fixed artifact repository through the CLI-managed flow.
+`publish` writes the overlay payload, source metadata, and latest pointer to the fixed artifact repository branch with the same name as `--branch`. Each publish force-updates that artifact branch to a single latest snapshot so clean devices do not pull old overlay history.
 
 ## Developer Path
 
@@ -45,30 +45,32 @@ Run this path in a clean AD source workspace:
 
 ```bash
 ad-build login
-ad-build overlay use --branch release-AD7.0.29R2
-ad-build overlay build appd
+ad-build restore --branch release-AD7.0.29R2
+ad-build verify appd
 ```
 
-`overlay use` fetches the published overlay through the managed artifact repository, validates checksums, restores only manifest inventory entries, protects local changes, relocates paths, repairs managed symlink targets, and writes `$HOME/.ad-build/overlay/use-summary.json`.
+`restore` fetches the published manifest, first checks the current AD source branch and commit against the published source metadata, and exits fast with a GitLab compare link when they differ. Only `--force` continues past that source mismatch. After the source check passes or is forced, `restore` validates checksums, restores only manifest inventory entries, protects local changes, relocates paths, repairs managed symlink targets, rebuilds the appd DPDK/RDMA cache with `PREFIX_SOURCE=<current AD root>` when `make` is available, and writes `$HOME/.ad-build/overlay/use-summary.json`. Run `ad-build repair dpdk` to retry that fixed repair step when `doctor` or `verify appd` reports DPDK/RDMA cache symptoms.
 
-Only continue to `overlay build appd` when the overlay use summary reports `status: ready`.
+Only continue to `verify appd` when the restore summary reports `status: ready`.
 
-`overlay build appd` injects the required AD root environment, builds `appd`, preserves logs, and reports the first real build error when the build fails.
+`verify appd` injects the required AD root environment, builds `appd`, preserves logs, and reports the first real build error when the build fails.
 
 CLI-managed overlay state, cache, logs, and default pack output are stored under `$HOME/.ad-build/` by default. The AD source workspace is used only as the restore/build target.
 
 ## Diagnostics
 
-Use these commands only after `overlay use` or `overlay build appd` fails, or when the CLI explicitly suggests one of them:
+Use these commands only after `restore` or `verify appd` fails, or when the CLI explicitly suggests one of them:
 
 ```bash
-ad-build overlay status
-ad-build overlay doctor
-ad-build overlay repair paths
-ad-build overlay repair dpdk
+ad-build status
+ad-build doctor
+ad-build repair paths
+ad-build repair dpdk
 ```
 
-`overlay doctor` and `overlay repair` are the supported way to diagnose old source-root references, dangling symlinks, and DPDK cache issues. Do not replace them with manual `git`, `tar`, `sed`, `ln`, `make`, or `export PREFIX_SOURCE` steps.
+`doctor` and `repair` are the supported way to diagnose old source-root references, dangling symlinks, and DPDK cache issues. Do not replace them with manual `git`, `tar`, `sed`, `ln`, `make`, or `export PREFIX_SOURCE` steps.
+
+The older `ad-build overlay ...` command family remains as a compatibility alias, but new documentation and AI workflows should use the stable top-level commands above.
 
 ## Skill Delivery
 
