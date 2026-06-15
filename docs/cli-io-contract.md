@@ -165,6 +165,8 @@ Important summary fields:
 - `artifact_sha256`
 - `restored_count`
 - `skipped_count`
+- `external_dependency_links_restored`
+- `external_dependency_links_skipped`
 - `text_files_relocated`
 - `symlinks_relocated`
 - `dpdk_repair_status`
@@ -178,13 +180,14 @@ Behavior:
 - Requires SSH auth state.
 - Validates the current AD Git workspace before artifact repository fetch or checkout.
 - Fetches only the requested artifact branch.
-- Checks manifest `external_dependencies` through `doctor` after restore; missing system dependencies make the summary `not_ready`.
+- Checks manifest `external_dependencies` through `doctor` after restore; missing system dependencies or missing required workspace entry links make the summary `not_ready`.
 - Reads lightweight latest/manifest source metadata before materializing the large overlay payload.
 - Checks current AD source branch/commit against manifest before full artifact checkout, sha256, or extraction.
 - Missing manifest source metadata or unverifiable current Git state is non-forceable.
 - Branch/commit drift is forceable only with explicit `--force`.
 - Validates inventory digest and archive member safety before extraction.
 - Restores only inventory entries.
+- Recreates only whitelisted external dependency workspace symlinks such as `include/lua -> /usr/local/include/luajit-2.1/`; these links are declared by manifest metadata and are not tar payload inventory entries.
 - Blocks local overwrite conflicts unless `--force` is supplied.
 - Relocates old source-root text references and managed symlink targets.
 - Attempts appd DPDK/RDMA repair after restore.

@@ -68,6 +68,8 @@ function makeCompiledProducer() {
   write(root, 'obj/lib64/libadconf.so', 'lib');
   write(root, 'obj/bin/ad_build_tool', 'bin');
   write(root, 'app_bin/x86_64/app/usr/lib64/libadconf.so', 'lib');
+  write(root, 'KERNEL_VER', '7\n');
+  write(root, 'OS_PLATFORM.file', 'x86_64\n');
   write(root, 'include/generated.h', '#define GENERATED 1\n');
   write(root, 'libs/rdma-core-2404mlnx51/build/include/infiniband/mlx5dv.h', '#define MLX5DV 1\n');
   write(root, 'libs/rdma-core-2404mlnx51/build/lib/pkgconfig/libibverbs.pc', 'includedir=/root/AD/libs/rdma-core-2404mlnx51/build/include\n');
@@ -264,6 +266,33 @@ test('overlay pack includes rdma-core headers used by build include symlinks', (
   );
 });
 
+test('overlay pack includes top-level appd build entry files even when untracked', () => {
+  const producer = makeCompiledProducer();
+  const expected = [
+    'KERNEL_VER',
+    'OS_PLATFORM.file',
+    'compile.sh',
+    'version_change.sh',
+    'php_encode_x86_64',
+    'Makefile.local',
+    'app_extra.mk'
+  ];
+  for (const rel of expected) {
+    write(producer, rel, `${rel}\n`);
+  }
+  const home = tmpDir('ad-build-home-');
+  const env = { ...process.env, HOME: home, USERPROFILE: home };
+
+  const packed = overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', env });
+  const inventory = core.readJson(packed.inventory_path);
+
+  for (const rel of expected) {
+    const entry = inventory.entries.find((item) => item.path === rel);
+    assert.ok(entry, `${rel} should be included in the overlay inventory`);
+    assert.equal(entry.entry_type, 'build_metadata');
+  }
+});
+
 test('overlay pack classifies known external symlinks without putting them in inventory', () => {
   const producer = makeCompiledProducer();
   const home = tmpDir('ad-build-home-');
@@ -368,6 +397,48 @@ test('overlay doctor checks manifest external dependencies', () => {
   assert.equal(check.status, 'failed');
   assert.match(check.message, /include\/lua/);
   assert.match(check.message, /\/definitely\/missing\/luajit-2\.1\//);
+});
+
+test('overlay use restores workspace symlink for allowed external dependency', () => {
+  const producer = makeCompiledProducer();
+  const home = tmpDir('ad-build-home-');
+  const env = { ...process.env, HOME: home, USERPROFILE: home };
+  const artifactRepo = tmpDir('ad-build-overlay-artifacts-');
+  const packed = overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', env });
+  overlay.publishOverlay({ repoRoot: producer, branch: 'release-test', overlay: packed.artifact_path, repo: artifactRepo, noPush: true, env });
+
+  const externalRoot = tmpDir('ad-build-luajit-headers-');
+  write(externalRoot, 'lua.h', '#define LUA_OK 1\n');
+  const releaseDir = path.join(artifactRepo, 'release-test');
+  const latest = core.readJson(path.join(releaseDir, 'latest-artifact-overlay.json'));
+  const manifestPath = path.join(releaseDir, latest.manifest);
+  const manifest = core.readJson(manifestPath);
+  manifest.external_dependencies = [
+    {
+      name: 'luajit_headers',
+      type: 'system_header',
+      path: 'include/lua',
+      link_target: normalize(externalRoot),
+      check_path: normalize(externalRoot),
+      restore_link: true
+    }
+  ];
+  core.writeJson(manifestPath, manifest);
+
+  const consumer = makeSourceConsumerRepo(producer);
+  withMockedSymlinks(consumer, new Map(), () => {
+    const result = overlay.useOverlay({ repoRoot: consumer, branch: 'release-test', repo: artifactRepo, env });
+    const linkPath = path.join(consumer, 'include/lua');
+    assert.equal(result.status, 'ready');
+    assert.equal(fs.lstatSync(linkPath).isSymbolicLink(), true);
+    assert.equal(normalize(fs.readlinkSync(linkPath)), normalize(externalRoot));
+
+    const doctor = overlay.runDoctor({ repoRoot: consumer, env });
+    const targetCheck = doctor.checks.find((item) => item.name === 'external_dependency:luajit_headers');
+    const linkCheck = doctor.checks.find((item) => item.name === 'external_dependency_link:luajit_headers');
+    assert.equal(targetCheck.status, 'passed');
+    assert.equal(linkCheck.status, 'passed');
+  });
 });
 
 test('overlay pack reports scan progress before compression', () => {

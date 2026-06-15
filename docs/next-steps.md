@@ -48,13 +48,15 @@ ad-build verify appd
 - [x] **P0：`restore` 本地 AD Git 前置校验提前。** 在任何 artifact repo fetch、checkout、sha256 校验或大包下载之前，先确认当前目录是可验证的 AD Git 工作区，并能读取当前 `branch`、`commit` 和 remote。当前目录不是 AD Git 工作区、Git 状态不可读或缺少必要源码信息时，立即失败并提示切换到正确 AD 根目录，避免拉取很久后才发现目录不对。
 - [x] **P0：`restore` 先轻量校验 source metadata，再决定是否拉取大包。** `restore` 先获取轻量的 latest/manifest/source metadata，用它和当前 AD `branch`/`commit` 做风险判断；如果源码不一致，会在完整 checkout overlay 产物包之前停止并提示用户是否接受 `--force` 风险。只有本地 AD Git 校验通过且 source metadata 校验通过，或用户显式 `--force`，才继续后续大包获取、校验和恢复。
 - [x] **P0：`restore` 轻量 manifest fetch 兼容旧 cache/Git。** 已修复：CLI 创建或复用 `$HOME/.ad-build/cache/artifact-overlay-repo/` 时会补齐 partial clone 配置；如果当前 Git 仍不支持或不认识 `--filter=blob:none`，或 cache 配置不兼容，`restore` 会自动 fallback 到普通 `depth=1` fetch 并提示可能下载更多对象；如果 Git 服务端忽略 filter 但返回成功，也会提示本次 metadata fetch 可能已下载更多对象。不再要求用户手工删除 cache 后重试。
+- [x] **P0：`pack` 补齐 appd 根目录构建入口文件。** 已修复：`KERNEL_VER`、`OS_PLATFORM.file`、`compile.sh`、`version_change.sh`、`php_encode_x86_64`、根目录 `Makefile*`、根目录 `app*.mk` 作为明确的 top-level build entry 收集；`KERNEL_VER` 和 `OS_PLATFORM.file` 同时进入 appd readiness 检查，避免发布端存在但干净机 `verify appd` 反复报 `cat: .../KERNEL_VER: No such file or directory`。
+- [x] **P0：`restore` 重建白名单 external dependency 入口软链。** 已修复：`include/lua -> /usr/local/include/luajit-2.1/` 仍不进入 inventory 和 tar payload，但 manifest 会记录 `restore_link: true`；`restore` 在确认外部目标存在后重建 AD 工作区入口软链，`doctor` 同时检查外部目标和入口软链，避免 `verify appd` 报 `fatal error: lua/lua.h: No such file or directory`。
 - [x] **P1：`restore --force` 文案基于两边 commit 信息确认。** `--force` 前后的提示文案围绕已经展示出的 overlay/current `branch` + `commit`，让用户确认自己接受的是具体源码差异风险，而不是一个抽象的“继续恢复”。
 - [x] **P1：`restore` 结束时输出本次命令总耗时。** `restore` 完成所有任务后，在最终文本输出里增加类似 `总耗时: 8m32s` 的汇总；`--json` 输出同步增加机器可读的 `duration_ms` 字段。
 - [x] **P1：补测试覆盖前置失败路径。** 已增加测试覆盖：非 AD Git 工作区执行 `restore` 时不会触发 artifact repo fetch；源码 branch/commit 不一致时不会先校验大包；source metadata 缺失或当前 Git 不可验证时保持快速失败；错误信息包含 overlay/current 两边 `branch`/`commit`，不依赖 GitLab compare。
 - [x] 增强 `pack` 全量扫描阶段的进度显示。当前实现为简单低风险版本：每扫描固定数量的文件/目录输出一次 `已扫描 N 个路径，已选中 M 个产物文件`。进度继续写 stderr，避免破坏 `--json` stdout。
 - [x] **P0：`pack` 外部 symlink 不再遇到第一个就失败。** 当前实现会扫描完整 pack scope，一次性汇总所有未知外部 symlink，并在错误中输出 `path`、`link_target`、`resolved_path`；错误信息同时说明 `mkpacket/`、`ssipacket/`、`ad_packet/` 等排除目录不参与 overlay 扫描/判定。
 - [x] **P0：对当前 6 个外部 symlink 建立 appd MVP 分类策略。** `include/lua -> /usr/local/include/luajit-2.1/` 作为 `external_dependencies` 记录；`shell/etc/apache2/httpd.conf`、`shell/etc/squid/squid.conf`、`test/.../mock_S04NicFactory` 按部署/测试环境链接跳过；`shell/arch/aarch64/...` 按 aarch64 shell 包路径跳过，不纳入 appd x86 MVP overlay。
-- [x] **P1：`restore` / `doctor` 检查 manifest external dependency。** 白名单外部依赖不写入 inventory，也不会在干净机器上恢复外部 symlink；`doctor` 会检查 `manifest.external_dependencies[].check_path` 是否存在，缺失时把 overlay 状态判为 `not_ready` 并给出明确依赖路径。
+- [x] **P1：`restore` / `doctor` 检查 manifest external dependency。** 白名单外部依赖不写入 inventory；`doctor` 会检查 `manifest.external_dependencies[].check_path` 是否存在，缺失时把 overlay 状态判为 `not_ready` 并给出明确依赖路径。带 `restore_link: true` 的依赖会在 restore 阶段重建工作区入口软链，并由 doctor 额外检查入口是否存在且匹配。
 
 ## 仍需真实设备验证
 

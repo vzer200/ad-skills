@@ -84,7 +84,7 @@ Makefile*
 app*.mk
 ```
 
-These are scan starts, not unconditional includes. A top-level file still enters the inventory only when it satisfies `shouldIncludePackEntry()`, for example because it is build metadata, an artifact-like file, or a dirty tracked build side effect. A clean tracked top-level source-only file is not packed merely because it appears in this list.
+These top-level build entry files are explicit includes when they exist. They are small but important appd build inputs; for example, a clean AD workspace may not have `KERNEL_VER` in Git, but `verify appd` still reads it from the AD root. `KERNEL_VER` and `OS_PLATFORM.file` are also appd readiness requirements, so `pack` fails if they are missing or filtered out.
 
 ## Exclusions
 
@@ -147,7 +147,7 @@ Each file entry records path, sha256, size, mode, git status, and entry type. Ea
 include/lua -> /usr/local/include/luajit-2.1/
 ```
 
-This dependency is checked by `restore`/`doctor`, but the external symlink itself is not restored from the overlay.
+This dependency is not stored as an inventory payload entry. When the dependency declares `restore_link: true`, `restore` first checks that the external target exists and then recreates the workspace entry symlink, for example `include/lua -> /usr/local/include/luajit-2.1/`. `doctor` checks both the external target and the workspace entry so a clean machine does not reach `verify appd` with a missing `include/lua` path.
 
 ## Appd Required Paths
 
@@ -157,6 +157,8 @@ This dependency is checked by `restore`/`doctor`, but the external symlink itsel
 libs/rdma-core-2404mlnx51/build/include
 libs/rdma-core-2404mlnx51/build/include/infiniband/mlx5dv.h
 apps/ad_appd_new/libs/dpdk/dpdk-stable-20.11.5/build
+KERNEL_VER
+OS_PLATFORM.file
 obj/lib64
 obj/bin
 app_bin
@@ -180,6 +182,6 @@ Restore validates before writing:
 - No non-directory archive prefix.
 - No unintended overwrite of local changes unless `--force` is explicit.
 
-Restore writes only inventory entries and then relocates managed text files and symlink targets from `source_root_at_pack_time` to the current AD root. Inventory symlink targets must resolve inside the current AD root after this relocation; source-root absolute targets containing `..` are normalized before this decision, while external absolute targets and targets that escape the repo boundary are rejected before extraction. Manifest `external_dependencies` are checked as system prerequisites and are never restored as overlay symlinks.
+Restore writes inventory entries, recreates explicitly allowed external dependency entry symlinks, and then relocates managed text files and symlink targets from `source_root_at_pack_time` to the current AD root. Inventory symlink targets must resolve inside the current AD root after this relocation; source-root absolute targets containing `..` are normalized before this decision, while arbitrary external absolute targets and targets that escape the repo boundary are rejected before extraction. Manifest `external_dependencies` are checked as system prerequisites; only entries with a known `restore_link` policy can create workspace symlinks, and they still do not enter the tar payload inventory.
 
 The archive safety model validates restore destination paths, tar member structure, and inventory symlink target boundaries. The artifact repository and published manifest are still trusted publisher inputs, but they must stay within the declared AD-relative overlay boundary.
