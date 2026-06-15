@@ -148,6 +148,28 @@ function fakeMakeSuccessEnv(env = process.env) {
   ].join('\n'));
 }
 
+function fakeMakeSuccessWithWarningEnv(env = process.env, stderrLine = 'cp: cannot stat ad_appd_noo3.debug: No such file or directory') {
+  if (process.platform === 'win32') {
+    return fakeMakeEnv(env, [
+      '@echo off',
+      `echo ${stderrLine} 1>&2`,
+      'echo %PREFIX_SOURCE%>prefix-source.txt',
+      'mkdir dpdk-stable-20.11.5\\build 2>nul',
+      'mkdir tmp_install 2>nul',
+      'exit /b 0',
+      ''
+    ].join('\r\n'));
+  }
+  return fakeMakeEnv(env, [
+    '#!/bin/sh',
+    `echo "${stderrLine}" >&2`,
+    'echo "$PREFIX_SOURCE" > prefix-source.txt',
+    'mkdir -p dpdk-stable-20.11.5/build tmp_install',
+    'exit 0',
+    ''
+  ].join('\n'));
+}
+
 function fakeMakeFailureEnv(env = process.env, stderrLine = 'error: generic failure') {
   if (process.platform === 'win32') {
     return fakeMakeEnv(env, `@echo off\r\necho ${stderrLine} 1>&2\r\nexit /b 2\r\n`);
@@ -194,6 +216,22 @@ test('overlay pack, publish, and use restore relocatable artifacts idempotently'
   assert.equal(firstUse.status, 'ready');
   assert.equal(typeof firstUse.duration_ms, 'number');
   assert.ok(firstUse.duration_ms >= 0);
+  for (const key of [
+    'metadata_ms',
+    'artifact_fetch_ms',
+    'sha256_ms',
+    'tar_safety_ms',
+    'extract_ms',
+    'conflict_check_ms',
+    'inventory_restore_ms',
+    'external_dependency_links_ms',
+    'relocate_ms',
+    'dpdk_repair_ms',
+    'doctor_ms'
+  ]) {
+    assert.equal(typeof firstUse.stage_timings[key], 'number', `${key} should be recorded`);
+    assert.ok(firstUse.stage_timings[key] >= 0, `${key} should be non-negative`);
+  }
   assert.equal(firstUse.dpdk_repair_status, 'passed');
   assert.equal(
     fs.readFileSync(path.join(consumer, 'apps/ad_appd_new/libs/dpdk/prefix-source.txt'), 'utf8').trim().replaceAll('\\', '/'),
@@ -247,7 +285,59 @@ test('top-level restore text output includes total duration', () => {
     publicCommand: 'restore'
   });
   assert.equal(exitCode, 0, stderr);
+  assert.match(stdout, /阶段耗时:/);
   assert.match(stdout, /总耗时: \d+(?:ms|s|m|h)/);
+});
+
+test('overlay restore --force cleans rebuildable baseline paths without deleting source or unknown files', () => {
+  const producer = makeCompiledProducer();
+  const home = tmpDir('ad-build-home-');
+  const artifactRepo = tmpDir('ad-build-overlay-artifacts-');
+  const env = fakeMakeSuccessEnv({ ...process.env, HOME: home, USERPROFILE: home });
+
+  const packed = overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', env });
+  overlay.publishOverlay({ repoRoot: producer, branch: 'release-test', overlay: packed.artifact_path, repo: artifactRepo, noPush: true, env });
+
+  const consumer = makeSourceConsumerRepo(producer);
+  mkdir(consumer, 'obj/lib64/libadconf.so');
+  write(consumer, 'obj/lib64/libadconf.so/stale.txt', 'polluted\n');
+  write(consumer, 'app_bin/stale.txt', 'polluted\n');
+  write(consumer, 'apps/ad_appd_new/libs/dpdk/dpdk-stable-20.11.5/build/stale.txt', 'polluted\n');
+  write(consumer, 'libs/rdma-core-2404mlnx51/build/include/infiniband/stale.h', 'polluted\n');
+  write(consumer, 'local-only.txt', 'keep\n');
+  write(consumer, 'mkpacket/local-only.txt', 'keep\n');
+
+  assert.throws(
+    () => overlay.useOverlay({ repoRoot: consumer, branch: 'release-test', repo: artifactRepo, env }),
+    /覆盖|directory|--force/
+  );
+
+  const progress = [];
+  const restored = overlay.useOverlay({
+    repoRoot: consumer,
+    branch: 'release-test',
+    repo: artifactRepo,
+    force: true,
+    env,
+    progress: (message) => progress.push(message)
+  });
+
+  assert.equal(restored.status, 'ready');
+  assert.equal(fs.readFileSync(path.join(consumer, 'obj/lib64/libadconf.so'), 'utf8'), 'lib');
+  assert.equal(fs.readFileSync(path.join(consumer, 'apps/ad_appd_new/main.c'), 'utf8').replace(/\r\n/g, '\n'), 'int main(void){return 0;}\n');
+  assert.equal(fs.readFileSync(path.join(consumer, 'local-only.txt'), 'utf8'), 'keep\n');
+  assert.equal(fs.readFileSync(path.join(consumer, 'mkpacket/local-only.txt'), 'utf8'), 'keep\n');
+  assert.equal(fs.existsSync(path.join(consumer, 'app_bin/stale.txt')), false);
+  assert.equal(fs.existsSync(path.join(consumer, 'apps/ad_appd_new/libs/dpdk/dpdk-stable-20.11.5/build/stale.txt')), false);
+  assert.equal(fs.existsSync(path.join(consumer, 'libs/rdma-core-2404mlnx51/build/include/infiniband/stale.h')), false);
+  assert.match(progress.join('\n'), /强制恢复到 overlay 基线环境/);
+  assert.match(progress.join('\n'), /不会删除源码或未知目录/);
+  assert.equal(typeof restored.force_cleanup.deleted_count, 'number');
+  assert.ok(restored.force_cleanup.deleted_count >= 3);
+  assert.ok(restored.force_cleanup.plan_path.endsWith('force-plan.json'));
+  assert.ok(restored.force_cleanup.summary_path.endsWith('force-summary.json'));
+  assert.equal(fs.existsSync(path.join(home, '.ad-build/overlay/force-plan.json')), true);
+  assert.equal(fs.existsSync(path.join(home, '.ad-build/overlay/force-summary.json')), true);
 });
 
 test('overlay pack includes rdma-core headers used by build include symlinks', () => {
@@ -1258,6 +1348,64 @@ test('overlay build appd injects PREFIX_SOURCE and writes a build summary', () =
   assert.equal(fs.readFileSync(path.join(root, 'apps/ad_appd_new/prefix-source.txt'), 'utf8').trim().replaceAll('\\', '/'), root.replaceAll('\\', '/'));
   assert.equal(fs.existsSync(path.join(home, '.ad-build/overlay/last-build-summary.json')), true);
   assert.equal(fs.existsSync(path.join(root, '.ad-build/overlay/last-build-summary.json')), false);
+});
+
+test('overlay build hides nonfatal log error matches when appd succeeds', () => {
+  const root = makeConsumerRepo();
+  const home = tmpDir('ad-build-home-');
+  const env = fakeMakeSuccessWithWarningEnv({ ...process.env, HOME: home, USERPROFILE: home });
+  mkdir(root, 'apps/ad_appd_new');
+  core.writeJson(path.join(home, '.ad-build/overlay/use-summary.json'), { status: 'ready' });
+
+  const result = overlay.buildModule({
+    repoRoot: root,
+    moduleName: 'appd',
+    env
+  });
+
+  assert.equal(result.status, 'passed');
+  assert.equal(result.first_real_error, null);
+  assert.equal(result.first_real_error_source, null);
+  assert.equal(result.suggested_next_command, null);
+  assert.equal(result.nonfatal_log_error_match.message.includes('No such file or directory'), true);
+
+  let stdout = '';
+  let stderr = '';
+  const exitCode = overlay.runOverlayCli(['build', 'appd'], {
+    repoRoot: root,
+    cwd: root,
+    env,
+    stdout: { write: (chunk) => { stdout += chunk; return true; } },
+    stderr: { write: (chunk) => { stderr += chunk; return true; } },
+    publicCommand: 'verify'
+  });
+  assert.equal(exitCode, 0, stderr);
+  assert.doesNotMatch(stdout, /首个有效错误|first_real_error/);
+});
+
+test('overlay repair dpdk rejects symlink parent paths before deleting caches', (t) => {
+  const root = makeConsumerRepo();
+  const home = tmpDir('ad-build-home-');
+  const external = tmpDir('ad-build-external-dpdk-');
+  const env = fakeMakeSuccessEnv({ ...process.env, HOME: home, USERPROFILE: home });
+  const libsPath = path.join(root, 'apps/ad_appd_new/libs');
+  const marker = path.join(external, 'dpdk/dpdk-stable-20.11.5/build/keep.txt');
+
+  fs.rmSync(libsPath, { recursive: true, force: true });
+  write(external, 'dpdk/dpdk-stable-20.11.5/build/keep.txt', 'do not delete\n');
+  write(external, 'dpdk/tmp_install/keep.txt', 'do not delete\n');
+  try {
+    fs.symlinkSync(external, libsPath, 'dir');
+  } catch {
+    t.skip('symlink creation is not available on this platform');
+    return;
+  }
+
+  assert.throws(
+    () => overlay.repairDpdk({ repoRoot: root, env }),
+    /symlink|拒绝/
+  );
+  assert.equal(fs.existsSync(marker), true);
 });
 
 test('overlay build suggests a single allowed command on generic failure', () => {

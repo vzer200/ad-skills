@@ -8,6 +8,7 @@ In `lib/overlay.js`:
 - `DEFAULT_SOURCE_ROOT`: `/root/AD`.
 - `PACK_RULES_VERSION`: bump only when pack collection semantics change incompatibly.
 - `SCAN_ROOTS`, `SCAN_FILES`, `EXCLUDED_PREFIXES`, and `APPD_REQUIRED_PATHS`: define the overlay package boundary.
+- `FORCE_BASELINE_CLEANUP_PATHS` and `FORCE_BASELINE_PROTECTED_PATHS`: define the narrow `restore --force` cleanup boundary and the paths that must never be treated as force-cleanable.
 - `MODULES.appd`: maps `verify appd` to `apps/ad_appd_new` and `make V=1 VERBOSE=1`.
 
 In `lib/completion.js`:
@@ -32,6 +33,7 @@ Why it matters:
 Force rules:
 
 - Branch or commit mismatch can continue only with explicit `--force`.
+- `--force` means "force restore to the overlay baseline environment". It is not a prompt-only override; after source drift is accepted, restore may remove declared rebuildable build outputs and caches before restoring the overlay.
 - Missing source metadata or current Git identity must stop and require a new valid publish or a verifiable AD Git workspace.
 
 Remote artifact repositories use a lightweight metadata fetch first: `git fetch --depth=1 --filter=blob:none` followed by reading `latest-artifact-overlay.json` and manifest through `git show`. The cache repository must be configured as a partial clone cache before this fetch: `extensions.partialClone=origin`, `remote.origin.promisor=true`, and `remote.origin.partialclonefilter=blob:none`. If a target Git build rejects or does not recognize `--filter=blob:none`, `restore` falls back to ordinary `git fetch --depth=1 origin <branch>` and warns that more objects may be downloaded. If Git exits successfully but reports that the server ignored filtering, `restore` also warns that the metadata fetch may have downloaded more objects. Only after the source check passes, or the user explicitly uses `--force` for branch/commit drift, does restore perform the normal branch checkout that materializes the large overlay payload.
@@ -77,11 +79,16 @@ Blocked without `--force`:
 Allowed with `--force`:
 
 - Replacing a normal file or old symlink with an inventory symlink.
+- Cleaning declared rebuildable baseline paths before restore: `obj/`, `app_bin/`, DPDK build/tmp_install, and RDMA build/include when the current inventory or repair policy declares them.
+- Replacing a stale `include/lua` directory/file with the whitelisted external dependency entry symlink when the declared system target exists.
 
 Still not allowed:
 
 - Unsafe paths.
-- Deleting arbitrary directories outside the managed inventory.
+- Deleting source files outside declared build output boundaries.
+- Deleting `.git`, excluded roots, or unknown local directories.
+
+`cleanupForceBaseline()` writes `$HOME/.ad-build/overlay/force-plan.json` before cleanup and `force-summary.json` after cleanup. Treat those files as audit evidence for what `--force` did, not as a user confirmation gate.
 
 ## Relocation Rules
 
@@ -108,6 +115,7 @@ The manual success flow showed that appd failures commonly come from stale DPDK/
 
 - Runs under `apps/ad_appd_new/libs/dpdk`.
 - Safely removes known generated DPDK cache paths under the AD repo.
+- Rejects symlink parents before deleting cache paths, so a polluted workspace cannot redirect DPDK cleanup into an external directory.
 - Injects `PREFIX_SOURCE=<current AD root>`.
 - Runs `make V=1 VERBOSE=1`.
 - Checks for `libs/rdma-core-2404mlnx51/build/include/infiniband/mlx5dv.h`.
@@ -133,6 +141,8 @@ It:
 
 Pitfall: top-level `Error 2` is usually not the root cause. Prefer `first_real_error`, child log context, and `suggested_next_command`.
 
+If the build command exits `0`, `buildModule()` suppresses `first_real_error` even when logs contain error-looking text. The match is retained only as `nonfatal_log_error_match` and a warning in JSON so successful builds do not show misleading failure causes.
+
 ## Archive Safety
 
 `validateOverlayArchive()` compares tar members to the inventory-derived allowed path set before extraction.
@@ -155,6 +165,8 @@ Progress goes to stderr through `emitProgress()`, `hashProgress()`, `gitProgress
 Do not write progress to stdout when `--json` is active. JSON consumers rely on stdout containing one parseable object.
 
 `collectPackEntries()` emits fixed-interval scan counters so users can see full-tree scan progress before compression starts.
+
+`useOverlay()` records restore phase timings in `stage_timings` and prints a `阶段耗时:` line. Use those timings before optimizing receiver performance; do not guess whether Git fetch, sha256, tar extraction, inventory restore, DPDK repair, or doctor is the bottleneck.
 
 ## Packaging Pitfalls
 

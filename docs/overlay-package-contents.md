@@ -182,6 +182,8 @@ Restore validates before writing:
 - No non-directory archive prefix.
 - No unintended overwrite of local changes unless `--force` is explicit.
 
+With `--force`, restore can clear only declared rebuildable baseline paths before writing inventory entries: `obj/`, `app_bin/`, DPDK build/tmp_install, and RDMA build/include. This cleanup is audited in `force-plan.json` and `force-summary.json`. It must not treat arbitrary source directories, `.git`, excluded roots, or unknown local paths as overlay-managed data.
+
 Restore writes inventory entries, recreates explicitly allowed external dependency entry symlinks, and then relocates managed text files and symlink targets from `source_root_at_pack_time` to the current AD root. Inventory symlink targets must resolve inside the current AD root after this relocation; source-root absolute targets containing `..` are normalized before this decision, while arbitrary external absolute targets and targets that escape the repo boundary are rejected before extraction. Manifest `external_dependencies` are checked as system prerequisites; only entries with a known `restore_link` policy can create workspace symlinks, and they still do not enter the tar payload inventory.
 
 The archive safety model validates restore destination paths, tar member structure, and inventory symlink target boundaries. The artifact repository and published manifest are still trusted publisher inputs, but they must stay within the declared AD-relative overlay boundary.

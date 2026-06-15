@@ -79,6 +79,15 @@ ad-build verify appd
 
 `restore` first verifies the current AD Git workspace, then reads the lightweight latest pointer and manifest before materializing the large overlay payload. The managed artifact cache is configured for partial clone before the lightweight fetch; if the local Git/cache combination rejects `--filter=blob:none`, the CLI falls back to ordinary shallow fetch and warns that more objects may be downloaded. If Git accepts the command but reports that the server ignored filtering, the CLI also warns because that metadata step may have fetched more objects than expected. If the source differs, it prints the overlay/current `branch` and `commit` values and exits without restoring; `--force` is required to continue. After that source check passes or is forced, `restore` validates inventory, artifact checksum, archive members, and restore conflicts before writing managed files. It also recreates controlled external dependency entry symlinks such as `include/lua -> /usr/local/include/luajit-2.1/` when the declared target exists, relocates old source-root paths and managed symlink targets, then rebuilds the appd DPDK/RDMA cache with `PREFIX_SOURCE=<current AD root>` when `make` is available. Use `ad-build repair dpdk` to retry that fixed repair step when `doctor` or `verify appd` reports DPDK/RDMA cache symptoms.
 
+Use `ad-build restore --branch <release> --force` only when you want to force the workspace back to the published overlay baseline. It can clear declared rebuildable build outputs and caches such as `obj/`, `app_bin/`, DPDK build/tmp_install, and RDMA build/include before restoring. It does not delete source files outside those declared build-output boundaries, `.git`, excluded roots, or unknown local paths. The cleanup plan and result are written to:
+
+```text
+$HOME/.ad-build/overlay/force-plan.json
+$HOME/.ad-build/overlay/force-summary.json
+```
+
+Restore output includes both total time and phase timings. Use the `阶段耗时:` line or `use-summary.json.stage_timings` to see whether time is spent in metadata fetch, sha256, tar safety, extraction, inventory restore, external link restore, relocation, DPDK repair, or doctor.
+
 Only run `ad-build verify appd` after `ad-build restore` reports `status: ready`.
 
 ## Diagnostics
@@ -92,7 +101,7 @@ ad-build repair paths
 ad-build repair dpdk
 ```
 
-`verify appd` captures the top-level build log and child logs such as DPDK, meson, ninja, and `log3party.log` outputs when available. Diagnose from `first_real_error`, not from a top-level `Error 2` alone.
+`verify appd` captures the top-level build log and child logs such as DPDK, meson, ninja, and `log3party.log` outputs when available. Diagnose failed builds from `first_real_error`, not from a top-level `Error 2` alone. If the build passes, error-looking log matches are hidden from the human text output and kept only as `nonfatal_log_error_match` in JSON.
 
 ## Agent Rules
 

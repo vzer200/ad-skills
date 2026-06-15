@@ -29,7 +29,7 @@ Rejected legacy commands include `public-base`, `bundle`, `image`, `inventory`, 
 
 The overlay parser also recognizes maintenance/test options such as `--repo`, `--repo-url`, `--source-root`, `--ad-root`, `--workdir`, `--manifest`, `--inventory`, and `--allow-branch-mismatch`.
 
-These are not the normal user workflow. Do not add them to AI runbooks unless a test, diagnostic session, or maintainer explicitly needs them. The parser recognizes `--allow-branch-mismatch` broadly, but the intended use is pack/publish diagnostics; it must not be presented as the way to bypass restore source drift. Use explicit `restore --force` only when the human accepts that risk.
+These are not the normal user workflow. Do not add them to AI runbooks unless a test, diagnostic session, or maintainer explicitly needs them. The parser recognizes `--allow-branch-mismatch` broadly, but the intended use is pack/publish diagnostics; it must not be presented as the way to bypass restore source drift. Use explicit `restore --force` only when the human wants to force the workspace back to the published overlay baseline environment.
 
 ## Shared Output Rules
 
@@ -156,6 +156,8 @@ $HOME/.ad-build/overlay/current.json
 $HOME/.ad-build/overlay/use-summary.json
 $HOME/.ad-build/overlay/doctor.json
 $HOME/.ad-build/overlay/use-conflicts.json      # only on conflict
+$HOME/.ad-build/overlay/force-plan.json         # only when --force is used
+$HOME/.ad-build/overlay/force-summary.json      # only when --force is used
 ```
 
 Important summary fields:
@@ -172,6 +174,8 @@ Important summary fields:
 - `dpdk_repair_status`
 - `dpdk_repair_log`
 - `doctor_status`
+- `force_cleanup`
+- `stage_timings`
 - `duration_ms`
 - `warnings`
 
@@ -185,12 +189,15 @@ Behavior:
 - Checks current AD source branch/commit against manifest before full artifact checkout, sha256, or extraction.
 - Missing manifest source metadata or unverifiable current Git state is non-forceable.
 - Branch/commit drift is forceable only with explicit `--force`.
+- With `--force`, restore means "force restore to the overlay baseline environment". It first cleans only declared rebuildable build outputs/caches/entry links, writes `force-plan.json` and `force-summary.json`, then restores the overlay. The current force cleanup boundary is `obj/`, `app_bin/`, `apps/ad_appd_new/libs/dpdk/dpdk-stable-20.11.5/build`, `apps/ad_appd_new/libs/dpdk/tmp_install`, and `libs/rdma-core-2404mlnx51/build/include` when those paths are declared by the current inventory or repair policy.
+- `--force` must not delete source files outside declared build output boundaries, `.git`, excluded roots such as `mkpacket/`, `ssipacket/`, `ad_packet/`, or unknown local paths.
 - Validates inventory digest and archive member safety before extraction.
 - Restores only inventory entries.
 - Recreates only whitelisted external dependency workspace symlinks such as `include/lua -> /usr/local/include/luajit-2.1/`; these links are declared by manifest metadata and are not tar payload inventory entries.
 - Blocks local overwrite conflicts unless `--force` is supplied.
 - Relocates old source-root text references and managed symlink targets.
 - Attempts appd DPDK/RDMA repair after restore.
+- Text output includes both `阶段耗时: ...` and `总耗时: ...`. JSON output includes `stage_timings` with machine-readable millisecond fields such as `metadata_ms`, `artifact_fetch_ms`, `sha256_ms`, `tar_safety_ms`, `extract_ms`, `force_cleanup_ms`, `conflict_check_ms`, `inventory_restore_ms`, `external_dependency_links_ms`, `relocate_ms`, `dpdk_repair_ms`, `doctor_ms`, and `total_ms`.
 
 ### `status`
 
@@ -254,6 +261,8 @@ $HOME/.ad-build/overlay/runs/build-appd-<run-id>/build-summary.json
 ```
 
 When failed, `first_real_error` and `suggested_next_command` should drive diagnostics. Do not diagnose from a top-level `Error 2` alone.
+
+When the build command exits `0` and the summary status is `passed`, matched error-looking log lines are not surfaced as `first_real_error` and do not produce a suggested repair command. They may appear only as `nonfatal_log_error_match` and a warning in JSON for audit.
 
 ## Hidden Skill Maintenance Commands
 

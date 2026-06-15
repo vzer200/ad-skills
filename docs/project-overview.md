@@ -93,7 +93,7 @@ ad-build restore --branch release-AD7.0.29R2
 ad-build verify appd
 ```
 
-If `restore` reports source drift, inspect the overlay/current `branch` and `commit` values printed by the CLI. Continue with `--force` only when a human explicitly accepts the mismatch or overwrite risk.
+If `restore` reports source drift, inspect the overlay/current `branch` and `commit` values printed by the CLI. Continue with `--force` only when a human explicitly wants to force the workspace back to the published overlay baseline environment.
 
 ## Documentation Contract
 

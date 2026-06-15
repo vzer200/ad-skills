@@ -34,7 +34,7 @@ ad-build verify appd
 - [x] `restore` 在校验大包 sha256 和解压前，先比对当前 AD 源码分支和 commit；不一致时快速退出并输出 overlay/current 两边 `branch` + `commit`，不再依赖 GitLab compare 链接，只有显式 `--force` 才继续恢复。
 - [x] `restore` 集成手工验证过的关键流程：拉取产物、校验 sha256、恢复 inventory、修正旧 `/root/AD` 路径、修复 managed symlink、用 `PREFIX_SOURCE=<当前 AD 根>` 重建 appd DPDK/RDMA 缓存、运行 readiness 检查。
 - [x] 如果 `doctor` 或 `verify appd` 后续仍提示 DPDK/RDMA 缓存问题，再显式执行 `ad-build repair dpdk` 重试同一固定修复步骤。
-- [x] `restore --force` 允许在 inventory 声明范围内把已有普通文件或旧 symlink 替换为目标 symlink；目录仍然不会被删除。
+- [x] `restore --force` 表示用户要求强制恢复到 overlay 基线环境；CLI 只清理声明过的可重建编译产物、缓存和软链接，不删除源码、`.git`、排除目录或未知路径。
 - [x] `doctor` 默认不再因为大量非关键 dangling symlink 直接阻断 MVP；严格检查改为 `ad-build doctor --strict`。
 - [x] 成功 `restore` 不再把同一次运行里的 `use-summary missing` 旧告警写进最终状态。
 - [x] `pack` / `restore` 的临时 staging 目录在成功和失败时都会清理。
@@ -52,6 +52,9 @@ ad-build verify appd
 - [x] **P0：`restore` 重建白名单 external dependency 入口软链。** 已修复：`include/lua -> /usr/local/include/luajit-2.1/` 仍不进入 inventory 和 tar payload，但 manifest 会记录 `restore_link: true`；`restore` 在确认外部目标存在后重建 AD 工作区入口软链，`doctor` 同时检查外部目标和入口软链，避免 `verify appd` 报 `fatal error: lua/lua.h: No such file or directory`。
 - [x] **P1：`restore --force` 文案基于两边 commit 信息确认。** `--force` 前后的提示文案围绕已经展示出的 overlay/current `branch` + `commit`，让用户确认自己接受的是具体源码差异风险，而不是一个抽象的“继续恢复”。
 - [x] **P1：`restore` 结束时输出本次命令总耗时。** `restore` 完成所有任务后，在最终文本输出里增加类似 `总耗时: 8m32s` 的汇总；`--json` 输出同步增加机器可读的 `duration_ms` 字段。
+- [x] **P0：`restore --force` 强制恢复 overlay 基线环境。** 已修复：`--force` 会先输出 `--force 已启用，将强制恢复到 overlay 基线环境`，再按白名单清理 `obj/`、`app_bin/`、DPDK build/tmp_install、RDMA build/include 等可重建范围，并写入 `$HOME/.ad-build/overlay/force-plan.json` 与 `force-summary.json`；源码文件、`.git`、`mkpacket/`、`ssipacket/`、`ad_packet/` 和未知路径不处理。
+- [x] **P1：`restore` 输出分阶段耗时。** 已修复：文本输出新增 `阶段耗时: metadata=... artifact-fetch=... sha256=... extract=... inventory-restore=... dpdk-repair=... doctor=...`；`use-summary.json` 同步写入 `stage_timings`，用于定位接收端耗时瓶颈。
+- [x] **P1：`verify appd` 成功时隐藏非致命错误匹配。** 已修复：当 `make` 退出码为 0 且 summary `status=passed` 时，不再把日志中的 `No such file` / `cannot stat` 等匹配显示为“首个有效错误”；该信息只作为 `nonfatal_log_error_match` 和 warning 保留在 JSON，避免误导排障。
 - [x] **P1：补测试覆盖前置失败路径。** 已增加测试覆盖：非 AD Git 工作区执行 `restore` 时不会触发 artifact repo fetch；源码 branch/commit 不一致时不会先校验大包；source metadata 缺失或当前 Git 不可验证时保持快速失败；错误信息包含 overlay/current 两边 `branch`/`commit`，不依赖 GitLab compare。
 - [x] 增强 `pack` 全量扫描阶段的进度显示。当前实现为简单低风险版本：每扫描固定数量的文件/目录输出一次 `已扫描 N 个路径，已选中 M 个产物文件`。进度继续写 stderr，避免破坏 `--json` stdout。
 - [x] **P0：`pack` 外部 symlink 不再遇到第一个就失败。** 当前实现会扫描完整 pack scope，一次性汇总所有未知外部 symlink，并在错误中输出 `path`、`link_target`、`resolved_path`；错误信息同时说明 `mkpacket/`、`ssipacket/`、`ad_packet/` 等排除目录不参与 overlay 扫描/判定。

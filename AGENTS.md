@@ -25,12 +25,14 @@ The project is the `ad-build` artifact overlay CLI for the current `appd` MVP. I
 - Do not document or expose old workflows as a recommended path. Existing migration messages may mention legacy commands only to reject or translate them.
 - Do not use manual `tar`, `sed`, `ln`, `make`, or `PREFIX_SOURCE` commands to replace the overlay CLI. Historical manual documents are background for implementation only.
 - Keep state, cache, logs, and default overlay output under `$HOME/.ad-build/`; do not write CLI state into the AD source repository by default.
-- `restore --force` is exceptional. It may continue past source drift or local overwrite conflicts only when the caller explicitly accepts that risk.
+- `restore --force` is exceptional. It means the caller wants to force the workspace back to the published overlay baseline environment; it may continue past source drift and clean declared rebuildable build outputs/caches, but it must not delete source files outside declared build-output boundaries, `.git`, excluded roots, or unknown paths.
+- When `restore` feels slow, inspect the CLI `阶段耗时:` line or `$HOME/.ad-build/overlay/use-summary.json.stage_timings` before guessing. Use those timings to distinguish metadata fetch, sha256, tar extraction, inventory restore, DPDK repair, and doctor costs.
+- If `verify appd` reports `status: passed` / exit code `0`, do not treat error-looking log lines as a build failure. They are hidden from human text output and may appear only as `nonfatal_log_error_match` in JSON for audit.
 - A successful `verify appd` proves only the `appd` MVP path for the restored overlay. Do not claim all AD modules, full image packaging, or complete environment restoration.
 - When changing code, update the matching document in `docs/` in the same change. If code and docs disagree, the code and tests are the source of truth until the docs are corrected.
 - If old files such as `README-BUNDLE-USAGE.md` are present in a local workspace, treat them as deprecated historical material unless they have been explicitly brought back into the tracked overlay MVP documentation set.
 - Do not publish from old root-level `*.tgz` or `ad-skills-*.zip` files. Release candidates should come from the current versioned `dist/ad-build-<version>.tgz` and `dist/ad-build-<version>.zip`.
-- Version handoffs currently use `0.5.2` as the baseline; after this handoff, bump by `0.0.1` for each completed delivery unless the user specifies another version.
+- Version handoffs currently use `0.5.5` as the latest baseline; after this handoff, bump by `0.0.1` for each completed delivery unless the user specifies another version.
 
 ## Documentation Update Matrix
 

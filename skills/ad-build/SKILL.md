@@ -41,7 +41,7 @@ ad-build skill status
 
 The same command set may be run through `node bin/ad-build.js` when `ad-build` is unavailable.
 
-Optional `--json` is allowed when the command supports it. `restore --force` is allowed only when a human explicitly accepts the printed overlay/current `branch` + `commit` mismatch or local overwrite risk. Do not add other flags unless the CLI help for that command explicitly documents them and they do not bypass safety checks.
+Optional `--json` is allowed when the command supports it. `restore --force` is allowed only when a human explicitly wants to force the workspace back to the published overlay baseline environment after reviewing source drift or local overwrite risk. It may clean declared rebuildable build outputs/caches, but it must not be treated as permission to delete source files, `.git`, excluded roots, or unknown paths. Do not add other flags unless the CLI help for that command explicitly documents them and they do not bypass safety checks.
 
 Do not substitute another module name for `appd` in the current MVP. If the user asks for another module, explain that multi-module overlay validation is not proven yet and stop at `ad-build status` or `ad-build doctor` unless a human explicitly provides a new supported command.
 
@@ -121,11 +121,13 @@ ad-build verify appd --json
 
 `restore` owns artifact repository access, source branch/commit preflight, checksum validation, inventory-based restore, conflict protection, path relocation, symlink relocation, manifest external dependency checks, appd DPDK/RDMA cache rebuild with `PREFIX_SOURCE=<current AD root>` when `make` is available, and minimum doctor checks. Use `ad-build repair dpdk` to retry that fixed repair step when `doctor` or `verify appd` reports DPDK/RDMA cache symptoms.
 
-If `restore` reports a source branch or commit mismatch, inspect the printed overlay/current `branch` and `commit` values. Do not continue with `--force` unless the human explicitly accepts that mismatch.
+If `restore` reports a source branch or commit mismatch, inspect the printed overlay/current `branch` and `commit` values. Do not continue with `--force` unless the human explicitly wants to force the workspace back to the published overlay baseline environment.
+
+If `restore` feels slow, inspect the `阶段耗时:` text line or `$HOME/.ad-build/overlay/use-summary.json.stage_timings` before guessing. Use those timings to separate metadata fetch, sha256, tar extraction, inventory restore, external link restore, relocation, DPDK repair, and doctor time.
 
 Before building, inspect `$HOME/.ad-build/overlay/use-summary.json` when available. Continue only when it reports a ready overlay. If `status` is missing, not `ready`, contradictory, or unreadable, do not run `ad-build verify appd`; run `ad-build status` or `ad-build doctor`.
 
-`verify appd` owns `PREFIX_SOURCE=<AD_ROOT>` injection and child build log collection. Do not ask the user to export `PREFIX_SOURCE` manually.
+`verify appd` owns `PREFIX_SOURCE=<AD_ROOT>` injection and child build log collection. Do not ask the user to export `PREFIX_SOURCE` manually. If `verify appd` returns exit code `0` and `status: passed`, do not treat error-looking log text as a failure root cause; JSON may keep it only as `nonfatal_log_error_match` for audit.
 
 ## Diagnostics And Repair
 
@@ -142,6 +144,8 @@ If `verify appd` fails:
 3. If old source-root references or dangling symlinks are reported, use `ad-build doctor` or `ad-build repair paths`.
 4. If DPDK/RDMA cache symptoms are reported, use `ad-build repair dpdk`.
 5. Re-run only `ad-build verify appd`.
+
+If `verify appd` passes, do not use `nonfatal_log_error_match` to suggest repairs. It is intentionally downgraded because the build command succeeded.
 
 ## `suggested_next_command` Rules
 
