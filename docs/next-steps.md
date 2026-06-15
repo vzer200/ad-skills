@@ -20,25 +20,29 @@ ad-build verify appd
 
 `ad-build overlay ...` 仍作为兼容别名保留，但文档、Skill 和后续 AI 流程必须使用上面的顶层命令。
 
-## 已修复内容
+## 已完成修复
 
-- `pack`、`publish`、`restore` 必须显式指定 `--branch`，默认不允许裸命令恢复未知分支产物。
-- `pack` 会校验当前 AD 工作区分支与 `--branch` 一致；诊断场景可显式加 `--allow-branch-mismatch`。
-- `publish` 发布到产物仓库同名分支，例如 AD 分支 `release-AD7.0.29R2` 对应产物仓库分支 `release-AD7.0.29R2`。
-- `publish` 会把 AD 源码分支、commit 和 Git remote URL 写入发布 manifest，用于消费端恢复前校验。
-- `publish` 现在把产物分支整理成单个最新快照提交，避免干净设备拉取旧 overlay 历史导致 3G 变多次传输。
-- `login` 默认使用 SSH，不再依赖 HTTPS token；内部 Git 操作强制使用记录的私钥和 `BatchMode=yes`，不应再弹密码。
-- `login` 已通过时只输出简短状态；未通过时只在首次或换 key 时打印需要添加到 GitLab 的完整公钥。
-- 所有 overlay 状态、缓存、认证、默认输出目录都放到 `$HOME/.ad-build/`，不再写入 AD 仓库目录。
-- 长时间命令增加进度输出，`--json` 时进度写到 stderr，stdout 保持可解析 JSON。
-- `restore` 在校验大包 sha256 和解压前，先比对当前 AD 源码分支和 commit；不一致时快速退出并输出 GitLab compare 链接，只有显式 `--force` 才继续恢复。
-- `restore` 集成手工验证过的关键流程：拉取产物、校验 sha256、恢复 inventory、修正旧 `/root/AD` 路径、修复 managed symlink、用 `PREFIX_SOURCE=<当前 AD 根>` 重建 appd DPDK/RDMA 缓存、运行 readiness 检查。
-- 如果 `doctor` 或 `verify appd` 后续仍提示 DPDK/RDMA 缓存问题，再显式执行 `ad-build repair dpdk` 重试同一固定修复步骤。
-- `restore --force` 允许在 inventory 声明范围内把已有普通文件或旧 symlink 替换为目标 symlink；目录仍然不会被删除。
-- `doctor` 默认不再因为大量非关键 dangling symlink 直接阻断 MVP；严格检查改为 `ad-build doctor --strict`。
-- 成功 `restore` 不再把同一次运行里的 `use-summary missing` 旧告警写进最终状态。
-- `pack` / `restore` 的临时 staging 目录在成功和失败时都会清理。
-- `completion install` 不再作为用户命令暴露，补全由包安装流程尽力自动处理。
+- [x] `pack`、`publish`、`restore` 必须显式指定 `--branch`，默认不允许裸命令恢复未知分支产物。
+- [x] `pack` 会校验当前 AD 工作区分支与 `--branch` 一致；诊断场景可显式加 `--allow-branch-mismatch`。
+- [x] `publish` 发布到产物仓库同名分支，例如 AD 分支 `release-AD7.0.29R2` 对应产物仓库分支 `release-AD7.0.29R2`。
+- [x] `publish` 会把 AD 源码分支、commit 和 Git remote URL 写入发布 manifest，用于消费端恢复前校验。
+- [x] `publish` 现在把产物分支整理成单个最新快照提交，避免干净设备拉取旧 overlay 历史导致 3G 变多次传输。
+- [x] `login` 默认使用 SSH，不再依赖 HTTPS token；内部 Git 操作强制使用记录的私钥和 `BatchMode=yes`，不应再弹密码。
+- [x] `login` 已通过时只输出简短状态；未通过时只在首次或换 key 时打印需要添加到 GitLab 的完整公钥。
+- [x] 所有 overlay 状态、缓存、认证、默认输出目录都放到 `$HOME/.ad-build/`，不再写入 AD 仓库目录。
+- [x] 长时间命令增加基础进度输出，`--json` 时进度写到 stderr，stdout 保持可解析 JSON。
+- [x] `restore` 在校验大包 sha256 和解压前，先比对当前 AD 源码分支和 commit；不一致时快速退出并输出 GitLab compare 链接，只有显式 `--force` 才继续恢复。
+- [x] `restore` 集成手工验证过的关键流程：拉取产物、校验 sha256、恢复 inventory、修正旧 `/root/AD` 路径、修复 managed symlink、用 `PREFIX_SOURCE=<当前 AD 根>` 重建 appd DPDK/RDMA 缓存、运行 readiness 检查。
+- [x] 如果 `doctor` 或 `verify appd` 后续仍提示 DPDK/RDMA 缓存问题，再显式执行 `ad-build repair dpdk` 重试同一固定修复步骤。
+- [x] `restore --force` 允许在 inventory 声明范围内把已有普通文件或旧 symlink 替换为目标 symlink；目录仍然不会被删除。
+- [x] `doctor` 默认不再因为大量非关键 dangling symlink 直接阻断 MVP；严格检查改为 `ad-build doctor --strict`。
+- [x] 成功 `restore` 不再把同一次运行里的 `use-summary missing` 旧告警写进最终状态。
+- [x] `pack` / `restore` 的临时 staging 目录在成功和失败时都会清理。
+- [x] `completion install` 不再作为用户命令暴露，补全由包安装流程尽力自动处理。
+
+## 下一步计划
+
+- [ ] 增强 `pack` 全量扫描阶段的进度显示。当前 `pack` 在 `collectPackEntries()` 递归扫描期间只输出“开始扫描”和“扫描完成”，真实 AD 仓库较大时用户会误以为卡住。优先实现低风险版本：每扫描固定数量的文件/目录输出一次 `已扫描 N 个路径，已选中 M 个产物文件`；如果后续仍需要百分比，再增加一次轻量预统计得到总数后输出 `N/TOTAL` 和百分比。进度继续写 stderr，避免破坏 `--json` stdout。
 
 ## 仍需真实设备验证
 
