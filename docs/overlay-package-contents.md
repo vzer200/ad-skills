@@ -110,8 +110,10 @@ The overlay is not a full AD source archive and should not include Git history, 
 `shouldIncludePackEntry()` decides whether a scanned path becomes an inventory entry:
 
 - All symlinks are included.
+- Internal AD symlink targets are included when the symlink target exists inside the publishing workspace. Absolute targets under `source_root_at_pack_time`, such as `/root/AD/...`, are mapped back to AD-relative inventory paths before packaging.
 - Everything under `obj/` and `app_bin/` is included.
 - Under `include/`, headers and build metadata are included.
+- Header targets under `libs/rdma-core-2404mlnx51/` are included. This preserves the hand-tested 3.1G overlay behavior where `build/include/infiniband/*.h` symlinks need provider and libibverbs header targets such as `libs/rdma-core-2404mlnx51/providers/mlx5/mlx5dv.h`.
 - Build output directories are included, such as `build`, `tmp_install`, `meson-private`, `meson-logs`, `CMakeFiles`, `.deps`, and `.libs`.
 - Build metadata is included, such as `CMakeCache.txt`, `build.ninja`, `compile_commands.json`, `install_manifest.txt`, `meson-info.json`, `meson-log.txt`, `.ninja_log`, and files ending in `.pc`, `.cmake`, `.ninja`, `.deps`, `.mk`, `.mak`, `.d`, `.cmd`, or `.json`.
 - Artifact-like files are included, such as `.o`, `.lo`, `.a`, `.so`, `.so.*`, `.ko`, `.mod`, `.mod.c`, `.symvers`, `.order`, `.map`, `.bin`, `.elf`, `.img`, and `.dat`.
@@ -151,13 +153,15 @@ app_bin
 include
 ```
 
-If these are missing, `pack` fails instead of publishing a misleading overlay.
+If these are missing, `pack` fails instead of publishing a misleading overlay. When a required path is an internal symlink, the symlink target must also be present in inventory; otherwise `pack` fails before a clean device spends time downloading and restoring an unusable package.
 
 ## Restore Safety
 
 Restore validates before writing:
 
-- AD source branch/commit alignment.
+- Current AD Git workspace readability before artifact repository fetch or checkout.
+- Lightweight latest/manifest source metadata before full artifact checkout, sha256, or extraction.
+- AD source branch/commit alignment using overlay/current `branch` and `commit`; GitLab compare URLs are not required for the decision.
 - Inventory digest from manifest.
 - Overlay archive sha256.
 - Archive members are inside the allowed inventory-derived path set.
@@ -166,6 +170,6 @@ Restore validates before writing:
 - No non-directory archive prefix.
 - No unintended overwrite of local changes unless `--force` is explicit.
 
-Restore writes only inventory entries and then relocates managed text files and symlink targets from `source_root_at_pack_time` to the current AD root.
+Restore writes only inventory entries and then relocates managed text files and symlink targets from `source_root_at_pack_time` to the current AD root. Inventory symlink targets must resolve inside the current AD root after this relocation; external absolute targets and targets that escape the repo boundary are rejected before extraction.
 
-The archive safety model validates restore destination paths and tar member structure. It does not treat arbitrary symlink targets as untrusted remote input; the artifact repository and published manifest are part of the trusted publisher path.
+The archive safety model validates restore destination paths, tar member structure, and inventory symlink target boundaries. The artifact repository and published manifest are still trusted publisher inputs, but they must stay within the declared AD-relative overlay boundary.

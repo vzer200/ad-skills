@@ -49,7 +49,7 @@ Supported:
 
 - `appd` overlay MVP.
 - SSH-based artifact repository access.
-- Overlay branch/source commit preflight before restore hashes or extracts the payload.
+- Overlay branch/source commit preflight before restore materializes, hashes, or extracts the large payload.
 - Manifest and inventory based restore of generated files and symlinks.
 - Path relocation from the publisher AD root to the current AD root.
 - DPDK/RDMA cache rebuild with `PREFIX_SOURCE=<current AD root>` when `make` is available.
@@ -93,7 +93,7 @@ ad-build restore --branch release-AD7.0.29R2
 ad-build verify appd
 ```
 
-If `restore` reports source drift, inspect the GitLab compare link. Continue with `--force` only when a human explicitly accepts the mismatch or overwrite risk.
+If `restore` reports source drift, inspect the overlay/current `branch` and `commit` values printed by the CLI. Continue with `--force` only when a human explicitly accepts the mismatch or overwrite risk.
 
 ## Documentation Contract
 

@@ -11,13 +11,19 @@ dist/ad-build-<version>.tgz
 dist/ad-build-<version>.zip
 ```
 
+Repository source handoff artifact:
+
+```text
+dist/ad-build-<version>-source.zip
+```
+
 AD overlay artifact:
 
 ```text
 ad-artifact-overlay.tar.gz
 ```
 
-Do not confuse them. The CLI delivery artifacts contain JavaScript runtime files, README, the packaged operations guide, and the Skill. The AD overlay artifact contains generated AD build outputs from a trusted full-build workspace.
+Do not confuse them. The CLI delivery artifacts contain JavaScript runtime files, README, the packaged operations guide, and the Skill. The source handoff zip contains the current repository source/documentation snapshot for AI or human handoff, generated from tracked files only. The AD overlay artifact contains generated AD build outputs from a trusted full-build workspace.
 
 ## Build Current Version
 
@@ -42,6 +48,24 @@ Pop-Location
 
 The zip intentionally contains the package files at the archive root, while the npm tarball contains a `package/` prefix.
 
+## Build Source Handoff Zip
+
+Generate this only when the handoff explicitly needs a repository source snapshot. It is not an npm package and does not replace the runtime delivery artifacts.
+
+PowerShell:
+
+```powershell
+$version = node -p "require('./package.json').version"
+New-Item -ItemType Directory -Force dist | Out-Null
+Remove-Item -Force "dist/ad-build-$version-source.zip" -ErrorAction SilentlyContinue
+
+# Add tracked repository files at archive root. Keep dist/, logs, and old archives out.
+$entries = git ls-files | Where-Object { $_ -notmatch '^(dist|logs?)/' -and $_ -notmatch '\.(log|zip|tgz)$' }
+# Use a zip writer that preserves forward-slash entry names.
+```
+
+The repository ignores `*.zip` by default. If a source handoff zip must be committed, add only that exact file with `git add -f dist/ad-build-<version>-source.zip`; do not use `git add .`.
+
 ## Verify Contents
 
 ```powershell
@@ -49,6 +73,7 @@ $version = node -p "require('./package.json').version"
 npm pack --dry-run --json
 tar -tzf "dist/ad-build-$version.tgz"
 tar -tf "dist/ad-build-$version.zip"
+tar -tf "dist/ad-build-$version-source.zip"
 ```
 
 Expected runtime file set:
@@ -68,6 +93,8 @@ skills/ad-build/SKILL.md
 ```
 
 The tarball shows these paths with a `package/` prefix. The zip shows them without that prefix.
+
+The source handoff zip should contain repository files with POSIX-style paths, and must not contain `dist/`, logs, old zips, or npm tarballs.
 
 ## Stale Artifact Warning
 

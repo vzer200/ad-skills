@@ -190,6 +190,8 @@ test('overlay pack, publish, and use restore relocatable artifacts idempotently'
     env
   });
   assert.equal(firstUse.status, 'ready');
+  assert.equal(typeof firstUse.duration_ms, 'number');
+  assert.ok(firstUse.duration_ms >= 0);
   assert.equal(firstUse.dpdk_repair_status, 'passed');
   assert.equal(
     fs.readFileSync(path.join(consumer, 'apps/ad_appd_new/libs/dpdk/prefix-source.txt'), 'utf8').trim().replaceAll('\\', '/'),
@@ -220,6 +222,70 @@ test('overlay pack, publish, and use restore relocatable artifacts idempotently'
     env
   });
   assert.equal(secondUse.status, 'ready');
+});
+
+test('top-level restore text output includes total duration', () => {
+  const producer = makeCompiledProducer();
+  const home = tmpDir('ad-build-home-');
+  const artifactRepo = tmpDir('ad-build-overlay-artifacts-');
+  const env = fakeMakeSuccessEnv({ ...process.env, HOME: home, USERPROFILE: home });
+
+  const packed = overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', env });
+  overlay.publishOverlay({ repoRoot: producer, branch: 'release-test', overlay: packed.artifact_path, repo: artifactRepo, noPush: true, env });
+
+  const consumer = makeSourceConsumerRepo(producer);
+  let stdout = '';
+  let stderr = '';
+  const exitCode = overlay.runOverlayCli(['use', '--branch', 'release-test', '--repo', artifactRepo], {
+    repoRoot: consumer,
+    cwd: consumer,
+    env,
+    stdout: { write: (chunk) => { stdout += chunk; return true; } },
+    stderr: { write: (chunk) => { stderr += chunk; return true; } },
+    publicCommand: 'restore'
+  });
+  assert.equal(exitCode, 0, stderr);
+  assert.match(stdout, /总耗时: \d+(?:ms|s|m|h)/);
+});
+
+test('overlay pack includes rdma-core headers used by build include symlinks', () => {
+  const producer = makeCompiledProducer();
+  const home = tmpDir('ad-build-home-');
+  const env = { ...process.env, HOME: home, USERPROFILE: home };
+  const targetRel = 'libs/rdma-core-2404mlnx51/providers/mlx5/mlx5dv.h';
+  write(producer, targetRel, '#define MLX5DV_PROVIDER 1\n');
+
+  const packed = overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', env });
+  const inventory = core.readJson(packed.inventory_path);
+
+  assert.ok(
+    inventory.entries.some((entry) => entry.path === targetRel),
+    'expected rdma-core provider header target to be included in the overlay inventory'
+  );
+});
+
+test('overlay pack reports scan progress before compression', () => {
+  const producer = makeCompiledProducer();
+  const home = tmpDir('ad-build-home-');
+  const env = { ...process.env, HOME: home, USERPROFILE: home };
+  const messages = [];
+
+  for (let index = 0; index < 1100; index += 1) {
+    write(producer, `obj/progress/file-${index}.o`, `obj-${index}`);
+  }
+
+  overlay.packOverlay({
+    repoRoot: producer,
+    branch: 'release-test',
+    sourceRoot: '/root/AD',
+    env,
+    progress: (message) => messages.push(message)
+  });
+
+  assert.ok(
+    messages.some((message) => /已扫描 \d+ 个路径，已选中 \d+ 个产物文件/.test(message)),
+    messages.join('\n')
+  );
 });
 
 test('overlay restore refreshes previously managed artifacts without force', () => {
@@ -293,9 +359,33 @@ test('overlay restore rejects source drift before reading the artifact payload',
     (error) => {
       assert.match(error.message, /commit|source|源码/);
       assert.match(error.message, /--force/);
-      assert.match(error.message, /compare/);
-      assert.match(error.message, /git\.sangfor\.com/);
+      assert.match(error.message, /overlay/);
+      assert.match(error.message, /当前 AD 工作区/);
+      assert.doesNotMatch(error.message, /compare|git\.sangfor\.com/);
       assert.doesNotMatch(error.message, /sha256/);
+      return true;
+    }
+  );
+});
+
+test('overlay restore rejects unverifiable current source before artifact repo fetch', () => {
+  const home = tmpDir('ad-build-home-');
+  const env = { ...process.env, HOME: home, USERPROFILE: home };
+  core.writeJson(path.join(home, '.ad-build/overlay/auth.json'), {
+    schema_version: 1,
+    auth_method: 'ssh',
+    status: 'authenticated',
+    key_path: path.join(home, 'id_ed25519')
+  });
+
+  const consumer = tmpDir('ad-build-overlay-nongit-consumer-');
+  const missingRepo = path.join(home, 'missing-artifact-repo.git');
+
+  assert.throws(
+    () => overlay.useOverlay({ repoRoot: consumer, branch: 'release-test', repoUrl: missingRepo, env }),
+    (error) => {
+      assert.match(error.message, /当前 AD 工作区无法读取源码 Git 信息|current source/i);
+      assert.doesNotMatch(error.message, /获取产物仓库分支失败|fetch|checkout/);
       return true;
     }
   );
@@ -388,7 +478,7 @@ test('overlay restore --force allows source drift and records it in the summary'
 
   const restored = overlay.useOverlay({ repoRoot: consumer, branch: 'release-test', repo: artifactRepo, force: true, env });
   assert.equal(restored.status, 'ready');
-  assert.match((restored.warnings || []).map((warning) => warning.message).join('\n'), /compare/);
+  assert.doesNotMatch((restored.warnings || []).map((warning) => warning.message).join('\n'), /compare/);
 });
 
 test('overlay restore treats source branch drift as a forceable source check', () => {
@@ -423,7 +513,7 @@ test('overlay restore treats source branch drift as a forceable source check', (
     () => overlay.useOverlay({ repoRoot: consumer, branch: 'release-test', repo: artifactRepo, env }),
     (error) => {
       assert.match(error.message, /源码分支|source branch|--force/);
-      assert.match(error.message, /compare/);
+      assert.doesNotMatch(error.message, /compare/);
       assert.doesNotMatch(error.message, /allow-branch-mismatch/);
       return true;
     }
@@ -578,20 +668,22 @@ test('overlay pack and use clean temporary staging directories', () => {
   const home = tmpDir('ad-build-home-');
   const artifactRepo = tmpDir('ad-build-overlay-artifacts-');
   const env = { ...process.env, HOME: home, USERPROFILE: home };
-  const beforePack = tempNames('ad-build-overlay-pack-');
+  const packTempPrefix = `ad-build-overlay-pack-${process.pid}-`;
+  const beforePack = tempNames(packTempPrefix);
   const packed = overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', env });
-  assert.deepEqual(newTempNames('ad-build-overlay-pack-', beforePack), []);
+  assert.deepEqual(newTempNames(packTempPrefix, beforePack), []);
 
   overlay.publishOverlay({ repoRoot: producer, branch: 'release-test', overlay: packed.artifact_path, repo: artifactRepo, noPush: true, env });
 
   const consumer = makeSourceConsumerRepo(producer);
   write(consumer, 'obj/lib64/libadconf.so', 'local change');
-  const beforeUse = tempNames('ad-build-overlay-use-');
+  const useTempPrefix = `ad-build-overlay-use-${process.pid}-`;
+  const beforeUse = tempNames(useTempPrefix);
   assert.throws(
     () => overlay.useOverlay({ repoRoot: consumer, branch: 'release-test', repo: artifactRepo, env }),
     /覆盖|local paths/
   );
-  assert.deepEqual(newTempNames('ad-build-overlay-use-', beforeUse), []);
+  assert.deepEqual(newTempNames(useTempPrefix, beforeUse), []);
 });
 
 test('overlay use --force safely replaces existing files with inventory symlinks', (t) => {
@@ -717,6 +809,76 @@ test('overlay use rejects unsafe archive members before extraction', () => {
   assert.throws(
     () => overlay.useOverlay({ repoRoot: consumer, branch: 'release-test', repo: artifactRepo, env: process.env }),
     /unsafe overlay archive member|outside inventory/
+  );
+});
+
+test('overlay use rejects symlink inventory targets outside the AD repo', () => {
+  const consumer = makeConsumerRepo();
+  const artifactRepo = tmpDir('ad-build-overlay-bad-symlink-artifacts-');
+  const releaseDir = path.join(artifactRepo, 'release-test');
+  const publishDir = path.join(releaseDir, 'artifact-overlay', 'sha256-badsymlink');
+  fs.mkdirSync(publishDir, { recursive: true });
+
+  const inventory = {
+    schema_version: 1,
+    kind: 'ad-build-artifact-overlay-inventory',
+    entries: [
+      {
+        path: 'obj/lib64/evil-link',
+        type: 'symlink',
+        link_target: '/tmp/outside-ad'
+      }
+    ]
+  };
+  const artifact = path.join(publishDir, 'ad-artifact-overlay.tar.gz');
+  writeTarGz(artifact, [
+    { name: 'manifest.json', content: '{}' },
+    { name: 'inventory.json', content: JSON.stringify(inventory) },
+    { name: 'files/obj/lib64/evil-link', type: '2', linkname: '/tmp/outside-ad' }
+  ]);
+
+  const manifest = {
+    schema_version: 1,
+    kind: 'ad-build-artifact-overlay',
+    release: 'release-test',
+    source_branch: 'release-test',
+    source_commit: runGit(consumer, ['rev-parse', 'HEAD']),
+    source_repo_url: 'git@git.sangfor.com:69765/AD.git',
+    source_root_at_pack_time: '/root/AD',
+    artifact_path: 'release-test/artifact-overlay/sha256-badsymlink/ad-artifact-overlay.tar.gz',
+    artifact_sha256: require('../lib/file-utils').sha256File(artifact),
+    inventory: 'inventory.json',
+    inventory_sha256: core.digestJson(inventory),
+    entries_count: 1
+  };
+  core.writeJson(path.join(publishDir, 'manifest.json'), manifest);
+  core.writeJson(path.join(publishDir, 'inventory.json'), inventory);
+  core.writeJson(path.join(releaseDir, 'latest-artifact-overlay.json'), {
+    schema_version: 1,
+    kind: 'ad-build-artifact-overlay-latest',
+    release: 'release-test',
+    manifest: 'artifact-overlay/sha256-badsymlink/manifest.json'
+  });
+
+  assert.throws(
+    () => overlay.useOverlay({ repoRoot: consumer, branch: 'release-test', repo: artifactRepo, env: process.env }),
+    /symlink target|软链接目标|不安全|outside/
+  );
+});
+
+test('overlay pack rejects source-root symlink targets that escape the AD repo', (t) => {
+  const producer = makeCompiledProducer();
+  const linkPath = path.join(producer, 'obj/lib64/escape-link');
+  try {
+    fs.symlinkSync('/root/AD/../../outside', linkPath, 'file');
+  } catch {
+    t.skip('symlink creation is not available on this platform');
+    return;
+  }
+
+  assert.throws(
+    () => overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', out: 'overlay-out', env: process.env }),
+    /symlink target|软链接目标|不安全|outside/
   );
 });
 

@@ -140,7 +140,7 @@ git branch --show-current
 git rev-parse HEAD
 ```
 
-分支和 commit 必须与打包时记录的一致。若不一致，不应该默认恢复。后续 CLI 应输出 GitLab compare 链接，并要求用户显式 `--force` 才继续。
+分支和 commit 必须与打包时记录的一致。若不一致，不应该默认恢复。当前 CLI 应输出 overlay/current 两边 `branch` + `commit`，并要求用户显式 `--force` 才继续。
 
 解包：
 
@@ -289,7 +289,7 @@ grep -nE 'fatal error|No such file|redefinition|redeclaration|FAILED:|subcommand
 这次 CLI 没有跑到最终编译流程，主要不是因为 overlay 思路不成立，而是 CLI 没有完整复现手工成功路径：
 
 1. restore 前没有先快速检查当前 AD 源码分支和 commit。
-2. 不一致时没有给出 GitLab compare 链接，也没有清晰要求用户显式 `--force`。
+2. 不一致时没有给出 overlay/current 两边 `branch` + `commit`，也没有清晰要求用户显式 `--force`。
 3. 长耗时步骤缺少进度，用户无法判断是卡住还是正常运行。
 4. 部分状态/cache/output 路径曾经落在 AD 仓库目录下，应该统一放到 `$HOME/.ad-build`。
 5. login 的 SSH 状态反馈不够清晰，未认证时应该持续给出需要添加的完整 public key。
@@ -321,7 +321,7 @@ ad-build verify appd
 
 1. 拉取指定 release 分支的最新 overlay manifest。
 2. 快速检查当前 AD 分支和 commit 是否与 manifest 一致。
-3. 不一致时停止，不解压、不覆盖，并输出 compare 链接。
+3. 不一致时停止，不解压、不覆盖，并输出 overlay/current 两边 `branch` + `commit`。
 4. 用户显式 `--force` 时才允许继续。
 5. 校验 overlay sha256。
 6. 解压 overlay。

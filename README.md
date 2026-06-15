@@ -49,7 +49,7 @@ ad-build restore --branch release-AD7.0.29R2
 ad-build verify appd
 ```
 
-`restore` fetches the published manifest, first checks the current AD source branch and commit against the published source metadata, and exits fast with a GitLab compare link when they differ. Only `--force` continues past that source mismatch. After the source check passes or is forced, `restore` validates checksums, restores only manifest inventory entries, protects local changes, relocates paths, repairs managed symlink targets, rebuilds the appd DPDK/RDMA cache with `PREFIX_SOURCE=<current AD root>` when `make` is available, and writes `$HOME/.ad-build/overlay/use-summary.json`. Run `ad-build repair dpdk` to retry that fixed repair step when `doctor` or `verify appd` reports DPDK/RDMA cache symptoms.
+`restore` first validates the current AD Git workspace, reads the published manifest metadata, checks the current AD source branch and commit against the published source metadata, and exits fast with both overlay/current `branch` and `commit` when they differ. Only `--force` continues past that source mismatch. After the source check passes or is forced, `restore` validates checksums, restores only manifest inventory entries, protects local changes, relocates paths, repairs managed symlink targets, rebuilds the appd DPDK/RDMA cache with `PREFIX_SOURCE=<current AD root>` when `make` is available, writes `$HOME/.ad-build/overlay/use-summary.json`, and reports total duration. Run `ad-build repair dpdk` to retry that fixed repair step when `doctor` or `verify appd` reports DPDK/RDMA cache symptoms.
 
 Only continue to `verify appd` when the restore summary reports `status: ready`.
 

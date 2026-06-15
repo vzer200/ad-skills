@@ -166,13 +166,16 @@ Important summary fields:
 - `dpdk_repair_status`
 - `dpdk_repair_log`
 - `doctor_status`
+- `duration_ms`
 - `warnings`
 
 Behavior:
 
 - Requires SSH auth state.
+- Validates the current AD Git workspace before artifact repository fetch or checkout.
 - Fetches only the requested artifact branch.
-- Checks current AD source branch/commit against manifest before sha256 or extraction.
+- Reads lightweight latest/manifest source metadata before materializing the large overlay payload.
+- Checks current AD source branch/commit against manifest before full artifact checkout, sha256, or extraction.
 - Missing manifest source metadata or unverifiable current Git state is non-forceable.
 - Branch/commit drift is forceable only with explicit `--force`.
 - Validates inventory digest and archive member safety before extraction.

@@ -20,18 +20,32 @@ In `package.json`:
 
 ## Source Drift Preflight
 
-`useOverlay()` calls `sourceVerificationIssue()` before reading inventory, hashing the overlay payload, or extracting the archive. This order is deliberate.
+`useOverlay()` first validates that the current directory is a readable AD Git workspace, then reads lightweight latest/manifest source metadata before reading inventory, hashing the overlay payload, or extracting the archive. This order is deliberate.
 
 Why it matters:
 
 - A clean device should fail fast when the AD branch/commit does not match the published overlay.
-- Users should see the GitLab compare link before paying the cost of sha256 or extraction.
+- Users should see the exact overlay/current `branch` and `commit` before paying the cost of full artifact checkout, sha256, or extraction.
+- A wrong current directory should fail before any artifact repository fetch or checkout.
 - Missing manifest source metadata and unverifiable current Git state are not safely forceable.
 
 Force rules:
 
 - Branch or commit mismatch can continue only with explicit `--force`.
 - Missing source metadata or current Git identity must stop and require a new valid publish or a verifiable AD Git workspace.
+
+Remote artifact repositories use a lightweight metadata fetch first: `git fetch --depth=1 --filter=blob:none` followed by reading `latest-artifact-overlay.json` and manifest through `git show`. Only after the source check passes, or the user explicitly uses `--force` for branch/commit drift, does restore perform the normal branch checkout that materializes the large overlay payload.
+
+## Pack Collection Rules
+
+`PACK_RULES_VERSION` is `2` because package selection now includes hand-tested appd symlink dependencies that version 1 could miss.
+
+Important details:
+
+- `collectPackEntries()` emits scan progress every fixed number of scanned paths so large AD workspaces do not look stuck during full artifact discovery.
+- `libs/rdma-core-2404mlnx51/` header files are included even when they look source-like. The appd DPDK/RDMA cache uses `build/include/infiniband/*.h` symlinks that point back to provider/libibverbs headers.
+- Included symlinks are followed for one AD-internal closure: if a managed symlink target exists inside the publishing AD workspace, that target is added to inventory too. Absolute targets under `/root/AD` or `source_root_at_pack_time` are mapped back to AD-relative paths. External symlink targets and source-root targets that escape the AD boundary are rejected.
+- `validatePackReadiness()` checks not only required symlink paths, but also their AD-internal targets. This catches a bad package on the publishing device instead of producing a restore-time `not_ready` state on a clean device.
 
 ## Publish Branch Strategy
 
@@ -131,7 +145,7 @@ It rejects:
 
 This validation protects restore from malicious or corrupt overlay archives. Keep tests for unsafe archive members when changing tar behavior.
 
-The validation protects archive member paths and restore destinations. It does not make every symlink target untrusted data; the overlay is produced by a trusted full-build publisher and consumed from the configured artifact repository. If that trust model changes, symlink target policy must be revisited.
+The validation protects archive member paths, restore destinations, and inventory symlink targets. Symlink targets are allowed only when they resolve inside the current AD root after `source_root_at_pack_time` relocation. External absolute targets, empty targets, and paths that escape the AD boundary are rejected before restore extracts the payload.
 
 ## Progress And JSON
 
@@ -139,13 +153,14 @@ Progress goes to stderr through `emitProgress()`, `hashProgress()`, `gitProgress
 
 Do not write progress to stdout when `--json` is active. JSON consumers rely on stdout containing one parseable object.
 
-Current planned UX follow-up: add simple fixed-interval scan counters during `collectPackEntries()` so users do not think full-tree scanning is stuck.
+`collectPackEntries()` emits fixed-interval scan counters so users can see full-tree scan progress before compression starts.
 
 ## Packaging Pitfalls
 
 There are two different package concepts:
 
 - CLI delivery package: `dist/ad-build-<version>.zip` and `.tgz`, containing only runtime JS/docs/Skill files.
+- Repository source handoff package: `dist/ad-build-<version>-source.zip`, generated from tracked source/docs when explicitly requested and force-added only as a handoff artifact.
 - AD overlay package: `ad-artifact-overlay.tar.gz`, containing generated AD build artifacts and metadata.
 
 Do not confuse the two in docs or release notes.
@@ -154,7 +169,7 @@ The tar contains a `manifest.json`, but that embedded copy is created before the
 
 `package.json.files` is intentionally narrow. Tests assert that legacy directories and old template flows are not shipped.
 
-The repository may contain ignored historical archives or logs in a developer workspace. Do not use root-level old `*.tgz`, `ad-skills-*.zip`, or stale `dist/ad-build-overlay-mvp-*.zip` files as release artifacts. Confirm the versioned `dist/ad-build-<version>.tgz` and `.zip` contents before handoff.
+The repository may contain ignored historical archives or logs in a developer workspace. Do not use root-level old `*.tgz`, `ad-skills-*.zip`, or stale `dist/ad-build-overlay-mvp-*.zip` files as release artifacts. Confirm the versioned `dist/ad-build-<version>.tgz`/`.zip` runtime package or the explicitly requested `dist/ad-build-<version>-source.zip` handoff package contents before handoff.
 
 Most maintenance documents are repository handoff material and are not currently included in the npm package. The package whitelist ships the user README, `docs/artifact-overlay-operations.md`, runtime code, and Skill. If a maintenance document becomes user-facing, update `package.json.files` and `test/package-shape.test.js` deliberately.
 

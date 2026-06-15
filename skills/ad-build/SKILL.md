@@ -41,7 +41,7 @@ ad-build skill status
 
 The same command set may be run through `node bin/ad-build.js` when `ad-build` is unavailable.
 
-Optional `--json` is allowed when the command supports it. `restore --force` is allowed only when a human explicitly accepts the source compare or local overwrite risk. Do not add other flags unless the CLI help for that command explicitly documents them and they do not bypass safety checks.
+Optional `--json` is allowed when the command supports it. `restore --force` is allowed only when a human explicitly accepts the printed overlay/current `branch` + `commit` mismatch or local overwrite risk. Do not add other flags unless the CLI help for that command explicitly documents them and they do not bypass safety checks.
 
 Do not substitute another module name for `appd` in the current MVP. If the user asks for another module, explain that multi-module overlay validation is not proven yet and stop at `ad-build status` or `ad-build doctor` unless a human explicitly provides a new supported command.
 
@@ -120,7 +120,7 @@ ad-build verify appd --json
 
 `restore` owns artifact repository access, source branch/commit preflight, checksum validation, inventory-based restore, conflict protection, path relocation, symlink relocation, appd DPDK/RDMA cache rebuild with `PREFIX_SOURCE=<current AD root>` when `make` is available, and minimum doctor checks. Use `ad-build repair dpdk` to retry that fixed repair step when `doctor` or `verify appd` reports DPDK/RDMA cache symptoms.
 
-If `restore` reports a source branch or commit mismatch, inspect the GitLab compare link. Do not continue with `--force` unless the human explicitly accepts that mismatch.
+If `restore` reports a source branch or commit mismatch, inspect the printed overlay/current `branch` and `commit` values. Do not continue with `--force` unless the human explicitly accepts that mismatch.
 
 Before building, inspect `$HOME/.ad-build/overlay/use-summary.json` when available. Continue only when it reports a ready overlay. If `status` is missing, not `ready`, contradictory, or unreadable, do not run `ad-build verify appd`; run `ad-build status` or `ad-build doctor`.
 
