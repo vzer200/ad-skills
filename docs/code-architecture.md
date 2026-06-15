@@ -41,12 +41,12 @@ The core overlay lifecycle lives in `lib/overlay.js`.
 
 Publisher:
 
-1. `packOverlay()` resolves the AD Git root, requires `--branch`, records source Git metadata, scans generated artifacts with progress, expands AD-internal symlink targets, validates appd-required paths, stages files under a temp `files/` tree, writes manifest/inventory, creates `ad-artifact-overlay.tar.gz`, computes sha256, and writes `pack-summary.json`.
+1. `packOverlay()` resolves the AD Git root, requires `--branch`, records source Git metadata, scans generated artifacts with progress, classifies external symlinks, records allowed external dependencies in the manifest, expands AD-internal symlink targets, validates appd-required paths, stages files under a temp `files/` tree, writes manifest/inventory, creates `ad-artifact-overlay.tar.gz`, computes sha256, and writes `pack-summary.json`.
 2. `publishOverlay()` validates the local packed overlay, verifies sha256, prepares the artifact repository branch, writes `latest-artifact-overlay.json`, stores payload data under `artifact-overlay/sha256-<12>/`, removes old payload directories for that release, and commits a single branch snapshot.
 
 Consumer:
 
-1. `useOverlay()` first validates the current AD Git workspace, requires authenticated SSH state, reads lightweight latest pointer and manifest metadata, checks source branch/commit drift before full artifact checkout, then validates inventory and archive safety, hashes/extracts into temp staging, checks restore conflicts, restores inventory entries, relocates old source-root references, repairs DPDK/RDMA cache when possible, writes current/summary state including `duration_ms`, and runs doctor checks.
+1. `useOverlay()` first validates the current AD Git workspace, requires authenticated SSH state, reads lightweight latest pointer and manifest metadata, checks source branch/commit drift before full artifact checkout, then validates inventory and archive safety, hashes/extracts into temp staging, checks restore conflicts, restores inventory entries, relocates old source-root references, checks manifest external dependencies through doctor, repairs DPDK/RDMA cache when possible, writes current/summary state including `duration_ms`, and runs doctor checks.
 2. `buildModule()` currently supports only `appd`. It requires a ready restore summary unless an internal option bypasses it, injects `PREFIX_SOURCE=<repoRoot>`, runs the module build command, copies child logs, extracts the first real error, writes `last-build-summary.json`, and suggests a single allowed next command.
 
 Diagnostics:

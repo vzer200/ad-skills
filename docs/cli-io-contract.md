@@ -95,12 +95,16 @@ Important summary fields:
 - `source_repo_url`
 - `source_root_at_pack_time`
 - `pack_rules_version`
+- `external_dependencies`
+- `excluded_external_symlinks`
+- `warnings`
 
 Behavior:
 
 - Current AD branch must match `--branch` unless diagnostic-only `--allow-branch-mismatch` is used through the overlay parser.
 - Source branch, commit, and remote URL are required.
 - Appd-required paths must exist and be represented in the collected entries.
+- Known external symlinks are classified before inventory creation. Allowed dependencies enter `manifest.external_dependencies`; deployment/test/aarch64 package links are excluded from the appd MVP overlay; unknown external symlinks fail once with all violating `path`, `link_target`, and `resolved_path` values.
 
 ### `publish`
 
@@ -174,6 +178,7 @@ Behavior:
 - Requires SSH auth state.
 - Validates the current AD Git workspace before artifact repository fetch or checkout.
 - Fetches only the requested artifact branch.
+- Checks manifest `external_dependencies` through `doctor` after restore; missing system dependencies make the summary `not_ready`.
 - Reads lightweight latest/manifest source metadata before materializing the large overlay payload.
 - Checks current AD source branch/commit against manifest before full artifact checkout, sha256, or extraction.
 - Missing manifest source metadata or unverifiable current Git state is non-forceable.

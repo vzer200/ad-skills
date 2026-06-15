@@ -35,7 +35,7 @@ ad-build pack --branch release-AD7.0.29R2
 ad-build publish --branch release-AD7.0.29R2
 ```
 
-`pack` records the build artifact inventory, manifest, checksum, source root at pack time, source branch, source commit, source Git remote URL, and pack policy version. The current AD branch must match `--branch` unless `--allow-branch-mismatch` is explicitly supplied for diagnostics.
+`pack` records the build artifact inventory, manifest, checksum, source root at pack time, source branch, source commit, source Git remote URL, external system dependencies, and pack policy version. The current AD branch must match `--branch` unless `--allow-branch-mismatch` is explicitly supplied for diagnostics. Known external symlinks are classified before inventory creation: system dependencies are recorded in the manifest, and non-appd-MVP deployment/test/aarch64 links are skipped instead of restored as overlay symlinks.
 
 `publish` writes the overlay payload, source metadata, and latest pointer to the fixed artifact repository branch with the same name as `--branch`. Each publish force-updates that artifact branch to a single latest snapshot so clean devices do not pull old overlay history.
 
@@ -49,7 +49,7 @@ ad-build restore --branch release-AD7.0.29R2
 ad-build verify appd
 ```
 
-`restore` first validates the current AD Git workspace, reads the published manifest metadata, checks the current AD source branch and commit against the published source metadata, and exits fast with both overlay/current `branch` and `commit` when they differ. Only `--force` continues past that source mismatch. After the source check passes or is forced, `restore` validates checksums, restores only manifest inventory entries, protects local changes, relocates paths, repairs managed symlink targets, rebuilds the appd DPDK/RDMA cache with `PREFIX_SOURCE=<current AD root>` when `make` is available, writes `$HOME/.ad-build/overlay/use-summary.json`, and reports total duration. Run `ad-build repair dpdk` to retry that fixed repair step when `doctor` or `verify appd` reports DPDK/RDMA cache symptoms.
+`restore` first validates the current AD Git workspace, reads the published manifest metadata, checks the current AD source branch and commit against the published source metadata, and exits fast with both overlay/current `branch` and `commit` when they differ. Only `--force` continues past that source mismatch. After the source check passes or is forced, `restore` validates checksums, restores only manifest inventory entries, protects local changes, relocates paths, repairs managed symlink targets, checks manifest external dependencies through `doctor`, rebuilds the appd DPDK/RDMA cache with `PREFIX_SOURCE=<current AD root>` when `make` is available, writes `$HOME/.ad-build/overlay/use-summary.json`, and reports total duration. Run `ad-build repair dpdk` to retry that fixed repair step when `doctor` or `verify appd` reports DPDK/RDMA cache symptoms.
 
 Only continue to `verify appd` when the restore summary reports `status: ready`.
 

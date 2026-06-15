@@ -44,7 +44,8 @@ Important details:
 
 - `collectPackEntries()` emits scan progress every fixed number of scanned paths so large AD workspaces do not look stuck during full artifact discovery.
 - `libs/rdma-core-2404mlnx51/` header files are included even when they look source-like. The appd DPDK/RDMA cache uses `build/include/infiniband/*.h` symlinks that point back to provider/libibverbs headers.
-- Included symlinks are followed for one AD-internal closure: if a managed symlink target exists inside the publishing AD workspace, that target is added to inventory too. Absolute targets under `/root/AD` or `source_root_at_pack_time` are mapped back to AD-relative paths. External symlink targets and source-root targets that escape the AD boundary are rejected.
+- Included symlinks are followed for one AD-internal closure: if a managed symlink target exists inside the publishing AD workspace, that target is added to inventory too. Absolute targets under `/root/AD` or `source_root_at_pack_time` are mapped back to AD-relative paths.
+- External symlinks in pack scope are classified before inventory creation. `include/lua -> /usr/local/include/luajit-2.1/` is a whitelisted system header dependency and enters `manifest.external_dependencies`, not inventory. Deployment/test links under `shell/etc/...` and `test/.../mock_S04NicFactory`, plus `shell/arch/aarch64/...` package links, are skipped for the appd x86 MVP. Any other external symlink causes one aggregated `pack` failure listing every `path`, `link_target`, and `resolved_path`.
 - `validatePackReadiness()` checks not only required symlink paths, but also their AD-internal targets. This catches a bad package on the publishing device instead of producing a restore-time `not_ready` state on a clean device.
 
 ## Publish Branch Strategy
@@ -145,7 +146,7 @@ It rejects:
 
 This validation protects restore from malicious or corrupt overlay archives. Keep tests for unsafe archive members when changing tar behavior.
 
-The validation protects archive member paths, restore destinations, and inventory symlink targets. Symlink targets are allowed only when they resolve inside the current AD root after `source_root_at_pack_time` relocation. External absolute targets, empty targets, and paths that escape the AD boundary are rejected before restore extracts the payload.
+The validation protects archive member paths, restore destinations, and inventory symlink targets. Symlink targets are allowed only when they resolve inside the current AD root after `source_root_at_pack_time` relocation. External absolute targets, empty targets, and paths that escape the AD boundary are rejected before restore extracts the payload. External system dependencies are represented only in `manifest.external_dependencies`; `doctor` checks their `check_path`.
 
 ## Progress And JSON
 

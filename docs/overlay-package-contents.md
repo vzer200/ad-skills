@@ -107,10 +107,12 @@ The overlay is not a full AD source archive and should not include Git history, 
 
 ## Inclusion Rules
 
-`shouldIncludePackEntry()` decides whether a scanned path becomes an inventory entry:
+`shouldIncludePackEntry()` and the pack symlink policy decide whether a scanned path becomes an inventory entry:
 
-- All symlinks are included.
+- AD-internal symlinks are included.
 - Internal AD symlink targets are included when the symlink target exists inside the publishing workspace. Absolute targets under `source_root_at_pack_time`, such as `/root/AD/...`, are mapped back to AD-relative inventory paths before packaging.
+- Known external symlinks are not written to inventory. They are either recorded as `external_dependencies` in `manifest.json`, or skipped as non-appd-MVP deployment/test/aarch64 shell links.
+- Unknown external symlinks inside pack scope fail once after scanning with a summary of every violating `path`, `link_target`, and `resolved_path`. Excluded directories such as `mkpacket/`, `ssipacket/`, and `ad_packet/` are outside this decision because they are not scanned.
 - Everything under `obj/` and `app_bin/` is included.
 - Under `include/`, headers and build metadata are included.
 - Header targets under `libs/rdma-core-2404mlnx51/` are included. This preserves the hand-tested 3.1G overlay behavior where `build/include/infiniband/*.h` symlinks need provider and libibverbs header targets such as `libs/rdma-core-2404mlnx51/providers/mlx5/mlx5dv.h`.
@@ -138,6 +140,14 @@ Inventory entry types:
 - `symlink`: symlink entries.
 
 Each file entry records path, sha256, size, mode, git status, and entry type. Each symlink entry records path, mode, target, git status, and `relocatable: true`.
+
+`manifest.external_dependencies` records required system paths discovered from allowed external symlinks. The current appd MVP policy records:
+
+```text
+include/lua -> /usr/local/include/luajit-2.1/
+```
+
+This dependency is checked by `restore`/`doctor`, but the external symlink itself is not restored from the overlay.
 
 ## Appd Required Paths
 
@@ -170,6 +180,6 @@ Restore validates before writing:
 - No non-directory archive prefix.
 - No unintended overwrite of local changes unless `--force` is explicit.
 
-Restore writes only inventory entries and then relocates managed text files and symlink targets from `source_root_at_pack_time` to the current AD root. Inventory symlink targets must resolve inside the current AD root after this relocation; external absolute targets and targets that escape the repo boundary are rejected before extraction.
+Restore writes only inventory entries and then relocates managed text files and symlink targets from `source_root_at_pack_time` to the current AD root. Inventory symlink targets must resolve inside the current AD root after this relocation; external absolute targets and targets that escape the repo boundary are rejected before extraction. Manifest `external_dependencies` are checked as system prerequisites and are never restored as overlay symlinks.
 
 The archive safety model validates restore destination paths, tar member structure, and inventory symlink target boundaries. The artifact repository and published manifest are still trusted publisher inputs, but they must stay within the declared AD-relative overlay boundary.

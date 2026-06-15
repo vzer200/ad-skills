@@ -102,7 +102,8 @@ ad-build publish --branch release-AD7.0.29R2 --json
 
 Expected interpretation:
 
-- `pack` must create a manifest, inventory, overlay payload, checksum, source root at pack time, source branch, source commit, source Git remote URL, and pack rules version.
+- `pack` must create a manifest, inventory, overlay payload, checksum, source root at pack time, source branch, source commit, source Git remote URL, external dependency metadata, and pack rules version.
+- If `pack` reports external symlink violations, read the full aggregated list. Known system dependencies should appear in `manifest.external_dependencies`; deployment/test/aarch64 package links should be excluded from the appd MVP overlay. Do not manually create external symlinks.
 - `publish` must store the immutable overlay payload, source metadata, and latest pointer through the CLI-managed artifact repository flow.
 - If full-build evidence is missing or the workspace is not trusted, do not publish. Ask for a trusted full-build workspace or a human-owned publish decision.
 
@@ -118,7 +119,7 @@ ad-build restore --branch release-AD7.0.29R2 --json
 ad-build verify appd --json
 ```
 
-`restore` owns artifact repository access, source branch/commit preflight, checksum validation, inventory-based restore, conflict protection, path relocation, symlink relocation, appd DPDK/RDMA cache rebuild with `PREFIX_SOURCE=<current AD root>` when `make` is available, and minimum doctor checks. Use `ad-build repair dpdk` to retry that fixed repair step when `doctor` or `verify appd` reports DPDK/RDMA cache symptoms.
+`restore` owns artifact repository access, source branch/commit preflight, checksum validation, inventory-based restore, conflict protection, path relocation, symlink relocation, manifest external dependency checks, appd DPDK/RDMA cache rebuild with `PREFIX_SOURCE=<current AD root>` when `make` is available, and minimum doctor checks. Use `ad-build repair dpdk` to retry that fixed repair step when `doctor` or `verify appd` reports DPDK/RDMA cache symptoms.
 
 If `restore` reports a source branch or commit mismatch, inspect the printed overlay/current `branch` and `commit` values. Do not continue with `--force` unless the human explicitly accepts that mismatch.
 

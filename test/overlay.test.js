@@ -264,6 +264,91 @@ test('overlay pack includes rdma-core headers used by build include symlinks', (
   );
 });
 
+test('overlay pack classifies known external symlinks without putting them in inventory', () => {
+  const producer = makeCompiledProducer();
+  const home = tmpDir('ad-build-home-');
+  const env = { ...process.env, HOME: home, USERPROFILE: home };
+  const symlinks = new Map([
+    ['include/lua', '/usr/local/include/luajit-2.1/'],
+    ['shell/etc/apache2/httpd.conf', '/etc/sinfor/ad/httpd.conf'],
+    ['shell/etc/squid/squid.conf', '/etc/sinfor/ad/squid.conf'],
+    ['test/access_layer/partition/partition/mock_S04NicFactory', '/etc/rc.d/rc2.d/S04NicFactory'],
+    ['shell/arch/aarch64/app/usr/ad/bin/swcsmmgmt_key', '/app/usr/ad/bin/swcsmmgmt'],
+    ['shell/arch/aarch64/app/usr/lib64/debug', 'aclog/debug-info']
+  ]);
+
+  withMockedSymlinks(producer, symlinks, () => {
+    const packed = overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', env });
+    const inventory = core.readJson(packed.inventory_path);
+    const manifest = core.readJson(packed.manifest_path);
+
+    for (const rel of symlinks.keys()) {
+      assert.equal(inventory.entries.some((entry) => entry.path === rel), false, `${rel} should not be restored as an overlay symlink`);
+    }
+    assert.deepEqual((manifest.external_dependencies || []).map((item) => item.path), ['include/lua']);
+    assert.equal(manifest.external_dependencies[0].link_target, '/usr/local/include/luajit-2.1/');
+    assert.equal(manifest.external_dependencies[0].check_path, '/usr/local/include/luajit-2.1/');
+    assert.equal((packed.excluded_external_symlinks || []).length, 5);
+    assert.ok((packed.warnings || []).some((warning) => warning.name === 'external_symlink_dependency' && warning.path === 'include/lua'));
+  });
+});
+
+test('overlay pack reports all unknown external symlink violations together', () => {
+  const producer = makeCompiledProducer();
+  const home = tmpDir('ad-build-home-');
+  const env = { ...process.env, HOME: home, USERPROFILE: home };
+  const symlinks = new Map([
+    ['include/unexpected', '/opt/unexpected-headers'],
+    ['shell/unknown.conf', '/srv/unknown.conf']
+  ]);
+
+  withMockedSymlinks(producer, symlinks, () => {
+    assert.throws(
+      () => overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', env }),
+      (error) => {
+        assert.match(error.message, /外部 symlink|external symlink/i);
+        assert.match(error.message, /include\/unexpected/);
+        assert.match(error.message, /\/opt\/unexpected-headers/);
+        assert.match(error.message, /shell\/unknown\.conf/);
+        assert.match(error.message, /\/srv\/unknown\.conf/);
+        assert.match(error.message, /resolved_path/);
+        assert.match(error.message, /mkpacket\/.*ssipacket\/.*ad_packet\//s);
+        return true;
+      }
+    );
+  });
+});
+
+test('overlay doctor checks manifest external dependencies', () => {
+  const repoRoot = makeCompiledProducer();
+  const home = tmpDir('ad-build-home-');
+  const env = { ...process.env, HOME: home, USERPROFILE: home };
+  core.writeJson(path.join(home, '.ad-build/overlay/current.json'), {
+    schema_version: 1,
+    kind: 'ad-build-artifact-overlay-current',
+    release: 'release-test',
+    manifest: {
+      source_root_at_pack_time: '/root/AD',
+      external_dependencies: [
+        {
+          name: 'luajit_headers',
+          type: 'system_header',
+          path: 'include/lua',
+          link_target: '/definitely/missing/luajit-2.1/',
+          check_path: '/definitely/missing/luajit-2.1/'
+        }
+      ]
+    },
+    inventory: { entries: [] }
+  });
+
+  const result = overlay.runDoctor({ repoRoot, env });
+  const check = result.checks.find((item) => item.name === 'external_dependency:luajit_headers');
+  assert.equal(check.status, 'failed');
+  assert.match(check.message, /include\/lua/);
+  assert.match(check.message, /\/definitely\/missing\/luajit-2\.1\//);
+});
+
 test('overlay pack reports scan progress before compression', () => {
   const producer = makeCompiledProducer();
   const home = tmpDir('ad-build-home-');
@@ -1085,6 +1170,44 @@ function tempNames(prefix) {
 
 function newTempNames(prefix, before) {
   return fs.readdirSync(os.tmpdir()).filter((name) => name.startsWith(prefix) && !before.has(name));
+}
+
+function withMockedSymlinks(root, symlinks, fn) {
+  const originalLstatSync = fs.lstatSync;
+  const originalReadlinkSync = fs.readlinkSync;
+  const targets = new Map();
+  for (const [rel, target] of symlinks) {
+    const full = write(root, rel, 'placeholder');
+    targets.set(path.resolve(full), target);
+  }
+
+  fs.lstatSync = function patchedLstatSync(file, ...args) {
+    const target = targets.get(path.resolve(file));
+    if (target) {
+      const stat = originalLstatSync.call(fs, file, ...args);
+      return {
+        mode: stat.mode,
+        isDirectory: () => false,
+        isFile: () => false,
+        isSymbolicLink: () => true
+      };
+    }
+    return originalLstatSync.call(fs, file, ...args);
+  };
+  fs.readlinkSync = function patchedReadlinkSync(file, ...args) {
+    const target = targets.get(path.resolve(file));
+    if (target) {
+      return target;
+    }
+    return originalReadlinkSync.call(fs, file, ...args);
+  };
+
+  try {
+    return fn();
+  } finally {
+    fs.lstatSync = originalLstatSync;
+    fs.readlinkSync = originalReadlinkSync;
+  }
 }
 
 function writeTarGz(file, entries) {

@@ -50,6 +50,9 @@ ad-build verify appd
 - [x] **P1：`restore` 结束时输出本次命令总耗时。** `restore` 完成所有任务后，在最终文本输出里增加类似 `总耗时: 8m32s` 的汇总；`--json` 输出同步增加机器可读的 `duration_ms` 字段。
 - [x] **P1：补测试覆盖前置失败路径。** 已增加测试覆盖：非 AD Git 工作区执行 `restore` 时不会触发 artifact repo fetch；源码 branch/commit 不一致时不会先校验大包；source metadata 缺失或当前 Git 不可验证时保持快速失败；错误信息包含 overlay/current 两边 `branch`/`commit`，不依赖 GitLab compare。
 - [x] 增强 `pack` 全量扫描阶段的进度显示。当前实现为简单低风险版本：每扫描固定数量的文件/目录输出一次 `已扫描 N 个路径，已选中 M 个产物文件`。进度继续写 stderr，避免破坏 `--json` stdout。
+- [x] **P0：`pack` 外部 symlink 不再遇到第一个就失败。** 当前实现会扫描完整 pack scope，一次性汇总所有未知外部 symlink，并在错误中输出 `path`、`link_target`、`resolved_path`；错误信息同时说明 `mkpacket/`、`ssipacket/`、`ad_packet/` 等排除目录不参与 overlay 扫描/判定。
+- [x] **P0：对当前 6 个外部 symlink 建立 appd MVP 分类策略。** `include/lua -> /usr/local/include/luajit-2.1/` 作为 `external_dependencies` 记录；`shell/etc/apache2/httpd.conf`、`shell/etc/squid/squid.conf`、`test/.../mock_S04NicFactory` 按部署/测试环境链接跳过；`shell/arch/aarch64/...` 按 aarch64 shell 包路径跳过，不纳入 appd x86 MVP overlay。
+- [x] **P1：`restore` / `doctor` 检查 manifest external dependency。** 白名单外部依赖不写入 inventory，也不会在干净机器上恢复外部 symlink；`doctor` 会检查 `manifest.external_dependencies[].check_path` 是否存在，缺失时把 overlay 状态判为 `not_ready` 并给出明确依赖路径。
 
 ## 仍需真实设备验证
 
