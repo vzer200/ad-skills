@@ -29,6 +29,7 @@ The project is the `ad-build` artifact overlay CLI for the current `appd` MVP. I
 - When changing code, update the matching document in `docs/` in the same change. If code and docs disagree, the code and tests are the source of truth until the docs are corrected.
 - If old files such as `README-BUNDLE-USAGE.md` are present in a local workspace, treat them as deprecated historical material unless they have been explicitly brought back into the tracked overlay MVP documentation set.
 - Do not publish from old root-level `*.tgz` or `ad-skills-*.zip` files. Release candidates should come from the current versioned `dist/ad-build-<version>.tgz` and `dist/ad-build-<version>.zip`.
+- Version handoffs currently use `0.5.2` as the baseline; after this handoff, bump by `0.0.1` for each completed delivery unless the user specifies another version.
 
 ## Documentation Update Matrix
 

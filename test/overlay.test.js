@@ -293,6 +293,27 @@ test('overlay pack classifies known external symlinks without putting them in in
   });
 });
 
+test('overlay pack treats normalized source-root symlink targets as internal', () => {
+  const producer = makeCompiledProducer();
+  const home = tmpDir('ad-build-home-');
+  const env = { ...process.env, HOME: home, USERPROFILE: home };
+  const linkRel = 'libs/rdma-core-2404mlnx51/build/include/infiniband/mlx5_user_ioctl_verbs.h';
+  const targetRel = 'libs/rdma-core-2404mlnx51/kernel-headers/rdma/mlx5_user_ioctl_verbs.h';
+  write(producer, targetRel, '#define MLX5_USER_IOCTL_VERBS 1\n');
+
+  withMockedSymlinks(producer, new Map([
+    [linkRel, '/root/AD/libs/rdma-core-2404mlnx51/providers/mlx5/../../kernel-headers/rdma/mlx5_user_ioctl_verbs.h']
+  ]), () => {
+    const packed = overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', env });
+    const inventory = core.readJson(packed.inventory_path);
+
+    assert.ok(inventory.entries.some((entry) => entry.path === linkRel && entry.type === 'symlink'));
+    assert.ok(inventory.entries.some((entry) => entry.path === targetRel && entry.type === 'file'));
+    assert.equal((packed.external_dependencies || []).length, 0);
+    assert.equal((packed.excluded_external_symlinks || []).length, 0);
+  });
+});
+
 test('overlay pack reports all unknown external symlink violations together', () => {
   const producer = makeCompiledProducer();
   const home = tmpDir('ad-build-home-');
@@ -967,6 +988,19 @@ test('overlay pack rejects source-root symlink targets that escape the AD repo',
   );
 });
 
+test('overlay pack rejects normalized source-root symlink escapes with mocked symlinks', () => {
+  const producer = makeCompiledProducer();
+
+  withMockedSymlinks(producer, new Map([
+    ['obj/lib64/escape-link', '/root/AD/../../outside']
+  ]), () => {
+    assert.throws(
+      () => overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', out: 'overlay-out', env: process.env }),
+      /外部 symlink|external symlink|outside/
+    );
+  });
+});
+
 test('overlay use rejects archive members nested below archive symlinks', () => {
   const consumer = makeConsumerRepo();
   const artifactRepo = tmpDir('ad-build-overlay-symlink-artifacts-');
@@ -1175,6 +1209,7 @@ function newTempNames(prefix, before) {
 function withMockedSymlinks(root, symlinks, fn) {
   const originalLstatSync = fs.lstatSync;
   const originalReadlinkSync = fs.readlinkSync;
+  const originalSymlinkSync = fs.symlinkSync;
   const targets = new Map();
   for (const [rel, target] of symlinks) {
     const full = write(root, rel, 'placeholder');
@@ -1201,12 +1236,26 @@ function withMockedSymlinks(root, symlinks, fn) {
     }
     return originalReadlinkSync.call(fs, file, ...args);
   };
+  fs.symlinkSync = function patchedSymlinkSync(target, file, ...args) {
+    try {
+      return originalSymlinkSync.call(fs, target, file, ...args);
+    } catch (error) {
+      if (error?.code !== 'EPERM') {
+        throw error;
+      }
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, `mock symlink -> ${target}`);
+      targets.set(path.resolve(file), target);
+      return undefined;
+    }
+  };
 
   try {
     return fn();
   } finally {
     fs.lstatSync = originalLstatSync;
     fs.readlinkSync = originalReadlinkSync;
+    fs.symlinkSync = originalSymlinkSync;
   }
 }
 

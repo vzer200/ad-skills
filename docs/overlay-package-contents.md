@@ -110,7 +110,7 @@ The overlay is not a full AD source archive and should not include Git history, 
 `shouldIncludePackEntry()` and the pack symlink policy decide whether a scanned path becomes an inventory entry:
 
 - AD-internal symlinks are included.
-- Internal AD symlink targets are included when the symlink target exists inside the publishing workspace. Absolute targets under `source_root_at_pack_time`, such as `/root/AD/...`, are mapped back to AD-relative inventory paths before packaging.
+- Internal AD symlink targets are included when the symlink target exists inside the publishing workspace. Absolute targets under `source_root_at_pack_time`, such as `/root/AD/...`, are POSIX-normalized first and then mapped back to AD-relative inventory paths before packaging, but only when the normalized target still stays under the recorded source root.
 - Known external symlinks are not written to inventory. They are either recorded as `external_dependencies` in `manifest.json`, or skipped as non-appd-MVP deployment/test/aarch64 shell links.
 - Unknown external symlinks inside pack scope fail once after scanning with a summary of every violating `path`, `link_target`, and `resolved_path`. Excluded directories such as `mkpacket/`, `ssipacket/`, and `ad_packet/` are outside this decision because they are not scanned.
 - Everything under `obj/` and `app_bin/` is included.
@@ -180,6 +180,6 @@ Restore validates before writing:
 - No non-directory archive prefix.
 - No unintended overwrite of local changes unless `--force` is explicit.
 
-Restore writes only inventory entries and then relocates managed text files and symlink targets from `source_root_at_pack_time` to the current AD root. Inventory symlink targets must resolve inside the current AD root after this relocation; external absolute targets and targets that escape the repo boundary are rejected before extraction. Manifest `external_dependencies` are checked as system prerequisites and are never restored as overlay symlinks.
+Restore writes only inventory entries and then relocates managed text files and symlink targets from `source_root_at_pack_time` to the current AD root. Inventory symlink targets must resolve inside the current AD root after this relocation; source-root absolute targets containing `..` are normalized before this decision, while external absolute targets and targets that escape the repo boundary are rejected before extraction. Manifest `external_dependencies` are checked as system prerequisites and are never restored as overlay symlinks.
 
 The archive safety model validates restore destination paths, tar member structure, and inventory symlink target boundaries. The artifact repository and published manifest are still trusted publisher inputs, but they must stay within the declared AD-relative overlay boundary.

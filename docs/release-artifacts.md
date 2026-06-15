@@ -27,7 +27,7 @@ Do not confuse them. The CLI delivery artifacts contain JavaScript runtime files
 
 ## Build Current Version
 
-The version comes from `package.json`.
+The version comes from `package.json`. The current handoff baseline is `0.5.2`; after this release, increment patch versions by `0.0.1` for each follow-up delivery unless the user explicitly asks for a different version.
 
 PowerShell:
 
@@ -107,6 +107,8 @@ dist/ad-build-overlay-mvp-*.zip
 ```
 
 Those are historical local files and are ignored by Git. Always regenerate artifacts for the current `package.json` version before handoff.
+
+When replacing a committed source handoff zip with a new version, remove the previous tracked `dist/ad-build-<old-version>-source.zip` and force-add only the newly generated `dist/ad-build-<version>-source.zip`.
 
 ## Package Boundary
 

@@ -43,6 +43,7 @@ ad-build verify appd
 ## 下一步计划
 
 - [x] **P0：`pack` 补齐手工 3.1G overlay 包中的 rdma-core 软链目标采集。** 当前 CLI 会把 `libs/rdma-core-2404mlnx51/build/include/...` 下的软链本身写入 inventory，但可能漏掉软链指向的仓库内部目标文件，例如 `libs/rdma-core-2404mlnx51/providers/mlx5/mlx5dv.h`。已修复：`pack` 按手工成功包的规则补齐 rdma-core 头文件/内部 symlink target，并在 `validatePackReadiness()` 中检查关键 symlink 的内部目标也已经进入 inventory，避免用户下载和解压大包后才发现不可用。
+- [x] **P0：`pack` 正确处理 `source_root_at_pack_time` 下带 `..` 的内部绝对 symlink。** 已修复：`pack` 会先对 `/root/AD/.../../...` 这类目标做 POSIX 归一化；归一化后仍在 `source_root_at_pack_time` 下的 rdma-core 构建产物链接按 AD 内部 symlink 采集，不再误报为外部 symlink。归一化后越过 AD 根目录的目标仍然按违规外部 symlink 阻断。
 - [x] **P0：`restore` 删除 GitLab compare 链接依赖。** 源码分支或 commit 不一致时，不再把 GitLab compare URL 作为主要判断依据；错误信息直接输出两组可人工核对的信息：overlay 打包来源的 `branch`/`commit`，以及当前 AD 工作区的 `branch`/`commit`。如果用户确认风险可接受，再显式执行 `ad-build restore --branch <AD分支> --force`。
 - [x] **P0：`restore` 本地 AD Git 前置校验提前。** 在任何 artifact repo fetch、checkout、sha256 校验或大包下载之前，先确认当前目录是可验证的 AD Git 工作区，并能读取当前 `branch`、`commit` 和 remote。当前目录不是 AD Git 工作区、Git 状态不可读或缺少必要源码信息时，立即失败并提示切换到正确 AD 根目录，避免拉取很久后才发现目录不对。
 - [x] **P0：`restore` 先轻量校验 source metadata，再决定是否拉取大包。** `restore` 先获取轻量的 latest/manifest/source metadata，用它和当前 AD `branch`/`commit` 做风险判断；如果源码不一致，会在完整 checkout overlay 产物包之前停止并提示用户是否接受 `--force` 风险。只有本地 AD Git 校验通过且 source metadata 校验通过，或用户显式 `--force`，才继续后续大包获取、校验和恢复。
