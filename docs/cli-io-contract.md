@@ -29,7 +29,7 @@ Rejected legacy commands include `public-base`, `bundle`, `image`, `inventory`, 
 
 The overlay parser also recognizes maintenance/test options such as `--repo`, `--repo-url`, `--source-root`, `--ad-root`, `--workdir`, `--manifest`, `--inventory`, and `--allow-branch-mismatch`.
 
-These are not the normal user workflow. Do not add them to AI runbooks unless a test, diagnostic session, or maintainer explicitly needs them. In particular, `--allow-branch-mismatch` is for pack/publish diagnostics and must not be confused with `restore --force`.
+These are not the normal user workflow. Do not add them to AI runbooks unless a test, diagnostic session, or maintainer explicitly needs them. The parser recognizes `--allow-branch-mismatch` broadly, but the intended use is pack/publish diagnostics; it must not be presented as the way to bypass restore source drift. Use explicit `restore --force` only when the human accepts that risk.
 
 ## Shared Output Rules
 

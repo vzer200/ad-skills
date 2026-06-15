@@ -127,8 +127,7 @@ It rejects:
 - Members outside `manifest.json`, `inventory.json`, and `files/<inventory path>`.
 - Unsafe relative paths.
 - Children under symlink members.
-- Children under file members.
-- Type mismatches between archive members and inventory entry types.
+- Non-directory archive prefixes and type mismatches between archive members and inventory entry types.
 
 This validation protects restore from malicious or corrupt overlay archives. Keep tests for unsafe archive members when changing tar behavior.
 
