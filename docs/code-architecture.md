@@ -46,6 +46,8 @@ Publisher:
 
 Consumer:
 
+Remote metadata fetch goes through the managed cache repo. `ensureArtifactRepo()` repairs the `origin` URL and `fetchArtifactMetadata()` configures partial clone before running `--filter=blob:none`; unsupported Git/cache combinations fallback to ordinary shallow fetch with a progress warning.
+
 1. `useOverlay()` first validates the current AD Git workspace, requires authenticated SSH state, reads lightweight latest pointer and manifest metadata, checks source branch/commit drift before full artifact checkout, then validates inventory and archive safety, hashes/extracts into temp staging, checks restore conflicts, restores inventory entries, relocates old source-root references, checks manifest external dependencies through doctor, repairs DPDK/RDMA cache when possible, writes current/summary state including `duration_ms`, and runs doctor checks.
 2. `buildModule()` currently supports only `appd`. It requires a ready restore summary unless an internal option bypasses it, injects `PREFIX_SOURCE=<repoRoot>`, runs the module build command, copies child logs, extracts the first real error, writes `last-build-summary.json`, and suggests a single allowed next command.
 

@@ -34,7 +34,7 @@ Force rules:
 - Branch or commit mismatch can continue only with explicit `--force`.
 - Missing source metadata or current Git identity must stop and require a new valid publish or a verifiable AD Git workspace.
 
-Remote artifact repositories use a lightweight metadata fetch first: `git fetch --depth=1 --filter=blob:none` followed by reading `latest-artifact-overlay.json` and manifest through `git show`. Only after the source check passes, or the user explicitly uses `--force` for branch/commit drift, does restore perform the normal branch checkout that materializes the large overlay payload.
+Remote artifact repositories use a lightweight metadata fetch first: `git fetch --depth=1 --filter=blob:none` followed by reading `latest-artifact-overlay.json` and manifest through `git show`. The cache repository must be configured as a partial clone cache before this fetch: `extensions.partialClone=origin`, `remote.origin.promisor=true`, and `remote.origin.partialclonefilter=blob:none`. If a target Git build rejects or does not recognize `--filter=blob:none`, `restore` falls back to ordinary `git fetch --depth=1 origin <branch>` and warns that more objects may be downloaded. If Git exits successfully but reports that the server ignored filtering, `restore` also warns that the metadata fetch may have downloaded more objects. Only after the source check passes, or the user explicitly uses `--force` for branch/commit drift, does restore perform the normal branch checkout that materializes the large overlay payload.
 
 ## Pack Collection Rules
 

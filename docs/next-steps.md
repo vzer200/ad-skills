@@ -47,6 +47,7 @@ ad-build verify appd
 - [x] **P0：`restore` 删除 GitLab compare 链接依赖。** 源码分支或 commit 不一致时，不再把 GitLab compare URL 作为主要判断依据；错误信息直接输出两组可人工核对的信息：overlay 打包来源的 `branch`/`commit`，以及当前 AD 工作区的 `branch`/`commit`。如果用户确认风险可接受，再显式执行 `ad-build restore --branch <AD分支> --force`。
 - [x] **P0：`restore` 本地 AD Git 前置校验提前。** 在任何 artifact repo fetch、checkout、sha256 校验或大包下载之前，先确认当前目录是可验证的 AD Git 工作区，并能读取当前 `branch`、`commit` 和 remote。当前目录不是 AD Git 工作区、Git 状态不可读或缺少必要源码信息时，立即失败并提示切换到正确 AD 根目录，避免拉取很久后才发现目录不对。
 - [x] **P0：`restore` 先轻量校验 source metadata，再决定是否拉取大包。** `restore` 先获取轻量的 latest/manifest/source metadata，用它和当前 AD `branch`/`commit` 做风险判断；如果源码不一致，会在完整 checkout overlay 产物包之前停止并提示用户是否接受 `--force` 风险。只有本地 AD Git 校验通过且 source metadata 校验通过，或用户显式 `--force`，才继续后续大包获取、校验和恢复。
+- [x] **P0：`restore` 轻量 manifest fetch 兼容旧 cache/Git。** 已修复：CLI 创建或复用 `$HOME/.ad-build/cache/artifact-overlay-repo/` 时会补齐 partial clone 配置；如果当前 Git 仍不支持或不认识 `--filter=blob:none`，或 cache 配置不兼容，`restore` 会自动 fallback 到普通 `depth=1` fetch 并提示可能下载更多对象；如果 Git 服务端忽略 filter 但返回成功，也会提示本次 metadata fetch 可能已下载更多对象。不再要求用户手工删除 cache 后重试。
 - [x] **P1：`restore --force` 文案基于两边 commit 信息确认。** `--force` 前后的提示文案围绕已经展示出的 overlay/current `branch` + `commit`，让用户确认自己接受的是具体源码差异风险，而不是一个抽象的“继续恢复”。
 - [x] **P1：`restore` 结束时输出本次命令总耗时。** `restore` 完成所有任务后，在最终文本输出里增加类似 `总耗时: 8m32s` 的汇总；`--json` 输出同步增加机器可读的 `duration_ms` 字段。
 - [x] **P1：补测试覆盖前置失败路径。** 已增加测试覆盖：非 AD Git 工作区执行 `restore` 时不会触发 artifact repo fetch；源码 branch/commit 不一致时不会先校验大包；source metadata 缺失或当前 Git 不可验证时保持快速失败；错误信息包含 overlay/current 两边 `branch`/`commit`，不依赖 GitLab compare。

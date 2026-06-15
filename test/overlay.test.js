@@ -535,6 +535,63 @@ test('overlay restore rejects missing source metadata before reading the artifac
   );
 });
 
+test('overlay restore configures partial clone cache before lightweight metadata fetch', () => {
+  const producer = makeCompiledProducer();
+  const home = tmpDir('ad-build-home-');
+  const artifactRepo = tmpDir('ad-build-overlay-remote-artifacts-');
+  const env = fakeMakeSuccessEnv({ ...process.env, HOME: home, USERPROFILE: home });
+  initArtifactGitRepo(artifactRepo);
+
+  const packed = overlay.packOverlay({ repoRoot: producer, branch: 'release-test', sourceRoot: '/root/AD', env });
+  overlay.publishOverlay({ repoRoot: producer, branch: 'release-test', overlay: packed.artifact_path, repo: artifactRepo, noPush: true, env });
+  core.writeJson(path.join(home, '.ad-build/overlay/auth.json'), {
+    schema_version: 1,
+    auth_method: 'ssh',
+    status: 'authenticated',
+    key_path: path.join(home, 'id_ed25519')
+  });
+
+  const consumer = makeSourceConsumerRepo(producer);
+  const cachePath = path.join(home, '.ad-build/cache/artifact-overlay-repo');
+  const progress = [];
+  const restored = overlay.useOverlay({
+    repoRoot: consumer,
+    branch: 'release-test',
+    repoUrl: artifactRepo,
+    env,
+    progress: (message) => progress.push(message)
+  });
+
+  assert.equal(restored.status, 'ready');
+  assert.equal(runGit(cachePath, ['config', '--get', 'extensions.partialClone']), 'origin');
+  assert.equal(runGit(cachePath, ['config', '--get', 'remote.origin.promisor']), 'true');
+  assert.equal(runGit(cachePath, ['config', '--get', 'remote.origin.partialclonefilter']), 'blob:none');
+  assert.match(progress.join('\n'), /轻量获取产物 manifest 元数据/);
+});
+
+test('overlay metadata fetch fallback recognizes Git partial-clone filter incompatibility', () => {
+  assert.equal(overlay._internal.shouldFallbackFilteredFetch({
+    status: 128,
+    stderr: 'fatal: --filter can only be used when extensions.partialClone is set'
+  }), true);
+  assert.equal(overlay._internal.shouldFallbackFilteredFetch({
+    status: 129,
+    stderr: "error: unknown option 'filter=blob:none'"
+  }), true);
+  assert.equal(overlay._internal.shouldFallbackFilteredFetch({
+    status: 128,
+    stderr: 'fatal: could not read from remote repository'
+  }), false);
+  assert.equal(overlay._internal.filteredFetchIgnoredFilter({
+    status: 0,
+    stderr: 'warning: filtering not recognized by server, ignoring'
+  }), true);
+  assert.equal(overlay._internal.filteredFetchIgnoredFilter({
+    status: 0,
+    stderr: 'remote: Total 0 (delta 0), reused 0'
+  }), false);
+});
+
 test('overlay restore rejects unverifiable current source before reading the artifact payload', () => {
   const producer = makeCompiledProducer();
   const home = tmpDir('ad-build-home-');

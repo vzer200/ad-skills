@@ -27,7 +27,7 @@ Do not confuse them. The CLI delivery artifacts contain JavaScript runtime files
 
 ## Build Current Version
 
-The version comes from `package.json`. The current handoff baseline is `0.5.2`; after this release, increment patch versions by `0.0.1` for each follow-up delivery unless the user explicitly asks for a different version.
+The version comes from `package.json`. The current handoff baseline is `0.5.3`; after this release, increment patch versions by `0.0.1` for each follow-up delivery unless the user explicitly asks for a different version.
 
 PowerShell:
 

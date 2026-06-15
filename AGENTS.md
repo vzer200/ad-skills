@@ -10,6 +10,7 @@ The project is the `ad-build` artifact overlay CLI for the current `appd` MVP. I
 - [README](README.md): user-facing scope, install path, publisher/developer commands, diagnostics, and Skill delivery.
 - [Artifact overlay operations](docs/artifact-overlay-operations.md): packaged operations guide for the supported appd overlay MVP.
 - [Project overview](docs/project-overview.md): problem statement, supported scope, user roles, and current non-goals.
+- [Innovation value](docs/innovation-value.md): why the overlay CLI matters, which manual and AI-assisted build pains it solves, key innovations, and quick-start usage.
 - [Code architecture](docs/code-architecture.md): module map, command dispatch, overlay lifecycle, state paths, and test structure.
 - [CLI input/output contract](docs/cli-io-contract.md): stable commands, options, JSON/text outputs, exit behavior, and state files.
 - [Overlay package contents](docs/overlay-package-contents.md): what the big AD overlay package includes, what it excludes, and how manifest/inventory/archive data is shaped.
