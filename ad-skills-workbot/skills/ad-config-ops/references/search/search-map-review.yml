@@ -1,0 +1,26 @@
+ok: true
+families: 6
+variant_families: 0
+resources: 341
+documents: 341
+operations: 1558
+schemas: 673
+needs_review:
+  - id: net.link
+    kind: family
+    reason: generated_terms_need_product_review
+  - id: slb.persist
+    kind: family
+    reason: generated_terms_need_product_review
+  - id: slb.pre_rule
+    kind: family
+    reason: generated_terms_need_product_review
+  - id: slb.service_monitor
+    kind: family
+    reason: generated_terms_need_product_review
+  - id: slb.tcp_profile
+    kind: family
+    reason: generated_terms_need_product_review
+  - id: slb.virtual_service
+    kind: family
+    reason: generated_terms_need_product_review

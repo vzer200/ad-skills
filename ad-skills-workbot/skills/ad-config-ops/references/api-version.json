@@ -1,0 +1,14 @@
+{
+  "version": "7.0",
+  "file_count": 341,
+  "sha256": "1e19267f291c5b1b68e46a09979b45338d234a96888c2769f908c4e7e6af680c",
+  "refreshed_at": "2026-05-27T03:37:37+00:00",
+  "requested_version": "7.0.29R1",
+  "version_source": "web",
+  "web_version": "7.0",
+  "web_version_source": "js/app.js",
+  "swagger_version": "7.0.24",
+  "version_warnings": [
+    "web_version 7.0 differs from swagger_version 7.0.24"
+  ]
+}

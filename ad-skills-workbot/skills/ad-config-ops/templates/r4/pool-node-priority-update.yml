@@ -1,0 +1,31 @@
+# 节点池节点优先级修改模板。
+# 上传前请替换节点池名称和节点列表。
+#
+# 生产变更时，建议保留现网完整 `nodes` 列表，只修改目标节点的
+# `priority_level`。这样可以避免设备按数组替换式 patch 处理时，
+# 因漏填其他节点而导致节点被意外移除。
+version: 1
+source: "R4 基础 YAML 模板：修改节点池中节点优先级"
+operations:
+  - id: patch-pool-node-priority
+    action: patch
+    schema: config.pool
+    document: slb/pool.js
+    payload:
+      name: internet_http_pool
+      priority_level_available_node: 1
+      nodes:
+        - name: node_1_192_0_2_51_80
+          type: ADDRESS
+          address: 192.0.2.51
+          port: 80
+          state: ENABLE
+          weight: 10
+          priority_level: 5
+        - name: node_2_192_0_2_52_80
+          type: ADDRESS
+          address: 192.0.2.52
+          port: 80
+          state: ENABLE
+          weight: 10
+          priority_level: 1
